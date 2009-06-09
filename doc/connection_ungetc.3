@@ -1,0 +1,36 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt CONNECTION
+.Th connection_ungetc 3
+.Sh NAME
+.Nm connection_ungetc()
+.Nd connection_ungetc
+.Sh SYNOPSIS
+.Fd #include <connection.h>
+.Fo "int connection_ungetc"
+.Fa "connection conn"
+.Fa "int c"
+.Fc
+.Sh DESCRIPTION
+.Nm
+pushes
+.Fa c
+back to
+.Fa conn
+, where it is available for subsequent read operations. 
+Pushed-back characters will be returned in reverse order; only
+one pushback is guaranteed.
+.Pp
+The current version ignores
+.Fa c
+and just adjusts the read buffers internal index. For that reason
+you have to unget the same character(s) that you read from 
+.Fa conn.
+.Sh RETURN VALUE
+.Nm
+return 1 on success, 0 if an error occured.  The typical error
+would be that the read buffer is full, but that cannot happen
+if the call to connection_ungetc() was preceeded
+by a call to connection_getc().
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

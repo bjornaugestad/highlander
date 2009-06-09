@@ -1,0 +1,84 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th response_add 3
+.Sh NAME
+.Nm response_add()
+.Nm response_add_char()
+.Nm response_add_end()
+.Nd Add text to a HTML page
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int response_add"
+.Fa "http_response response"
+.Fa "const char* src"
+.Fc
+.Fo "int response_add_char"
+.Fa "http_response response"
+.Fa "int c"
+.Fc
+.Fo "int response_add_end"
+.Fa "http_response response"
+.Fa "const char* start"
+.Fa "const char* end"
+.Fc
+.Sh DESCRIPTION
+.Nm response_add()
+adds the string
+.Fa src
+to the page. 
+.Nm response_add_char()
+adds one character to the page that will be returned to the client.
+.Pp
+.Nm response_add_end()
+adds all characters between 
+.Fa start 
+and
+.Fa end 
+(exclusive) to the page that will be returned to the client.
+.Sh RETURN VALUE
+All functions return 1 if the data was added, or 0 if an error occured.
+.Sh EXAMPLE
+.Bd -literal
+#include <highlander.h>
+
+int my_handler(http_request req, http_response page)
+{
+   const char *end, *start;
+   static const char* head =
+      "<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.0 Transitional//EN'>"
+      "<html>"
+      "<head>"
+      "   <title>My test page</title>"
+      "</head>";
+
+   response_add(page, head);
+   response_add(page, "<body>");
+
+   start = "Hello, World";
+   response_add_char(page, *start); /* Adds 'H' */
+   start++; /* Skip 'H' */
+
+   end = start + 4;
+   response_add_end(page, start, end); /* Adds "ello" */
+   response_add(page, "</body></html>");
+   return HTTP_200_OK;
+}
+
+int main(void)
+{
+   http_server s = http_server_new();
+   http_server_set_port(s, 2000);
+   http_server_alloc(s);
+   http_server_add_page(s, "/", my_handler, NULL);
+   http_server_get_root_resources(s);
+   http_server_start(s);
+   http_server_free(s);
+   return 0;
+}
+.Ed
+.Sh SEE ALSO
+.Xr a2p 3 ,
+.Xr response_printf 3
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

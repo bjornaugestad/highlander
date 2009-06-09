@@ -1,0 +1,23 @@
+.Dd Nov 25, 2005
+.Th sublist_copy 3
+.Sh NAME
+.Nm sublist_copy()
+.Nd Copy a list, but not the data.
+.Sh SYNOPSIS
+.Fd #include <meta_list.h>
+.Fo "list sublist_copy"
+.Fa "list lst"
+.Fc
+.Sh DESCRIPTION
+.Nm
+creates a copy of the list
+.Fa lst,
+but does not copy the data itself. This function is nice to have if
+you have a list in a specific order and don't want to change that
+list, but still want fo e.g. sort a copy of the list in a different
+order without copying the data. 
+Free it with sublist_free.
+.Sh SEE ALSO
+.Xr sublist_free 3
+.Sh AUTHOR
+B. Augestad, bjorn.augestad@gmail.com.

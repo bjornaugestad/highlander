@@ -1,0 +1,44 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th tcp_server_set_timeout 3
+.Sh NAME
+.Nm tcp_server_set_timeout()
+.Nd Sets timeout values for a tcp_server
+.Sh SYNOPSIS
+.Fd #include <tcp_server.h>
+.Fo "void tcp_server_set_timeout"
+.Fa "tcp_server srv"
+.Fa "int reads"
+.Fa "int writes"
+.Fa "int accepts"
+.Fc
+.Sh DESCRIPTION
+.Nm
+sets the number of seconds to wait when reading or writing to 
+the socket, as well as the time to wait when accepting new 
+connections. 
+.Pp
+The tcp_server uses poll() to see if data is available on a socket,
+or to see if it is possible to write data to a socket. poll() will
+wait for
+.Fa reads
+and 
+.Fa writes
+seconds before it tries to read or write data from/to the socket.
+If no data is available it will retry the operation.
+.Pp
+The 
+.Fa accepts
+parameter affects how fast the server responds to
+a shutdown request. If the value is set very high and a shutdown
+is requested, the server will not stop servicing connections until
+the accept() call (poll() actually) times out. On average that time
+will be half of the value in accepts. The default value is 8
+seconds, which means that the server on average will respond to
+the shutdown request after 4 seconds. If you set it too low, you
+will consume more system resources(cpu) than you have to.
+.Sh SEE ALSO
+.Xr tcp_server_set_retries() 3
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

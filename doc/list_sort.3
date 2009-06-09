@@ -1,0 +1,22 @@
+.Dd Nov 25, 2005
+.Th list_sort 3
+.Sh NAME
+.Nm list_sort()
+.Nd Sort a list
+.Sh SYNOPSIS
+.Fd #include <meta_list.h>
+.Fo "void list_sort"
+.Fa "list lst"
+.Fa "int(*compar)(const void *p1, const void *p2)"
+.Fc
+.Sh DESCRIPTION
+.Nm
+sorts a list, but is probably very slow.
+The contents of the list are sorted in ascending order according to a comparison function pointed to by
+.Fa compar
+, which is called with two arguments that point to the objects being compared.
+The comparison function must return an integer less than, equal to, or greater than zero if the
+first argument is considered to be respectively less than, equal to, or greater than the second
+argument. 
+.Sh AUTHOR
+B. Augestad, bjorn.augestad@gmail.com.

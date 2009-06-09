@@ -1,0 +1,26 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META_PROCESS
+.Th process_wait_for_shutdown 3
+.Sh NAME
+.Nm process_wait_for_shutdown()
+.Nd process_wait_for_shutdown
+.Sh SYNOPSIS
+.Fd #include <meta_process.h>
+.Fo "int process_wait_for_shutdown"
+.Fa "process p"
+.Fc
+.Sh DESCRIPTION
+Wait for shutdown is needed to avoid that we fall off main().
+.Nm
+just joins the shutdown thread.
+.Sh EXAMPLE
+.Bd -literal
+process p = process_new();
+\&...
+process_start(p, 1);
+process_wait_for_shutdown();
+process_free(p);
+.Ed
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

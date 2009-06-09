@@ -1,0 +1,55 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th tcp_server_shutting_down 3
+.Sh NAME
+.Nm tcp_server_shutting_down()
+.Nd Is the tcp_server shutting down?
+.Sh SYNOPSIS
+.Fd #include <tcp_server.h>
+.Fo "int tcp_server_shutting_down"
+.Fa "tcp_server srv"
+.Fc
+.Sh DESCRIPTION
+.Nm
+returns 1 if we're shutting down, 0 if we're not. Call this function
+from your own service functions to be able to tell when to terminate
+if your connections tend to be long.
+.Sh EXAMPLE
+Here we call 
+.Nm
+to check for shutdown. Whenever 
+.Nm
+returns 1, we stop echoing characters and return, effectively
+terminating the connection.
+.Bd -literal
+#include <tcp_server.h>
+#include <connection.h>
+void* echoserverfn(void* arg)
+{
+	int c;
+	connection conn = arg;
+	tcp_server s = connection_arg2(conn);
+	while(!tcp_server_shutting_down(s) 
+	&& connection_getc(conn, &c)) {
+		connection_putc(conn, c);
+		connection_flush(conn);
+	}
+	return NULL;
+}
+int main(void)
+{
+	tcp_server s = tcp_server_new();
+	tcp_server_set_service_function(
+		s, 
+		echoserverfn,
+		s);
+	tcp_server_init(s);
+	tcp_server_get_root_resources(s);
+	tcp_server_start(s);
+	tcp_server_free(s);
+	return 0;
+}
+.Ed
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

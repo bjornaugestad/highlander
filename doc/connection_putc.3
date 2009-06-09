@@ -1,0 +1,20 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt CONNECTION
+.Th connection_putc 3
+.Sh NAME
+.Nm connection_putc()
+.Nd Write one character
+.Sh SYNOPSIS
+.Fd #include <connection.h>
+.Sh DESCRIPTION
+.Nm
+writes one character to the connection.
+return 1 if the character was written, or 0 if an error occured. 
+.Sh SEE ALSO
+.Xr connection_flush
+.Sh EXAMPLE
+.Bd -literal
+.Ed
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

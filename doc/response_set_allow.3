@@ -1,0 +1,23 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th response_set_allow 3
+.Sh NAME
+.Nm response_set_allow()
+.Nd Set the HTTP 1.1 Allow: field
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int response_set_allow"
+.Fa "http_response response"
+.Fa "const char* value"
+.Fc
+.Sh DESCRIPTION
+.Nm
+Sets the HTTP/1.1 header field "Allow:". If you return 405, you
+must set this field as well. An example value is "GET, HEAD, POST", and
+tells the client what requests that are allowed.
+.Sh RETURN VALUE
+Returns 1 if the flag was set or 0 if we ran out of memory.
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

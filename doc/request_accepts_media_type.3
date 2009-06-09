@@ -1,0 +1,25 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th request_accepts_media_type 3
+.Sh NAME
+.Nm request_accepts_media_type()
+.Nd Does the request accept a specific media type?
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int request_accepts_media_type"
+.Fa "http_request request"
+.Fa "const char* val"
+.Fc
+.Sh DESCRIPTION
+.Nm
+returns 1 if the request accepts a given media type, 0 if not.
+If no media type is supplied with the request, then 1 is returned.
+@param request a valid http_request
+@param val The media type to check for.
+.Sh RETURN VALUE
+.Nm
+return  1 if the request accepts the media type, 0 if not.
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

@@ -1,0 +1,23 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th request_get_host 3
+.Sh NAME
+.Nm request_get_host()
+.Nd Get host name of client
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "const char* request_get_host"
+.Fa "http_request request"
+.Fc
+.Sh DESCRIPTION
+HTTP 1.1 requires that a request contains the name of the host 
+the client wants to access. 
+.Nm
+returns that value.
+.Sh RETURN VALUE
+.Nm
+returns host name of client or NULL if no host name was available.
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

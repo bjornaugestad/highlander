@@ -1,0 +1,80 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META_PROCESS
+.Th process_start 3
+.Sh NAME
+.Nm process_start()
+.Nd Starts all registred objects
+.Sh SYNOPSIS
+.Fd #include <meta_process.h>
+.Fo "int process_start"
+.Fa "process p"
+.Fa "int fork_and_close"
+.Fc
+.Sh DESCRIPTION
+The startup of the process is a bit complicated, as lots of
+things can go wrong. Luckily enough, if you've set up the process
+correctly it will probably always work. Here is a detailed 
+description of what happens when 
+.Nm
+is called.
+.Pp
+If fork_and_close is non-zero, then the process_start() function
+will fork() itself and then close stdin, stdout and stderr. The
+function returns an error code if fork() fails. Failure to close
+stdin, stdout or stderr is silently ignored. 
+.Pp
+Then the process_start() function calles do_func() for all objects that
+has been registred with the process_add_object_to_start() function.
+If one of the do_func() functions fail(ie return 0), then the 
+undo_func() is executed for all objects for which the do_func()
+function has been called. Any errors from the undo_func() functions
+are ignored.
+.Pp
+The process object then starts a separate shutdown thread.
+This thread will be the target thread for the SIGTERM signal.
+The shutdown thread writes its process id to a file in /var/run
+and then just waits for the SIGTERM signal to arrive.
+The startup procedure for the shutdown thread is to block SIGPIPE
+process wide. This is done so that calls to the write() function
+in other threads will start returning -1 instead of
+receiving the SIGPIPE signal. This makes it easier to perform
+I/O operations. Then we block all signals but the 
+SIGTERM signal. If the process_start() function is unable to start
+a separate shutdown thread, then the undo() function is called for
+all objects started and process_start() returns 0.
+.Pp
+If the user name for the process has been set using the 
+process_set_username() function, then the process_start()
+function will then try to change the process' user id to the user id
+for the named user. This operation may fail for a number of reasons.
+The user may not exist in /etc/passwd and we may not have enough 
+memory to check the /etc/passwd file. If an error occurs, then the
+undo() function is called for all objects started and 0 is returned.
+.Pp
+If the process object has been told to change working directory for
+the process, a chdir() will then be performed. If that operation
+fails, undo() will be called for all objects and an error code
+will be returned.
+.Pp
+If everything still is OK, then the objects will be started
+in a separate thread for each object. 
+object thread exits. If the creation of the object threads fails
+for some reason, then process_start() will not create any new
+object threads. The process_start() function will then call
+the shutdown function for all objects already started. It will
+also, once for each object, call pthread_join() to wait for the
+object to stop running.
+.Pp
+If everything went well, then process_start() returns 1.
+You can now perform other tasks in the main thread or just
+call the process_wait_for_shutdown() function, which will block
+until the SIGTERM signal is received.
+.Sh SEE ALSO
+.Xr process_wait_for_shutdown 3 ,
+.Xr process_get_exitcode 3
+.Sh EXAMPLE
+.Bd -literal
+.Ed
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

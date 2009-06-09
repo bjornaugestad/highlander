@@ -1,0 +1,23 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt CONNECTION
+.Th connection_arg2 3
+.Sh NAME
+.Nm connection_arg2()
+.Nd Returns a pointer to argument 2.
+.Sh SYNOPSIS
+.Fd #include <connection.h>
+.Fo "void* connection_arg2"
+.Fa "connection conn"
+.Fc
+.Sh DESCRIPTION
+Returns the value of arg2 that was supplied when the connection was 
+created. The object pointed to varies with the type of server you
+are using.
+.Sh EXAMPLE
+.Bd -literal
+.Ed
+.Sh SEE ALSO
+.Xr connection_new 3
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

@@ -1,0 +1,19 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt CONNECTION
+.Th connection_writebuf_size 3
+.Sh NAME
+.Nm connection_writebuf_size
+.Nd connection_writebuf_size
+.Sh SYNOPSIS
+.Fd #include <connection.h>
+.Fo
+.Fc
+.Sh DESCRIPTION
+Returns the size of the write buffer.
+size_t connection_writebuf_size(connection conn);
+.Sh EXAMPLE
+.Bd -literal
+.Ed
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

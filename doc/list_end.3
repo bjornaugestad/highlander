@@ -1,0 +1,26 @@
+.Dd Nov 25, 2005
+.Th list_end 3
+.Sh NAME
+.Nm list_end() 
+.Nd Have we reached the end of a list?
+.Sh SYNOPSIS
+.Fd #include <meta_list.h>
+.Fo "int list_end"
+.Fa "list_iterator li"
+.Fc
+.Sh DESCRIPTION
+.Nm
+will return 1 if the list iterator 
+.Fa li
+points to the end of the list which the iterator belongs to.
+.Sh EXAMPLE
+.Bd -literal
+list lst;
+list_iterator i;
+...
+for(i = list_first(lst); !list_end(i); i = list_next(i)) {
+	...
+}
+.Ed
+.Sh AUTHOR
+B. Augestad, bjorn.augestad@gmail.com.

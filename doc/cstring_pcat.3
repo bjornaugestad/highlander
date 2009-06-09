@@ -1,0 +1,27 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt CSTRING
+.Th cstring_pcat 3
+.Sh NAME
+.Nm cstring_pcat()
+.Nd Appends characters to a cstring
+.Sh SYNOPSIS
+.Fd #include <cstring.h>
+.Fo "int cstring_pcat"
+.Fa "cstring dest"
+.Fa "const char *start"
+.Fa "const char *end"
+.Fc
+.Sh DESCRIPTION
+Appends 0..n characters from start to end(exclusive).
+.Sh EXAMPLE
+.Bd -literal
+const char* hello = "Hello, world";
+cstring s;
+const char* end;
+...
+end = strchr(hello, ',');
+cstring_pcat(s, hello, end); /* Appends "Hello" to s */
+.Ed
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

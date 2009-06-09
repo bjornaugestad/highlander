@@ -1,0 +1,29 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th http_server_set_post_limit 3
+.Sh NAME
+.Nm http_server_set_post_limit()
+.Nm http_server_get_post_limit()
+.Nd set/get POST limit
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo void http_server_set_post_limit"
+.Fa "http_server s"
+.Fa "size_t cb"
+.Fc
+.Fo "size_t http_server_get_post_limit"
+.Fa "http_server s"
+.Fc
+.Sh DESCRIPTION
+Clients can send HTTP POST requests to the server. Each POST request
+has data attached, which can be of any size, but a server needs to
+limit the size of the incoming data to avoid DOS attacks. 
+.Pp
+These two functions are used to set and get the max size of the
+attached data. The default limit is 100KB and the max size depends
+on your operating system. Note that if you set the limit to 0,
+then all POST requests will be rejected with a 400 BAD REQUEST status.
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

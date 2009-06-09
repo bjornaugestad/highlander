@@ -1,0 +1,37 @@
+.Dd Nov 25, 2005
+.Th list_merge 3
+.Sh NAME
+.Nm list_merge() 
+.Nd merges two lists.
+.Sh SYNOPSIS
+.Fd #include <meta_list.h>
+.Fo "list list_merge"
+.Fa "list dest"
+.Fa "list src"
+.Fc
+.Sh DESCRIPTION
+.Nm
+merges two lists into one list. 
+Sometimes we need to merge two lists. Data from both lists will 
+be added to the new list. We will not check for duplicates or anything else. 
+.Fa src
+will be invalid after the merge. You don't have to free 
+.Fa src
+, 
+.Nm 
+will do that for you.
+.Sh RETURN VALUE
+.Nm
+returns a pointer to 
+.Fa dest
+or NULL if anything went wrong.
+.Fa dest
+can be NULL, 
+.Fa src
+cannot. If the 
+.Fa dest
+pointer is NULL, then
+.Nm
+returns a pointer to a new list if no error occurs.
+.Sh AUTHOR
+B. Augestad, bjorn.augestad@gmail.com.

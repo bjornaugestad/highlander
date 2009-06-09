@@ -1,0 +1,32 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th http_server_set_port 3
+.Sh NAME
+.Nm http_server_set_port()
+.Nm http_server_get_port()
+.Nd set/get port to listen on
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "void http_server_set_port"
+.Fa "http_server s"
+.Fa "int n"
+.Fc
+.Fo "int http_server_get_port"
+.Fa "http_server s"
+.Fc
+.Sh DESCRIPTION
+.Nm http_server_set_port()
+sets the port number that the server will bind to.
+.Pp
+The default port number is 80, which is the standard port for
+HTTP. This is not a great idea as it requires root access.
+It is much better to develop and test a site using another port number,
+and then use port 80 for production versions.
+.Pp
+.Nm http_server_get_port()
+returns the port number that the server bind to.
+.Sh SEE ALSO
+.Xr http_server_set_host 3
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

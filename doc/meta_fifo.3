@@ -1,0 +1,70 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th meta_fifo 3
+.Sh NAME
+.Nm meta_fifo
+.Nd A thread safe FIFO ADT.
+.Sh SYNOPSIS
+.Fd #include <meta_fifo.h>
+.Fo "fifo fifo_new"
+.Fa "size_t bitcount"
+.Fc
+.Fo "void fifo_free"
+.Fa "fifo p"
+.Fc
+.Fo "int fifo_lock"
+.Fa "fifo p"
+.Fc
+.Fo "int fifo_unlock"
+.Fa "fifo p"
+.Fc
+.Fo "size_t fifo_nelem"
+.Fa "fifo p"
+.Fc
+.Fo "size_t fifo_free_slot_count"
+.Fa "fifo p"
+.Fc
+.Fo "int fifo_add"
+.Fa "fifo p"
+.Fa "void *data"
+.Fc
+.Fo "void* fifo_get"
+.Fa "fifo p"
+.Fc
+.Fo "void fifo_peek"
+.Fa "fifo p"
+.Fa "size_t i"
+.Fc
+.Fo "int fifo_write_signal"
+.Fa "fifo p"
+.Fa "void *data"
+.Fc
+.Fo "int fifo_wait_cond"
+.Fa "fifo p"
+.Fc
+.Fo "int fifo_wake"
+.Fa "fifo p"
+.Fc
+.Fo "int fifo_signal"
+.Fa "fifo p"
+.Fc
+.Sh DESCRIPTION
+A thread safe FIFO ADT.
+.Pp
+Fifo is short for First In, First Out. meta_fifo is a fifo queue where
+you can add and get items. It is written to be thread safe and very, very
+fast as its intended use is in threaded and real time environments.
+In order to avoid  calls to malloc() and free() while adding and getting
+items from the fifo, we presize internal buffers and impose a limit
+on the number of items in the fifo queue. 
+.Pp
+A word or two about locking: We do not want to block on operations on
+this adt, since that may create serious timing issues. At the same time,
+we need to control access to it since we're in a MT environment. Some
+typical operations cannot be made atomic without risking to block, e.g.
+we cannot retrieve items if there are no items in the queue. We must
+therefore first check size to see if there are any items and then later
+retrieve the items. To achieve this, we use external locking. 
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

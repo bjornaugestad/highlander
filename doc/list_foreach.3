@@ -1,0 +1,99 @@
+.Dd Nov 25, 2005
+.Th list_foreach 3
+.Sh NAME
+.Nm list_foreach() 
+.Nm list_foreach_reversed()
+.Nm list_foreach_sep()
+.Nm list_dual_foreach()
+.Nd Execute a function once for each node in a list.
+.Sh SYNOPSIS
+.Fd #include <meta_list.h>
+.Fo "int list_foreach"
+.Fa "list lst"
+.Fa "void* args"
+.Fa "listfunc f"
+.Fc
+.Fo "int list_foreach_reversed"
+.Fa "list lst"
+.Fa "void* arg"
+.Fa "listfunc f"
+.Fc
+.Fo "int list_foreach_sep"
+.Fa "list lst"
+.Fa "void* arg"
+.Fa "listfunc f"
+.Fa "int(*sep)(void*arg)"
+.Fc
+.Fo "int list_dual_foreach"
+.Fa "list lst"
+.Fa "void *arg1"
+.Fa "void *arg2"
+.Fa "int(*dual)(void* a1, void *a2, void *data)"
+.Fc
+.Sh DESCRIPTION
+.Nm list_foreach()
+executes function 
+.Fa f
+once for each node in the list.  The args, is passed on to the function. Typical usage can be to
+store e.g. a file handle that the function is to write to.
+Function f should treat the parameters as read only if the data 
+will be used later.
+The function f should return non-zero if the iteration should 
+continue and return 0 if it wants the iteration to stop. 
+list_foreach returns 0 if the iteration was aborted and 1 
+if it wasn't.
+.Nm list_foreach_reversed()
+traverses the list from the last node to the first node and
+calls the user-supplied function once for each node.
+.Nm list_foreach_sep()
+behaves just like 
+.Nm list_foreach()
+, except that we supply 2 function pointers. The 
+.Fa sep
+function is executed in-between each item in the list.  If the list consists of 3 items, A, B, C, then sep will be executed twice. 
+.Fn list_dual_foreach
+accepts two parameters to use as arguments to the supplied 
+function. 
+.Sh EXAMPLE
+.Bd -literal
+/* The object we store in list */
+struct foo {
+	char* name;
+};
+/* Call myfunction once for each node in the list */
+int foo_print(void *arg, void *node)
+{
+	struct foo* pfoo = node;
+    FILE *f = arg;
+    fprintf(f, "%s\\n", pfoo->name);
+    return 1; 
+}
+/* Print name surrounded with a HTML tag stored in arg2. */
+int foo_print_tagged(void *arg1, void* arg2, void *node)
+{
+	struct foo* pfoo = node;
+    FILE *f = arg1;
+	const char* tag = arg2;
+    fprintf(f, "<%s>%s</%s>\\n", tag, pfoo->name, tag);
+    return 1; 
+}
+/* Separating function, see below */
+int sep(void* arg)
+{
+	FILE* f = arg;
+	fprintf(f, ", ");
+	return 1;
+}
+FILE *f = fopen("somefile", "w");
+\&...
+/* write all items to file */
+list_foreach(lst, f, foo_print);
+/* Call myfunction to print name in reverse order */
+list_foreach_reversed(lst, f, foo_print);
+/* Now separate each name with a comma and a space as a separator */
+list_foreach_sep(lst, f, foo_print, sep);
+/* Print all names as separate HTML paragraphs */
+list_dual_foreach(lst, f, "p", foo_print_tagged);
+.Ed
+.Sh AUTHOR
+B. Augestad, bjorn.augestad@gmail.com.

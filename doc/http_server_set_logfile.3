@@ -1,0 +1,43 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th http_server_set_logfile 3
+.Sh NAME
+.Nm http_server_set_logfile()
+.Nd Specify log file
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo int http_server_set_logfile"
+.Fa "http_server s"
+.Fa "const char *logfile"
+.Fc
+.Sh DESCRIPTION
+.Nm
+opens the logfile. 
+.Fa logfile 
+is string containing a valid filename and optional path. 
+The server will write one row to this logfile for each request processed.
+.Pp
+There is no default log file. The proper location for a logfile
+is in the /var/log directory, but writing in that directory normally 
+requires root privileges, so Highlander by default writes
+in the current directory to be able to run as a normal user.
+.Pp
+This function opens the log file immediately. This means that you can
+call this function while the process runs as root. Then you can
+open the log file wherever you like.
+.Pp
+Another solution is to create a directory in /var/log and change
+the owner of that directory to the user that the webserver will
+run as. This way the webserver can log to /var/log and still
+not run as root.
+.Pp
+.Sh RETURN VALUE
+.Nm
+returns 1 on success and 0 if an error occurs.
+.Sh EXAMPLE
+.Bd -literal
+.Ed
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

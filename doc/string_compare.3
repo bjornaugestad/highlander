@@ -1,0 +1,9 @@
+Compares two strings.
+Calling this function is exactly the same as 
+doing strcmp(c_str(s1), s2);
+@param s1 a cstring created with cstring_new()
+@param s2 A pointer to a zero terminated string.
+.Sh RETURN VALUE
+0 if the strings are equal, > 0 if s1 is 
+greater than s2 and < 0 if s2 is greater than s1.
+int cstring_compare(cstring s1, const char* s2);

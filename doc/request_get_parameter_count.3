@@ -1,0 +1,45 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th request_get_parameter_count 3
+.Sh NAME
+.Nm request_get_parameter_count()
+.Nm request_get_parameter_name()
+.Nm request_get_parameter_value()
+.Nd manage request parameters
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int request_get_parameter_count"
+.Fa "http_request request"
+.Fc
+.Fo "const char* request_get_parameter_name"
+.Fa "http_request request"
+.Fa "size_t i"
+.Fc
+.Fo "const char* request_get_parameter_value"
+.Fa "http_request request"
+.Fa "const char* name"
+.Fc
+.Sh DESCRIPTION
+A client can, in addition to the URI, send one or more
+parameters. This is typically done using
+/foo.html?name=bar&address=foobar. 
+.Pp
+.Nm request_get_parameter_count()
+returns the number of parameters received.
+.Pp
+.Nm request_get_parameter_name()
+is used to traverse the list of parameters and
+find out what the user actually supplied. In normal operations
+this is not necessary, as the page expects one or more named
+parameters.
+.Pp
+.Nm request_get_parameter_value()
+returns the value of a parameter associated with a name.
+.Sh RETURN VALUE
+.Sh EXAMPLE
+.Bd -literal
+.Ed
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

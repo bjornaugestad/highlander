@@ -1,0 +1,39 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th http_server_set_can_read_files 3
+.Sh NAME
+.Nm http_server_set_can_read_files() ,
+.Nm http_server_can_read_files()
+.Nd File handling in Highlander
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "void http_server_set_can_read_files"
+.Fa "http_server s"
+.Fa "int val"
+.Fc
+.Fo "int http_server_can_read_files"
+.Fa "http_server s"
+.Fc
+.Sh DESCRIPTION
+A new HTTP server cannot by default read files from the file system
+of the server. This may seem odd, since reading files and sending them
+to the client normally is what a web server does. 
+.Pp
+The Highlander was designed to serve dynamic pages, ie pages created
+on the fly by the web server, so reading files from disk is not
+the main task for the server. Disabling that functionality also
+makes the server both safer and smaller, and small and safe is also
+one of Highlanders design goals. 
+.Pp
+It is still possible to have the Highlander read files from disk, just
+like traditional web servers. Call 
+.Nm http_server_set_can_read_files()
+with a non-zero value and the http_server will look for files on the disk. 
+.Sh RETURN VALUE
+.Nm http_server_can_read_files()
+returns 1 if the http_server can read files from disk, else 0.
+.Sh SEE ALSO
+.Xr http_server_set_documentroot
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

@@ -1,0 +1,60 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt CSTRING
+.Th cstring_new 3
+.Sh NAME
+.Nm cstring_new()
+.Nm cstring_multinew()
+.Nm cstring_free()
+.Nd Create and destroy cstrings
+.Sh SYNOPSIS
+.Fd #include <cstring.h>
+.Fo "cstring cstring_new"
+.Fa void
+.Fc
+.Fo "int cstring_multinew"
+.Fa "cstring *pstr"
+.Fa "size_t nelem"
+.Fc
+.Fo "void cstring_free"
+.Fa "cstring s"
+.Fc
+.Sh DESCRIPTION
+.Nm cstring_new()
+creates a new cstring.  The string will initially have room for 255 characters plus the always present string terminator ('\\0').
+.Pp
+.Nm cstring_multinew()
+creates multiple new cstrings.
+This function is a bit experimental and the intention is to reduce the number of tests in functions that allocates more than one cstring. 
+The array is used only to store pointers when making the function call.
+.Pp
+.Nm cstring_free()
+frees all memory used by the string, including the cstring itself.
+The string cannot be used after a call to cstring_free. 
+.Sh RETURN VALUE
+.Nm cstring_new()
+returns a pointer to the new cstring, or NULL if an error occured.
+.Pp
+.Nm cstring_multinew()
+returns 1 if all the strings were created or 0 if an error occured.
+.Sh EXAMPLE
+.Bd -literal
+cstring s, s1, s2, s3;
+cstring arr[3];
+if( (s = cstring_new()) != NULL)
+...
+cstring_free(s);
+if(cstring_multinew(arr, 3)) {
+	s1 = arr[0];
+	s2 = arr[1];
+	s3 = arr[2];
+}
+else
+	perror("no mem");
+...
+cstring_free(s1);
+cstring_free(s2);
+cstring_free(s3);
+.Ed
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

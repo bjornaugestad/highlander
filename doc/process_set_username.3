@@ -1,0 +1,37 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META_PROCESS
+.Th process_set_username 3
+.Sh NAME
+.Nm process_set_username()
+.Nd Set user name the process will run as
+.Sh SYNOPSIS
+.Fd #include <meta_process.h>
+.Fo "int process_set_username"
+.Fa "process p"
+.Fa "const char* username"
+.Fc
+.Sh DESCRIPTION
+The process will run as this user after the process_start()
+function returns. The username parameter must exist in
+the /etc/passwd file, else the process_start() function
+will fail. 
+.Pp
+The process_start() function will not change the user id
+of the process unless process_set_username() has been
+called.
+.Sh RETURN VALUE
+.Nm
+returns 1 on success and 0 if an error occurs.
+.Sh EXAMPLE
+.Bd -literal
+process p = process_new();
+process_set_username(p, "nobody");
+\&...
+process_start(p, 1);
+process_wait_for_shutdown(p);
+\&...
+process_free(p);
+.Ed
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

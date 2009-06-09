@@ -1,0 +1,50 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt CSTRING
+.Th cstring_copy 3
+.Sh NAME
+.Nm cstring_copy()
+.Nm cstring_ncopy()
+.Nd Copy a string
+.Sh SYNOPSIS
+.Fd #include <cstring.h>
+.Fo "int cstring_copy"
+.Fa "cstring dest"
+.Fa "const char* src"
+.Fc
+.Fo "int cstring_ncopy"
+.Fa "cstring dest"
+.Fa "const char* src"
+.Fa "size_t n"
+.Fc
+.Sh DESCRIPTION
+The
+.Nm cstring_copy()
+function copies the string pointed to by
+.Fa src
+to the cstring pointed to by
+.Fa dest.
+.Pp
+The 
+.Nm cstring_ncopy()
+function is similar, except that not more than
+.Fa n
+bytes of 
+.Fa src
+are copied. The result will always be null-terminated.
+.Sh RETURN VALUE
+Both functions return 1 if 
+.Fa src
+was successfully copied to 
+.Fa dest,
+or 0 if the functions failed to allocate memory.
+.Pp
+.Nm cstring_ncopy()
+copies at most
+.Fa n
+characters from
+.Fa src
+to
+.Fa dest.
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

@@ -1,0 +1,30 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th array_add 3
+.Sh NAME
+.Nm array_add
+.Nd Add an element to the array
+.Sh SYNOPSIS
+.Fd #include <meta_array.h>
+.Fo "int array_add"
+.Fa "array p"
+.Fa "void *elem"
+.Fc
+.Sh DESCRIPTION
+* Adds a new element to the array.
+.Pp
+If there is no free space in the array and the array 
+is allowed to grow on demand, then the size will be
+doubled. 
+.Pp
+The element to add cannot be a pointer an automatic variable, 
+as that will invalidate the pointer when the variable goes
+out of scope.
+.Pp
+return 1 if everything was OK, 0 if an error occured.
+An error is either that we ran out of memory if we tried to reallocate
+the array to make room for the new entry, or that the array was full
+and that the array wasn't allowed to grow automatically.
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

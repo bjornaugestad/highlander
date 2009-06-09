@@ -1,0 +1,55 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt CSTRING
+.Th cstring_substring 3
+.Sh NAME
+.Nm cstring_substring()
+.Nd Create a substring 
+.Sh SYNOPSIS
+.Fd #include <cstring.h>
+.Fo "cstring cstring_substring"
+.Fa "cstring src"
+.Fa "size_t from"
+.Fa "size_t to"
+.Fc
+.Sh DESCRIPTION
+Create a new cstring containing a substring of 
+.Fa src
+. The 
+.Fa from 
+and 
+.Fa to
+arguments are zero based. 
+.Fa to
+is exclusive and the character at 
+.Fa to
+will not be copied.
+.Fa from
+must be smaller than
+.Fa to
+and
+.Fa to
+must be less than or equal to the total length of 
+.Fa src.
+.Pp
+If 
+.Fa to
+is greater than the length of 
+.Fa src
+, the resulting string will be truncated.
+.Sh RETURN VALUE
+.Nm
+returns a new cstring or NULL if an error occurs.
+NULL if an error occurs, else a valid cstring. Remember to free the 
+returned cstring using cstring_free().
+.Sh EXAMPLE
+.Bd -literal
+cstring x, s = cstring_new();
+cstring_copy(s, "Hello, world");
+x = cstring_substring(s, 1, 4); /* x now contains "ell" */
+.Ed
+.Sh SEE ALSO
+.Xr cstring_left 3 ,
+.Xr cstring_right 3
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

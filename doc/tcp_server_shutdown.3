@@ -1,0 +1,24 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th tcp_server_shutdown 3
+.Sh NAME
+.Nm tcp_server_shutdown()
+.Nd Stop a tcp_server
+.Sh SYNOPSIS
+.Fd #include <tcp_server.h>
+.Fo "void tcp_server_shutdown"
+.Fa "tcp_server srv"
+.Fc
+.Sh DESCRIPTION
+.Nm
+stops the TCP server, causing 
+.Nm tcp_server_start()
+to return. This function is often called from a separate thread
+when the process receives SIGTERM.
+.Pp
+Shutdown is an ansynchronus operation and the server threads 
+will run for some time after tcp_server_shutdown returns. How long
+depends on the timeout values used.
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

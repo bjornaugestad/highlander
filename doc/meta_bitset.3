@@ -1,0 +1,69 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th meta_bitset 3
+.Sh NAME
+.Nm meta_bitset
+.Nd Dynamic bitset ADT
+.Sh SYNOPSIS
+.Fd #include <meta_bitset.h>
+.Fo "bitset bitset_new"
+.Fa "size_t bitcount"
+.Fc
+.Fo "void bitset_free"
+.Fa "bitset b"
+.Fc
+.Fo "void bitset_set"
+.Fa "bitset b"
+.Fa "size_t i"
+.Fc
+.Fo "void bitset_clear"
+.Fa "bitset b"
+.Fa "size_t i"
+.Fc
+.Fo "int bitset_is_set"
+.Fa "bitset b"
+.Fa "size_t i"
+.Fc
+.Fo "void bitset_set_all"
+.Fa "bitset b"
+.Fc
+.Fo "void bitset_clear_all"
+.Fa "bitset b"
+.Fc
+.Fo "size_t bitset_size"
+.Fa "bitset b"
+.Fc
+.Fo "bitset bitset_map"
+.Fa "bitset b "
+.Fa "void *mem"
+.Fa "size_t cb"
+.Fc
+.Fo "bitset bitset_remap"
+.Fa "bitset b "
+.Fa "void *mem"
+.Fa "size_t cb"
+.Fc
+.Fo "void bitset_unmap"
+.Fa "bitset b"
+.Fc
+.Fo "void* bitset_data"
+.Fa "bitset b"
+.Fc
+.Sh DESCRIPTION
+A bitset is nothing more than a very long integer with bits to indicate
+true or false. 
+.Pp
+All you have to do to use a bitset is to decide how many bits you want,
+and then create the bitset. Now you're ready to set and clear bits, and
+test to see if a given bit is set or not.
+.Pp
+This class can also do a lot more. You can assign a specific memory area
+to the bitset and then manipulate that area bit by bit. The memory area
+may be e.g. a memory mapped file or even an automatic variable. 
+.Pp
+The bitset is reentrant, but not thread safe. This means that 
+multiple threads cannot read and write to the same bitset at 
+the same time. Use a lock to control access to the bitset if needed.
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

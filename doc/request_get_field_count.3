@@ -1,0 +1,57 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th request_get_field_count 3
+.Sh NAME
+.Nm request_get_field_count()
+.Nd request_get_field_count
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "size_t request_get_field_count"
+.Fa "http_request request"
+.Fc
+.Fo "size_t request_get_field_namelen"
+.Fa "http_request request"
+.Fa "size_t i"
+.Fc
+.Fo "size_t request_get_field_valuelen"
+.Fa "http_request request"
+.Fa "size_t i"
+.Fc
+.Fo "int request_get_field_name"
+.Fa "http_request request"
+.Fa "size_t i"
+.Fa "char *s"
+.Fa "size_t cb"
+.Fc
+.Fo "int request_get_field_value"
+.Fa "http_request request"
+.Fa "size_t i"
+.Fa "char *s"
+.Fa "size_t cb"
+.Fc
+.Fo "int request_get_field_value_by_name"
+.Fa "http_request request"
+.Fa "const char* name"
+.Fa "char *value"
+.Fa "size_t cb"
+.Fc
+.Sh DESCRIPTION
+When the user posts us a form, we need to be able to parse the field
+values for that form. This is a bit hard, since we only understand
+one content type, application/x-www-form-urlencoded. 
+This content type use + for spaces and rfc1738-encodes the actual +.
+We must therefore copy the contents from the requests content buffer to
+a variable provided by the caller and then transform the data.
+These functions handle form fields posted to us. They all assume that
+the method is METHOD_POST and that we have received something which
+is properly encoded.
+.Pp
+WARNING: These functions were added 2004-01-12 and may be a bit unstable.
+.Sh RETURN VALUE
+.Sh EXAMPLE
+.Bd -literal
+.Ed
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

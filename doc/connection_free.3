@@ -1,0 +1,27 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt CONNECTION
+.Th connection_free 3
+.Sh NAME
+.Nm connection_free
+.Nd Free a connection object
+.Sh SYNOPSIS
+.Fd #include <connection.h>
+.Fo "void connection_free"
+.Fa "connection conn"
+.Fc
+.Sh DESCRIPTION
+.Nm
+frees the connection object. All data in the buffers will be
+discarded, so call the appropriate function before freeing the 
+connection object. 
+.Pp
+Note that the read and write buffers will not be freed, you must
+free them yourself. 
+.Pp
+Users of the tcp_server ADT never has to call this function.
+.Sh SEE ALSO
+.Xr connection_discard
+.Xr connection_close
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

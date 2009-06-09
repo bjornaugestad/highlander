@@ -1,0 +1,121 @@
+.Dd Nov 25, 2005
+.Th meta_list 7
+.Sh NAME
+.Nm meta_list 
+.Nd General purpose list ADT.
+.Sh SYNOPSIS
+.Fd #include <meta_list.h>
+.Fo "list list_add"
+.Fa "list lst"
+.Fa "void* data"
+.Fc
+.Fo "list list_copy"
+.Fa "list lst"
+.Fa "void*(*copyfn)(const void*)"
+.Fa "dtor dtor"
+.Fc
+.Fo "size_t list_count"
+.Fa "list lst"
+.Fa "int (*include_node)(void*)"
+.Fc
+.Fo "list_iterator list_delete"
+.Fa "list lst"
+.Fa "list_iterator i"
+.Fa "dtor dtor"
+.Fc
+.Fo "int list_end"
+.Fa "list_iterator li"
+.Fc
+.Fo "list_iterator list_find"
+.Fa "list lst"
+.Fa "const void *data"
+.Fa "int(*compar)(const void*, const void*)"
+.Fc
+.Fo "list_iterator list_first"
+.Fa "list lst"
+.Fc
+.Fo "int list_foreach"
+.Fa "list lst"
+.Fa "void* args"
+.Fa "listfunc f"
+.Fc
+.Fo "int list_foreach_reversed"
+.Fa "list lst"
+.Fa "void* arg"
+.Fa "listfunc f"
+.Fc
+.Fo "int list_foreach_sep"
+.Fa "list lst"
+.Fa "void* arg"
+.Fa "listfunc f"
+.Fa "int(*sep)(void*arg)"
+.Fc
+.Fo "int list_dual_foreach"
+.Fa "list lst"
+.Fa "void *arg1"
+.Fa "void *arg2"
+.Fa "int(*dual)(void* a1, void *a2, void *data)"
+.Fc
+.Fo "void* list_get"
+.Fa "list_iterator i"
+.Fc
+.Fo "void* list_get_item"
+.Fa "list lst"
+.Fa "size_t index"
+.Fc
+.Fo "list list_insert"
+.Fa "list lst"
+.Fa "void *data"
+.Fc
+.Fo "int list_last"
+.Fa "list_iterator li"
+.Fc
+.Fo "list list_merge"
+.Fa "list dest"
+.Fa "list src"
+.Fc
+.Fo "list list_new"
+.Fa "void"
+.Fc
+.Fo "void list_free"
+.Fa "list lst"
+.Fa "dtor dtor"
+.Fc
+.Fo "list_iterator list_next"
+.Fa "list_iterator i"
+.Fc
+.Fo "list_iterator list_remove_node"
+.Fa "list lst"
+.Fa "list_iterator i"
+.Fc
+.Fo "size_t list_size"
+.Fa "list lst"
+.Fc
+.Fo "void list_sort"
+.Fa "list lst"
+.Fa "int(*compar)(const void *p1, const void *p2)"
+.Fc
+.Fo "list sublist_adaptor"
+.Fa "list lst"
+.Fa "void* (*adaptor)(void*)"
+.Fc
+.Fo "list sublist_copy"
+.Fa "list lst"
+.Fc
+.Fo "list sublist_create"
+.Fa "list lst"
+.Fa "int (*include_node)(void*)"
+.Fc
+.Fo "list sublist_create_neg"
+.Fa "list lst"
+.Fa "int (*include_node)(void*)"
+.Fc
+.Fo "void sublist_free"
+.Fa "list lst"
+.Fc
+.Sh DESCRIPTION
+The 
+.Nm meta_list
+ADT(Abstract Data Type) implements a general purpose linked list. 
+.Sh AUTHOR
+B. Augestad, bjorn.augestad@gmail.com.

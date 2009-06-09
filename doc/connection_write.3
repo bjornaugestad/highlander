@@ -1,0 +1,24 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt CONNECTION
+.Th connection_write 3
+.Sh NAME
+.Nm connection_write()
+.Nd Write to a connection
+.Sh SYNOPSIS
+.Fd #include <connection.h>
+.Fo "int connection_write"
+.Fa "connection conn"
+.Fa "const void* buf"
+.Fa "size_t cb"
+.Fc
+.Sh DESCRIPTION
+.Nm
+writes n bytes to the connection. The bytes will be placed in 
+the writebuffer and will not be written until that buffer is full.
+Flush the buffer explicitly if you want to send the data immediately.
+.Sh SEE ALSO
+.Xr connection_flush 3 ,
+.Xr connection_read 3
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

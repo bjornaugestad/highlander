@@ -1,0 +1,20 @@
+.Dd Nov 25, 2005
+.Th list_get_item 3
+.Sh NAME
+.Nm list_get_item() 
+.Nd Return a node.
+.Sh SYNOPSIS
+.Fd #include <meta_list.h>
+.Fo "void* list_get_item"
+.Fa "list lst"
+.Fa "size_t index"
+.Fc
+.Sh DESCRIPTION
+.Nm
+returns the n'th node in the list, or NULL if 
+.Fa index
+is out of bounds.
+.Fa index
+is zero based, so the value 0 will return the first item.
+.Sh AUTHOR
+B. Augestad, bjorn.augestad@gmail.com.

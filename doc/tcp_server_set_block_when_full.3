@@ -1,0 +1,22 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th tcp_server_set_block_when_full 3
+.Sh NAME
+.Nm tcp_server_set_block_when_full()
+.Nd Set blocking behaviour
+.Sh SYNOPSIS
+.Fd #include <tcp_server.h>
+.Fo "void tcp_server_set_block_when_full"
+.Fa "tcp_server srv"
+.Fa "int block"
+.Fc
+.Sh DESCRIPTION
+The tcp_server can either block when the queue is full, or just
+discard the request. The default behaviour is to discard the 
+connection request if the work queue is full, but this can be
+changed using this function.
+.Fa block
+must be either 0 or 1.
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

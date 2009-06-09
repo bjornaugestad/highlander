@@ -1,0 +1,23 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th fifo_lock 3
+.Sh NAME
+.Nm fifo_lock
+.Nm fifo_unlock
+.Nd Fifo access control
+.Sh SYNOPSIS
+.Fd #include <meta_fifo.h>
+.Fo "int fifo_lock"
+.Fa "fifo p"
+.Fc
+.Fo "int fifo_unlock"
+.Fa "fifo p"
+.Fc
+.Sh DESCRIPTION
+.Nm fifo_lock()
+locks the fifo so that no other threads can access it.
+.Nm fifo_unlock()
+unlocks the fifo.
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

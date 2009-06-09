@@ -1,0 +1,155 @@
+.Dd 2005.11.24
+.Os POSIX
+.Dt HIGHLANDER
+.Th hipp.mdoc 1c
+.Sh NAME
+.Nm hipp
+.Nd The Highlander Preprocessor Program
+.Sh SYNOPSIS
+.Nm hipp
+.Op Fl spEA
+.Op Fl o Ar outfile
+.Op Fl m Ar sourcefile
+.Ar -i includefile
+.Ar file...
+.Sh DESCRIPTION
+.Nm
+converts HTML files to C files and supports embedded scripting
+of C or C++ program code. Instead of embedding HTML in C code, you can
+embed C in HTML code. 
+.Nm
+will convert the HTML to string literals and add the HTML to the
+http_response object for you. The result will be a C function named 
+after the HTML file name containing HTML code as well as your embedded
+C code.
+.Sh OPTIONS
+.Bl -tag -width indent
+.It Fl s 
+Strip blank lines. All blank lines will be removed from the HTML.
+.It Fl E
+Do not generate line number directives. The default is to add line 
+directives in the generated C source file, so that you can preprocess
+and compile the HTML file into and object file from an editor and,
+in case of errors, the editor will position itself to the correct line.
+.Pp
+Not all compilers accept line directives, but most do as this is a
+common technique used by many tools.
+.It Fl A
+Create Makefile.am and configure.ac. A is short for autotools. Note
+that the files need further processing, you must provide package name,
+versions and an email address.
+.It Fl p
+prototype mode, create a C header file containing function prototypes.
+.
+.It Fl t Ar content_type
+Optional. Specify a content type, e.g. "text/css". The default content
+type is text/html.
+.
+.It Fl o Ar outfile
+Optional. The default name is the basename of the input file plus the
+extension .c
+.It Fl m Ar sourcefile
+Optional. Create a C source file containing a main() function that
+creates a web server object, adds all pages to the web server and
+then starts the web server. A great way of jumpstarting a project.
+.It Fl i Ar includefile
+name of include file. Required for all invocations as we need to add 
+an #include directive for this file in the generated files. In most 
+cases the name of the file will be the same as the file we generate
+function prototypes in.
+.It Ar file...
+One or more HTML files which will be converted to C source.
+.El
+.Sh EXTENDED DESCRIPTION
+.Nm
+scans the html file for the tags <% and %>. C code should be placed
+between these tags and HTML code outside the two tags. A brief example
+is shown below:
+.Bd -literal
+<HTML>
+<% printf("C code goes here\\n"); %>
+<HEAD><TITLE>My page</TITLE></HEAD>
+<%
+	printf("We can have many blocks of C code in one HTML file\\n");
+	printf("Each block can span many lines\\n");
+%>
+<BODY>...</BODY></HTML>
+.Be
+.Pp
+Everything OUTSIDE these tags, ie the HTML, is converted to 
+one or more const char*[] array with one entry per line.
+Everything INSIDE these tags is copied verbatim to the generated file.
+.Ss Header section
+A special section at the top of the input file is also understood by hipp.
+There may exist a need to add code outside the generated function, e.g. 
+include-statements or local functions/variables. That can be done
+within the tags %{ and %}. Note that these tags MUST be at the 
+very beginning of the file, in front of all HTML code. 
+.Bd -literal
+%{
+#include <pthread.h>
+
+static int mycounter;
+pthread_mutex_t mylock = PTHREAD_MUTEX_INITIALIZER;
+%}
+
+<HTML>
+<HEAD><TITLE>My page</TITLE></HEAD>
+<BODY><H1>A counter</H1>
+<%
+	int current_count;
+	pthread_mutex_lock(&mylock);
+	current_count = ++mycounter;
+	pthread_mutex_unlock(&mylock);
+
+	response_printf(response, 100, "I've been called %d times so far", 
+		current_count);
+%>
+</BODY></HTML>
+.Be
+.Ss The generated C function
+A function suitable as a callback function for the Highlander 
+web server is created, with a prototype like this:
+.Fo "int name"
+.Fa "http_request request"
+.Fa "http_response response"
+.Fc
+.Pp
+The function is named after the input file, including the path. 
+All functions will be prefixed with hipp_ to separate them from other
+functions. 
+.Pp
+Only alphanumeric characters and _ is legal characters in the function name,
+and hipp will replace any other characters with an underscore, ie
+/foo/bar/index.html becomes hipp__foo_bar_index_html().
+.Ss include files
+The generated file will always include some standard header files, so
+you don't have to include them. The files are stdio.h, stdlib.h,
+assert.h, string.h and unistd.h.
+.Pp
+The highlander.h header file will also be included, as well as the header file
+named with the -i argument to hipp. The idea is that we later will use
+hipp to create function prototypes in this file by using the -p argument.
+.Ss Function prototypes
+You must create a map between the URI requested by a user and the
+C function that will handle the request. That is usually done by
+calling the http_server_add_page() function before you start the web server.
+If your project is large it can be a cumbersome job to create function
+prototypes manually.  You can use hipp to create the prototypes
+for you and save them in a header file. This file can later be included
+in the file that calls the http_server_add_page() function.
+.Bd -literal
+$ hipp -i mypages.h page1.html page2.html ... pageN.html
+.Be
+
+.Sh RETURN VALUE
+The generated function will return a proper value to the http_server,
+unless the embedded C code returns. The function should either return 
+0 or HTTP_200_OK to indicate success, or one of the return values
+defined in highlander.h. 
+.Sh SEE ALSO
+.Xr highlander 3 ,
+.Xr http_server_add_page 3
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com
+

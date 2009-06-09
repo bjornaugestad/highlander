@@ -1,0 +1,108 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th response_set_content_buffer 3
+.Sh NAME
+.Nm response_set_content_buffer()
+.Nm response_set_allocated_content_buffer()
+.Nd Assign a new buffer to the response object
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int response_set_content_buffer"
+.Fa "http_response response"
+.Fa "const void* src"
+.Fa "size_t n"
+.Fc
+.Fo "int response_set_allocated_content_buffer"
+.Fa "http_response response"
+.Fa "void* src"
+.Fa "size_t n"
+.Fc
+.Sh DESCRIPTION
+.Nm response_set_content_buffer()
+sets a new content buffer. This function can only be called once
+per request, and the content cannot be changed afterwards.
+This function is an excellent choice if you have e.g. a 
+static buffer containing an image. 
+.Pp
+Sometimes a page function creates stuff in memory which is to be sent
+to the client. An image generated on the fly is a good example.
+The problem is that the memory needs to be freed after the memory contents
+have been transfered to the client, but at that point in time the page
+function has finished. 
+.Pp
+.Nm response_set_allocated_content_buffer()
+will accept page contents as allocated memory and will free
+that memory using a call to the free() function after the contents
+have been transfered. 
+.Pp A special note on the gd library found at
+http://www.boutell.com/gd: That library requires that the memory returned
+from e.g. gdImagePngPtr() is freed using the gdFree() function unless
+we know that we have the same implementation of malloc() and free() are
+used both at library build time and application build time. So take care.
+.Pp
+There are plans to implement a set_XXX_content() function which accepts
+a callback cleanup function, but it is not implemented right now as
+I see no use for it.
+.Sh RETURN VALUE
+Both functions always return 1.
+.Sh EXAMPLE
+.Bd -literal
+#include <stdlib.h>
+#include <string.h>
+#include <highlander.h>
+static const char* static_content = 
+    "<html><head><title>My static content</title></head>"
+    "<body>This is static content</body></html>";
+int my_static_handler(http_request req, http_response page)
+{
+    size_t cb = strlen(static_content);
+    response_set_content_buffer(page, static_content, cb);
+    return HTTP_200_OK;
+}
+int my_dynamic_handler(http_request req, http_response page)
+{
+    char *s;
+    const char* head = 
+        "<html><head><title>My static content</title></head>";
+    
+    if( (s = malloc(1000)) == NULL)
+        return HTTP_500_INTERNAL_SERVER_ERROR;
+    strcpy(s, head);
+    strcat(s, "<body><p>This dynamic content</body></html>");
+    response_set_allocated_content_buffer(page, s, strlen(s));
+    return HTTP_200_OK;
+}
+int index_handler(http_request req, http_response page)
+{
+    static const char* html = 
+    "<html><head><title>Highlander example program</title></head>"
+    "<body>"
+    "<p>Example program for response_set_content_buffer()"
+    " and response_set_allocated_content_buffer()."
+    "<p>Click <a href='/static.html'>here for static content</a>"
+    "<br> and <a href='/dynamic.html'>here for dynamic content</a>"
+    "</body></html>";
+    response_add(page, html);
+    return HTTP_200_OK;
+}
+int main(void)
+{
+    http_server s = http_server_new();
+    http_server_set_port(s, 2000);
+    http_server_alloc(s);
+    http_server_add_page(s, "/index.html", index_handler, NULL);
+    http_server_add_page(s, "/", index_handler, NULL);
+    http_server_add_page(s, "/static.html", my_static_handler, NULL);
+    http_server_add_page(s, "/dynamic.html", my_dynamic_handler, NULL);
+    http_server_get_root_resources(s);
+    http_server_start(s);
+    http_server_free(s);
+    return 0;
+}
+.Ed
+.Sh SEE ALSO
+.Xr response_add 3 ,
+.Xr response_printf 3 
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

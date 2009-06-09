@@ -1,0 +1,28 @@
+0.9.93 (20080128)
+Added the request_get_connection() function call which allows a callback
+function to access the connection we use to communicate with our client.
+Added http_server_set_defered_read() and request_get_defered_read(), which
+sets and gets a flag that tells the server whether to read posted content
+or not. If the server doesn't read it, a page handler MUST read it to avoid
+protocol corruption.
+
+0.9.92
+Added functions to set cache properties in the general header.
+Index: src/highlander.h
+
+The new functions are: 
++void response_set_cachecontrol_public(http_response response);
++void response_set_cachecontrol_private(http_response response);
++void response_set_cachecontrol_no_cache(http_response response);
++void response_set_cachecontrol_no_store(http_response response);
++void response_set_cachecontrol_no_transform(http_response response);
++void response_set_cachecontrol_must_revalidate(http_response response);
++void response_set_cachecontrol_proxy_revalidate(http_response response);
++void response_set_cachecontrol_max_age(http_response response, int value);
++void response_set_cachecontrol_s_maxage(http_response response, int value);
+
+Big note: This stuff is untested and is a quick fix for a user which 
+hopefully will  test it and report status back to me.
+
+0.9.91
+Fixed bug in general_header.c. Now we treat Close and close equivalent.

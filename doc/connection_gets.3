@@ -1,0 +1,70 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt CONNECTION
+.Th connection_gets 3
+.Sh NAME
+.Nm connection_gets()
+.Nm connection_puts()
+.Nd Reads or writes a string
+.Sh SYNOPSIS
+.Fd #include <connection.h>
+.Fo "int connection_gets"
+.Fa "connection conn"
+.Fa "char *buf"
+.Fa "size_t size"
+.Fc
+.Fo "int connection_puts"
+.Fa "connection conn"
+.Fa "const char* s"
+.Fc
+.Sh DESCRIPTION
+.Nm connection_gets()
+reads a string, terminated by \\n, from the connection.
+The size argument is the number of bytes available in buf to 
+store data in. This means that the function will read at 
+most size-1 bytes, and use one byte to store '\\0'.
+The size argument must therefore be greater than 0.
+.Pp
+The \\n, if found, will be put in the buf and the buffer will be
+terminated by '\\0'. 
+.Sh RETURN VALUE
+.Nm connection_gets()
+returns 1 if a string was read, or 0 if an error occured. 
+.Pp
+.Nm connection_puts()
+returns 1 if the string was written to the socket or output 
+buffer, or 0 if an error occured.
+.Sh SEE ALSO
+.Xr connection_getc 3 ,
+.Sh EXAMPLE
+.Bd -literal
+#include <tcp_server.h>
+#include <connection.h>
+void* echoserverfn(void* arg)
+{
+	connection conn = arg;
+	char line[1024];
+	while(connection_gets(conn, line, sizeof line)) {
+		connection_puts(conn, line);
+		connection_flush(conn);
+	}
+	return NULL;
+}
+int main(void)
+{
+	tcp_server s = tcp_server_new();
+	tcp_server_set_service_function(
+		s, 
+		echoserverfn,
+		s);
+	tcp_server_init(s);
+	tcp_server_get_root_resources(s);
+	tcp_server_start(s);
+	
+	tcp_server_free(s);
+	return 0;
+}
+	
+.Ed
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

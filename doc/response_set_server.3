@@ -1,0 +1,28 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th response_set_server 3
+.Sh NAME
+.Nm response_set_server()
+.Nd set the HTTP Server: field
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int response_set_server"
+.Fa "http_response response"
+.Fa "const char* value"
+.Fc
+.Sh DESCRIPTION
+.Nm
+sets the value for the HTTP response field "Server:". Please note
+that setting this value will expose information about your service
+which may be used by crackers. Providing an incorrect value is
+not a bad idea.
+.Pp
+The default value is "Highlander".
+.Sh RETURN VALUE
+.Nm
+returns 1 on success and 0 if we ran out of memory.
+.Sh SEE ALSO
+See RFC 2616, §14.38
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

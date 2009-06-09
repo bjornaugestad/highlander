@@ -1,0 +1,41 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt CONNECTION
+.Th connection_write_big_buffer 3
+.Sh NAME
+.Nm connection_write_big_buffer
+.Nd Write a big buffer directly to the socket
+.Sh SYNOPSIS
+.Fd #include <connection.h>
+.Fo "int connection_write_big_buffer"
+.Fa "connection conn"
+.Fa "const void* buf"
+.Fa "size_t cb"
+.Fa "int timeout"
+.Fa "int retries"
+.Fc
+.Sh DESCRIPTION
+I have encountered problems when I send large files. This surfaced
+after porting to aix, and is probably related to tcp/ip buffer sizes
+on aix. The problem is that Highlander times out when sending large 
+buffers and since the retry count normally is low, Highlander closes
+the connection before we have transfered all the data. 
+.Pp
+This can be fixed in several ways, we can increase the timeout, 
+we can increase the number of retries. Neither solution is optimal,
+as it will delay the overall snappyness of the server. I've therefore
+added this function which writes large data "unbuffered" with its own
+timeout/retry values. This function bypasses the normal values for
+a connection.
+.Pp
+Now, what is a big buffer? I don't know, but anything greater than
+e.g. 64KB is unlikely to fit in within a normal tcp/ip buffer.
+.Pp
+This function will call connection_flush() before it starts transfering
+data.
+.Sh RETURN VALUE
+.Nm
+returns 1 if the buffer was written to the socket and 0 if an
+error occured. Note that connection_flush() may cause errors.
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

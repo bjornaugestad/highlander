@@ -1,0 +1,34 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th http_server_set_max_pages 3
+.Sh NAME
+.Nm http_server_set_max_pages()
+.Nd http_server_set_max_pages
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo
+.Fc
+.Sh DESCRIPTION
+Sets the size for the internal buffers used to handle
+dynamicly generated pages. Default value is 100. 
+This function must be called before http_server_alloc.
+@param	s A http_server created by http_server_new()
+@param	n The number of pages the server can handle.
+.Xr		http_server_alloc
+.Xr		http_server_add_page
+return 
+void http_server_set_max_pages(http_server s, size_t n);
+Returns the maximum number of dynamic pages that
+the server can handle.
+@param	s A http_server created by http_server_new()
+.Xr http_server_set_max_pages
+return  The number of pages the server handles.
+size_t http_server_get_max_pages(http_server s);
+.Sh RETURN VALUE
+.Sh EXAMPLE
+.Bd -literal
+.Ed
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

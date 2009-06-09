@@ -1,0 +1,66 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th http_server_new 3
+.Sh NAME
+.Nm http_server_new()
+.Nd Create and destroy http_server objects
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "http_server http_server_new"
+.Fa "void"
+.Fc
+.Fo "void http_server_free"
+.Fa "http_server s"
+.Fc
+.Sh DESCRIPTION
+.Nm http_server_new()
+creates a new HTTP server. 
+.Pp
+This is the first call to execute when building a HTTP server.
+The normal way to create a http server is to 
+.Bl -enum
+.It
+call http_server_new() to create the actual server
+.It
+Configure the servers buffer sizes and other memory related options
+.It
+Call http_server_alloc(), which allocates all buffers.
+.It
+Call http_server_add_page() to add URIs and page handlers
+.It
+Call http_server_get_root_resources(), which performs all actions needed
+when the process runs as root.
+.It
+Change the user id for the process.
+.It
+Call http_server_start() to start serving requests.
+.It
+Call http_server_free() to deallocate all memory used.
+.El
+.Pp
+You can also use the process object to start the server(s). The process
+object will call http_server_get_root_resources() and http_server_start()
+for you, and will also change the user id and current directory.
+.Pp
+.Nm http_server_free() 
+frees all memory allocated by the server.
+.Sh RETURN VALUE
+.Nm http_server_new()
+returns a new http_server or NULL if something fails.
+.Sh EXAMPLE
+.Bd -literal
+http_server s = http_server_new();
+http_server_alloc(s);
+http_server_add_page(s, "/", myhandler, NULL);
+http_server_get_root_resources(s);
+http_server_start(s);
+http_server_free(s);
+.Ed
+.Sh SEE ALSO
+.Xr http_server_alloc 3 ,
+.Xr http_server_get_root_resources 3 ,
+.Xr http_server_free 3 ,
+.Xr process_add_object_to_start 3 
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

@@ -1,0 +1,85 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th meta_configfile 3
+.Sh NAME
+.Nm meta_configfile
+.Nd Generic configuration file ADT
+.Sh SYNOPSIS
+.Fd #include <meta_configfile.h>
+.Fo "configfile configfile_read"
+.Fa "const char *path"
+.Fc
+.Fo "void configfile_free"
+.Fa "configfile cf"
+.Fc
+.Fo "int configfile_exists"
+.Fa "configfile cf"
+.Fa "const char *name"
+.Fc
+.Fo "int configfile_get_string"
+.Fa "configfile cf"
+.Fa "const char *name"
+.Fa "char *value"
+.Fa "size_t cb"
+.Fc
+.Fo "int configfile_get_long"
+.Fa "configfile cf"
+.Fa "const char *name"
+.Fa "long *value"
+.Fc
+.Fo "int configfile_get_ulong"
+.Fa "configfile cf"
+.Fa "const char *name"
+.Fa "unsigned long *value"
+.Fc
+.Fo "int configfile_get_int"
+.Fa "configfile cf"
+.Fa "const char *name"
+.Fa "int *value"
+.Fc
+.Fo "int configfile_get_uint"
+.Fa "configfile cf"
+.Fa "const char *name"
+.Fa "unsigned int *value"
+.Fc
+.Sh DESCRIPTION
+Generic interface to a general purpose configuration file.
+.Pp
+A configfile has very simple layout, the following rules apply:
+.Bl -bullet
+.It
+Comments start with # and extends to the end of line
+.It
+blank lines are OK
+.It
+White space is discarded
+.It
+Entries consists of name and value
+.It
+Values containing space must be enclosed in ""
+.It
+The quotes are discarded
+.It
+Names cannot contain spaces
+.It
+Line lengths are limited to 2048 bytes.
+.El
+.Pp
+Examples:
+.Bl 
+.It
+hostname foo.bar.com
+.It
+port     8080
+.It
+user     "John doe"
+.It
+#This is a comment
+.It
+username "Jane Doe"   # This is a comment too
+.El
+
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com
+

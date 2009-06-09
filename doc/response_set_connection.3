@@ -1,0 +1,33 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th response_set_connection 3
+.Sh NAME
+.Nm response_set_connection()
+.Nm response_get_connection()
+.Nd set/get the HTTP Connection header field
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int response_set_connection"
+.Fa "http_response response"
+.Fa "const char* value"
+.Fc
+.Fo "const char* response_get_connection"
+.Fa "http_response response"
+.Fc
+.Sh DESCRIPTION
+.Nm response_set_connection()
+assigns a value to the Connection header field.
+The only sensible value for this field is "close", which means that
+the connection will be closed after the response has been sent to
+the client.
+.Pp
+.Nm response_get_connection()
+returns the value for the Connection header field, or "" if 
+no connection has been set. 
+.Sh RETURN VALUE
+.Nm response_set_connection()
+returns 1 if the flag was set or 0 if we ran out of memory.
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

@@ -1,0 +1,56 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt CONNECTION
+.Th connection_get_addr 3
+.Sh NAME
+.Nm connection_get_addr
+.Nd Get client IP address
+.Sh SYNOPSIS
+.Fd #include <connection.h>
+.Fo "struct sockaddr_in* connection_get_addr"
+.Fa "connection conn"
+.Fc
+.Sh DESCRIPTION
+Returns the client address that the socket is connected to.
+.Sh EXAMPLE
+.Bd -literal
+#include <stdio.h>
+#include <netinet/in.h>
+#include <tcp_server.h>
+#include <connection.h>
+void* echoserverfn(void* arg)
+{
+   int c;
+   connection conn = arg;
+   tcp_server s = connection_arg2(conn);
+   struct sockaddr_in* paddr = connection_get_addr(conn);
+   if(paddr != NULL) {
+      char buf[INET_ADDRSTRLEN];
+      inet_ntop(AF_INET, &paddr->sin_addr.s_addr, buf, sizeof buf);
+      printf("Client address: %s\n", buf);
+   }
+   while(!tcp_server_shutting_down(s) 
+   && connection_getc(conn, &c)) {
+      connection_putc(conn, c);
+      connection_flush(conn);
+   }
+   return NULL;
+}
+int main(void)
+{
+   tcp_server s = tcp_server_new();
+   tcp_server_set_service_function(
+      s, 
+      echoserverfn,
+      s);
+   tcp_server_init(s);
+   tcp_server_get_root_resources(s);
+   tcp_server_start(s);
+   
+   tcp_server_free(s);
+   return 0;
+}
+
+.Ed
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

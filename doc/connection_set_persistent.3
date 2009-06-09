@@ -1,0 +1,30 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt CONNECTION
+.Th connection_set_persistent 3
+.Sh NAME
+.Nm connection_set_persistent()
+.Nm connection_is_persistent()
+.Nd Set or get the connection flag
+.Sh SYNOPSIS
+.Fd #include <connection.h>
+.Fo "void connection_set_persistent"
+.Fa "connection conn"
+.Fa "int val"
+.Fc
+.Fo "int connection_is_persistent"
+.Fa "connection conn"
+.Fc
+.Sh DESCRIPTION
+.Nm connection_set_persistent()
+sets the persistent flag of the connection to either true
+or false. This flag is not used by the connection object itself,
+but is an attribute for the connection which can be used by
+protocol handlers (read:http 1.1).
+.Pp
+.Nm connection_is_persistent()
+returns if the connection is persistent or not. 
+.Pp
+Users of the tcp_server ADT never has to call these function.
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

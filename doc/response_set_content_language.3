@@ -1,0 +1,61 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th response_set_content_language 3
+.Sh NAME
+.Nm response_set_content_language()
+.Nm response_set_content_length()
+.Nm response_set_content_location()
+.Nm response_set_content_md5()
+.Nm response_set_content_range()
+.Nm response_set_content_type()
+.Nd Set content meta information
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int response_set_content_language"
+.Fa "http_response response"
+.Fa "const char* value"
+.Fc
+.Fo "int response_set_content_length"
+.Fa "http_response response"
+.Fa "size_t value"
+.Fc
+.Fo "int response_set_content_location"
+.Fa "http_response response"
+.Fa "const char* value"
+.Fc
+.Fo "int response_set_content_md5"
+.Fa "http_response response"
+.Fa "const char* value"
+.Fc
+.Fo "int response_set_content_range"
+.Fa "http_response response"
+.Fa "const char* value"
+.Fc
+.Fo "int response_set_content_type"
+.Fa "http_response response"
+.Fa "const char* value"
+.Fc
+.Sh DESCRIPTION
+.Nm response_set_content_language()
+sets the language for the content. Typical values are "en", "da", "no",
+"en-US" and so forth.  See RFC 1766 and RFC2616, §3.10 for more info.
+.Pp
+.Nm response_set_content_length()
+explicitly sets the content length. Highlander will
+set if for you when you create dynamic responses using response_add()
+and other "print"-functions. 
+.Pp
+Sometimes you return different entities depending on the request.
+One example is when you return different pages based on the language
+preference of the client. Then you should return the URI of the entity
+returned.
+.Pp
+.Nm response_set_content_type()
+sets the media type of the content, e.g. "text/html" or "image/jpeg".
+See RFC 2616, §14.17 and §7.2.1. 
+.Sh RETURN VALUE
+.Sh SEE ALSO
+.Xr http_server_set_default_page_attributes 3
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

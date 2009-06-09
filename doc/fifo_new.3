@@ -1,0 +1,24 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th fifo_new 3
+.Sh NAME
+.Nm fifo_new
+.Nm fifo_free
+.Nd A thread safe FIFO ADT.
+.Sh SYNOPSIS
+.Fd #include <meta_fifo.h>
+.Fo "fifo fifo_new"
+.Fa "size_t nelem"
+.Fc
+.Fo "void fifo_free"
+.Fa "fifo p"
+.Fc
+.Sh DESCRIPTION
+.Nm fifo_new()
+creates a new fifo, and
+.Nm fifo_free()
+destroys a fifo created by 
+.Nm fifo_new().
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

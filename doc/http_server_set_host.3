@@ -1,0 +1,46 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th http_server_set_host 3
+.Sh NAME
+.Nm http_server_set_host()
+.Nd Set host name for a http_server
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int http_server_set_host"
+.Fa "http_server s"
+.Fa "const char* name"
+.Fc
+.Sh DESCRIPTION
+.Nm
+sets the host name for a http_server.
+.Pp
+A UNIX server can have more than one network interface and more than
+one host name. localhost is an example of both.
+.Pp
+TCP/IP allows a service to bind to either all network interfaces or
+just one interface. 
+.Pp
+The server will do a gethostbyname() based on the name
+given by this function. It will later bind to the IP
+address returned from gethostbyname(). 
+.Pp
+The default action, if you don't call this function, is to bind
+to any address. This means that the server will be accessible from
+all interfaces and all hostnames on the server. You can set hostname
+to e.g. "localhost" during development, and then change it to 
+the external name of the site when your site is ready for production.
+.Pp
+This function must be called prior to http_server_get_root_resources().
+An IP address can be used as parameter.
+.Pp
+The name will be copied and stored in a new variable.
+.Sh RETURN VALUE
+.Nm
+returns 0 if there was no memory available, 1 on success.
+.Sh SEE ALSO
+.Xr http_server_set_port 3 ,
+.Xr http_server_get_host 3 ,
+.Xr gethostbyname 3
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

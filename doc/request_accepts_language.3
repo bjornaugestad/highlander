@@ -1,0 +1,36 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th request_accepts_language 3
+.Sh NAME
+.Nm request_accepts_language()
+.Nd See if the request accepts a language
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int request_accepts_language"
+.Fa "http_request request"
+.Fa "const char* lang"
+.Fc
+.Sh DESCRIPTION
+.Nm
+checks if the client accepts a response in a given language. 
+.Fa lang 
+is the language we want to test for.  Languages are typically "en",
+"no" and so forth.
+.Sh RETURN VALUE
+.Nm
+returns 1 if the requests the language in
+.Fa lang,
+else it returns 0.
+.Sh EXAMPLE
+.Bd -literal
+if(request_accepts_language(request, "fr"))
+    create_response_in_french(response);
+else if(request_accepts_language(request, "no"))
+    create_norwegian_response(response);
+else
+    create_default_response(response);
+.Ed
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

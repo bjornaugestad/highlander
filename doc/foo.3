@@ -1,0 +1,32 @@
+.Dd Nov 25, 2005
+.Dt foo
+.Os mypackage
+.Th list_add 3
+.Sh NAME
+.Nm list_add() 
+.Nd Add a new item to a list
+.Sh SYNOPSIS
+.Fd #include <meta_list.h>
+.Fo "list list_add"
+.Fa "list lst"
+.Fa "void* data"
+.Fc
+.Sh DESCRIPTION
+.Nm
+adds a new node at the end of an existing list, or
+creates a new list and adds data to the new list if lst is 
+NULL. 
+.Pp
+.Nm
+will not copy the memory pointed to by data,
+just the pointer itself. The memory should therefore be 
+heap allocated
+or static.
+.Sh RETURN VALUE
+A pointer to lst if the new node was successfully 
+added to the list, or NULL if list_add() failed to allocate 
+memory.
+.Sh SEE ALSO
+.Xr list_delete 3
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com.

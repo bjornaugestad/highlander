@@ -1,0 +1,27 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th tcp_server_set_worker_threads 3
+.Sh NAME
+.Nm tcp_server_set_worker_threads
+.Nd Change number of worker threads for a tcp_server
+.Sh SYNOPSIS
+.Fd #include <tcp_server.h>
+.Fo "void tcp_server_set_worker_threads"
+.Fa "tcp_server srv"
+.Fa "size_t count"
+.Fc
+.Sh DESCRIPTION
+.Fa
+The tcp_server creates a thread pool of 
+.Fa count
+threads when
+.Nm tcp_server_init()
+is called. The default number of threads is 10, which is OK for
+most platforms. You can change this to any number you like, depending
+on the number of CPUs you have and the type of application you 
+are creating.
+.Sh SEE ALSO
+.Xr tcp_server_set_queue_size 3
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

@@ -1,0 +1,57 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th http_server_get_root_resources 3
+.Sh NAME
+.Nm http_server_get_root_resources()
+.Nm http_server_free_root_resources()
+.Nd Aquire and release ports
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int http_server_get_root_resources"
+.Fa "http_server s"
+.Fc
+.Fo "int http_server_free_root_resources"
+.Fa "http_server s"
+.Fc
+.Sh DESCRIPTION
+.Nm http_server_get_root_resources()
+gets all resources which must be aquired while the process runs as
+root. UNIX reserves the use of ports below 1024 to processes running 
+as root, and the process must therefore bind to e.g. port 80 while
+the process still has the necessary permissions. A process should
+not run as root for security reasons, and it is common to change
+the user id of the process after binding. 
+.Pp
+This function is called by process_start, you can also call it 
+yourself if you prefer not to use the process object.
+.Pp
+This function just binds to the port number specified earlier,
+or to the default port 80.
+.Pp
+.Nm http_server_free_root_resources()
+frees all resources which http_server_get_resources aquired.
+.Pp
+The process object can start more than one object and each 
+object may allocate root resources. An example is a process
+containing two http servers. The process object first allocates
+root resources for the first server, then it tries to do the
+same thing for the second server. If that operation fails,
+the process object will try to undo all operations and return 
+an error back to the caller. The process object calls this
+function to undo whatever the http_server_get_root_resource()
+function did.
+.Sh RETURN VALUE
+Both functions return 1 on success and 0 if an error occured.
+.Sh EXAMPLE
+.Bd -literal
+.Ed
+.Sh SEE ALSO
+.Xr process_add_http_server_to_start 3 ,
+.Xr process_add_object_to_start 3 ,
+.Xr process_start 3 ,
+.Xr http_server_free_root_resources 3 ,
+.Xr http_server_start 3 ,
+.Xr setuid 2 
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

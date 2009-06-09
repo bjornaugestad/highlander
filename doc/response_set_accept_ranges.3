@@ -1,0 +1,29 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th response_set_accept_ranges 3
+.Sh NAME
+.Nm response_set_accept_ranges()
+.Nd Set HTTP header flag Accept-Ranges
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int response_set_accept_ranges"
+.Fa "http_response response"
+.Fa "int value"
+.Fc
+.Sh DESCRIPTION
+.Fa value
+is a flag which must have the value 0 or 1.
+If
+.Fa value
+is 1, then
+.Nm
+sets the HTTP header flag Accept-Ranges to "bytes", else 
+the flag will be set to "none".
+.Sh RETURN VALUE
+.Nm
+returns 1.
+.Sh SEE ALSO
+HTTP 1.1,  \§14.5 
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

@@ -1,0 +1,26 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th response_set_age 3
+.Sh NAME
+.Nm response_set_age()
+.Nd Set age of contents
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int response_set_age"
+.Fa "http_response response"
+.Fa "unsigned long value"
+.Fc
+.Sh DESCRIPTION
+.Nm
+sets the HTTP header field "Age:". This field contains the age
+of the content in seconds, and must be used if the content is 
+cached at the server. Normally you do not need to call this function,
+unless you act as a proxy or cache the contents yourself. RFC 2616, §14.6
+.Sh RETURN VALUE
+.Sh EXAMPLE
+.Bd -literal
+.Ed
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

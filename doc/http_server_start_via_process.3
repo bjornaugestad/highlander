@@ -1,0 +1,41 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th http_server_start_via_process 3
+.Sh NAME
+.Nm http_server_start_via_process()
+.Nd Let the process ADT start the http_server
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int http_server_start_via_process"
+.Fa "process p"
+.Fa "http_server s"
+.Fc
+.Sh DESCRIPTION
+Let the process ADT start the http server instead of starting it
+ourselves. The process ADT handles proper startup and shutdown
+and 
+.Nm
+is a utility function to register a http_server object 
+with a process object.
+.Sh RETURN VALUE
+.Nm
+returns 1 if the object was successfully added and 0 if an error occured.
+.Sh EXAMPLE
+Here we create two http servers within the same process. 
+.Bd -literal
+process p = process_new();
+http_server s1 = http_server_new();
+http_server s2 = http_server_new();
+http_server_set_port(s1, 1000);
+http_server_set_port(s2, 2000);
+http_server_alloc(p1);
+http_server_alloc(p2);
+http_server_start_via_process(p, s1);
+http_server_start_via_process(p, s2);
+process_start(p);
+.Ed
+.Sh SEE ALSO
+.Xr meta_process 3
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

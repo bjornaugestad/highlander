@@ -1,0 +1,53 @@
+.Dd Nov 25, 2005
+.Th list_new 3
+.Sh NAME
+.Nm list_new() 
+.Nm list_free() 
+.Nd Create and destroy lists
+.Sh SYNOPSIS
+.Fd #include <meta_list.h>
+.Fo "list list_new"
+.Fa "void"
+.Fc
+.Fo "void list_free"
+.Fa "list lst"
+.Fa "dtor dtor"
+.Fc
+.Sh DESCRIPTION
+.Nm list_new()
+creates a new list, returns NULL if failure. 
+.Nm list_free()
+frees a list.
+.Fa dtor 
+is a pointer an optional cleanup function which is called once
+for each node in the list. If 
+.Fa dtor
+is NULL, then free() is called instead. Note that free() is not called
+if .
+.Fa dtor
+isn't NULL. This basically means that cleanup
+must call free() itself. The idea is that the caller function 
+provides either NULL or a destructor function for a 
+C object.
+.Sh EXAMPLE
+.Bd -literal
+/* The object we store in the list */
+struct foo {
+	char *name;
+};
+/* Destructor for foo */
+void foo_dtor(void* arg)
+{
+	struct foo* p = arg;
+	if(p != NULL) {
+		free(p->name);
+		free(p);
+	}
+}
+\&...
+list lst = list_new();
+\&...
+list_free(lst, foo_dtor);
+.Ed
+.Sh AUTHOR
+B. Augestad, bjorn.augestad@gmail.com.

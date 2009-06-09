@@ -1,0 +1,63 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th tcp_server_set_service_function 3
+.Sh NAME
+.Nm tcp_server_set_service_function()
+.Nd Sets the callback function
+.Sh SYNOPSIS
+.Fd #include <tcp_server.h>
+.Fo "void tcp_server_set_service_function"
+.Fa "tcp_server srv"
+.Fa "void* (*func)(void*)"
+.Fa "void* arg"
+.Fc
+.Sh DESCRIPTION
+Set the function that will be called from tcp_server to
+service requests from clients. The service function is called
+once for each client connecting to the server, so the function
+must be thread safe.
+.Pp
+.Fa arg
+can be anything and will be passed on to the service function as 
+connection_arg2.
+.Sh EXAMPLE
+Below is the source code for a simple echoserver which shows
+how the 
+.Fa arg
+argument can be accessed. In a real world application, the value
+would not be a string, but a pointer to data that the service function
+needs to implement the server.
+.Bd -literal
+#include <stdio.h>
+#include <tcp_server.h>
+#include <connection.h>
+void* echoserverfn(void* arg)
+{
+	int c;
+	connection conn = arg;
+	char* s = connection_arg2(conn);
+	printf("%s\\n", s);
+	while(connection_getc(conn, &c)) {
+		connection_putc(conn, c);
+		connection_flush(conn);
+	}
+	return NULL;
+}
+int main(void)
+{
+	char foo[] = "Hello, argument 2";
+	tcp_server s = tcp_server_new();
+	tcp_server_set_service_function(
+		s, 
+		echoserverfn,
+		foo);
+	tcp_server_init(s);
+	tcp_server_get_root_resources(s);
+	tcp_server_start(s);
+	tcp_server_free(s);
+	return 0;
+}
+.Ed
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

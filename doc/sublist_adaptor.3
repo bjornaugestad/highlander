@@ -1,0 +1,70 @@
+.Dd Nov 25, 2005
+.Th sublist_adaptor 3
+.Sh NAME
+.Nm sublist_adaptor()
+.Nd Transform a list into another.
+.Sh SYNOPSIS
+.Fd #include <meta_list.h>
+.Fo "list sublist_adaptor"
+.Fa "list lst"
+.Fa "void* (*adaptor)(void*)"
+.Fc
+.Sh DESCRIPTION
+.Nm
+transforms a list of one type to another list containing another type, without copying
+data. 
+The 
+.Fa adaptor
+parameter points to a function that accepts one 
+argument and returns a pointer to whatever the new list is 
+to contain. The argument to
+.Fa adaptor
+a pointer to the object stored in list A.
+Use sublist_free() to free memory.
+.Sh EXAMPLE
+.Bd -literal
+/* A list contains objects of type struct foo. */
+struct foo {
+	char *name;
+};
+/*
+ * Another function, process_string(), expects a pointer 
+ * to char* as its argument. 
+ */
+int process_string(void *arg, void *node)
+{
+	FILE* f = arg;
+	const char* p = node;
+	fprintf(f, "%s\n", p);
+	return 1;
+}
+/*
+ * We have a long list of struct foo objects, and we
+ * need to call process_string() for each object. 
+ * process_string() is used for lots of things and we
+ * cannot modify it to accept struct foo objects.
+ * To avoid copying of data, we instead transform
+ * our list and then call process_string().
+ * To do that, we use foo2string().
+ */
+void* foo2string(void *arg)
+{
+	struct foo* f = arg;
+	return f->name;
+}
+\&...
+/*
+ * Now we're ready to transform the foo list and call
+ * process_string().
+ */
+FILE* f;
+list foolist, namelist;
+\&...
+namelist = sublist_adaptor(foolist, foo2string);
+list_foreach(namelist, f, process_string);
+sublist_free(namelist);
+.Ed
+.Sh SEE ALSO
+.Xr sublist_free 3
+.Sh AUTHOR
+B. Augestad, bjorn.augestad@gmail.com.

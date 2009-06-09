@@ -1,0 +1,53 @@
+.Dd Nov 25, 2005
+.Dt META
+.Th list_find 3 
+.Sh NAME
+.Nm list_find() 
+.Nd Find a node in a list.
+.Sh SYNOPSIS
+.Fd #include <meta_list.h>
+.Fo "list_iterator list_find"
+.Fa "list lst"
+.Fa "const void *data"
+.Fa "int(*compar)(const void*, const void*)"
+.Fc
+.Sh DESCRIPTION
+.Nm
+finds the first occurence of an item in the list and returns an iterator positioned at that item.
+If no item was found in the list, then list_end() will return 1.
+The comparison function must return an integer less than, equal to, or greater than zero if the
+first argument is considered to be respectively less than, equal to, or greater than the second
+argument. The 
+.Fa data
+argument will be passed as the first argument to the comparison function.
+.Sh RETURN VALUE
+.Nm
+always returns a list_iterator. Use the list_end() function to see if data was found or not.
+.Sh EXAMPLE
+.Bd -literal 
+/* The object stored in the list */
+struct foo {
+	char* name;
+};
+/* The comparison function used */
+int foo_compare(const void* p1, const void* p2)
+{
+	const struct foo *f1 = p1, *f2 = p2;
+	return strcmp(f1->name, f2->name);
+}
+\&...
+list lst;
+list_iterator li;
+struct foo searchterm;
+\&...
+searchterm.name = "abcd";
+li = list_find(lst, &searchterm, foo_compare);
+	if(list_end(li)) {
+	/* No node found */
+}
+.Ed
+.Sh SEE ALSO
+.Xr meta_list 7 ,
+.Xr list_end 3 ,
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com.

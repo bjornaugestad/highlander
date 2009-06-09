@@ -1,0 +1,38 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt CSTRING
+.Th rfc1738_encode 3
+.Th rfc1738_decode 3
+.Sh NAME
+.Nm rfc1738_encode 
+.Nm rfc1738_decode 
+.Nd Encode and decode according to RFC 1738
+.Sh SYNOPSIS
+.Fo "int rfc1738_encode"
+.Fa "char* dest"
+.Fa "size_t cbdest"
+.Fa "const char* src"
+.Fa "size_t cbsrc"
+.Fc
+.Fo "int rfc1738_decode(char* dest"
+.Fa "size_t cbdest"
+.Fa "const char* src"
+.Fa "size_t cbsrc"
+.Fc
+.Sh DESCRIPTION
+Implements encode and decode() functions for HTTP URL arguments
+according to RFC 1738.
+The short and simple rule is that if a character is A-Za-z0-9
+it is not encoded, anything else is encoded. The character is
+encoded as a two digit hex number, prefixed with %. 
+
+.Sh RETURN VALUE
+.Nm rfc1738_encode()
+returns the length of the 
+.Fa dest
+buffer after encoding, or 0 if an error occured.
+
+.Sh NOTES
+Issues: This version decodes %00, which maps to '\0'.
+Don't know if that's a serious issue or not(security).
+

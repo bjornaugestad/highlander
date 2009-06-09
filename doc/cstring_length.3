@@ -1,0 +1,24 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt CSTRING
+.Th cstring_length 3
+.Sh NAME
+.Nm cstring_length()
+.Nd Calculate the length of a string
+.Sh SYNOPSIS
+.Fd #include <cstring.h>
+.Fo "size_t cstring_length"
+.Fa "cstring s"
+.Fc
+.Sh DESCRIPTION
+.Nm
+calculates the length of the string 
+.Fa s
+, not including the terminating '\\0' character.
+.Sh RETURN VALUE
+The 
+.Nm
+function returns the number of characters in 
+.Nm
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

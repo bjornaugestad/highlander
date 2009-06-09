@@ -1,0 +1,32 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th http_server_set_default_page_attributes 3
+.Sh NAME
+.Nm http_server_set_default_page_attributes()
+.Nd Set default attributes for HTML pages.
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int http_server_set_default_page_attributes"
+.Fa "http_server s"
+.Fa "page_attribute a"
+.Fc
+.Sh DESCRIPTION
+.Nm
+sets server wide page attributes. 
+.Pp
+HTTP requires lots of attributes and it can be both tedious and error 
+phrone to set them for each and every page you handle. Highlander therefore
+lets you specify default settings for all pages. These default settings
+will be used unless you override them. 
+.Pp
+Note that the server wide attributes can be overridden for any page.
+.Sh RETURN VALUE
+.Sh SEE ALSO
+.Xr highlander_attributes 3 ,
+.Xr attribute_new 3 ,
+.Xr attribute_set_language 3 ,
+.Xr attribute_set_charset 3 ,
+.Xr attribute_set_media_type 3 
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

@@ -1,0 +1,32 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt CONNECTION
+.Th connection_getc 3
+.Sh NAME
+.Nm connection_getc()
+.Nm connection_putc()
+.Nd read or write one character 
+.Sh SYNOPSIS
+.Fd #include <connection.h>
+.Fo "int connection_getc"
+.Fa "connection conn"
+.Fa "int* pch"
+.Fc
+.Fo "int connection_putc"
+.Fa "connection conn"
+.Fa "int ch"
+.Fc
+.Sh DESCRIPTION
+.Nm connection_getc()
+reads one character from the socket or the read buffer.
+.Pp
+.Nm connection_putc()
+writes one character to the socket or write buffer.
+.Sh RETURN VALUE
+Both functions return 1 on success and 0 if an error occured.
+.Sh SEE ALSO
+.Xr connection_read 3 ,
+.Xr connection_gets 3 ,
+.Xr connection_puts 3 ,
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

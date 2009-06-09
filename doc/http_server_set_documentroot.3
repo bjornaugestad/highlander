@@ -1,0 +1,36 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th http_server_set_documentroot 3
+.Sh NAME
+.Nm http_server_set_documentroot()
+.Nm http_server_get_documentroot()
+.Nd Handle document root for a http_server
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int http_server_set_documentroot"
+.Fa "http_server s"
+.Fa "const char* docroot"
+.Fc
+.Fo "const char* http_server_get_documentroot"
+.Fa "http_server s"
+.Fc
+.Sh DESCRIPTION
+Set the document root for documents loaded from disk. The default
+root directory is "./".
+.Sh RETURN VALUE
+.Nm http_server_set_documentroot()
+returns 1 if the document root is set successfully,
+and 0 if an error occurs. errno will be set to ENOSPC if the docroot
+is too long. Use the DOCUMENTROOT_MAX macro to decide the maximum
+number of characters for a document root.
+.Pp
+.Nm http_server_get_documentroot()
+returns the current document root.
+.Sh EXAMPLE
+.Bd -literal
+.Ed
+.Sh SEE ALSO
+.Xr http_server_set_can_read_files 3
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

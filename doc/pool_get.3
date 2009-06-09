@@ -1,0 +1,19 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th pool_get 3
+.Sh NAME
+.Nm pool_get
+.Nd Object management ADT
+.Sh SYNOPSIS
+.Fd #include <pool_get.h>
+.Fo "void* pool_get"
+.Fa "pool p"
+.Fc
+.Sh DESCRIPTION
+Gets a resource from the pool. The function assumes that enough resources
+are available, but will assert() in debug versions if all resources already
+have been used. The release version will call abort() if no resources were
+available.
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

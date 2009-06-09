@@ -1,0 +1,37 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th tcp_server_allow_clients 3
+.Sh NAME
+.Nm tcp_server_allow_clients()
+.Nd Set client filter
+.Sh SYNOPSIS
+.Fd #include <tcp_server.h>
+.Fo "int tcp_server_allow_clients"
+.Fa "tcp_server srv"
+.Fa "const char* filter"
+.Fc
+.Sh DESCRIPTION
+.Nm
+sets a filter which will be used to deny clients access
+to the tcp server. The filter can be a regular expression,
+but cannot contain DNS names. DNS names are denied to
+avoid the risk of DNS spoofing, as well as to increase performance.
+The idea is that normally you do not want filtering, in the cases
+you do, the number of clients allowed is relatively small.
+.Pp
+The regexp can be anything, but should contain IP addresses
+to work. The number of addresses specified is only limited
+by your platforms implementation of regcomp. 
+.Sh RETURN VALUE
+.Nm
+returns 1 on success, 0 on errors. Note that errno may be a bit odd as regcomp() has special error codes which this function will return.
+.Sh EXAMPLE
+.Bd -literal
+   const char *filter = "1.1.1.* 2.*.1.? 192.168.*.*";
+   tcp_server_allow_clients(srv, filter);
+.Ed
+.Sh SEE ALSO
+.Xr regcomp tcp_server_clear_client_filter
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

@@ -1,0 +1,34 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th get_mime_type 3
+.Sh NAME
+.Nm get_mime_type()
+.Nd get_mime_type
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "const char* get_mime_type"
+.Fa "const char* filename"
+.Fc
+.Sh DESCRIPTION
+.Nm
+returns the mime type for a file.
+.Pp
+Note that this function uses the file extension to determine
+the type of the file. This may be bad in some cases and may
+even be a security issue. Then again, it may not. 
+We don't have time to do popen("file foo") and there is no
+standard way of doing this. Note that others, e.g. Gnome, does
+it this way as well.
+The default mime type is application/octet-stream, which is
+used if the extension isn't recognised or understood.
+A good place to look for mime type definitions is 
+http://www.iana.org/assignments/media-types
+ 
+.Sh RETURN VALUE
+.Sh EXAMPLE
+.Bd -literal
+.Ed
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

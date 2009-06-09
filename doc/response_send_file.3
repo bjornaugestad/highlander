@@ -1,0 +1,50 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th response_send_file 3
+.Sh NAME
+.Nm response_send_file()
+.Nd Send a file to the client
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int response_send_file"
+.Fa "http_response response"
+.Fa "const char *path"
+.Fa "const char* type"
+.Fc
+.Sh DESCRIPTION
+.Nm
+sets the content buffer to be a file name. The contents of the file
+will be transfered instead of any normal content buffer.
+.Pp
+.Fa path
+is the path to the file to send.
+.Pp
+.Fa type
+is the MIME type of the file.
+.Sh RETURN VALUE
+.Nm
+returns 1 on success and 0 if an error occured.
+.Sh EXAMPLE
+.Bd -literal
+#include <highlander.h>
+int my_handler(http_request req, http_response page)
+{
+   response_send_file(page, "/etc/passwd", "text/plain");
+   return HTTP_200_OK;
+}
+int main(void)
+{
+   http_server s = http_server_new();
+   http_server_set_port(s, 2000);
+   http_server_alloc(s);
+   http_server_add_page(s, "/", my_handler, NULL);
+   http_server_get_root_resources(s);
+   http_server_start(s);
+   http_server_free(s);
+   return 0;
+}
+.Ed
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

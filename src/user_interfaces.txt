@@ -1,0 +1,284 @@
+This is just a design document where I try to figure out how to
+implement functionality to aid the creation of HTML pages.
+boa, Fri Dec 19 14:15:29 CET 2003
+
+Introduction
+------------
+In most cases where you create a web site, you want some kind of design
+applied to all pages on that site. Some may also like a template based
+approach, where the application knows how a page should look, and the 
+page handler function just provides the relevant text, images or data.
+
+UI widgets are also nice to have, such as treeviews and generalized menues.
+
+The current version of Highlander(0.9.4) has no support for creating
+user interfaces and this document is an attempt to plan and describe
+a set of functions which will make it easy to create user interfaces
+in C.
+
+Objective
+---------
+- Provide a set of functions which helps the programmer to create apps
+- The style/look of the gui should not be fixed.
+
+
+Limitations
+-----------
+- Functionality must be available in C programs
+- Cannot require compilers or tools other than C and hipp.
+
+
+Brainstorming:
+--------------
+
+1. a system for handling menus.
+-----------------------------------
+
+1.1 What is a menu?
+-------------------
+A menu is a way of selecting pages on a site. A menu consists of
+menu items or menus. Menus within menus are called submenus.
+
+A menu item has a text, a HTML link and optionally an image. 
+
+So a menu is a tree, where each node is either a submenu or a menuitem.
+A submenu can contain a link and an image as well.
+
+A more formal and generalized way of describing a menu is:
+	menu: menuitem...
+	menuitem: 
+		1..1 text
+		0..1 image 
+		0..1 hover-image
+		0..1 link
+		0..n menuitem
+
+We no longer differ between submenus and menuitems. So far, so good. 
+
+1.2 How to display a menu?
+--------------------------
+HTML offers many ways of displaying menus, we can have 
+	- straight HTML menus where all items always are visible
+	- Javascript/DOM based treeview menus where the user can hide
+	  items and submenus
+	- Menuitems can have onHover() properties where the item changes
+	  dynamically when the users mouse is moved over the menuitem.
+	- I'm sure that more options exists. :-)
+
+Menus can be placed and organized in different ways. Some web sites
+use horizontal dropdown menus, but the most common approach is to 
+use the leftmost part of the window to display a menu. 
+
+Some sites use frames to display the menu, where the window is divided
+into 2 or more frames and one of the frames are used to display the menu.
+Such a frame window may or may not have a scrollbar and border.
+
+The important thing is that the menu should be visible on most pages,
+along with data which is unique for each individual page. This means
+that we need page templates. 
+
+1.2.1 Page templates
+--------------------
+A page template describes how a browser window should look like. An 
+example can be:
+	- Divide the page into header, menu, data and footer areas.
+	- Use a table to layout the individual elements
+	- Provide data for the header, menu and footer areas once
+	- Let the page handler function provide data for the data area
+	  each time the page is requested.
+Something like that :-)
+
+It should of course be possible to have more than one template, and each
+template must also be customizable. OTOH, Highlander cannot support 
+every imaginable page style, so it must be up to the user to create
+the templates the user wants to use. Highlander can ship with a few
+templates, but not possibly all. 
+
+1.2.1.1 Implementation of a page template
+-----------------------------------------
+The page handler function can currently use the 
+response_printf(), response_add_to_page() functions to provide HTML code
+to the response object, which later will transfer the HTML to the 
+client. That interface is OK, but a bit hard to work with. 
+
+The template itself is not limited or unique for neither request objects
+nor response objects, not even to the http_server objects as a template
+can be used other places in the process too. Remember that one process
+can contain n http_servers.
+
+OTOH, the template functions must work closely with the http_response
+object, since the http_response object is the destination of all the
+HTML code. So template functions should know about http_response, but not
+the other way around. How about a html_template ADT and possibly a 
+template_repository containing html_template objects?
+
+The process could then initialize the template_repository and the
+page functions could get the template and use it to display data. 
+Something like this:
+
+int main(...)
+{
+	html_template t = html_template_new();
+
+	/* The HMDF ONE_PAGE flag says that we want a template
+	 * with Header, Menu, Data and Footer, all on one HTML page,
+	 * ie no frames. The page will use a HTML table to layout the page
+	 */
+	html_template_set_style(t, HTML_TEMPLATE_HMDF_ONE_PAGE);
+
+	/* Size the HMDF parts. Optional, as the browser can
+	 * render it without any size descriptions anyway */
+	html_template_header_set_size(t, width, height);
+	html_template_menu_set_size(t, width, height);
+	html_template_data_set_size(t, width, height);
+	html_template_footer_set_size(t, width, height);
+
+	/* Create the HTML menu */
+	html_menu foo = html_menu_new();
+	html_menu_set_text(foo, "foo");
+	html_menu_set_image(foo, "/foo.png");
+	html_menu_set_hover_image(foo, "/foo_hover.png");
+	html_menu_set_link(foo, "/foo.html");
+
+	/* Add a couple of submenus */
+	html_menu bar = html_menu_new();
+	html_menu_set_text(bar, "bar");
+	html_menu_set_image(bar, "/bar.png");
+	html_menu_set_hover_image(bar, "/bar_hover.png");
+	html_menu_set_link(bar, "/bar.html");
+
+	html_menu baz = html_menu_new();
+	html_menu_set_text(baz, "baz");
+	html_menu_set_image(baz, "/baz.png");
+	html_menu_set_hover_image(baz, "/baz_hover.png");
+	html_menu_set_link(baz, "/baz.html");
+
+	html_menu_add_menu(foo, bar);
+	html_menu_add_menu(foo, baz);
+
+	/* Add the menu to the template */
+	html_template_set_menu(t, foo);
+	html_template_set_menu_style(t, MENU_STYLE_HTML);
+
+	/* Add the header and footer part of the template */
+	static const char* header = "...";
+	static const char* footer = "...";
+	html_template_set_header(t, header);
+	html_template_set_footer(t, footer);
+
+	/* Other properties we want as well */
+	html_template_set_stylesheet(t, "/foo.css");
+	html_template_set_type(t, HTML_STRICT_4);
+
+	/* That's pretty much it. I'm sure we must add other props
+	 * to the template later, but it will work as an example.
+	 * Add the template to the template_repository and 
+	 * start the web server. */
+	template_repository_add("my_page", t);
+	 ...
+}
+
+/* Here's what a typical page handler function may look like.
+ * The page handler functions only job is to provide HTML code 
+ * for the data part of the template. We want to retain the flexibility
+ * of the http_response_printf() functions and http_response_send_file()
+ * functions. At the same time we cannot print directly to the http_response
+ * param, since that will screw up the sequence of the HTML code.
+ * Does this mean that the html_template must cache everything this
+ * function generates? If so, we need a per thread instance of the 
+ * template so that we don't step on other threads toes(data). Hmm...
+ */
+
+int some_page_handler(http_request request, http_response response)
+{
+	html_buffer ti = template_repository_get("my_page");
+
+	if(foo) {
+		/* Data generated this way can easily be cached within the
+		 * template_instance */
+		html_printf(ti, "foo, bar, %s\n", "Hello...);
+	}
+	else if(bar) {
+		const char* bar = "blablabla";
+		html_set_content_buffer(ti, bar, strlen(bar));
+	}
+	else if(baz) {
+		char* s = malloc(1000);
+		sprintf(s, "foo,bar,baz");
+		html_set_allocated_content_buffer(ti, s);
+	}
+	else {
+		/* But what about this statement? Will not work since
+		 * the file TYPE can be anything and we cannot read anything
+		 * and insert it into the HTML code. */
+		html_send_file(ti, "/some/file.html", "text/html");
+	}
+
+	/* Create the page, send the HTML code, free the ti instance */
+	return html_done(ti, response);
+}
+
+Some observations:
+1. This code looks good and should be easy to use. 
+
+2. It will be hard to avoid buffer copying between template_instance
+   and http_response since the html_done() function will have to finish
+   before the HTML code is sent from http_response. The buffer copying
+   CAN BE AVOIDED if the template_instance allocates all memory and
+   then uses response_set_allocated_content_buffer() :-)
+
+3. Lots of functions, e.g. response_set_allocated_content_buffer() and
+   http_response_send_file(), are meaningless and dangerous to use in
+   conjunction with the html_XXX functions. This will affect performance
+   since more buffer copying will occur and more RAM is needed.
+
+
+Other thoughts:
+1. The html_ "namespace" is also a good place to add more functions
+which can be used to format and create html pages. Here is a few names,
+the funcitonality is hopefully self explaining?
+	html_table_start(ti, column_count);
+	html_table_end();
+	html_th(ti, "some text");
+	html_td(ti, "some text");
+	html_tr_start();
+	html_tr_end();
+	html_bold(ti, "some_text");
+	html_strong(ti, "some text");
+	html_anchor(ti, "http://foo.bar.com", "Some text");
+	html_image(ti, "/some/image.png");
+
+Fri Dec 19 15:14:58 CET 2003
+That's ENOUGH THINKING. Time to start coding :-)
+Nope, not yet. The current template object is not flexible enough to
+handle custom templates. How can that be done? 
+
+Back to basics, what is a template? A template is a sequence
+of sections, and one of the sections are supposed to contain data
+provided from other sources (the page handler function).
+
+Section names can be "header", "footer", "menu", "user". This construct
+will not handle framed windows.  Doesn't matter much since each frame in
+a frameset has its own url/page. 
+
+The html_menu ADT must be able to "render" itself, the html_template
+should be able to call a function, 
+	int html_menu_render(html_menu, html_buffer) 
+to have the necessary HTML generated and added to the buffer.
+
+Can a template have more than one section with user-provided data?
+If so, the html_XX functions need section name as argument,
+which will create an awkvard interface. We drop that part for now.
+
+
+The html_ modules will probably become quite large, do we want to
+be able do exclude them from the build? Nah, it's better to have a 
+good environment than small executables and an awkvard interface...
+
+OK, here we go. :-)
+
+
+
+
+
+

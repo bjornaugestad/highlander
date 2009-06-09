@@ -1,0 +1,27 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th response_set_content_encoding 3
+.Sh NAME
+.Nm response_set_content_encoding()
+.Nd Set content encoding
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int response_set_content_encoding"
+.Fa "http_response response"
+.Fa "const char* value"
+.Fc
+.Sh DESCRIPTION
+RFC 2616, §14.3
+The content can have different encodings, which basically means that
+the content is e.g. compressed by gzip or other programs. 
+This function sets the encoding of the content. 
+.Sh RETURN VALUE
+.Nm
+returns 1 on success and 0 if we ran out of memory.
+.Sh EXAMPLE
+.Bd -literal
+.Ed
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

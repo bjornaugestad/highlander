@@ -1,0 +1,48 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt CSTRING
+.Th cstring_extend 3
+.Sh NAME
+.Nm cstring_extend()
+.Nd Make room for more characters.
+.Sh SYNOPSIS
+.Fd #include <cstring.h>
+.Fo "int cstring_extend"
+.Fa "cstring s"
+.Fa "size_t size"
+.Fc
+.Sh DESCRIPTION
+.Nm
+makes room for at least 
+.Fa size
+new characters in 
+.Fa s.
+If you know that the string will become large, you can presize the
+internal buffer and avoid later (multiple) calls to realloc().
+.Pp
+.Nm 
+will first try to double the size of the string. If that isn't sufficient,
+the function will allocate the exact number of bytes needed to store the string.
+.Pp
+.Fa size
+is the number of new characters the string must have 
+room for after allocation, excluding current content and the '\0'. 
+No allocation will occur if the string already has room for 
+.Fa size
+characters.
+.Sh RETURN VALUE
+.Nm
+returns 1 if successful and 0 if it failed to reallocate 
+the memory.
+.Sh EXAMPLE
+.Bd -literal
+cstring s;
+s = cstring_new();
+if(!cstring_extend(s, 1024 * 1024)) {
+   /* Out of memory */
+}
+...
+cstring_free(s);
+.Ed
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

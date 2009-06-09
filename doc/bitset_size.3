@@ -1,0 +1,18 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th bitset_size 3
+.Sh NAME
+.Nm bitset_size
+.Nd Returns size of bitset in bytes
+.Sh SYNOPSIS
+.Fd #include <meta_bitset.h>
+.Fo "size_t bitset_size"
+.Fa "bitset b"
+.Fc
+.Sh DESCRIPTION
+Returns the number of bytes used by the bitset to
+store bits. Use it if you e.g. want to write the
+bitset to a file using standar C I/O functions.
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

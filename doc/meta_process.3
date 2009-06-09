@@ -1,0 +1,56 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th meta_process 3
+.Sh NAME
+.Nm meta_process
+.Nd Process management ADT
+.Sh SYNOPSIS
+.Fd #include <meta_process.h>
+.Fo "process process_new"
+.Fc
+.Fo "void process_free"
+.Fa "process p"
+.Fc
+.Fo "int process_shutting_down"
+.Fa "process p"
+.Fc
+.Fo "int process_set_rootdir"
+.Fa "process p"
+.Fa "const char *path"
+.Fc
+.Fo "int process_set_username"
+.Fa "process p "
+.Fa "const char *username"
+.Fc
+.Fo "int process_add_object_to_start"
+.Fa "process p"
+.Fa "void *object"
+.Fa "int do_func(void *)"
+.Fa "int undo_func(void *)"
+.Fa "int run_func(void *)"
+.Fa "int shutdown_func(void *)"
+.Fc
+.Fo "int process_start"
+.Fa "process p"
+.Fa "int fork_and_close"
+.Fc
+.Fo "int process_wait_for_shutdown"
+.Fa "process p"
+.Fc
+.Fo "int process_get_exitcode"
+.Fa "process p"
+.Fa "void *object"
+.Fc
+.Sh DESCRIPTION
+A process object is used to control the currently executing process.
+Normally the process consists of one or more http_server threads.
+These threads cannot change e.g. current directory as that will 
+affect other threads as well. They cannot change user id
+(of course they can, but the http servers are just threads 
+in a process not the process itself).
+.Pp
+The process ADT controls current directory, shutdown semantics,
+startup semantics and more. 
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

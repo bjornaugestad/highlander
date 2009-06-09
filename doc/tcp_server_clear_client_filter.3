@@ -1,0 +1,19 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th tcp_server_clear_client_filter 3
+.Sh NAME
+.Nm Clears the client filter for a tcp_server
+.Nd 
+.Sh SYNOPSIS
+.Fd #include <tcp_server.h>
+.Fo "void tcp_server_clear_client_filter"
+.Fa "tcp_server srv"
+.Fc
+.Sh DESCRIPTION
+Clears any previously added client filter.
+.Sh SEE ALSO
+.Xr tcp_server_allow_clients
+.Ed
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

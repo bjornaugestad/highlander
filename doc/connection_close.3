@@ -1,0 +1,26 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt CONNECTION
+.Th connection_close 3
+.Sh NAME
+.Nm connection_close()
+.Nd Closes a connection
+.Sh SYNOPSIS
+.Fd #include <connection.h>
+.Fo "int connection_close"
+.Fa "connection conn"
+.Fc
+.Sh DESCRIPTION
+.Nm
+closes the connection to the client. 
+.Nm
+will try to write any pending data to the socket and then 
+close the connection.  It will always close the socket,
+but may report errors when flushing write-buffer.
+.Pp
+Users of tcp_server never has to call this function.
+.Sh RETURN VALUE
+.Nm
+returns returns 1 on success, else 0. 
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

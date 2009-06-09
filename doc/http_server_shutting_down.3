@@ -1,0 +1,52 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th http_server_shutting_down 3
+.Sh NAME
+.Nm http_server_shutting_down()
+.Nd Is the server shutting down?
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int http_server_shutting_down"
+.Fa "http_server s"
+.Fc
+.Sh DESCRIPTION
+Use this function to test if the server has received a shutdown 
+request or not. You should stop processing as soon as possible 
+if the server is shutting down.
+.Pp
+When should you call this function? Normally you never need to call
+it at all, but if you create threads in addition to the http_server 
+threads, then you need to know when that thread should stop executing.
+If you want your own threads to stop when the http_server stops, you
+can call this function. 
+.Pp
+Note that if you use the process ADT to start the http_server, you should
+call the process_shutting_down() function instead of this function.
+.Sh RETURN VALUE
+.Nm
+returns 1 if the server is shutting down, else 0.
+.Sh EXAMPLE
+.Bd -literal
+void* mythread(void* arg)
+{
+   http_server myserver = arg;
+   while(!http_server_shutting_down(myserver)) {
+      /* Do something. */
+   }
+   return NULL;
+}
+\&...
+http_server myserver;
+\&...
+pthread_create(&mt, NULL, mythread, myserver);
+http_server_start(myserver);
+pthread_join(mt, NULL);
+\&...
+.Ed
+.Sh SEE ALSO
+.Xr http_server_start 3 ,
+.Xr http_server_shutdown 3 ,
+.Xr process_shutting_down 3
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

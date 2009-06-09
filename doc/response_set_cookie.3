@@ -1,0 +1,31 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th response_set_cookie 3
+.Sh NAME
+.Nm response_set_cookie()
+.Nd response_set_cookie
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int response_set_cookie"
+.Fa "http_response response"
+.Fa "cookie c"
+.Fc
+.Sh DESCRIPTION
+.Nm
+adds a new cookie to the response. This cookie will be transfered to
+the clients machine and stored there. It will later be returned back
+to us, the next time the client performs a request.
+.Pp
+Do not free the cookie object yourself, as the http_server will do 
+that for you after the cookie has been sent to the client.
+.Sh RETURN VALUE
+.Nm
+returns 1 on succes and 0 if we ran out of memory.
+.Sh EXAMPLE
+.Bd -literal
+.Ed
+.Sh SEE ALSO
+.Xr cookie_new 3
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

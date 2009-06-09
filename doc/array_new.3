@@ -1,0 +1,29 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th array_new 3
+.Sh NAME
+.Nm array_new()
+.Nm array_free()
+.Nd Create and destroy dynamic arrays
+.Sh SYNOPSIS
+.Fd #include <meta_array.h>
+.Fo "array array_new"
+.Fa "size_t nmemb"
+.Fa "int can_grow"
+.Fc
+.Fo "void array_free"
+.Fa "array p"
+.Fa "dtor cleanup"
+.Fc
+.Sh DESCRIPTION
+.Nm array_new()
+creates a new array. If can_grow is <> 0, then the array
+is allowed to grow automatically. 
+.Pp
+.Nm array_free()
+frees the array. If the cleanup function parameter is NULL,
+the entries in the array will not be freed by 
+.Nm array_free().
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

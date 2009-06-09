@@ -1,0 +1,24 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th http_server_start 3
+.Sh NAME
+.Nm http_server_start()
+.Nd Start the http server
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int http_server_start"
+.Fa "http_server srv"
+.Fc
+.Sh DESCRIPTION
+.Nm
+enters multithreaded mode and starts accepting HTTP connections.
+.Sh RETURN VALUE
+.Nm
+returns 1 if the server terminated normally,
+0 if the server was unable to start.
+.Sh SEE ALSO
+.Xr http_server_alloc 3 ,
+.Xr http_server_new 3
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

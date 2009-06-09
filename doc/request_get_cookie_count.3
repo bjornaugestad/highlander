@@ -1,0 +1,41 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th request_get_cookie_count 3
+.Sh NAME
+.Nm request_get_cookie_count()
+.Nm request_get_cookie()
+.Nd Get cookie info
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "size_t request_get_cookie_count"
+.Fa "http_request request"
+.Fc
+.Fo "cookie request_get_cookie"
+.Fa "http_request request"
+.Fa "size_t i"
+.Fc
+.Sh DESCRIPTION
+.Nm request_get_cookie_count()
+returns the number of cookies received from the client.
+.Pp
+.Nm request_get_cookie()
+returns a cookie, or NULL if 
+.Fa i
+is out of bounds.
+.Sh RETURN VALUE
+.Sh EXAMPLE
+.Bd -literal
+int my_page_handler(http_request req, http_response page)
+{
+   cookie c;
+   size_t i, nelem = request_get_cookie_count(req);
+   for(i = 0; i < nelem; i++)
+      cookie c = request_get_cookie(req, i);
+   return 0;
+}
+.Ed
+.Sh SEE ALSO
+.Xr highlander_cookies
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

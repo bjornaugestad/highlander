@@ -1,0 +1,113 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META_PROCESS
+.Th process_add_object_to_start 3
+.Sh NAME
+.Nm process_add_object_to_start()
+.Nd Add an object to start when process_start() is called
+.Sh SYNOPSIS
+.Fd #include <meta_process.h>
+.Fo "int process_add_object_to_start"
+.Fa "process p"
+.Fa "void *object"
+.Fa "int do_func(void *)"
+.Fa "int undo_func(void *)"
+.Fa "int run_func(void *)"
+.Fa "int shutdown_func(void *)"
+.Fc
+.Sh DESCRIPTION
+The process object can start any number of threads. Use this function to 
+add a function to run as a separate thread.
+.Fa object
+is used as argument to all the function pointers.
+.Pp
+.Fa do_func
+is called in phase one of process startup, before we change user id.
+.Fa do_func
+must therefore perform all operations needed to be done as user root,
+e.g. bind sockets to reserverd ports.
+.Pp
+.Fa undo_func()
+is called if one of the 
+.Fa do_func()
+functions fails, but is not called for the object that failed.
+.Pp
+.Fa run_func()
+is called from process_start() after the process has changed rootdir directory and user id. 
+.Pp
+.Fa shutdown_func()
+will be called when the process receives SIGTERM.
+.Pp
+All functions must return 1 on success and and 0 on error.
+.Sh RETURN VALUE
+.Nm
+returns 1 if the object was successfully added and 0 if an error occured.
+.Sh EXAMPLE
+This very simple example creates a myserver and starts it properly, as well
+as handles shutdown and signaling. 
+Remember that you can add any number of objects to the process object.
+.Bd -literal
+#include <stdlib.h>
+#include <meta_process.h>
+/* Some object which contains thread specific data */
+struct myserver {
+	int shutting_down;
+	...;
+};
+/* Do stuff as root, if needed. Typical actions would 
+ * be to bind() to reserved ports
+ */
+int myserver_do(void* arg)
+{
+	struct myserver* p = arg;
+	return 1;
+}
+/* Undo what myserver_do() did, e.g. close the socket
+ * that myserver_do() bound to a port. 
+ */
+int myserver_undo(void* arg)
+{
+	struct myserver* p = arg;
+	return 1;
+}
+/* Do the actual task of my server, until we're shutting down. */
+int myserver_run(void* arg)
+{
+	struct myserver* p = arg;
+	while(!p->shutting_down) {
+		/* Perform the server task(s) */
+	}
+	/* Cleanup */
+	return 1;
+}
+int myserver_shutting_down(void* arg)
+{
+	struct myserver* p = arg;
+	p->shutting_down = 1;
+	return 1;
+}
+int main(void)
+{
+	struct myserver* mys;
+	process p;
+	mys = malloc(sizeof *mys);
+	p = process_new();
+	process_add_object_to_start(
+		p, 
+		mys, 
+		mys_do,
+		mys_undo,
+		mys_run,
+		mys_shutting_down);
+	process_set_username(p, "nobody");
+	process_start(p, 1);
+	process_wait_for_shutdown(p);
+	free(mys);
+	process_free(p);
+	return 0;
+}
+.Ed
+.Sh SEE ALSO
+.Xr process_start
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

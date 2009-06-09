@@ -1,0 +1,94 @@
+Wed Jan  4 16:17:34 CET 2006
+--
+I've just rewritten lots of stuff and split the http_request and http_response
+objects in multiple shared objects, namely general_header and entity_header.
+
+I've also added sending&reception of both http_request and http_response
+objects. 
+
+This document is used to track status for sending and parsing of fields
+in the 4 structs. Status is X for unknown and Y/N for yes/no.
+
+--------------------------------------------------------------------
+struct general_header_tag
+--------------------------------------------------------------------
+member			send OK			receive OK	Reference
+--------------------------------------------------------------------
+/* Cache control flags/values , v1.1 §14.9 */
+no_cache;									/* v1.0 §10.12 v1.1 §14.32 */
+no_store;
+max_age;
+max_stale;
+min_fresh;
+no_transform;
+only_if_cached;
+connection			Y				Y		/* v1.1 §14.10 */
+date				Y				Y		/* v1.0 §10.6 v1.1 §14.18 */
+trailer				Y				Y		/* v1.1 §14.40 */
+transfer_encoding	Y				Y		/* v1.1 §14.41 */
+upgrade				Y				Y		/* v1.1 §14.42 */
+via					Y				Y		/* v1.1 §14.45 */
+warning				Y				Y		/* v1.1 §14.46 */
+pragma				Y				Y		/* v1.1 §14.32 */
+
+struct entity_header_tag
+--------------------------------------------------------------------
+member			send OK			receive OK		Reference
+--------------------------------------------------------------------
+allow				Y				Y	
+content_encoding	Y				Y		/* v1.0 §10.3 v1.1 §14.11 */
+content_language	Y				Y		/* v1.0 §D.2.5 v1.1 §14.12 */
+content_length		Y				Y		/* v1.0 §10.4 v1.1 §14.13 */
+content_location	Y				Y	
+content_md5			Y				Y		/* v1.1 §14.15 */
+content_range		Y				Y	
+content_type		Y				Y		/* v1.0 §10.5 v1.1 §14.17 */
+expires				Y				Y	
+last_modified		Y				Y	
+
+--------------------------------------------------------------------
+struct http_request_tag
+--------------------------------------------------------------------
+member			send OK			receive OK	Reference
+--------------------------------------------------------------------
+accept				Y				Y		/* v1.0 §D.2.1 v1.1 §14.1 */
+accept_charset		Y				Y		/* v1.0 §D.2.2 v1.1 §14.2 */
+accept_encoding		Y				Y		/* v1.0 §D.2.3 v1.1 §14.3 */
+accept_language		Y				Y		/* v1.0 §D.2.4 v1.1 §14.4 */
+authorization		Y				Y		/* v1.0 §10.2 v1.1 §14.8 */
+expect				Y				Y		/* v1.1 §14.20 */
+from				Y				Y		/* v1.0 §10.8 v1.1 §14.22 */
+host				Y				Y		/* v1.1 §14.23 */
+if_match			Y				Y		/* v1.1 §14.24 */
+if_modified_since	Y				Y		/* v1.0 §10.9 v1.1 §14.25 */
+if_none_match		Y				Y		/* v1.1 §14.26 */
+if_range			Y				Y		/* v1.1 §14.27 */
+if_unmodified_since	Y				Y		/* v1.1 §14.28 */
+max_forwards		Y				Y		/* v1.1 §14.31 */
+proxy_authorization	Y				Y		/* v1.1 §14.34 */
+range				Y				Y		/* v1.1 §14.35 */
+referer				Y				Y		/* v1.0 §10.13 v1.1 §14.36 */
+te					Y				Y		/* v1.1 §14.39 */
+user_agent			Y				Y		/* v1.0 §10.15 v1.1 §14.43 */
+
+/* Version 1.0 fields */
+link				N				X		/* v1.0 §D.2.6 */
+mime_version_major	N				X		/* v1.0 §D.2.7 */
+mime_version_minor	N				X		/* v1.0 §D.2.7 */
+title				N				X		/* v1.0 §D.2.9 */
+
+--------------------------------------------------------------------
+struct http_response_tag
+--------------------------------------------------------------------
+member			send OK			receive OK	Reference
+--------------------------------------------------------------------
+accept_ranges		Y				Y		/* §14.5 */
+age					Y				Y
+etag				Y				Y		/* §14.19 */
+location			Y				Y		/* §14.30 */
+proxy_authenticate	Y				Y		/* §14.33 */
+retry_after			Y				Y		/* §14.38 */
+server				Y				Y		/* §14.39 */
+vary				Y				Y		/* §14.44 */
+www_authenticate	Y				Y		/* §14.47 */
+

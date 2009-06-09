@@ -1,0 +1,30 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th http_server_set_logrotate 3
+.Sh NAME
+.Nm http_server_set_logrotate()
+.Nd Sets how often the log will be rotated
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "void http_server_set_logrotate"
+.Fa "http_server s"
+.Fa "int logrotate"
+.Fc
+.Sh DESCRIPTION
+.Nm
+Set the number of entries in a logfile before the logfile is rotated.
+0 means "don't rotate", which also is the default.
+.Pp
+If 
+.Fa logrotate
+is a number higher than 0, the http_server will archive the log file
+for every
+.Fa logrotate
+entries. The current log file will be closed and then
+renamed to logname.%Y%m%d%Y%M%S, e.g.  myapplication.20051127150820.
+.Sh SEE ALSO
+.Xr http_server_set_logfile 3 ,
+strftime 3
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

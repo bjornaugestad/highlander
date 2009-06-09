@@ -1,0 +1,25 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th http_server_trace 3
+.Sh NAME
+.Nm http_server_trace()
+.Nd Create and destroy http_server objects
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "http_server http_server_trace"
+.Fa "http_server s"
+.Fa "int level"
+.Fc
+.Sh DESCRIPTION
+.Nm http_server_trace()
+Set trace level for one http server.
+.Pp
+One can configure a http server to trace its actions to stdout. It is very useful when developing
+applications, especially because different browsers implement HTTP in mysterious ways. 
+The trace level is from 0 to 3, where 0 is no trace and 3 is full trace. 1 and 2 are just intermediate
+levels with no magic meaning.
+.Pp
+Note that tracing is available in debug versions only.
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

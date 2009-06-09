@@ -1,0 +1,68 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th meta_atomic 3
+.Sh NAME
+.Nm meta_atomic
+.Nd Atomic types and operators
+.Sh SYNOPSIS
+.Fd #include <meta_atomic.h>
+.Fo "void atomic_X_init"
+.Fa "atomic_X *p"
+.Fc
+.Fo "void atomic_X_destroy"
+.Fa "atomic_X *p"
+.Fc
+.Fo "X atomic_X_get"
+.Fa "atomic_X *p"
+.Fc
+.Fo "void atomic_X_set"
+.Fa "atomic_X *p"
+.Fa "X value"
+.Fc
+.Fo "X atomic_X_add"
+.Fa "atomic_X *p"
+.Fa "X value"
+.Fc
+.Fo "void atomic_X_inc"
+.Fa "atomic_X *p"
+.Fc
+.Fo "void atomic_X_dec"
+.Fa "atomic_X *p"
+.Fc
+.Sh DESCRIPTION
+The core meta library provides atomic versions of many integer data types,
+as well as operators to manipulate the values.
+.Pp
+When writing multithreaded applications, it's important that two threads
+don't change the same variable at the same time. The atomic types
+can be changed and read in a thead safe way, eliminating the need for
+explicit locking of variables.
+.Pp
+This module provides atomic versions of uint16_t, uint32_t, int, unsigned long,
+and unsigned long long.  These types are named atomic_u16, atomic_u32, 
+atomic_int, atomic_ulong and atomic_ull.
+.Pp
+Type safe versions of all functions are provided and the data type is
+a part of the function name. 
+.Pp
+The methods provided are atomic_X_init(), atomic_X_destroy(), atomic_X_get(),
+atomic_X_set(), atomic_X_add(), atomic_X_inc() and atomic_X_dec(). X indicates
+where in the function name the data type is placed. Replace X with either
+ull, ulong, u16, u32 or int. For example, the u32 atomic data type will have
+functions named atomic_u32_init(), atomic_u32_destroy(), atomic_u32_get(),
+atomic_u32_set(), atomic_u32_add(), atomic_u32_inc() and atomic_u32_dec().
+.Pp
+.Nm 
+also provides an ATOMIC_INITIALIZER literal, which can be used to initialize
+objects, just like PTHREAD_MUTEX_INITIALIZER initialize mutexes.
+.Pp
+To use an atomic type, you must first call atomic_X_init() or 
+use ATOMIC_INITIALIZER. Remember to call atomic_X_destroy() if you called 
+atomic_X_init().
+.Pp
+Note that atomic_X_add(), atomic_X_inc() and atomic_X_dec() returns
+the value of the atomic type after your modification, but before the object
+is unlocked. 
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

@@ -1,0 +1,48 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th meta_pool 3
+.Sh NAME
+.Nm meta_pool
+.Nd Object management ADT
+.Sh SYNOPSIS
+.Fd #include <meta_pool.h>
+.Fo "pool pool_new"
+.Fc
+.Fo "void pool_free"
+.Fa "pool p"
+.Fa "dtor cleanup"
+.Fc
+.Fo "void* pool_add"
+.Fa "pool p"
+.Fa "void *resource"
+.Fc
+.Fo "void* pool_get"
+.Fa "pool p"
+.Fc
+.Fo "void* pool_recycle"
+.Fa "pool p"
+.Fa "void *resource"
+.Fc
+.Sh DESCRIPTION
+A pool is just a pool of resources, which basically can
+be anything. You create the pool by adding resources to it
+and later you can get resources from the pool by calling
+the function pool_get().
+.Pp
+Now, why would anyone want to use a pool? The initial purpose
+for the resource pool was to speed up things by precreating
+a fixed number of resources and then use them later in a 
+program. If the creation/destruction process is slow, then
+you get overhead. We don't like that. 
+.Pp
+Imagine a multithreaded server to which a client can connect.
+The server may have an upper limit of clients, and each client
+may use some connection specific struct or ADT. You can then
+precreate these structs when the server starts and later just
+get an ADT from the pool. 
+.Pp
+The resource pool is thread safe and reentrant. It uses a mutex
+to control access to the pool. 
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

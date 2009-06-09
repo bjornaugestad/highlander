@@ -1,0 +1,40 @@
+.Dd Nov 25, 2005
+.Th sublist_create 3
+.Sh NAME
+.Nm sublist_create() 
+.Nm sublist_create_neg() 
+.Nd Create a sublist.
+.Sh SYNOPSIS
+.Fd #include <meta_list.h>
+.Fo "list sublist_create"
+.Fa "list lst"
+.Fa "int (*include_node)(void*)"
+.Fc
+.Fo "list sublist_create_neg"
+.Fa "list lst"
+.Fa "int (*include_node)(void*)"
+.Fc
+.Sh DESCRIPTION
+.Nm sublist_create
+creates a new list consisting 
+of a subset of a list, but does not copy the data stored in the original list.
+This means that you cannot use list_free() to free the sublist.
+Use sublist_free() instead.
+The user supplied include_node() function should return 1
+if the node is to be added to the sublist, and 0 if we should
+skip the node. The arg is whatever the list points to. 
+.Nm sublist_create()
+returns a valid list. The item count is 0 if no nodes qualified. This means that sublist_free() must be called.
+.Nm sublist_create()
+will return NULL if it runs out of memory while constructing the sublist.
+Adding items to a sublist will create a memory leak.
+.Nm sublist_create_neg()
+is just like 
+.Nm sublist_create()
+, except that is uses negation. So if the function 
+.Fa include_node
+returns 1, the node is excluded. We do it this way to avoid having to duplicate a lot of functions.
+.Sh SEE ALSO
+.Xr sublist_free 3
+.Sh AUTHOR
+B. Augestad, bjorn.augestad@gmail.com.

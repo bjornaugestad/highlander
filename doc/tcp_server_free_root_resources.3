@@ -1,0 +1,20 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th tcp_server_free_root_resources 3
+.Sh NAME
+.Nm tcp_server_free_root_resources()
+.Nd tcp_server_free_root_resources
+.Sh SYNOPSIS
+.Fd #include <tcp_server.h>
+.Fo "int tcp_server_free_root_resources"
+.Fa "tcp_server s"
+.Fc
+.Sh DESCRIPTION
+Does the opposite of get_root_resources(). It will typically
+close the socket in use.
+.Sh EXAMPLE
+.Bd -literal
+.Ed
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

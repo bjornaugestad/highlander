@@ -1,0 +1,19 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th cache_get 3
+.Sh NAME
+.Nm cache_get
+.Nd Retrieves an item from the cache.
+.Sh SYNOPSIS
+.Fd #include <meta_cache.h>
+.Fo "int cache_get"
+.Fa "cache c"
+.Fa "size_t id"
+.Fa "void **pdata"
+.Fa "size_t *pcb"
+.Fc
+.Sh DESCRIPTION
+Retrieves an item from the cache.
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

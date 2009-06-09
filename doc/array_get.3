@@ -1,0 +1,17 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th array_get 3
+.Sh NAME
+.Nm array_get
+.Nd Get an element from the array
+.Sh SYNOPSIS
+.Fd #include <meta_array.h>
+.Fo "int array_get"
+.Fa "array p "
+.Fa "size_t i"
+.Fc
+.Sh DESCRIPTION
+Returns one element or NULL if the index is out of bounds.
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

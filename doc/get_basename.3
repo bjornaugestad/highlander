@@ -1,0 +1,30 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th get_basename 3
+.Sh NAME
+.Nm get_basename()
+.Nd get basename of a file name.
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int get_basename"
+.Fa "const char* name"
+.Fa "const char* suffix"
+.Fa "char* dest"
+.Fa "size_t cb"
+.Fc
+.Sh DESCRIPTION
+.Nm
+is a replacement function for basename().
+basename() is a SUSv2 function, but unfortunately it is not
+commonly available on other platforms, e.g. cygwin. 
+basename() is also a bit odd, so we replace it with our own version.
+This function, get_basename(), mimics the basename(1) command, 
+which accepts an optional suffix which will be stripped if provided.
+.Sh RETURN VALUE
+.Sh EXAMPLE
+.Bd -literal
+.Ed
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

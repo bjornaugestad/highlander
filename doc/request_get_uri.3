@@ -1,0 +1,23 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th request_get_uri 3
+.Sh NAME
+.Nm request_get_uri()
+.Nd request_get_uri
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "const char* request_get_uri"
+.Fa "http_request request"
+.Fc
+.Sh DESCRIPTION
+.Nm
+returns the URI that the client requested, or NULL if no 
+URI was present.
+.Sh RETURN VALUE
+.Sh EXAMPLE
+.Bd -literal
+.Ed
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

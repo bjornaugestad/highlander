@@ -1,0 +1,75 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th http_server_get_timeout_read 3
+.Sh NAME
+.Nm http_server_get_timeout_read()
+.Nm http_server_get_timeout_write()
+.Nm http_server_get_timeout_accept()
+.Nm http_server_set_timeout_read()
+.Nm http_server_set_timeout_write()
+.Nm http_server_set_timeout_accept()
+.Nm http_server_set_retries_read()
+.Nm http_server_set_retries_write()
+.Nd Manage timeouts and retries
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "void http_server_set_timeout_accept"
+.Fa "http_server s"
+.Fa "int seconds"
+.Fc
+.Fo "void http_server_set_timeout_read"
+.Fa "http_server s"
+.Fa "int seconds"
+.Fc
+.Fo "void http_server_set_timeout_write"
+.Fa "http_server s"
+.Fa "int seconds"
+.Fc
+.Fo "void http_server_set_retries_read"
+.Fa "http_server s"
+.Fa "int seconds"
+.Fc
+.Fo "void http_server_set_retries_write"
+.Fa "http_server s"
+.Fa "int seconds"
+.Fc
+.Fo "int http_server_get_timeout_read"
+.Fa "http_server s"
+.Fc
+.Fo "int http_server_get_timeout_write"
+.Fa "http_server s"
+.Fc
+.Fo "int http_server_get_timeout_accept"
+.Fa "http_server srv"
+.Fc
+.Sh DESCRIPTION
+Highlander reads and writes to/from sockets, which are network entities.
+Some times it is not possible to perform the writes within a period.
+The server will abort the write operation and close the socket if
+it is unable to write within this value.
+Note that if a timeout occurs, it affects only that specific client.
+.Pp
+.Nm http_server_get_timeout_read()
+returns the number of seconds the server will wait for
+data before it times out and closes the connection.
+.Pp
+.Nm http_server_set_timeout_read()
+sets the number of seconds the server will wait for data
+on the socket before it closes a connection. Default values is 15.
+Keep it low to avoid that very slow or broken clients blocks
+normal traffic. 
+.Pp
+.Nm http_server_set_timeout_write()
+sets the number of seconds the server
+will wait for writability of outgoing data. 
+The write buffer is  sent
+to the client when the buffer is full, when we call connection_flush() or
+when the page handler returns. It Highlander is unable to write data
+within n seconds * m retires, it will discard the outgoing data
+and close the connection with the client.
+.Pp
+.Ed
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

@@ -1,0 +1,18 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th array_extend 3
+.Sh NAME
+.Nm array_extend
+.Nd Extend a dynamic array
+.Sh SYNOPSIS
+.Fd #include <meta_array.h>
+.Fo "int array_extend"
+.Fa "array p"
+.Fa "size_t nelem"
+.Fc
+.Sh DESCRIPTION
+Adds room for nelem new elements in the array.
+Returns 0 if the function was unable to extend the array, else 1.
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

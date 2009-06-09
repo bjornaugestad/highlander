@@ -1,0 +1,26 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th response_set_date 3
+.Sh NAME
+.Nm response_set_date()
+.Nd response_set_date
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int response_set_date"
+.Fa "http_response response"
+.Fa "time_t value"
+.Fc
+.Sh DESCRIPTION
+.Nm
+sets the HTTP header field DATE to the specified time. This field
+will be transfered back to the client, and is required by http.
+Highlander will set the proper value for you unless you have 
+supplied one yourself.
+.Sh RETURN VALUE
+.Nm
+always returns 1.
+.Sh SEE ALSO
+See RFC2616, §14.18
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

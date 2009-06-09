@@ -1,0 +1,130 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th http_server_configure 3
+.Sh NAME
+.Nm http_server_configure()
+.Nd Read configuration file
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int http_server_configure"
+.Fa "http_server s"
+.Fa "process p"
+.Fa "const char* filename"
+.Fc
+.Sh DESCRIPTION
+.Nm
+reads a configuration file and configures the http server 
+based on the settings/directives found in that file.
+.Fa s 
+is the http_server to be configured.
+.Pp
+.Fa p 
+is an optional process object. Set it to NULL if you don't use 
+process objects. 
+.Nm
+will only read configuration parameters for the process object 
+if the program runs as the root user, since only the root user
+can use the process settings 
+.Nm
+understands. 
+.Pp
+.Fa filename
+is the name of configuration file we read, optinally including a path.
+.Pp
+The configuration file can contain any number of settings, 
+.Nm
+understands the following settings.
+.Ss http_server settings
+.Fa workers
+is an integer larger than 0 specifying the number of worker threads the
+server shall use to serve clients. 
+.Pp
+.Fa queuesize
+is an integer larger than 0 specifying the size of the work queue,
+ie the number of connected clients which hasn't been allocated
+a worker thread.
+.Pp
+.Fa block_when_full
+is an integer flag(0|1) telling us what to do when the work queue
+is full. We can either wait for room in the queue or just discard
+the connection request.
+.Pp
+.Fa timeout_read
+is an integer specifying how many seconds poll() should wait for
+data to arrive on the socket.
+.Pp
+.Fa timeout_write
+is an integer specifying how many seconds poll() should wait 
+when checking if it is possible to write to the socket.
+.Pp
+.Fa retries_read
+is an integer specifying how many times we should retry a read()
+from the socket.
+.Pp
+.Fa retries_write
+is an integer specifying how many times we should retry a write()
+to the socket.
+.Pp
+.Fa logrotate
+is an integer flag(0|1) specifying if we should rotate the access log
+or not. 
+.Pp
+.Fa documentroot
+is a path to the root directory for all documents the server will
+read from disc.
+.Pp
+.Fa hostname
+is a string containing the name of the host the http_server will
+use when it calls bind().
+.Pp
+.Fa port
+is an integer larger than 0 specifying port number to bind to.
+.Pp
+.Fa logfile
+is a path to the log file the server will write log information to.
+.Pp
+.Ss process settings
+.Fa username
+is a string specifying the user name the process should run as
+after the process has aquired all resources. 
+.Pp
+.Fa rootdir
+is a path to the root directory the process will run in, if set.
+The process object will call both chdir() and chroot() to change
+into this directory.
+.Pp
+.Sh RETURN VALUE
+.Nm
+returns 1 on success and 0 if an error occured.
+.Sh EXAMPLE
+.Bd -literal
+# Sample configuration file for a http_server and a process.
+# 
+# We use quite a few worker threads since we have lots of CPU's
+workers 24
+# The work queue is set high to handle bursty traffic
+queuesize 512
+# Just discard connection requests when queue is full to avoid
+# overloading the server.
+block_when_full 0
+# Some clients have very slow lines, like PDAs and cell phones
+# connecting using GPRS or GSM. Help them with high timeout values
+# and retry values for reads, but not for writes as it may clog the
+# server.
+timeout_read 15
+retries_read 0
+timeout_write 15
+retries_write 3
+# Never rotate the log
+logrotate 0
+# Run as this user
+username nobody
+# chroot to this directory before we start serving requests
+rootdir "/srv/www/highlander/"
+.Ed
+.Sh SEE ALSO
+.Xr tcp_server 7
+.Xr meta_configfile 7
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

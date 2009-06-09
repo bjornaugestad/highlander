@@ -1,0 +1,43 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th request_get_method 3
+.Sh NAME
+.Nm request_get_method()
+.Nd Return HTTP method used
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "http_method request_get_method"
+.Fa "http_request request"
+.Fc
+.Sh DESCRIPTION
+.Nm
+returns the method that the client called. It is normally GET or POST.
+Some pages may require POST, and you can use this function to check
+the method that the client used.
+.Sh RETURN VALUE
+.Nm
+returns either METHOD_GET, METHOD_POST, METHOD_HEAD or 
+METHOD_UNKNOWN. These constants are defined in highlander.h.
+.Sh EXAMPLE
+.Bd -literal
+int my_page_handler(http_request req, http_response page)
+{
+   enum http_method m = request_get_method();
+   switch(m) {
+      case METHOD_POST:
+         ...
+         break;
+      case METHOD_GET:
+         ...
+         break;
+      default:
+         ...
+         break;
+   }
+   return 0;
+}
+.Ed
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

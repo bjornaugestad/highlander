@@ -1,0 +1,46 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th meta_cache 3
+.Sh NAME
+.Nm meta_cache
+.Nd A cache ADT
+.Sh SYNOPSIS
+.Fd #include <meta_cache.h>
+.Fo "cache cache_new"
+.Fa "size_t nelem"
+.Fa "size_t hotlist_nelem"
+.Fa "size_t bytes"
+.Fc
+.Fo "void cache_free"
+.Fa "cache c"
+.Fa "dtor cleanup"
+.Fc
+.Fo "int cache_add"
+.Fa "cache c"
+.Fa "size_t id"
+.Fa "void *data"
+.Fa "size_t cb"
+.Fa "int pin"
+.Fc
+.Fo "int cache_exists"
+.Fa "cache c"
+.Fa "size_t id"
+.Fc
+.Fo "int cache_get"
+.Fa "cache c"
+.Fa "size_t id"
+.Fa "void **pdata"
+.Fa "size_t *pcb"
+.Fc
+.Fo "int cache_remove"
+.Fa "cache c"
+.Fa "size_t id"
+.Fc
+.Sh DESCRIPTION
+A meta_cache is just a simple cache to which you can add and later
+retrieve items. 
+.Pp
+An item is any number of bytes identified by an id.
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

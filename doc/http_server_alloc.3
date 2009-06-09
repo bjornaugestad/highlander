@@ -1,0 +1,38 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th http_server_alloc 3
+.Sh NAME
+.Nm http_server_alloc()
+.Nd Allocate memory for the http_server
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int http_server_alloc"
+.Fa "http_server s"
+.Fc
+.Sh DESCRIPTION
+.Nm
+allocates the memory used by the server internally.
+.Pp
+The http_server object is very configurable, and you can choose
+number of worker threads, request queue size and other things. Since
+the server is designed to be used in a multithreaded environment, it
+preallocates all memory before it starts up. This is done to avoid the
+common malloc() bottleneck. This is why the creation sequence is a bit
+complicated. 
+.Pp
+First you create the server object, then you configure it,
+then allocate memory, and then run the server by calling 
+http_server_start().
+.Pp
+Call http_server_free() when http_server_start() returns to 
+free all memory allocated by the server.
+.Sh RETURN VALUE
+.Nm
+returns 1 if memory was allocated and 0 if an error occured.
+.Sh EXAMPLE
+.Bd -literal
+.Ed
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

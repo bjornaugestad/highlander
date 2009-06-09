@@ -1,0 +1,50 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt CSTRING
+.Th cstring_left 3
+.Sh NAME
+.Nm cstring_left()
+.Nm cstring_right()
+.Nd create a string from another string
+.Sh SYNOPSIS
+.Fd #include <cstring.h>
+.Fo "cstring cstring_left"
+.Fa "cstring src"
+.Fa "size_t n"
+.Fc
+.Fo "cstring cstring_right"
+.Fa "cstring src"
+.Fa "size_t n"
+.Fc
+.Sh DESCRIPTION
+.Nm cstring_left()
+creates a new cstring containing the 
+.Fa n
+leftmost characters of 
+.Fa src.
+.Pp
+.Nm cstring_right()
+creates a new cstring containing the
+.Fa n
+rightmost characters of
+.Fa src.
+.Pp
+If 
+.Fa n
+is greater than the length of
+.Fa src
+, then the entire string will be copied.
+.Sh RETURN VALUE
+Both functions return NULL if an error occurs, else a valid cstring. Remember to free the returned cstring using cstring_free().
+.Sh EXAMPLE
+.Bd -literal
+cstring h, w, s = cstring_new();
+cstring_copy(s, "Hello, World");
+h = cstring_left(s, 5); /* h will contain "Hello" */
+w = cstring(right(s, 5); /* w will contain "World" */
+cstring_free(s);
+cstring_free(h);
+cstring_free(w);
+.Ed
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

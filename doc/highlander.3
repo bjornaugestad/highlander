@@ -1,0 +1,125 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th highlander 3
+.Sh NAME
+.Nm highlander
+.Nd a HTTP server library
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Sh DESCRIPTION
+Highlander is a web server library written in C which can be used to create
+web servers and to implement dynamic HTML pages in C.
+.Pp
+Creating your own web server is very easy, all you have to do is to create
+a http_server object, add a page handler function for the URI you want
+to serve and then start the http server. The classic "hello, world" program,
+written as a web server, looks like this:
+.Bd -literal 
+#include <highlander.h>
+
+int page_handler(http_request req, http_response page)
+{
+   const char* html = 
+   "<html><head><title>Hello, world</title></head>"
+   "<body>Hello, world</body></html>";
+
+   response_add(page, html);
+   return 0;
+}
+
+int main(void)
+{
+   http_server s = http_server_new();
+   http_server_set_port(s, 2000);
+   http_server_alloc(s);
+   http_server_add_page(s, "/", page_handler, NULL);
+   http_server_get_root_resources(s);
+   http_server_start(s);
+   return 0;
+}
+
+.Ed
+22 lines of C code, that's all it takes to create a web server.
+Remember to link your program with both the coremeta library
+and the highlander library.
+.Bd -literal
+     gcc -pthread -o hello hello.c -lhighander 
+
+.Ed
+Now start your program and then point your web browser to 
+http://localhost:2000 to access your page.
+.Ss Why C?
+Why use C to implement HTML pages? Many excellent web servers 
+already exist, these can  can be extended using a language like Javascript,
+Java, Ruby on Rails, PHP or ASP. That concept works well in most
+cases, but has some serious drawbacks compared to a solution based
+on C/C++.
+.Bl -bullet
+.It
+Code reuse. If your system consists of more than just a web server and
+other parts of the system uses C/C++, you can reuse these parts in
+highlander. An example could be a database access library using
+your own objects. 
+.It
+Speed. C is still the speed king of programming languages.
+If you need that speed, use C to implement functionality.
+.It
+Tools. C has great tools for debugging, profiling, code coverage
+testing and more. 
+.It
+Size. Highlander is small and works well on any POSIX platform. 
+.It
+Portability. C is a very portable language and is available on
+almost all platforms. If your target platform also supports
+POSIX, you can run your web server.
+.It
+Embeddability. If you already have a program written in C or 
+a language which can call C, you can integrate a web server
+into that program. Highlander has been used for that purpose
+in a CORBA server, providing an integrated web server. The
+web server provided both documentation as well as status info
+and statistics about the CORBA server part of the program.
+.El
+So C gives a developer more opportunities and flexibility than
+other solutions. 
+.Ss DATA TYPES
+The Highlander web server uses abstract data types (ADT) for
+most of the data types in use. The most common types relevant to
+a user of the Highlander library are:
+.Bl -bullet
+.It
+http_server.
+The http server object is the main object in a web server. 
+Highlander is fully thread safe and uses no static or global variables.
+This means that you can have more than one http server in the same process. 
+.It
+http_request.
+A HTTP request is sent from the client to the server, and is normally
+a request for a page. 
+.It
+http_response.
+A http response it what a server sends to the client.
+.It
+cookie.
+Cookies are used by web servers to store information on the client
+computer. The cookie ADT is our interface to handle cookies.
+.El
+.Ss Threads and memory usage in Highlander
+Highlander allocates all memory needed when the http_server_alloc() 
+function is called and does not allocate any memory whatsoever, except
+when POST requests contain attachments. Memory will be allocated to 
+store the attached data.
+.Pp
+The web server has a fixed number of worker threads, and we need
+one http_request object and one http_response object per worker thread
+to be able to run all worker threads simultaneously. We therefore
+allocate memory for these objects at startup and keep the objects in
+object pools for later reuse.
+.Pp
+All threads are also created at startup, we do not create threads
+while running. This is done for performance reasons.
+.Sh SEE ALSO
+.Xr tcp_server 3
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

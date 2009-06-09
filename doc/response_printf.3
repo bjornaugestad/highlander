@@ -1,0 +1,63 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th response_printf 3
+.Sh NAME
+.Nm response_printf()
+.Nd printf() like way of adding data to a response
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int response_printf"
+.Fa "http_response response"
+.Fa "size_t size"
+.Fa "const char* format"
+.Fa "..."
+.Fc
+.Sh DESCRIPTION
+.Nm
+appends formatted text to the page. It behaves like sprintf(), with two
+exceptions:
+.Fa size
+says how many bytes the formatted text will use. 
+.Nm
+needs that information to presize the receiving buffer.
+.Pp
+Another difference is that
+.Nm
+appends data instead of overwriting existing data.
+.Sh RETURN VALUE
+.Sh EXAMPLE
+.Bd -literal
+#include <highlander.h>
+int my_handler(http_request req, http_response page)
+{
+   int i, niter = 100;
+   static const char* head =
+      "<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.0 Transitional//EN'>"
+      "<html>"
+      "<head>"
+      "   <title>My test page</title>"
+      "</head>";
+   response_add(page, head);
+   response_add(page, "<body>");
+   for(i = 0; i < niter; i++) 
+      response_printf(page, 200, "<p>Paragraph #%d", i);
+   response_add(page, "</body></html>");
+   return HTTP_200_OK;
+}
+int main(void)
+{
+   http_server s = http_server_new();
+   http_server_set_port(s, 2000);
+   http_server_alloc(s);
+   http_server_add_page(s, "/", my_handler, NULL);
+   http_server_get_root_resources(s);
+   http_server_start(s);
+   http_server_free(s);
+   return 0;
+}
+.Ed
+.Sh SEE ALSO
+.Xr response_add 3
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

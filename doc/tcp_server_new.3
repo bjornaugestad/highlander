@@ -1,0 +1,49 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th tcp_server_new 3
+.Sh NAME
+.Nm tcp_server_new()
+.Nm tcp_server_free()
+.Nd Create and destroy tcp_server objects
+.Sh SYNOPSIS
+.Fd #include <tcp_server.h>
+.Fo "tcp_server tcp_server_new"
+.Fa "void"
+.Fc
+.Fo "void tcp_server_free"
+.Fa "tcp_server srv"
+.Fc
+.Sh DESCRIPTION
+.Nm tcp_server_new()
+creates a new instance of a tcp_server.
+The new instance will set up default values for the 
+tcp_server. You can override these defaults later, but it has
+to be done before the tcp_server is started.
+.Bd -literal
+Timeout reads           : 5 seconds
+Timeout writes          : 1 second
+Timeout accepts         : 8 seconds
+Retries reads           :  0
+Retries writes          : 10
+Connection queue size   : 200
+Number of worker threads: 10
+Port number to listen to: 2000
+Device to listen to     : any
+Who can connect         : All IP addresses
+Read buffer size        :  4 KB
+Write buffer size       : 64 KB
+Block when full         : No
+.Ed
+.Pp
+.Nm tcp_server_free()
+Frees all memory and all resources used by the tcp_server.
+The server cannot be used after a call to tcp_server_free().
+.Sh EXAMPLE
+.Bd -literal
+tcp_server s = tcp_server_new();
+\&...
+tcp_server_free(s);
+.Ed
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

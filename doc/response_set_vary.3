@@ -1,0 +1,20 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th response_set_vary 3
+.Sh NAME
+.Nm response_set_vary()
+.Nd set the HTTP Vary: field
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int response_set_vary"
+.Fa "http_response response"
+.Fa "const char* value"
+.Fc
+.Sh DESCRIPTION
+.Sh RETURN VALUE
+.Nm
+returns 1 on success and 0 if we ran out of memory.
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

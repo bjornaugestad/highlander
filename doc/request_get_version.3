@@ -1,0 +1,22 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th request_get_version 3
+.Sh NAME
+.Nm request_get_version()
+.Nd return HTTP version of a request
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "http_version request_get_version"
+.Fa "http_request request"
+.Fc
+.Sh DESCRIPTION
+.Nm
+returns the HTTP version for the last request received from the client.
+.Sh RETURN VALUE
+.Sh EXAMPLE
+.Bd -literal
+.Ed
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

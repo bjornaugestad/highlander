@@ -1,0 +1,26 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt CONNECTION
+.Th connection_recycle 3
+.Sh NAME
+.Nm connection_recycle()
+.Nd Prepare a connection object for reuse.
+.Sh SYNOPSIS
+.Fd #include <connection.h>
+.Fo "void connection_recycle"
+.Fa "connection conn"
+.Fc
+.Sh DESCRIPTION
+.Nm
+prepares the connection object to be reused by another client.
+.Pp
+Flush and close the connection before recycling if you want the
+write buffer to be transfered to the client.
+.Pp
+Users of the tcp_server ADT never has to call this function, in fact
+they never should.
+.Sh SEE ALSO
+.Xr connection_close 3 ,
+.Xr connection_discard 3
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

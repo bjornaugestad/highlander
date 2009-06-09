@@ -1,0 +1,35 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt CSTRING
+.Th c_str 3
+.Sh NAME
+.Nm c_str()
+.Nd Return a char pointer to the cstring
+.Sh SYNOPSIS
+.Fd #include <cstring.h>
+.Fo "const char* c_str"
+.Fa "cstring s"
+.Fc
+.Sh DESCRIPTION
+Returns a pointer to the memory that stores the string.
+.Pp
+The current implementation stores data as a char pointer, so
+it should be OK to modify the contents of the memory, but
+it is not recommended (for obvious reasons). 
+.Pp
+Do not append data to the string, and do not make the string
+shorter as internal counters will be invalidated.
+.Pp
+The internal representation may change. Very long string may
+become memory mapped instead of allocated on the heap. It is
+therefore not a good idea to modify the contents directly.
+.Sh RETURN VALUE
+A pointer to the internal buffer.
+.Sh EXAMPLE
+.Bd -literal
+cstring s = cstring_new();
+cstring_copy(s, "Hello, World");
+printf("%s\\n", c_str(s));
+.Ed
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

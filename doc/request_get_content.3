@@ -1,0 +1,46 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th request_get_content 3
+.Sh NAME
+.Nm request_get_content()
+.Nm request_get_content_length()
+.Nm request_get_content_type()
+.Nm request__content_type_is()
+.Nd get POST content information
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "const char* request_get_content"
+.Fa "http_request request"
+.Fc
+.Fo "size_t request_get_content_length"
+.Fa "http_request request"
+.Fc
+.Fo "int request_content_type_is"
+.Fa "http_request request"
+.Fa "const char* val"
+.Fc
+.Fo "const char* request_get_content_type"
+.Fa "http_request request"
+.Fc
+.Sh DESCRIPTION
+A POST request may contain data. 
+.Nm request_get_content() 
+returns a pointer to the data received from the user or 
+NULL if no data was received.
+.Pp
+.Nm request_get_content_length()
+can be called to get the size of the content that was sent
+from the client. This applies to the HTTP POST command.
+.Pp
+.Nm request_content_type_is()
+returns 1 if the requests content type is the same as the value
+supplied, else 0. A content type is e.g. "text/html".
+.Pp
+.Nm request_content_type_is()
+returns the content type of the request, or NULL if no content type
+was provided.
+.Sh RETURN VALUE
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

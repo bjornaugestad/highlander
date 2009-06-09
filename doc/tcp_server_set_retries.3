@@ -1,0 +1,28 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th tcp_server_set_retries 3
+.Sh NAME
+.Nm tcp_server_set_retries()
+.Nd 
+.Sh SYNOPSIS
+.Fd #include <tcp_server.h>
+.Fo "void tcp_server_set_retries"
+.Fa "tcp_server srv"
+.Fa "int reads"
+.Fa "int writes"
+.Fc
+.Sh DESCRIPTION
+Set the number of retries that will be performed when reading or 
+writing. 0 is a valid value, as the tcp_server will try once,
+and retry from 0 to n times.
+.Pp
+A low timeout value and a high retry value will create a snappy server,
+but will consume resources. A reasonable timeout value and a retry
+of 0, will consume the least resources, but will make shutdown 
+slower as the process will wait until the read attempts times out.
+.Sh SEE ALSO
+.Xr tcp_server_new() 3
+.Xr tcp_server_init() 3
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

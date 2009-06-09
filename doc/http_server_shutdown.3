@@ -1,0 +1,25 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th http_server_shutdown 3
+.Sh NAME
+.Nm http_server_shutdown()
+.Nd Shut down a http_server
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "void http_server_shutdown"
+.Fa "http_server s"
+.Fc
+.Sh DESCRIPTION
+Shuts down a http_server.
+.Pp
+Normally it is called from the signal handling thread if engaged.
+You can call it whenever you want to shut down the http server.
+.Pp
+Shutdown is an ansynchronus operation and the server threads 
+will run for some time after http_server_shutdown returns. How long
+depends on the timeout values used.
+.Sh SEE ALSO
+.Xr tcp_server_shutdown 3 
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

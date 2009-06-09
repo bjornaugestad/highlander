@@ -1,0 +1,174 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th Highlander cookies 3
+.Sh NAME
+.Nm Highlander cookies
+.Nd How cookies are handled
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "cookie cookie_new"
+.Fa "void"
+.Fc
+.Fo "int cookie_set_name"
+.Fa "cookie c"
+.Fa "const char* s"
+.Fc
+.Fo "int cookie_set_value"
+.Fa "cookie c"
+.Fa "const char* s"
+.Fc
+.Fo "int cookie_set_comment"
+.Fa "cookie c"
+.Fa "const char* s"
+.Fc
+.Fo "int cookie_set_domain"
+.Fa "cookie c"
+.Fa "const char* s"
+.Fc
+.Fo "int cookie_set_path"
+.Fa "cookie c"
+.Fa "const char* s"
+.Fc
+.Fo "void cookie_set_version"
+.Fa "cookie c"
+.Fa "int value"
+.Fc
+.Fo "void cookie_set_secure"
+.Fa "cookie c"
+.Fa "int value"
+.Fc
+.Fo "int cookie_set_max_age"
+.Fa "cookie c"
+.Fa "int value"
+.Fc
+.Fo "const char* cookie_get_name"
+.Fa "cookie c"
+.Fc
+.Fo "const char* cookie_get_value"
+.Fa "cookie c"
+.Fc
+.Fo "const char* cookie_get_comment"
+.Fa "cookie c"
+.Fc
+.Fo "const char* cookie_get_domain"
+.Fa "cookie c"
+.Fc
+.Fo "const char* cookie_get_path"
+.Fa "cookie c"
+.Fc
+.Fo "int cookie_get_version"
+.Fa "cookie c"
+.Fc
+.Fo "int cookie_get_secure"
+.Fa "cookie c"
+.Fc
+.Fo "int cookie_get_max_age"
+.Fa "cookie c"
+.Fc
+.Sh DESCRIPTION
+Cookies are used by a web server to store data on a clients
+computer. 
+.Pp
+Cookies are defined in RFC 2109 - HTTP State Management Mechanism,
+It basically works like this:
+A web server can, as a part of a response, send a cookie to
+the client. That cookie will be sent back to the server the next time
+the client makes a request.
+.Pp
+There are two versions of cookies, the original Netscape version and
+the RFC2109 version. They differ. Highlander handles both versions,
+but prefer the newer RFC2109 version as it is much better documented.
+.Pp
+.Nm cookie_new()
+creates a new cookie. Remember to add it to the response so that it is 
+sent to the user. Use response_set_cookie() to do that.
+.Pp
+.Nm cookie_set_name()
+All cookies must have a name, and the name must be unique for the server. 
+The name cannot start with a $, as that character is reserved.
+.Pp
+.Nm cookie_set_value()
+sets the value of the cookie. 
+.Pp
+.Nm cookie_set_comment()
+Comment is an optional property for a cookie. It can be a good idea
+to add comments to the cookies you create, since it helps the client
+(user) to decide if he will allow the cookie or not.
+.Pp
+.Nm cookie_set_domain()
+Remember to start the domain name with a . (dot). 
+.Pp
+.Nm cookie_set_path()
+Optional. Specifies the subset of URLs to which this cookie applies.
+.Pp
+.Nm cookie_set_version()
+Version is required by RFC2109. It must be a decimal integer,
+and the default value is 1. The cookie_new() function
+sets the version number for you, so there is no need to set it
+yourself.
+.Pp
+.Nm cookie_set_secure()
+An optional hint which advices the client to keep
+the cookie secure. The default value is 0, set it
+to 1 if you prefer.
+.Pp
+.Nm cookie_set_max_age()
+Cookies have lifespans, measured in seconds. The cookie
+will be removed by the clients user agent when 
+the cookies life expires. If you set the life
+to e.g. 1440 seconds, the cookie is removed from
+the clients computer after 24 hours.
+.Pp
+.Nm cookie_get_name()
+returns the name of the cookie.
+.Pp
+.Nm cookie_get_value()
+returns the value of the cookie.
+.Pp
+.Nm cookie_get_comment()
+returns the comment for the cookie.
+.Pp
+.Nm cookie_get_domain()
+returns the domain for the cookie.
+.Pp
+.Nm cookie_get_path()
+returns the path for the cookie.
+.Pp
+.Nm cookie_get_version()
+returns the version number for the cookie.
+.Pp
+.Nm cookie_get_secure()
+returns the secure flag for the cookie.
+.Pp
+.Nm cookie_get_max_age()
+returns the max age for the cookie.
+.Pp
+.Sh EXAMPLE
+Using cookies are quite easy, 
+.Bd -literal
+int my_page_handler(http_request request, http_response response)
+{
+   size_t i, nelem;
+   cookie c;
+   // inspect the cookies we got. 
+   nelem = request_get_cookie_count(request);
+   for(i = 0; i < nelem; i++) {
+      c = request_get_cookie(request, i);
+      ...
+   }
+   // Create a new cookie and send it to the user
+   if( (c = cookie_new()) == NULL)
+       return HTTP_500_INTERNAL_SERVER_ERROR;
+   cookie_set_name(c, "mycookie");
+   cookie_set_value(c, "myvalue");
+   response_add_cookie(response, c);
+   return 0;
+}
+.Ed
+ 
+.Sh RETURN VALUES
+.Sh SEE ALSO
+.Xr response_set_cookie 3
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

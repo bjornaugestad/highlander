@@ -1,0 +1,89 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt CONNECTION
+.Th connection_read 3
+.Sh NAME
+.Nm connection_read()
+.Nd connection_read
+.Sh SYNOPSIS
+.Fd #include <connection.h>
+.Fo "int connection_read"
+.Fa "connection conn"
+.Fa "void* buf"
+.Fa "size_t cb"
+.Fc
+.Sh DESCRIPTION
+.Nm
+attempts to read 
+.Fa cb
+bytes from the connection. 
+.Pp
+.Nm
+will always read 
+.Fa cb
+bytes and return OK or read less than 
+.Fa cb
+bytes and return an error. Sometimes one part of the data
+is found in the readbuffer, and the other part has to be read 
+from the socket. If that last read fails, then 
+.Nm 
+will return an error.  The read buffer will have been 
+emptied and the data is therefore lost as no length 
+specifier is returned.  This is normally not a problem.
+.Pp
+NOTE that partial reads will remove content from buffers/socket
+and return EAGAIN. This means that further reads are invalid.
+.Pp
+NOTE: If you a) set up the connection to use membufs of size x, 
+b) calls connection_read() with cb > x, then connection_read()
+will try to read cb bytes (minus bytes found in the read buffer)
+directly from the socket. To do that, it creates a new membuf. Nothing
+wrong with that, except that you will (temporarily) consume more mem
+and copy data between buffers. That affects performance.
+.Sh SEE ALSO
+.Xr connection_set_read_buffer 3 ,
+.Xr connection_write 3
+.Sh EXAMPLE
+Here we read 10 and 10 bytes from the socket. If the input
+arrives too slowly, 
+.Nm
+returns 0 and sets errno to EAGAIN. We therefore test for this.
+.Pp
+.Bd -literal
+#include <tcp_server.h>
+#include <connection.h>
+#include <errno.h>
+
+void* echoserverfn(void* arg)
+{
+	connection conn = arg;
+	char line[1024];
+	errno = 0;
+	while(connection_read(conn, line, 10) || errno == EAGAIN) {
+		if(errno == EAGAIN)
+			errno = 0;
+		else {
+			connection_write(conn, line, 10);
+			connection_flush(conn);
+		}
+	}
+	return NULL;
+}
+int main(void)
+{
+	tcp_server s = tcp_server_new();
+	tcp_server_set_service_function(
+		s, 
+		echoserverfn,
+		s);
+	tcp_server_init(s);
+	tcp_server_get_root_resources(s);
+	tcp_server_start(s);
+	
+	tcp_server_free(s);
+	return 0;
+}
+	
+.Ed
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

@@ -1,0 +1,34 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th request_get_user_agent 3
+.Sh NAME
+.Nm request_get_user_agent()
+.Nd return the user agent
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "const char* request_get_user_agent"
+.Fa "http_request request"
+.Fc
+.Sh DESCRIPTION
+.Nm
+returns the user agent supplied by the users browser.
+.Pp
+Here is a list of some common user agents.
+.Bl -bullet
+.It 
+Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.5b) Gecko/20030827
+.It 
+Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.6a) Gecko/20031030
+.It 
+Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)
+.It 
+Lynx/2.8.4rel.1 libwww-FM/2.14
+.El
+.Sh RETURN VALUE
+.Sh EXAMPLE
+.Bd -literal
+.Ed
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

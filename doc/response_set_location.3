@@ -1,0 +1,24 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th response_set_location 3
+.Sh NAME
+.Nm response_set_location()
+.Nd Set the HTTP Location: field
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int response_set_location"
+.Fa "http_response response"
+.Fa "const char* value"
+.Fc
+.Sh DESCRIPTION
+.Nm
+sets the absolute URI of a resource/page. Can be used to redirect clients
+to another page when you return 3xx messages. Can also be used to return
+the URI when you create a new resource(201 Created).
+.Sh RETURN VALUE
+.Nm
+returns 1 on success and 0 if we ran out of memory.
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

@@ -1,0 +1,31 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th tcp_server_init 3
+.Sh NAME
+.Nm tcp_server_init()
+.Nd Initialize a tcp_server object
+.Sh SYNOPSIS
+.Fd #include <tcp_server.h>
+.Fo "int tcp_server_init"
+.Fa "tcp_server srv"
+.Fc
+.Sh DESCRIPTION
+.Nm
+creates a thread pool which will be used as worker threads,
+and creates all connection objects.
+.Pp
+The idea is that the caller first can create a tcp_server
+using tcp_server_new(). Then the user can configure the 
+tcp_server and finally initialize it using this function.
+.Sh RETURN VALUE
+.Nm
+returns 1 on success, else 0.
+.Sh EXAMPLE
+.Bd -literal
+tcp_server srv = tcp_server_new();
+tcp_server_set_worker_threads(srv, 80);
+tcp_server_init(srv);
+.Ed
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

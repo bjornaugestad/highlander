@@ -1,0 +1,29 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th response_set_retry_after 3
+.Sh NAME
+.Nm response_set_retry_after()
+.Nd set the HTTP Retry-After: field
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int response_set_retry_after"
+.Fa "http_response response"
+.Fa "time_t value"
+.Fc
+.Sh DESCRIPTION
+.Nm
+tells the client to retry after a given date. HTTP/1.1 allows for
+two different values, either a date or a number of seconds. This function
+accepts date (time_t) only. You can create a date by adding n seconds
+to a time_t, as in "time(NULL) + 60", which is one minute into the
+future. 
+.Pp
+This function is normally used in conjunction with status code 
+503 (Service Unavailable).
+.Sh RETURN VALUE
+.Nm
+always return 1.
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

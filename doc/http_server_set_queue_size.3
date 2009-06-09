@@ -1,0 +1,55 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th http_server_set_queue_size 3
+.Sh NAME
+.Nm http_server_set_queue_size()
+.Nm http_server_get_queue_size()
+.Nd Set/get size of work queue
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "void http_server_set_queue_size"
+.Fa "http_server s"
+.Fa "size_t n"
+.Fc
+.Fo "size_t http_server_get_queue_size"
+.Fa "http_server s"
+.Fc
+.Sh DESCRIPTION
+Highlander uses a thread pool to service incoming connections.
+A master thread accepts the connection requests and puts
+the new socket in a queue. The worker threads reads entries
+from this queue. 
+.Pp
+When the queue is full, Highlander will either wait for free
+space in the queue or start dropping connection requests.
+.Pp
+This function sets the size of this queue. Default queue size
+is 100. Increase or decrease depending on memory constraints
+or peak loads. There is minimal memory cost associated with 
+a high number, but the server itself may be conceived as failing
+if the connection requests are just put in a huge queue without
+beeing served by the worker threads. Reasonable values are below
+the number of ephemal ports numbers on the server. 
+.Pp
+Let's say that your server
+at times runs very slowly and you have a huge queue. The clients
+will then be added to the queue and will later time out since 
+they get no response from the server. It may be better to use
+a smaller queue and set the server not to block when the queue
+is full. That way the client will be notified immediately that
+the server could not be connected. 
+.Pp
+Another issue is Denial of Service attacks (DOS). A malicious 
+client can make a connection and then disconnect from the
+server after the connection request was added to the queue. 
+The disconnect will not be detected until the http_server tries
+to read the HTTP header from the socket. If the queue is huge
+and the server is slow, that may take some time. In the mean time,
+the operating system may become starved for TCP/IP resources.
+.Sh SEE ALSO
+.Xr		http_server_get_queue_size 3 ,
+.Xr		http_server_set_block_when_full 3 ,
+.Xr		http_server_set_worker_threads 3
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

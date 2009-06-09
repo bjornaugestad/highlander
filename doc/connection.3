@@ -1,0 +1,18 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt CONNECTION
+.Th connection 3
+.Sh NAME
+.Nm connection
+.Nd connection
+.Sh SYNOPSIS
+.Fd #include <connection.h>
+.Sh DESCRIPTION
+An ADT for buffered reads and writes from a file descriptor.
+The connection class is used, in conjunction with meta_socket.h,
+meta_membuf.h and tcp_server.h, to serve TCP/IP connections.
+A connection has a read buffer and a write buffer.
+ Declaration of our connection ADT
+typedef struct connection_tag* connection;
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

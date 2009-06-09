@@ -1,0 +1,34 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th http_server_set_worker_threads 3
+.Sh NAME
+.Nm http_server_set_worker_threads()
+.Nm http_server_get_worker_threads()
+.Nd Set/get worker thread count
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "void http_server_set_worker_threads"
+.Fa "http_server s"
+.Fa "size_t n"
+.Fc
+.Fo "size_t http_server_get_worker_threads"
+.Fa "http_server s"
+.Fc
+.Sh DESCRIPTION
+.Nm http_server_set_worker_threads()
+sets the number of worker threads. Default value is 8 threads.
+.Pp
+The optimal number of threads depends on many things, 
+especially the number of CPU's available. Most people
+agree that there is no point in having e.g. 1000 threads
+running at the same time due to scheduling overhead.
+.Pp
+Note that Highlander will allocate one http_request and one
+http_response per worker_thread. 
+.Sh RETURN VALUE
+.Nm http_server_get_worker_threads()
+returns the number of threads available.
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

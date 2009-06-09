@@ -1,0 +1,38 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th http_server_set_block_when_full 3
+.Sh NAME
+.Nm http_server_set_block_when_full()
+.Nd http_server_set_block_when_full
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "void http_server_set_block_when_full"
+.Fa "http_server s"
+.Fa "int n"
+.Fc
+.Fo "int http_server_get_block_when_full
+.Fa "http_server s"
+.Fc
+.Sh DESCRIPTION
+Highlander uses a queue to store incoming connection requests.
+It is possible to fill this queue if requests arrive faster than
+the worker threads are able to service them. The requests will then
+be stored in this queue. 
+.Pp
+The queue has a fixed number of entries, and may therefore become full. 
+This function decides what to do when that happens.
+The incoming request can either be discarded or the thread
+can block until space is available in the queue.
+.Pp
+Default behaviour is to discard the connection request if
+the queue is full. 
+.Sh RETURN VALUE
+.Nm http_server_get_block_when_full()
+returns 1 if the server will block if the request queue is full,
+and 0 if the server will discard requests if the queue is full.
+.Sh SEE ALSO
+.Xr http_server_set_queue_size 3 ,
+.Xr http_server_get_block_when_full 3
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

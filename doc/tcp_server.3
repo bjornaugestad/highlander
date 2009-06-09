@@ -1,0 +1,111 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th tcp_server 3
+.Sh NAME
+.Nm tcp_server
+.Nd General purpose TCP/IP server ADT
+.Sh SYNOPSIS
+.Fd #include <tcp_server.h>
+.Fo "int tcp_server_allow_clients"
+.Fa "tcp_server srv"
+.Fa "const char* filter"
+.Fc
+.Fo "void tcp_server_clear_client_filter"
+.Fa "tcp_server srv"
+.Fc
+.Fo "int tcp_server_free_root_resources"
+.Fa "tcp_server s"
+.Fc
+.Fo "int tcp_server_get_root_resources"
+.Fa "tcp_server srv"
+.Fc
+.Fo "int tcp_server_init"
+.Fa "tcp_server srv"
+.Fc
+.Fo "tcp_server tcp_server_new"
+.Fa "void"
+.Fc
+.Fo "void tcp_server_free"
+.Fa "tcp_server srv"
+.Fc
+.Fo "void tcp_server_set_block_when_full"
+.Fa "tcp_server srv"
+.Fa "int block"
+.Fc
+.Fo "int tcp_server_set_hostname"
+.Fa "tcp_server srv"
+.Fa "const char* host"
+.Fc
+.Fo "void tcp_server_set_port"
+.Fa "tcp_server srv"
+.Fa "int port"
+.Fc
+.Fo "void tcp_server_set_queue_size"
+.Fa "tcp_server srv"
+.Fa "size_t size"
+.Fc
+.Fo "void tcp_server_set_readbuf_size"
+.Fa "tcp_server s"
+.Fa "size_t size"
+.Fc
+.Fo "void tcp_server_set_retries"
+.Fa "tcp_server srv"
+.Fa "int reads"
+.Fa "int writes"
+.Fc
+.Fo "void tcp_server_set_service_function"
+.Fa "tcp_server srv"
+.Fa "void* (*func)(void*)"
+.Fa "void* arg"
+.Fc
+.Fo "void tcp_server_set_timeout"
+.Fa "tcp_server srv"
+.Fa "int reads"
+.Fa "int writes"
+.Fa "int accepts"
+.Fc
+.Fo "void tcp_server_set_worker_threads"
+.Fa "tcp_server srv"
+.Fa "size_t count"
+.Fc
+.Fo "void tcp_server_set_writebuf_size"
+.Fa "tcp_server s"
+.Fa "size_t size"
+.Fc
+.Fo "int tcp_server_shutdown"
+.Fa "tcp_server srv"
+.Fc
+.Fo "int tcp_server_shutting_down"
+.Fa "tcp_server srv"
+.Fc
+.Fo "int tcp_server_start"
+.Fa "tcp_server srv"
+.Fc
+.Fo "int tcp_server_start_via_process"
+.Fa "process p"
+.Fa "tcp_server s"
+.Fc
+.Sh DESCRIPTION
+The tcp_server ADT is a general purpose TCP/IP based server framework
+which can be used to serve most types of servers. It implements the
+necessary TCP/IP stuff needed to act as a server and uses a pool of
+worker threads to serve incoming connection requests.
+.Pp
+All we need to do to build a server based on the tcp_server ADT is to
+provide callback functions that processes the application level protocol
+used. See man pages for 
+.Nm tcp_server_start_via_process()
+or
+.Nm tcp_server_set_service_func()
+for an example of how to use a tcp_server object to build a server.
+.Pp
+The tcp_server creates a work queue (FIFO) and several worker threads.
+When a TCP/IP connection request is accepted, a connection object
+is placed in the work queue by the main thread in the tcp_server. One
+of the worker threads reads the work queue and calls the 
+user supplied service function for the tcp_server.
+That service function implements the higher level protocol and 
+functionality the server implements.
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

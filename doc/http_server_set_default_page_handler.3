@@ -1,0 +1,56 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th http_server_set_default_page_handler 3
+.Sh NAME
+.Nm http_server_set_default_page_handler()
+.Nd http_server_set_default_page_handler
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "void http_server_set_default_page_handler"
+.Fa "http_server s"
+.Fa "PAGE_FUNCTION pf"
+.Fc
+.Sh DESCRIPTION
+Sometimes you get requests for an unknown URI.
+Normally the Highlander then 
+returns 404 not found. This is normal and correct for a http server.
+You can also provide your own function which will be executed whenever
+the requested page isn't found. This is good for a lot of things, e.g.
+if you want to create a ftp server(see samples/highftp.c) or just 
+have a very fancy reply to requests for unknown pages.
+.Fa pf
+is a pointer to the function that will be executed.
+.Sh EXAMPLE
+.Bd -literal
+#include <highlander.h>
+int default_handler(http_request req, http_response page)
+{
+   static const char* html =
+      "<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.0 Transitional//EN'>"
+      "<html>"
+      "<head>"
+      "   <title>Page Not Found</title>"
+      "</head>"
+      "<body>"
+      "<p>Sorry, but the page you requested was not found."
+      "</body>"
+      "</html";
+   response_add(page, html);
+   return HTTP_404_NOT_FOUND;
+}
+int main(void)
+{
+   http_server s = http_server_new();
+   http_server_set_port(s, 2000);
+   http_server_alloc(s);
+   http_server_set_default_page_handler(s, default_handler);
+   http_server_get_root_resources(s);
+   http_server_start(s);
+   http_server_free(s);
+   return 0;
+}
+.Ed
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

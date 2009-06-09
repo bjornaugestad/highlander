@@ -1,0 +1,62 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th http_server_add_page 3
+.Sh NAME
+.Nm http_server_add_page()
+.Nd Add a page to the server
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int http_server_add_page"
+.Fa "http_server s"
+.Fa "const char* uri"
+.Fa "PAGE_FUNCTION pf"
+.Fa "page_attribute attr"
+.Fc
+.Sh DESCRIPTION
+.Nm
+adds a dynamic page to the server. A dynamic page is created
+at run time by a C callback function you provide. 
+.Pp
+The http_server detects a connection request, parses the incoming HTTP
+headers, creates a http_request object and a http_response object. Then
+the http_server uses the URI for the request to look up which function
+it should call to create the actual HTML which will be displayed on
+the users screen. 
+.Pp
+Your job is to create the callback function and register the URI and 
+the callback function with the http_server. 
+.Pp
+.Fa s
+is a http_server created by http_server_new()
+.Pp
+.Fa uri 
+is the uri which the function serves. One function can serve multiple
+uris, i.e. one function can serve both / and /index.html.  
+.Pp
+.Fa pf
+is a pointer to the function which will be called when the uri is 
+requested by a client.
+.Pp
+.Fa attr
+are the page attributes. This argument can be NULL in most cases.
+.Sh RETURN VALUE
+.Nm
+returns 1 if the page was successfully added to the http_server, else 0.
+.Sh EXAMPLE
+.Bd -literal
+/* The page handler function */
+int myhandler(http_request req, http_response page)
+{
+	response_add(page, "Hello, World");
+	return 0;
+}
+\&...
+http_server s = http_server_new();
+http_server_add_page(s, "/", myhandler, NULL);
+http_server_add_page(s, "/hello", myhandler, NULL);
+.Ed
+.Sh SEE ALSO
+.Xr highlander_attributes 3
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

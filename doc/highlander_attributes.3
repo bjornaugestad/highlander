@@ -1,0 +1,84 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th highlander_attributes 3
+.Sh NAME
+.Nm highlander attributes
+.Nd Page attributes in Highlander
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "page_attribute attribute_new"
+.Fa "void"
+.Fc
+.Fo "void attribute_free"
+.Fa "page_attribute a"
+.Fc
+.Fo "int attribute_set_media_type"
+.Fa "page_attribute a"
+.Fa "const char* value"
+.Fc
+.Fo "int attribute_set_language"
+.Fa "page_attribute a"
+.Fa "const char* value"
+.Fc
+.Fo "int attribute_set_charset"
+.Fa "page_attribute a"
+.Fa "const char* value"
+.Fc
+.Fo "int attribute_set_authorization"
+.Fa "page_attribute a"
+.Fa "const char* value"
+.Fc
+.Fo "int attribute_set_encoding"
+.Fa "page_attribute a"
+.Fa "const char* value"
+.Fc
+.Fo "const char* attribute_get_language"
+.Fa "page_attribute a"
+.Fc
+.Fo "const char* attribute_get_charset"
+.Fa "page_attribute a"
+.Fc
+.Fo "const char* attribute_get_encoding"
+.Fa "page_attribute a"
+.Fc
+.Fo "const char* attribute_get_media_type"
+.Fa "page_attribute a"
+.Fc
+.Sh DESCRIPTION
+Page attributes describe pages and page properties.
+The attributes can be used to match requests with pages.
+The attributes can be
+	Media type, Language, Character set, Encoding and Authorization.
+.Nm attribute_new()
+creates a new attribute object.
+.Pp
+.Nm attribute_free()
+destroys an attribute object.
+.Pp
+.Nm attribute_set_media_type()
+sets media type for an attribute.
+.Pp
+.Nm attribute_set_language()
+.Pp
+.Nm attribute_set_charset()
+.Pp
+.Nm attribute_set_authorization()
+.Pp
+.Nm attribute_set_encoding()
+.Pp
+.Nm attribute_get_language()
+.Pp
+.Nm attribute_get_charset()
+.Pp
+.Nm attribute_get_encoding()
+.Pp
+.Nm attribute_get_media_type()
+.Pp
+.Sh RETURN VALUE
+.Sh EXAMPLE
+.Bd -literal
+.Ed
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

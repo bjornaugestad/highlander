@@ -1,0 +1,24 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th response_set_cache_control 3
+.Sh NAME
+.Nm response_set_cache_control()
+.Nd Set the HTTP 1.1 Cache-Control field
+.Sh SYNOPSIS
+.Fd #include <highlander.h>
+.Fo "int response_set_cache_control"
+.Fa "http_response response"
+.Fa "const char* value"
+.Fc
+.Sh DESCRIPTION
+.Nm
+controls the caching of a page.
+The HTTP Cache-Control header field is described in RFC2616, §14.9.
+Caching is a complicated issue and you should read RFC2616 to fully
+understand it. 
+.Sh RETURN VALUE
+Returns 1 if the flag was set or 0 if we ran out of memory.
+.Sh SEE ALSO
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com
