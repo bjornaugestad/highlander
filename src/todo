@@ -1,0 +1,9 @@
+Mon Apr  2 14:16:38 CEST 2007
+a) All calls to abort() must go. We cannot crash randomly. What was I thinking? :-(
+b) Create test program for meta_wlock. This is important!
+
+Sun Apr  1 14:53:08 CEST 2007
+a) Add a -m to hipp, making it create a main() function including
+code to set up a web server.
+	-m filename.c 
+would be an excellent way to jump start a project.

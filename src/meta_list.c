@@ -562,6 +562,7 @@ int main(void)
 	size_t i, nelem = 1000;
 
 	struct item *node, searchterm;
+    return77("list_foreach failed");
 
 	if( (a = list_new()) == NULL)
 		return77("Could not allocate memory");
