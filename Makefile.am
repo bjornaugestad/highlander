@@ -128,7 +128,8 @@ libhighlander_a_CFLAGS=\
 	-I$(srcdir)\
 	-I$(top_srcdir)/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\
-	-O2 -DNDEBUG -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline
+	-O2 -DNDEBUG -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
+    -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
 
 AM_CFLAGS=\
 	-D_GNU_SOURCE -std=gnu99 -D_REENTRANT\

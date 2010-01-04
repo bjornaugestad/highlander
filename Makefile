@@ -348,19 +348,19 @@ DIST_ARCHIVES = $(distdir).tar.gz
 GZIP_ENV = --best
 distuninstallcheck_listfiles = find . -type f -print
 distcleancheck_listfiles = find . -type f -print
-ACLOCAL = ${SHELL} /home/boa/src/meta/highlander/extras/missing --run aclocal-1.11
-AMTAR = ${SHELL} /home/boa/src/meta/highlander/extras/missing --run tar
-AUTOCONF = ${SHELL} /home/boa/src/meta/highlander/extras/missing --run autoconf
-AUTOHEADER = ${SHELL} /home/boa/src/meta/highlander/extras/missing --run autoheader
-AUTOMAKE = ${SHELL} /home/boa/src/meta/highlander/extras/missing --run automake-1.11
-AWK = gawk
+ACLOCAL = ${SHELL} /home/boa/src/highlander/extras/missing --run aclocal-1.11
+AMTAR = ${SHELL} /home/boa/src/highlander/extras/missing --run tar
+AUTOCONF = ${SHELL} /home/boa/src/highlander/extras/missing --run autoconf
+AUTOHEADER = ${SHELL} /home/boa/src/highlander/extras/missing --run autoheader
+AUTOMAKE = ${SHELL} /home/boa/src/highlander/extras/missing --run automake-1.11
+AWK = mawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -g -O2
 CPP = gcc -E
 CPPFLAGS = 
 CYGPATH_W = echo
-DEFS = -DPACKAGE_NAME=\"highlander\" -DPACKAGE_TARNAME=\"highlander\" -DPACKAGE_VERSION=\"0.9.93\" -DPACKAGE_STRING=\"highlander\ 0.9.93\" -DPACKAGE_BUGREPORT=\"bjorn.augestad@gmail.com\" -DPACKAGE=\"highlander\" -DVERSION=\"0.9.93\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_ARPA_INET_H=1 -DHAVE_FCNTL_H=1 -DHAVE_LIMITS_H=1 -DHAVE_NETDB_H=1 -DHAVE_NETINET_IN_H=1 -DHAVE_SYS_SOCKET_H=1 -DHAVE_SYSLOG_H=1 -DHAVE_UNISTD_H=1 -DLSTAT_FOLLOWS_SLASHED_SYMLINK=1 -DHAVE_STRFTIME=1 -DHAVE_STRERROR_R=1 -DHAVE_INET_NTOP=1 -DHAVE_LOCALTIME_R=1 -DHAVE_SOCKET=1 -DHAVE_STRERROR=1 -DHAVE_STRTOL=1 -DHAVE_SENDFILE=1
+DEFS = -DPACKAGE_NAME=\"highlander\" -DPACKAGE_TARNAME=\"highlander\" -DPACKAGE_VERSION=\"0.9.93\" -DPACKAGE_STRING=\"highlander\ 0.9.93\" -DPACKAGE_BUGREPORT=\"bjorn.augestad@gmail.com\" -DPACKAGE_URL=\"\" -DPACKAGE=\"highlander\" -DVERSION=\"0.9.93\" -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_ARPA_INET_H=1 -DHAVE_FCNTL_H=1 -DHAVE_LIMITS_H=1 -DHAVE_NETDB_H=1 -DHAVE_NETINET_IN_H=1 -DHAVE_SYS_SOCKET_H=1 -DHAVE_SYSLOG_H=1 -DHAVE_UNISTD_H=1 -DLSTAT_FOLLOWS_SLASHED_SYMLINK=1 -DHAVE_STRFTIME=1 -DHAVE_STRERROR_R=1 -DHAVE_INET_NTOP=1 -DHAVE_LOCALTIME_R=1 -DHAVE_SOCKET=1 -DHAVE_STRERROR=1 -DHAVE_STRTOL=1 -DHAVE_SENDFILE=1
 DEPDIR = .deps
 ECHO_C = 
 ECHO_N = -n
@@ -377,25 +377,26 @@ LDFLAGS =
 LIBOBJS = 
 LIBS = 
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /home/boa/src/meta/highlander/extras/missing --run makeinfo
-MKDIR_P = /usr/bin/mkdir -p
+MAKEINFO = ${SHELL} /home/boa/src/highlander/extras/missing --run makeinfo
+MKDIR_P = /bin/mkdir -p
 OBJEXT = o
 PACKAGE = highlander
 PACKAGE_BUGREPORT = bjorn.augestad@gmail.com
 PACKAGE_NAME = highlander
 PACKAGE_STRING = highlander 0.9.93
 PACKAGE_TARNAME = highlander
+PACKAGE_URL = 
 PACKAGE_VERSION = 0.9.93
 PATH_SEPARATOR = :
 RANLIB = ranlib
 SET_MAKE = 
-SHELL = /bin/sh
+SHELL = /bin/bash
 STRIP = 
 VERSION = 0.9.93
-abs_builddir = /home/boa/src/meta/highlander
-abs_srcdir = /home/boa/src/meta/highlander
-abs_top_builddir = /home/boa/src/meta/highlander
-abs_top_srcdir = /home/boa/src/meta/highlander
+abs_builddir = /home/boa/src/highlander
+abs_srcdir = /home/boa/src/highlander
+abs_top_builddir = /home/boa/src/highlander
+abs_top_srcdir = /home/boa/src/highlander
 ac_ct_CC = gcc
 am__include = include
 am__leading_dot = .
@@ -414,13 +415,13 @@ host_alias =
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/boa/src/meta/highlander/extras/install-sh
+install_sh = ${SHELL} /home/boa/src/highlander/extras/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
 localstatedir = ${prefix}/var
 mandir = ${datarootdir}/man
-mkdir_p = /usr/bin/mkdir -p
+mkdir_p = /bin/mkdir -p
 oldincludedir = /usr/include
 pdfdir = ${docdir}
 prefix = /usr/local
@@ -536,7 +537,8 @@ libhighlander_a_CFLAGS = \
 	-I$(srcdir)\
 	-I$(top_srcdir)/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\
-	-O2 -DNDEBUG -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline
+	-O2 -DNDEBUG -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
+    -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
 
 AM_CFLAGS = \
 	-D_GNU_SOURCE -std=gnu99 -D_REENTRANT\
