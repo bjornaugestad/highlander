@@ -10,6 +10,7 @@ AC_CONFIG_SRCDIR([src/internals.h])
 AC_PROG_RANLIB
 AC_PROG_CC
 AC_PROG_CC_C_O
+AM_PROG_CC_C_O
 
 # Checks for header files.
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h limits.h netdb.h netinet/in.h sys/socket.h syslog.h unistd.h])

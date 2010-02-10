@@ -57,7 +57,8 @@ subdir = .
 DIST_COMMON = README $(am__configure_deps) $(include_HEADERS) \
 	$(noinst_HEADERS) $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS \
-	TODO extras/depcomp extras/install-sh extras/missing
+	TODO extras/compile extras/depcomp extras/install-sh \
+	extras/missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
