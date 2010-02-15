@@ -1,0 +1,88 @@
+/* Thanks to plone.org for an example. */
+
+body {
+	font: "Lucida Grande", Verdana, Lucida, Helvetica, Arial, sans-serif;
+	background-color: White;
+	padding: 0;
+	margin: 0;
+}
+
+p {
+	margin 0 0 0.75em 0;
+	line-height: 1.5em;
+}
+
+#menulist {
+    background-color: transparent;
+    padding: 0em 0em 0em 2em;
+    white-space: nowrap;
+    list-style: none;
+    margin: 0;
+    height: auto;
+    line-height: normal;
+}
+
+
+#menulist li {
+    display: inline;
+}
+
+#menulist li a {
+    /* The normal, unselected tabs. They are all links */
+    background-color: transparent;
+    border-color: #8cacbb;
+    border-width: 1px;
+    border-style: solid solid none solid;
+    color: #436976;
+    height: auto;
+    margin-right: 0.5em;
+    padding: 0em 1.25em;
+    text-decoration: none;
+    text-transform: lowercase;
+}
+
+#menulist li.selected a {
+    /* The selected tab. There's only one of this */
+    background-color: #dee7ec;
+    border: 1px solid #8cacbb;
+    border-bottom: #dee7ec 1px solid;
+    color: #436976;
+}
+
+#menulist li a:hover {
+    background-color: #dee7ec;
+    border-color: #8cacbb;
+    border-bottom-color: #dee7ec;
+    color: #436976;
+}
+
+
+#aboutline {
+    background-color: #dee7ec;
+	border-top->color: #8cacbb;
+	text-align: right;
+	margin: 0;
+}
+
+
+#aboutline li {
+	display: inline;
+    background-color: #dee7ec;
+	border-top->color: #8cacbb;
+}
+
+#aboutline li a {
+    background-color: transparent;
+	/*
+    border-color: #8cacbb;
+    border-width: 1px;
+    border-style: solid solid none solid;
+	*/
+    color: #436976;
+    height: auto;
+    margin-right: 0.5em;
+    padding: 0em 1.25em;
+    text-decoration: none;
+    text-transform: lowercase;
+}
+
