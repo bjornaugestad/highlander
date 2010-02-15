@@ -136,7 +136,7 @@ AM_CFLAGS=\
 	-I$(srcdir)\
 	-I$(top_srcdir)/src\
 	-Wshadow -W -Wmissing-prototypes\
-	-O0 -DNDEBUG -Wall -pedantic -Wno-long-long  -Wno-inline
+	-O2 -DNDEBUG -Wall -pedantic -Wno-long-long  -Wno-inline
 
 check_PROGRAMS=\
 	attribute_check\

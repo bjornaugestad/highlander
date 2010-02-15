@@ -1,3 +1,6 @@
 *.o
-*.Po
-.deps/*
+*.a
+*.swp
+autom4te.cache
+.deps
+extras
