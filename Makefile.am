@@ -23,7 +23,7 @@ TESTS=\
 	cookie_check
 
 # Some utility programs we need
-bin_PROGRAMS=hipp bin2c
+bin_PROGRAMS=hipp bin2c webcached
 
 # The main target
 lib_LIBRARIES=libhighlander.a 
@@ -131,6 +131,15 @@ libhighlander_a_CFLAGS=\
 	-O2 -DNDEBUG -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
     -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
 
+webcached_CFLAGS=\
+	-D_GNU_SOURCE -std=gnu99 -D_REENTRANT\
+	-I$(srcdir)\
+	-I$(srcdir)/webcache\
+	-I$(top_srcdir)/src\
+	-Werror -Wshadow -W -Wmissing-prototypes\
+	-O2 -DNDEBUG -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
+    -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
+
 AM_CFLAGS=\
 	-D_GNU_SOURCE -std=gnu99 -D_REENTRANT\
 	-I$(srcdir)\
@@ -225,7 +234,9 @@ sampler_check_CFLAGS=-DCHECK_SAMPLER $(AM_CFLAGS)
 sampler_check_LDADD=-lpthread
 sampler_check_LDFLAGS=-ggdb -O0
 
-EXTRA_DIST=$(man_MANS)
+EXTRA_DIST=$(man_MANS)\
+	webcache/webcached.conf 
+
 man_MANS=\
 	doc/attribute_free.3\
 	doc/attribute_get_charset.3\
@@ -444,5 +455,35 @@ man_MANS=\
 	doc/configfile_read.3\
 	\
  #
+
+
+webcached_SOURCES=\
+	webcache/webcache_styles.css\
+	webcache/webcache_logo.gif\
+	webcache/httpcache.h\
+	webcache/highcached.c \
+	webcache/show_about.c\
+	webcache/find_files.c\
+	webcache/show_disk.c\
+	webcache/show_cache.c\
+	webcache/show_configuration.c\
+	webcache/handle_requests.c\
+	webcache/html_utilities.c\
+	webcache/statpack.c
+
+nodist_webcached_SOURCES=webcache/webcache_logo.c webcache/webcache_styles.c
+
+webcached_LDADD=-lhighlander -lpthread
+
+# Convert the GIF logo to C source code
+%.c : %.gif
+	bin2c -bt image/gif -i httpcache.h -c $*.c $<
+
+%.c : %.css
+	bin2c -bt text/css -i httpcache.h -c $*.c $<
+
+
+CLEANFILES=webcache/webcache_logo.c webcache/webcache_styles.c
+BUILT_SOURCES=webcache/webcache_logo.c webcache/webcache_styles.c
 
 
