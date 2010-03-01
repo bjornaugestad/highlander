@@ -16,6 +16,10 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
+#ifdef WITH_VALGRIND
+#include <valgrind/memcheck.h>
+#endif
+
 #include <stdlib.h>
 #include <assert.h>
 
@@ -116,6 +120,9 @@ void* pool_get(pool p)
 		if(p->pdata[i] != NULL) {
 			resource = p->pdata[i];
 			p->pdata[i] = NULL;
+#ifdef WITH_VALGRIND
+			VALGRIND_MAKE_MEM_UNDEFINED(resource, p->size);
+#endif
 			break;
 		}
 	}

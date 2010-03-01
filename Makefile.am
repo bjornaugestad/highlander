@@ -124,24 +124,24 @@ bin2c_SOURCES=src/bin2c.c
 bin2c_LDADD=-L$(distdir) -L. -lhighlander
 
 libhighlander_a_CFLAGS=\
-	-D_GNU_SOURCE -std=gnu99 -D_REENTRANT\
+	-DWITH_VALGRIND=1 -D_GNU_SOURCE -std=gnu99 -D_REENTRANT -pthread\
 	-I$(srcdir)\
 	-I$(top_srcdir)/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\
-	-O2 -DNDEBUG -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
+	-O2 -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
     -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
 
 webcached_CFLAGS=\
-	-D_GNU_SOURCE -std=gnu99 -D_REENTRANT\
+	-DWITH_VALGRIND=1 -D_GNU_SOURCE -std=gnu99 -D_REENTRANT -pthread\
 	-I$(srcdir)\
 	-I$(srcdir)/webcache\
 	-I$(top_srcdir)/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\
-	-O2 -DNDEBUG -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
+	-O2 -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
     -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
 
 AM_CFLAGS=\
-	-D_GNU_SOURCE -std=gnu99 -D_REENTRANT\
+	-DWITH_VALGRIND=1 -D_GNU_SOURCE -std=gnu99 -D_REENTRANT\
 	-I$(srcdir)\
 	-I$(top_srcdir)/src\
 	-Wshadow -W -Wmissing-prototypes\
