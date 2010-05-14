@@ -473,7 +473,7 @@ webcached_SOURCES=\
 
 nodist_webcached_SOURCES=webcache/webcache_logo.c webcache/webcache_styles.c
 
-webcached_LDADD=-lhighlander -lpthread
+webcached_LDADD=-L. -lhighlander -lpthread
 
 # Convert the GIF logo to C source code
 %.c : %.gif

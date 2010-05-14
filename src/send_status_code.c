@@ -117,6 +117,8 @@ int send_status_code(connection conn, int status_code, http_version version)
 
 	/* Unsupported status code? Pretty internal error, isn't it?
 	 * We just die as we obviously have a major internal error */
+    fprintf(stderr, "Weird status code: %d (hex %x)\n", status_code, status_code);
+    return 0;
 	abort();
 }
 
