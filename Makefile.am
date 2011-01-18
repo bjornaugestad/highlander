@@ -1,4 +1,4 @@
-LDADD=-lpthread
+LDADD=-lpthread -L.
 
 TESTS=\
 	sampler_check\
@@ -23,7 +23,7 @@ TESTS=\
 	cookie_check
 
 # Some utility programs we need
-bin_PROGRAMS=hipp bin2c webcached
+bin_PROGRAMS=hipp bin2c #webcached
 
 # The main target
 lib_LIBRARIES=libhighlander.a 
@@ -128,7 +128,7 @@ libhighlander_a_CFLAGS=\
 	-I$(srcdir)\
 	-I$(top_srcdir)/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\
-	-O2 -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
+	-O2 -ggdb -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
     -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
 
 webcached_CFLAGS=\
@@ -145,7 +145,7 @@ AM_CFLAGS=\
 	-I$(srcdir)\
 	-I$(top_srcdir)/src\
 	-Wshadow -W -Wmissing-prototypes\
-	-O2 -DNDEBUG -Wall -pedantic -Wno-long-long  -Wno-inline
+	-O2 -ggdb -Wall -pedantic -Wno-long-long  -Wno-inline
 
 check_PROGRAMS=\
 	attribute_check\

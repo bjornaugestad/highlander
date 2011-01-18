@@ -111,7 +111,6 @@ tcp_server tcp_server_new(void)
 {
 	tcp_server p;
 
-	enter();
 	if( (p = mem_calloc(1, sizeof *p)) != NULL) {
 		/* Some defaults */
 		p->timeout_reads = 5000;
@@ -142,7 +141,7 @@ tcp_server tcp_server_new(void)
 		atomic_ulong_init(&p->sum_denied_clients);
 	}
 
-	leave(p);
+	return p;
 }
 
 void tcp_server_free(tcp_server srv)
