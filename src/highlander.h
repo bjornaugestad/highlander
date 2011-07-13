@@ -384,6 +384,7 @@ const char*	attribute_get_charset(page_attribute a);
 const char*	attribute_get_encoding(page_attribute a);
 const char*	attribute_get_media_type(page_attribute a);
 
+void warning(const char *fmt, ...);
 void die(const char *fmt, ...) __attribute__ ((noreturn));
 void die_perror(const char *fmt, ...) __attribute__ ((noreturn));
 

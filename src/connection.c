@@ -425,7 +425,6 @@ static int nReadFromSocket(connection conn, void *pbuf, size_t cb)
 	int success;
 	size_t cbRead;
 
-	enter();
 	assert(conn != NULL);
 	assert(pbuf != NULL);
 	assert(fReadBufferEmpty(conn));
@@ -448,7 +447,7 @@ static int nReadFromSocket(connection conn, void *pbuf, size_t cb)
 		}
 	}
 
-	leave(success);
+	return success;
 }
 
 int connection_read(connection conn, void* buf, size_t cb)

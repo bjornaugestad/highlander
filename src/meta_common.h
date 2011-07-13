@@ -68,32 +68,6 @@ void  mem_set_error_policy(int policy);
 extern int meta_verbose_level;
 extern int meta_indent_level;
 
-/*
- * We also have a bunch of friendly macros and functions used to 
- * trace stuff in debug builds. They are removed in release builds.
- */
-#ifndef NDEBUG
-#define enter() \
-	verbose(2, "%s(): Enter\n", __FUNCTION__),meta_indent_level++
-
-#define leave(retval) \
-	{\
-		meta_indent_level--;\
-		verbose(2, "%s(): Leave at line %d\n", __FUNCTION__, __LINE__);\
-		return retval;\
-	}
-
-#define leave_void()  \
-	{\
-		meta_indent_level--;\
-		verbose(2, "%s(): Leave at line %d\n", __FUNCTION__, __LINE__);\
-		return;\
-	}
-#else
-#	define enter()
-#	define leave(retval) return retval
-#	define leave_void() return
-#endif
 void verbose(int level, const char *fmt, ...);
 
 
