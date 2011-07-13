@@ -530,6 +530,8 @@ static int item_foreach(void* arg, void* item)
 {
 	assert(arg == NULL);
 	assert(item != NULL);
+	(void)arg;
+	(void)item;
 
 	return 1;
 }
@@ -540,12 +542,18 @@ static int item_foreach2(void* arg1, void* arg2, void* item)
 	assert(arg2 == NULL);
 	assert(item != NULL);
 
+	(void)arg1;
+	(void)arg2;
+	(void)item;
+
 	return 1;
 }
 
 static int item_sep(void* arg)
 {
 	assert(arg == NULL);
+	(void)arg;
+
 	return 1;
 }
 
@@ -560,9 +568,7 @@ int main(void)
 	list a, b;
 	list_iterator li;
 	size_t i, nelem = 1000;
-
 	struct item *node, searchterm;
-    return77("list_foreach failed");
 
 	if( (a = list_new()) == NULL)
 		return77("Could not allocate memory");

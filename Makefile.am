@@ -144,7 +144,7 @@ AM_CFLAGS=\
 	-DWITH_VALGRIND=1 -D_GNU_SOURCE -std=gnu99 -D_REENTRANT\
 	-I$(srcdir)\
 	-I$(top_srcdir)/src\
-	-Wshadow -W -Wmissing-prototypes\
+	-Werror -Wshadow -W -Wmissing-prototypes\
 	-O2 -DNDEBUG -Wall -pedantic -Wno-long-long  -Wno-inline
 
 check_PROGRAMS=\
