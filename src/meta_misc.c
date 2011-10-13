@@ -155,7 +155,7 @@ int find_word(const char* s, size_t iWord)
 
 int get_word_count(const char *s)
 {
-	int i = 0;
+	int n = 0;
 	int last_was_space = 0;
 
 	assert(s != NULL);
@@ -165,11 +165,12 @@ int get_word_count(const char *s)
 		s++;
 
 	if(*s != '\0')
-		i++;
+		n++;
 
 	while(*s != '\0') {
 		if(*s == ' ') {
-			i++;
+            if(!last_was_space)
+                n++;
 			last_was_space = 1;
 		}
 		else
@@ -178,7 +179,7 @@ int get_word_count(const char *s)
 		s++;
 	}
 
-	return i;
+	return n;
 }
 
 int get_word_from_string(

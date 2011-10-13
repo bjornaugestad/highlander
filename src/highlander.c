@@ -158,6 +158,7 @@ static int send_disk_file(
 	/* NOTE: Trengs dette for HTTP 1.0 ?*/
 
 	v = request_get_version(req);
+    (void)v;
 	if( (a = http_server_get_default_attributes(s)) != NULL
 	&& !check_attributes(req, a)) {
 		response_set_status(response, HTTP_406_NOT_ACCEPTABLE);
