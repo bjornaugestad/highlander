@@ -23,7 +23,7 @@ TESTS=\
 	cookie_check
 
 # Some utility programs we need
-bin_PROGRAMS=hipp bin2c #webcached
+bin_PROGRAMS=bin2c hipp webcached
 
 # The main target
 lib_LIBRARIES=libhighlander.a 
@@ -121,18 +121,22 @@ hipp_SOURCES=src/hipp.c
 hipp_LDADD=-L$(distdir) -L. -lhighlander
 
 bin2c_SOURCES=src/bin2c.c
-bin2c_LDADD=-L$(distdir) -L. -lhighlander
+bin2c_LDADD=-L$(distdir)
 
 libhighlander_a_CFLAGS=\
-	-DWITH_VALGRIND=1 -D_GNU_SOURCE -std=gnu99 -D_REENTRANT -pthread\
+	-D_GNU_SOURCE -std=gnu99 -D_REENTRANT -pthread\
 	-I$(srcdir)\
 	-I$(top_srcdir)/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\
 	-O2 -ggdb -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
     -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
 
+if WITH_VALGRIND
+libhighlander_a_CFLAGS+=-DWITH_VALGRIND=1 
+endif
+
 webcached_CFLAGS=\
-	-DWITH_VALGRIND=1 -D_GNU_SOURCE -std=gnu99 -D_REENTRANT -pthread\
+	-D_GNU_SOURCE -std=gnu99 -D_REENTRANT -pthread\
 	-I$(srcdir)\
 	-I$(srcdir)/webcache\
 	-I$(top_srcdir)/src\
@@ -141,7 +145,7 @@ webcached_CFLAGS=\
     -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
 
 AM_CFLAGS=\
-	-DWITH_VALGRIND=1 -D_GNU_SOURCE -std=gnu99 -D_REENTRANT\
+	-D_GNU_SOURCE -std=gnu99 -D_REENTRANT\
 	-I$(srcdir)\
 	-I$(top_srcdir)/src\
 	-Wshadow -W -Wmissing-prototypes\
@@ -474,13 +478,14 @@ webcached_SOURCES=\
 nodist_webcached_SOURCES=webcache/webcache_logo.c webcache/webcache_styles.c
 
 webcached_LDADD=-L. -lhighlander -lpthread
+webcached_DEPENDENCIES=./bin2c
 
 # Convert the GIF logo to C source code
 %.c : %.gif
-	bin2c -bt image/gif -i httpcache.h -c $*.c $<
+	./bin2c -bt image/gif -i httpcache.h -c $*.c $<
 
 %.c : %.css
-	bin2c -bt text/css -i httpcache.h -c $*.c $<
+	./bin2c -bt text/css -i httpcache.h -c $*.c $<
 
 
 CLEANFILES=webcache/webcache_logo.c webcache/webcache_styles.c

@@ -41,7 +41,6 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <meta_misc.h>
 
 void process(const char* filename, FILE *source, FILE *header);
 void create_arrays(const char* filename, FILE *source);
@@ -210,6 +209,13 @@ void create_arrays(const char* filename, FILE *f)
 		create_text_arrays(filename, f);
 	else
 		create_bin_arrays(filename, f);
+}
+
+static void remove_trailing_newline(char *sz)
+{
+	size_t n = strlen(sz);
+	while(n-- > 0 && isspace(sz[n]))
+			sz[n] = '\0';
 }
 
 void create_text_arrays(const char* filename, FILE *f) 
