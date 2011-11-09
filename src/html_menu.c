@@ -126,6 +126,8 @@ int html_menu_render(html_menu m, cstring buffer)
 	link = html_menu_get_link(m);
 	image = html_menu_get_image(m);
 	hover_image = html_menu_get_hover_image(m);
+    (void)image;
+    (void)hover_image;
 
 	if(text != NULL) { 
 		if(link != NULL) {

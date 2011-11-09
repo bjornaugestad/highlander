@@ -334,7 +334,8 @@ void response_set_last_modified(http_response response, time_t value);
 int response_add(http_response response, const char* src);
 int response_add_char(http_response response, int c);
 int response_add_end(http_response response, const char* start, const char* end);
-int response_printf(http_response response, size_t size, const char* format, ...);
+int response_printf(http_response response, size_t size, const char* format, ...)
+    __attribute__ ((format(printf, 3, 4)));
 int response_set_content_buffer(http_response response, void* src, size_t n);
 int response_set_allocated_content_buffer(http_response response, void* src, size_t n);
 
@@ -384,9 +385,16 @@ const char*	attribute_get_charset(page_attribute a);
 const char*	attribute_get_encoding(page_attribute a);
 const char*	attribute_get_media_type(page_attribute a);
 
-void warning(const char *fmt, ...);
-void die(const char *fmt, ...) __attribute__ ((noreturn));
-void die_perror(const char *fmt, ...) __attribute__ ((noreturn));
+void warning(const char *fmt, ...) 
+    __attribute__((format(printf,1,2)));
+
+void die(const char *fmt, ...) 
+    __attribute__((format(printf,1,2)))
+    __attribute__ ((noreturn)) ;
+
+void die_perror(const char *fmt, ...) 
+    __attribute__((format(printf,1,2)))
+    __attribute__ ((noreturn));
 
 
 int get_basename(const char* name, const char* suffix, char* dest, size_t cb);

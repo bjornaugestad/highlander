@@ -290,7 +290,7 @@ time_t sampler_time(sampler s, size_t i)
 	assert(i < s->nvalue);
 
 	idx = map_index(s, i);
-	t = s->times[i];
+	t = s->times[idx];
 
 	assert(t != (time_t)-1);
 	return t;

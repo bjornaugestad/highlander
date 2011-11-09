@@ -493,7 +493,7 @@ static void create_mainfile(int argc, char *argv[], const char *filename)
 	FILE *f;
 
 	if( (f = fopen(filename, "w")) == NULL)
-		die_perror(filename);
+		die_perror("%s", filename);
 
 	/* Include all the stock include files */
 	fprintf(f, "#include <stdlib.h>\n");
