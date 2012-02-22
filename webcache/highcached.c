@@ -157,7 +157,7 @@ static void create_cache(void)
 
 	/* Read the configuration file */
 	if( (cf = configfile_read(g_configfile)) == NULL) {
-		die_perror(g_configfile);
+		die_perror("%s", g_configfile);
 	}
 	else if(!configfile_get_ulong(cf, "size", &size)) {
 		die("The size configuration parameter is required\n");
@@ -211,7 +211,7 @@ static void configure_admin_server(http_server s, const char* configfilename)
 	assert(configfilename != NULL);
 
 	if( (cf = configfile_read(configfilename)) == NULL) 
-		die_perror(configfilename);
+		die_perror("%s", configfilename);
 	else if(!configfile_get_int(cf, "admin_port", &port))
 		die_perror("admin_port");
 	else if(!configfile_get_string(cf, "admin_host", host, sizeof host))
