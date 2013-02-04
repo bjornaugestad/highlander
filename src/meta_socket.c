@@ -35,37 +35,46 @@
 
 #include <meta_socket.h>
 
+struct meta_socket_tag {
+	int fd;
+};
+
 
 /* local helper functions */
-static int sock_poll_for(int fd, int timeout, int poll_for);
-static int sock_set_reuseaddr(int sock);
+static int sock_poll_for(meta_socket p, int timeout, int poll_for);
+static int sock_set_reuseaddr(meta_socket p);
 
-int wait_for_writability(int fd, int timeout)
+int wait_for_writability(meta_socket p, int timeout)
 {
-	return sock_poll_for(fd, timeout, POLLOUT);
+	assert(p != NULL);
+
+	return sock_poll_for(p, timeout, POLLOUT);
 }
 
-int wait_for_data(int fd, int timeout)
+int wait_for_data(meta_socket p, int timeout)
 {
-	return sock_poll_for(fd, timeout, POLLIN);
+	assert(p != NULL);
+
+	return sock_poll_for(p, timeout, POLLIN);
 }
 
-int sock_write(int fd, const char* s, size_t cbToWrite, int timeout, int cRetries)
+int sock_write(meta_socket p, const char* s, size_t cbToWrite, int timeout, int cRetries)
 {
 	ssize_t cbWritten = 0;
 
-	assert(fd >= 0);
+	assert(p != NULL);
+	assert(p->fd >= 0);
 	assert(s != NULL);
 	assert(timeout >= 0);
 	assert(cRetries >= 0);
 
 
 	do {
-		if(!wait_for_writability(fd, timeout)) {
+		if(!wait_for_writability(p, timeout)) {
 			if(errno != EAGAIN)
 				return 0;
 		} 
-		else if( (cbWritten = write(fd, s, cbToWrite)) == -1) {
+		else if( (cbWritten = write(p->fd, s, cbToWrite)) == -1) {
 			perror("write");
 			return 0;
 		} 
@@ -92,17 +101,18 @@ int sock_write(int fd, const char* s, size_t cbToWrite, int timeout, int cRetrie
  * error occured. It set errno to EAGAIN if a timeout occured, and 
  * it maps POLLHUP and POLLERR to EPIPE, and POLLNVAL to EINVAL. 
  */
-static int sock_poll_for(int fd, int timeout, int poll_for)
+static int sock_poll_for(meta_socket p, int timeout, int poll_for)
 {
 	struct pollfd pfd;
 	int rc;
 	int status = 0;
 
-	assert(fd >= 0);
+	assert(p != NULL);
+	assert(p->fd >= 0);
 	assert(poll_for == POLLIN || poll_for == POLLOUT);
 	assert(timeout >= 0);
 
-	pfd.fd = fd;
+	pfd.fd = p->fd;
 	pfd.events = (short)poll_for;
 
 	/* NOTE: poll is XPG4, not POSIX */
@@ -136,7 +146,7 @@ static int sock_poll_for(int fd, int timeout, int poll_for)
 /* NOTE that sock_read() will return 1 even if zero bytes were read.
  */
 int sock_read(
-	int fd,
+	meta_socket p,
 	char *buf,
 	size_t cbMax,
 	int timeout,
@@ -146,7 +156,8 @@ int sock_read(
 	ssize_t cbRead = 0;
 	size_t cbToRead;
 
-	assert(fd >= 0);
+	assert(p != NULL);
+	assert(p->fd >= 0);
 	assert(timeout >= 0);
 	assert(cRetries >= 0);
 	assert(buf != NULL);
@@ -156,11 +167,11 @@ int sock_read(
 	do {
 		cbToRead = cbMax - *cbReadSum;
 
-		if(!wait_for_data(fd, timeout)) {
+		if(!wait_for_data(p, timeout)) {
 			if(errno != EAGAIN)
 				return 0;
 		}
-		else if( (cbRead = read(fd, &buf[*cbReadSum], cbToRead)) == -1) {
+		else if( (cbRead = read(p->fd, &buf[*cbReadSum], cbToRead)) == -1) {
 			/*
 			 * We were unable to read data from the socket. 
 			 * Inform the caller by returning 0.
@@ -198,12 +209,14 @@ int sock_read(
  * created a socket with a specific protocol family,
  * and here we bind it to the PF specified in the services...
  */
-int sock_bind(int sock, const char* hostname, int port)
+int sock_bind(meta_socket p, const char* hostname, int port)
 {
 	struct hostent* host = NULL;
 	struct sockaddr_in my_addr;
 	socklen_t cb = (socklen_t)sizeof(my_addr);
 
+	assert(p != NULL);
+	assert(p->fd >= 0);
 	assert(port > 0);
 
 	if(hostname != NULL) {
@@ -225,48 +238,60 @@ int sock_bind(int sock, const char* hostname, int port)
 		my_addr.sin_addr.s_addr = ((struct in_addr*)host->h_addr)->s_addr;
 	}
 
-	if(bind(sock, (struct sockaddr *)&my_addr, cb) == -1)
+	if(bind(p->fd, (struct sockaddr *)&my_addr, cb) == -1)
 		return 0;
 
 	return 1;
 }
 
-int sock_socket(int* sock)
+meta_socket sock_socket(void)
 {
-	if( (*sock = socket(PF_INET, SOCK_STREAM, 0)) == -1)
+	meta_socket p;
+
+	if ( (p = malloc(sizeof *p)) == NULL) {
+		return NULL;
+	}
+	else if( (p->fd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
+		free(p);
+		return NULL;
+	}
+	else
+		return p;
+}
+
+int sock_listen(meta_socket p, int backlog)
+{
+	assert(p != NULL);
+	assert(p->fd >= 0);
+
+	if(listen(p->fd, backlog) == -1)
 		return 0;
 	else
 		return 1;
 }
 
-int sock_listen(int sock, int backlog)
+meta_socket create_server_socket(const char* host, int port)
 {
-	if(listen(sock, backlog) == -1)
-		return 0;
-	else
-		return 1;
-}
+	meta_socket p;
 
-int create_server_socket(int *psock, const char* host, int port)
-{
-	if(sock_socket(psock)) {
-		if(!sock_set_reuseaddr(*psock)
-		|| !sock_bind(*psock, host, port)
-		|| !sock_listen(*psock, 100)) {
-			close(*psock);
-			return 0;
-		}
-		else 
-			return 1;
+	if( (p = sock_socket()) == NULL) {
+		return NULL;
+	}
+	else if(!sock_set_reuseaddr(p)
+	|| !sock_bind(p, host, port)
+	|| !sock_listen(p, 100)) {
+		sock_close(p);
+		return 0;
 	}
 	else 
-		return 0;
+		return p;
 }
 
-int create_client_socket(int *psock, const char* host, int port)
+meta_socket create_client_socket(const char* host, int port)
 {
     struct hostent *phost;
     struct sockaddr_in sa;
+	meta_socket p;
 
     if( (phost = gethostbyname(host)) == NULL) {
 		errno = h_errno; /* OBSOLETE? */
@@ -279,44 +304,49 @@ int create_client_socket(int *psock, const char* host, int port)
     sa.sin_port = htons(port);
 
     /* Open a socket to the server */
-	*psock =socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if(-1 == *psock) 
+	if ( (p = sock_socket()) == NULL)
 		return 0;
 
     /* Connect to the server. */
-    if(connect(*psock, (struct sockaddr *) &sa, sizeof(sa)) == -1) {
-		close(*psock);
-		return 0;
+    if(connect(p->fd, (struct sockaddr *) &sa, sizeof(sa)) == -1) {
+		sock_close(p);
+		return NULL;
 	}
 	else
-		return 1;
+		return p;
 }
 
-int sock_set_nonblock(int sock)
+int sock_set_nonblock(meta_socket p)
 {
 	int flags;
 
-	flags = fcntl(sock, F_GETFL); 
+	assert(p != NULL);
+	assert(p->fd >= 0);
+
+	flags = fcntl(p->fd, F_GETFL); 
 	if(flags == -1) 
 		return 0;
 
 	flags |= O_NONBLOCK;
-	if(fcntl(sock, F_SETFL, flags) == -1)
+	if(fcntl(p->fd, F_SETFL, flags) == -1)
 		return 0;
 
 	return 1;
 }
 
-int sock_clear_nonblock(int sock)
+int sock_clear_nonblock(meta_socket p)
 {
 	int flags;
 
-	flags = fcntl(sock, F_GETFL);
+	assert(p != NULL);
+	assert(p->fd >= 0);
+
+	flags = fcntl(p->fd, F_GETFL);
 	if(flags == -1)
 		return 0;
 
 	flags -= (flags & O_NONBLOCK);
-	if(fcntl(sock, F_SETFL, flags) == -1)
+	if(fcntl(p->fd, F_SETFL, flags) == -1)
 		return 0;
 	else
 		return 1;
@@ -326,21 +356,32 @@ int sock_clear_nonblock(int sock)
  * Sets the socket options we want on the main socket 
  * Suitable for server sockets only.
  */
-static int sock_set_reuseaddr(int sock)
+static int sock_set_reuseaddr(meta_socket p)
 {
 	int optval;
 	socklen_t optlen;
 
+	assert(p != NULL);
+	assert(p->fd >= 0);
+
 	optval = 1;
 	optlen = (socklen_t)sizeof(optval);
-	if(setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, optlen) == -1)
+	if(setsockopt(p->fd, SOL_SOCKET, SO_REUSEADDR, &optval, optlen) == -1)
 		return 0;
 	else
 		return 1;
 }
 
-int sock_close(int fd)
+int sock_close(meta_socket p)
 {
+	int fd;
+
+	assert(p != NULL);
+	assert(p->fd >= 0);
+
+	fd = p->fd;
+	free(p);
+
 	/* shutdown() may return an error from time to time,
 	 * e.g. if the client already closed the socket. We then
 	 * get error ENOTCONN. 
@@ -355,3 +396,24 @@ int sock_close(int fd)
 		return 1;
 }
 
+meta_socket sock_accept(meta_socket p, struct sockaddr *addr, socklen_t *addrsize)
+{
+	meta_socket newsock;
+	int fd;
+
+	assert(p != NULL);
+	assert(addr != NULL);
+	assert(addrsize != NULL);
+
+	fd = accept(p->fd, addr, addrsize);
+	if (fd == -1)
+		return NULL;
+	else if ( (newsock = malloc(sizeof *newsock)) == NULL) {
+		close(fd);
+		return NULL;
+	}
+	else {
+		newsock->fd = fd;
+		return newsock;
+	}
+}

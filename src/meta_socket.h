@@ -37,16 +37,20 @@ extern "C" {
  * reentrant programs).
  */
 
+
+typedef struct meta_socket_tag *meta_socket;
+
 /*
  * Creates a new socket.
  * This is a wrapper function for a call to socket().
  * It calls socket with PF_INET as family and SOCK_STREAM
  * as type. Protocol is set to 0.
  */
-int sock_socket(int* sock);
+meta_socket sock_socket(void);
 
 /* Calls listen() */
-int sock_listen(int sock, int backlog);
+int sock_listen(meta_socket p, int backlog);
+meta_socket sock_accept(meta_socket p, struct sockaddr *addr, socklen_t *addrsize);
 
 /**
  * Tries to read up to count bytes from the socket. 
@@ -56,7 +60,7 @@ int sock_listen(int sock, int backlog);
  * and return 0 if no error occured.
  */
 int sock_read(
-	int fd,
+	meta_socket p,
 	char *buf,
 	size_t cbMax,
 	int timeout,
@@ -64,13 +68,13 @@ int sock_read(
 	size_t* cbReadSum);
 
 /* Waits for data to be available on the socket. */
-int wait_for_data(int fd, int timeout);
+int wait_for_data(meta_socket p, int timeout);
 
 /*
  * Waits for up to \e timeout seconds to see if it is possible to
  * write to the socket.
  */
-int wait_for_writability(int fd, int timeout);
+int wait_for_writability(meta_socket p, int timeout);
 
 /**
  * Tries to write \e count bytes to the socket, retrying \e retries 
@@ -79,23 +83,23 @@ int wait_for_writability(int fd, int timeout);
  * NOTE: sock_write() returns EAGAIN if it was unable to write \e count
  * bytes, even if it was able to write up to \e count - 1 bytes.
  */
-int sock_write(int fd, const char* s, size_t count, int timeout, int retries);
+int sock_write(meta_socket p, const char* s, size_t count, int timeout, int retries);
 
 /**
  * Binds the socket to an address/port.
  * @return 1 on success, else 0.
  */
-int sock_bind(int fd, const char* hostname, int port);
+int sock_bind(meta_socket p, const char* hostname, int port);
 
 /**
  * Sets the socket to be nonblocking.
  */
-int sock_set_nonblock(int fd);
+int sock_set_nonblock(meta_socket p);
 
 /**
  * Clears the nonblocking flag.
  */
-int sock_clear_nonblock(int fd);
+int sock_clear_nonblock(meta_socket p);
 
 /**
  * Creates a server socket.
@@ -106,7 +110,7 @@ int sock_clear_nonblock(int fd);
  * A server socket is ready to accept connections.
  * @return 1 on success, else 0.
  */
-int create_server_socket(int *pfd, const char* host, int port);
+meta_socket create_server_socket(const char* host, int port);
 
 /*
  * Connects to a host on a port.
@@ -116,7 +120,7 @@ int create_server_socket(int *pfd, const char* host, int port);
  *
  * @return 1 on success, else 0.
  */
-int create_client_socket(int *pfd, const char *host, int port);
+meta_socket create_client_socket(const char *host, int port);
 
 /*
  * Closes the socket.
@@ -125,7 +129,7 @@ int create_client_socket(int *pfd, const char *host, int port);
  *
  * @return 1 on success, else 0.
  */
-int sock_close(int fd);
+int sock_close(meta_socket p);
 
 #ifdef __cplusplus
 }

@@ -22,6 +22,7 @@
 #include <netinet/in.h> /* for struct sockaddr_in */
 
 #include <meta_membuf.h>
+#include <meta_socket.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -57,7 +58,7 @@ int connection_close(connection conn);
 void connection_set_persistent(connection conn, int val);
 int  connection_is_persistent(connection conn);
 
-void connection_set_params(connection conn, int fd, struct sockaddr_in* paddr);
+void connection_set_params(connection conn, meta_socket sock, struct sockaddr_in* paddr);
 struct sockaddr_in* connection_get_addr(connection conn);
 
 int data_on_socket(connection conn);
@@ -70,7 +71,6 @@ membuf connection_reclaim_write_buffer(connection conn);
 void   connection_assign_read_buffer(connection conn, membuf buf);
 void   connection_assign_write_buffer(connection conn, membuf buf);
 
-void connection_set_fd(connection conn, int fd);
 int connection_get_fd(connection conn);
 
 #ifdef __cplusplus

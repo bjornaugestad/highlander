@@ -122,7 +122,7 @@ void* stack_get(stack s, size_t i)
 
 int main(void)
 {
-	int i, nelem = 10000;
+	size_t i, nelem = 10000;
 	char *str;
 	stack s = stack_new();
 
@@ -132,7 +132,7 @@ int main(void)
 			exit(EXIT_FAILURE);
 		}
 
-		sprintf(str, "%d", i);
+		sprintf(str, "%zu", i);
 		stack_push(s, str);
 	}
 

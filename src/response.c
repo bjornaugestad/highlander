@@ -1048,7 +1048,9 @@ static int send_entire_file(connection conn, const char *path, size_t *pcb)
 	if( (fd = open(path, O_RDONLY)) == -1)
 		return 0;
 
-#if 1
+// Note that sendfile() usage must change when using ssl. (probably)
+// boa 20130204
+#if 0
 #ifdef HAVE_SENDFILE
 	{
 		off_t offset = 0;

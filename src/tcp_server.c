@@ -63,7 +63,7 @@ struct tcp_server_tag {
 	void* service_arg;
 
 	/* The file descriptor we accept connections from.  */
-	int fd;
+	meta_socket sock;
 
 	/* The work queue */
 	threadpool queue;
@@ -123,7 +123,7 @@ tcp_server tcp_server_new(void)
 		p->queue_size = 100;
 		p->worker_threads = 10;
 		p->port = 2000;
-		p->fd = -1;
+		p->sock = NULL;
 		p->pattern_compiled = 0;
 		p->host = NULL;
 
@@ -350,22 +350,23 @@ tcp_server_get_connection(tcp_server srv)
 	return conn;
 }
 
-static int accept_new_connections(tcp_server srv, int fd)
+static int accept_new_connections(tcp_server srv, meta_socket sock)
 {
-	int rc, newsock;
+	int rc;
+	meta_socket newsock;
 	socklen_t cbAddr;
 	struct sockaddr_in addr;
 	connection pconn;
 
 	assert(NULL != srv);
-	assert(fd >= 0);
+	assert(sock != NULL);
 
 	/* Make the socket non-blocking so that accept() won't block */
-	if(!sock_set_nonblock(fd))
+	if(!sock_set_nonblock(sock))
 		return 0;
 
 	while(!srv->shutting_down) {
-		if(!wait_for_data(fd, srv->timeout_accepts)) {
+		if(!wait_for_data(sock, srv->timeout_accepts)) {
 			if(errno == EINTR) {
 				/* Someone interrupted us, why? 
 				 * NOTE: This happens when the load is very high 
@@ -410,8 +411,8 @@ static int accept_new_connections(tcp_server srv, int fd)
 		 * Linux does not as it doesn't have that struct member.
 		 */
 		cbAddr = sizeof(addr);
-		newsock = accept(fd, (struct sockaddr*)&addr, &cbAddr);
-		if (newsock == -1) {
+		newsock = sock_accept(sock, (struct sockaddr*)&addr, &cbAddr);
+		if (newsock == NULL) {
 			switch(errno) {
 				/*
 				 * NOTE: EPROTO is not defined for freebsd, and Stevens 
@@ -466,7 +467,7 @@ static int accept_new_connections(tcp_server srv, int fd)
 
 		/* Check if the client is permitted to connect or not. */
 		if(!client_can_connect(srv, &addr)) {
-			close(newsock);
+			sock_close(newsock);
 			atomic_ulong_inc(&srv->sum_denied_clients);
 			continue;
 		}
@@ -527,7 +528,8 @@ static int accept_new_connections(tcp_server srv, int fd)
 
 int tcp_server_get_root_resources(tcp_server srv)
 {
-	if(!create_server_socket(&srv->fd, srv->host, srv->port))
+	srv->sock = create_server_socket(srv->host, srv->port);
+	if(srv->sock == NULL)
 		return 0;
 	else
 		return 1;
@@ -539,16 +541,16 @@ int tcp_server_start(tcp_server srv)
 
 	assert(NULL != srv);
 
-	if(!accept_new_connections(srv, srv->fd)) {
-		close(srv->fd); 
+	if(!accept_new_connections(srv, srv->sock)) {
+		sock_close(srv->sock); 
 		rc = 0;
 	}
-	else if(close(srv->fd))  
+	else if(sock_close(srv->sock))  
 		rc = 0;
 	else 
 		rc = 1;
 
-	srv->fd = -1;
+	srv->sock = NULL;
 	return rc;
 }
 

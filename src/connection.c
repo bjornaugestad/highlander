@@ -73,7 +73,7 @@ struct connection_tag {
 	int timeout_reads, timeout_writes;
 	int retries_reads, retries_writes;
 	int persistent;
-	int fd;
+	meta_socket sock;
 	void* arg2;
 
 	/* Client we're connected with */
@@ -110,7 +110,7 @@ static inline int nFillReadBuffer(connection conn)
 	membuf_reset(conn->readbuf);
 
 	success = sock_read(
-		conn->fd,
+		conn->sock,
 		membuf_data(conn->readbuf),
 		membuf_size(conn->readbuf),
 		conn->timeout_reads,
@@ -235,7 +235,7 @@ connection connection_new(
 		p->retries_reads = retries_reads;
 		p->retries_writes = retries_writes;
 		p->arg2 = arg2;
-		p->fd = -1;
+		p->sock = NULL;
 		reset_counters(p);
 	}
 
@@ -245,7 +245,10 @@ connection connection_new(
 int connection_connect(connection c, const char* host, int port)
 {
 	assert(c != NULL);
-	return create_client_socket(&c->fd, host, port);
+	if ( (c->sock = create_client_socket(host, port)) == NULL)
+		return 0;
+	else 
+		return 1;
 }
 
 membuf connection_reclaim_read_buffer(connection conn)
@@ -300,7 +303,7 @@ int connection_flush(connection conn)
 	cbInBuf = membuf_canread(conn->writebuf);
 	if(cbInBuf) {
 		success = sock_write(
-			conn->fd,
+			conn->sock,
 			membuf_data(conn->writebuf),
 			cbInBuf,
 			conn->timeout_writes,
@@ -322,7 +325,7 @@ int connection_close(connection conn)
 	assert(conn != NULL);
 
 	flush_success = connection_flush(conn);
-	close_success = sock_close(conn->fd);
+	close_success = sock_close(conn->sock);
 
 	if(!flush_success) 
 		rc = 0;
@@ -359,7 +362,7 @@ static inline int
 WriteToSocket(connection conn, const char* buf, size_t cb)
 {
 	return sock_write(
-		conn->fd,
+		conn->sock,
 		buf,
 		cb,
 		conn->timeout_writes,
@@ -430,7 +433,7 @@ static int nReadFromSocket(connection conn, void *pbuf, size_t cb)
 	assert(fReadBufferEmpty(conn));
 	
 	success = sock_read(
-		conn->fd,
+		conn->sock,
 		pbuf,
 		cb,
 		conn->timeout_reads,
@@ -506,7 +509,7 @@ void connection_discard(connection conn)
 	assert(conn != NULL);
 
 	/* Close the socket, ignoring any messages */
-	(void)sock_close(conn->fd);
+	(void)sock_close(conn->sock);
 	reset_counters(conn);
 }
 
@@ -545,19 +548,11 @@ void connection_free(connection conn)
 	}
 }
 
-void connection_set_fd(connection conn, int fd)
-{
-	assert(conn != NULL);
-	assert(fd >= 0);
-
-	conn->fd = fd;
-}
-
-void connection_set_params(connection conn, int fd, struct sockaddr_in* paddr)
+void connection_set_params(connection conn, meta_socket sock, struct sockaddr_in* paddr)
 {
 	assert(conn != NULL);
 
-	conn->fd = fd;
+	conn->sock = sock;
 	conn->addr = *paddr;
 
 	reset_counters(conn);
@@ -568,7 +563,7 @@ void connection_recycle(connection conn)
 	assert(conn != NULL);
 
 	conn->persistent = 0;
-	conn->fd = -1;
+	conn->sock = NULL; // Maybe free it too?
 
 	reset_counters(conn);
 }
@@ -577,7 +572,7 @@ int data_on_socket(connection conn)
 {
 	assert(conn != NULL);
 
-	return wait_for_data(conn->fd, conn->timeout_reads);
+	return wait_for_data(conn->sock, conn->timeout_reads);
 }
 
 int connection_putc(connection conn, int ch)
@@ -636,14 +631,19 @@ int connection_write_big_buffer(
 	assert(retries >= 0);
 
 	if( (success = connection_flush(conn)))
-		success = sock_write(conn->fd, buf, cb, timeout, retries);
+		success = sock_write(conn->sock, buf, cb, timeout, retries);
 
 	return success;
 }
 
+#if 0
+// Disabled due to ssl support.
+// We want to encapsulate the fd completely.
 int connection_get_fd(connection conn)
 {
 	assert(conn != NULL);
-	return conn->fd;
+	assert(conn->sock != NULL);
+	return conn->sock->fd;
 }
+#endif
 
