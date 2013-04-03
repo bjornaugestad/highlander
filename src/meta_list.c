@@ -571,12 +571,13 @@ int main(void)
 	size_t i, nelem = 1000;
 	struct item *node, searchterm;
 
+#if 0
 	if( (a = list_new()) == NULL)
 		return77("Could not allocate memory");
 
 	/* Add items to the list */
 	for(i = 0; i < nelem; i++)  {
-		if( (node = mem_malloc(sizeof *a)) == NULL)
+		if( (node = mem_malloc(sizeof *node)) == NULL)
 			return77("Could not create nodes");
 
 		node->value = i;
@@ -723,6 +724,30 @@ int main(void)
 	list_sort(a, item_cmp);
 	i = list_count(a, (int(*)(void*))item_bottom_half);
 	list_free(a, item_dtor);
+#endif
+
+    a = list_new();
+
+    /* Add items to the list. Then delete each of them using
+     * list_delete within a traditional for() loop. */
+	for(i = 0; i < nelem; i++)  {
+		if( (node = mem_malloc(sizeof *node)) == NULL)
+			return77("Could not create nodes");
+
+		node->value = i;
+		if(list_add(a, node) == NULL)
+			return77("Could not add nodes to list");
+	}
+
+    li = list_first(a);
+    
+    while (!list_end(li)) {
+        struct item *p = list_get(li);
+        fprintf(stderr, "%zu\n", p->value);
+        li = list_delete(a, li, item_dtor);
+    }
+
+    list_free(a, item_dtor);
 
 	return 0;
 }

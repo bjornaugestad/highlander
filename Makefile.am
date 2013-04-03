@@ -23,7 +23,11 @@ TESTS=\
 	cookie_check
 
 # Some utility programs we need
-bin_PROGRAMS=bin2c hipp webcached
+bin_PROGRAMS=bin2c hipp 
+
+if WITH_WEBCACHE
+bin_PROGRAMS+=webcached
+endif
 
 # The main target
 lib_LIBRARIES=libhighlander.a 
@@ -461,6 +465,7 @@ man_MANS=\
  #
 
 
+if WITH_WEBCACHE
 webcached_SOURCES=\
 	webcache/webcache_styles.css\
 	webcache/webcache_logo.gif\
@@ -490,5 +495,6 @@ webcached_DEPENDENCIES=./bin2c
 
 CLEANFILES=webcache/webcache_logo.c webcache/webcache_styles.c
 BUILT_SOURCES=webcache/webcache_logo.c webcache/webcache_styles.c
+endif
 
 

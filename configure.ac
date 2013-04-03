@@ -47,6 +47,15 @@ AC_ARG_ENABLE([valgrind],
 	esac],[valgrind=false])
 AM_CONDITIONAL([WITH_VALGRIND], [test x$valgrind = xtrue])
 
+AC_ARG_ENABLE([webcache], 
+	[--enable-webcache Enable webcache integration],
+	[case ${enableval} in
+	 	yes) webcache=true;;
+		no) webcache=false;;
+		*) AC_MSG_ERROR([bad value ${enableval} for --enable-webcache]) ;;
+	esac],[webcache=false])
+AM_CONDITIONAL([WITH_WEBCACHE], [test x$webcache = xtrue])
+
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
