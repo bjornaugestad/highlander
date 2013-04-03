@@ -34,7 +34,8 @@ bin_PROGRAMS+=webcached
 endif
 
 # The main target
-lib_LIBRARIES=libhighlander.a 
+lib_LTLIBRARIES=libhighlander.la 
+
 
 include_HEADERS=\
 	src/cstring.h\
@@ -72,7 +73,8 @@ include_HEADERS=\
 noinst_HEADERS=\
 	src/internals.h
 
-libhighlander_a_SOURCES=\
+libhighlander_la_LDFLAGS=-release $(PACKAGE_VERSION) -version-info 0:0:0
+libhighlander_la_SOURCES=\
 	src/meta_common.c\
 	src/meta_sampler.c\
 	src/meta_wlock.c\
@@ -127,10 +129,10 @@ libhighlander_a_SOURCES=\
 
 if WITH_UTILS
 hipp_SOURCES=src/hipp.c
-hipp_LDADD=-L$(distdir) -L. -lhighlander
+hipp_LDADD=-L.
 
 bin2c_SOURCES=src/bin2c.c
-bin2c_LDADD=-L$(distdir)
+bin2c_LDADD=-L.
 endif
 
 libhighlander_a_CFLAGS=\

@@ -1,13 +1,17 @@
-AC_PREREQ(2.57)
+AC_PREREQ(2.61)
 AC_INIT(highlander, 0.9.93, bjorn.augestad@gmail.com)
 AC_CONFIG_AUX_DIR([extras])
 AM_INIT_AUTOMAKE
+#AC_PROG_LIBTOOL
+LT_INIT([dlopen])
+LT_PREREQ([2.2])
+
 
 AC_CONFIG_SRCDIR([src/internals.h])
 # AC_CONFIG_HEADER([config.h])
 
 # Checks for programs.
-AC_PROG_RANLIB
+#AC_PROG_RANLIB
 AC_PROG_CC
 AC_PROG_CC_C_O
 AM_PROG_CC_C_O
