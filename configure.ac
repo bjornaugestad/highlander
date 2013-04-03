@@ -48,13 +48,22 @@ AC_ARG_ENABLE([valgrind],
 AM_CONDITIONAL([WITH_VALGRIND], [test x$valgrind = xtrue])
 
 AC_ARG_ENABLE([webcache], 
-	[--enable-webcache Enable webcache integration],
+	[--enable-webcache Build webcache daemon],
 	[case ${enableval} in
 	 	yes) webcache=true;;
 		no) webcache=false;;
 		*) AC_MSG_ERROR([bad value ${enableval} for --enable-webcache]) ;;
 	esac],[webcache=false])
 AM_CONDITIONAL([WITH_WEBCACHE], [test x$webcache = xtrue])
+
+AC_ARG_ENABLE([utils], 
+	[--enable-utils Build utility programs hipp and bin2c],
+	[case ${enableval} in
+	 	yes) utils=true;;
+		no) utils=false;;
+		*) AC_MSG_ERROR([bad value ${enableval} for --enable-utils]) ;;
+	esac],[utils=false])
+AM_CONDITIONAL([WITH_UTILS], [test x$utils = xtrue])
 
 
 AC_CONFIG_FILES([Makefile])

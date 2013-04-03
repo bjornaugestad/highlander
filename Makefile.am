@@ -23,7 +23,11 @@ TESTS=\
 	cookie_check
 
 # Some utility programs we need
+if WITH_UTILS
 bin_PROGRAMS=bin2c hipp 
+else
+bin_PROGRAMS=
+endif
 
 if WITH_WEBCACHE
 bin_PROGRAMS+=webcached
@@ -121,11 +125,13 @@ libhighlander_a_SOURCES=\
 # -D_BSD_SOURCE is to get the prototype for strerror_r.
 # _SVID_SOURCE will do the same thing.
 
+if WITH_UTILS
 hipp_SOURCES=src/hipp.c
 hipp_LDADD=-L$(distdir) -L. -lhighlander
 
 bin2c_SOURCES=src/bin2c.c
 bin2c_LDADD=-L$(distdir)
+endif
 
 libhighlander_a_CFLAGS=\
 	-D_GNU_SOURCE -std=gnu99 -D_REENTRANT -pthread\
@@ -244,6 +250,7 @@ sampler_check_LDFLAGS=-ggdb -O0
 
 EXTRA_DIST=$(man_MANS)\
 	webcache/webcached.conf 
+
 
 man_MANS=\
 	doc/attribute_free.3\
