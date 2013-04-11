@@ -97,6 +97,13 @@ struct tcp_server_tag {
 	/* Our shutdown flag */
 	int shutting_down;
 
+    /* We want to support UNIX Domain Protocol type sockets (AF_UNIX).
+     * This member is by default set to 0, which means AF_INET. If it's
+     * set to 1, then hostname is pathname used in sun_path/bind(). 
+     * Use the tcp_server_set_unix_socket() function to enable unix sockets.
+     */
+    int unix_socket;
+
 	/* Our performance counters */
 	atomic_ulong sum_poll_intr; /* # of times poll() returned EINTR */
 	atomic_ulong sum_poll_again; /* # of times poll() returned EAGAIN */
@@ -135,6 +142,7 @@ tcp_server tcp_server_new(void)
 		p->read_buffers = NULL;
 		p->write_buffers = NULL;
 		p->shutting_down = 0;
+        p->unix_socket = 0;
 
 		atomic_ulong_init(&p->sum_poll_intr);
 		atomic_ulong_init(&p->sum_poll_again);
@@ -244,6 +252,12 @@ err:
 	srv->read_buffers = NULL;
 	srv->write_buffers = NULL;
 	return 0;
+}
+
+void tcp_server_set_unix_socket(tcp_server s)
+{
+    assert(s != NULL);
+    s->unix_socket = 1;
 }
 
 void tcp_server_set_readbuf_size(tcp_server s, size_t size)
@@ -529,7 +543,7 @@ static int accept_new_connections(tcp_server srv, meta_socket sock)
 
 int tcp_server_get_root_resources(tcp_server srv)
 {
-	srv->sock = create_server_socket(srv->host, srv->port);
+	srv->sock = create_server_socket(srv->unix_socket, srv->host, srv->port);
 	if(srv->sock == NULL)
 		return 0;
 	else

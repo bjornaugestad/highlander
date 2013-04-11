@@ -44,10 +44,10 @@ typedef struct meta_socket_tag *meta_socket;
 /*
  * Creates a new socket.
  * This is a wrapper function for a call to socket().
- * It calls socket with PF_INET as family and SOCK_STREAM
- * as type. Protocol is set to 0.
+ * If unix_socket is !0, then a UNIX socket is created, eles
+ * an INET socket is created.
  */
-meta_socket sock_socket(void);
+meta_socket sock_socket(int unix_socket);
 
 /* Calls listen() */
 int sock_listen(meta_socket p, int backlog);
@@ -107,11 +107,14 @@ int sock_clear_nonblock(meta_socket p);
  * This function calls socket(), sets some socket options,
  * binds the socket to a host/port and calls listen with a 
  * backlog of 100. 
+ *
+ * If unix_socket is 1, then the function will create a Unix socket,
+ * else it will create a regular AF_INET socket.
  * 
  * A server socket is ready to accept connections.
  * @return 1 on success, else 0.
  */
-meta_socket create_server_socket(const char* host, int port);
+meta_socket create_server_socket(int unix_socket, const char* host, int port);
 
 /*
  * Connects to a host on a port.

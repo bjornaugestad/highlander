@@ -101,12 +101,12 @@ static void* threadpool_exec_thread(void* arg)
 	pthread_detach(pthread_self());
 	for(;;) {
 		/* Get the lock so that we can do a cond_wait later */
-
 		pthread_mutex_lock(&pool->queue_lock);
 
 		/* Wait until there is something to do in the queue */
-		while(queue_empty(pool) && !pool->shutdown) 
+		while(queue_empty(pool) && !pool->shutdown) {
 			pthread_cond_wait(&pool->queue_not_empty, &pool->queue_lock);
+        }
 
 		if(pool->shutdown) {
 			/* We're shutting down, just unlock and exit the loop */

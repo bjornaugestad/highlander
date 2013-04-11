@@ -23,6 +23,7 @@
 #include <errno.h>
 #include <sys/socket.h>
 #include <sys/poll.h>
+#include <sys/un.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <netinet/in.h>
@@ -38,6 +39,7 @@
 
 struct meta_socket_tag {
 	int fd;
+    int unix_socket;
 };
 
 
@@ -210,13 +212,14 @@ int sock_read(
  * created a socket with a specific protocol family,
  * and here we bind it to the PF specified in the services...
  */
-int sock_bind(meta_socket p, const char* hostname, int port)
+static int sock_bind_inet(meta_socket p, const char* hostname, int port)
 {
 	struct hostent* host = NULL;
 	struct sockaddr_in my_addr;
 	socklen_t cb = (socklen_t)sizeof(my_addr);
 
 	assert(p != NULL);
+    assert(!p->unix_socket);
 	assert(p->fd >= 0);
 	assert(port > 0);
 
@@ -245,19 +248,54 @@ int sock_bind(meta_socket p, const char* hostname, int port)
 	return 1;
 }
 
-meta_socket sock_socket(void)
+static int sock_bind_unix(meta_socket p, const char* path)
+{
+	struct sockaddr_un my_addr;
+	socklen_t cb = (socklen_t)sizeof(my_addr);
+
+	assert(p != NULL);
+    assert(p->unix_socket);
+	assert(p->fd >= 0);
+    assert(path != NULL);
+    assert(strlen(path) > 0);
+    assert(strlen(path) < sizeof my_addr.sun_path);
+
+	memset(&my_addr, '\0', sizeof(my_addr));
+    my_addr.sun_family = AF_UNIX;
+    strcpy(my_addr.sun_path, path);
+		
+	if(bind(p->fd, (struct sockaddr *)&my_addr, cb) == -1)
+		return 0;
+
+	return 1;
+}
+
+int sock_bind(meta_socket p, const char* hostname, int port)
+{
+    assert(p != NULL);
+
+    if (p->unix_socket)
+        return sock_bind_unix(p, hostname);
+    else
+        return sock_bind_inet(p, hostname, port);
+}
+
+meta_socket sock_socket(int unix_socket)
 {
 	meta_socket p;
+    int af = unix_socket ? AF_UNIX : AF_INET;
 
 	if ( (p = malloc(sizeof *p)) == NULL) {
 		return NULL;
 	}
-	else if( (p->fd = socket(PF_INET, SOCK_STREAM, 0)) == -1) {
+	else if( (p->fd = socket(af, SOCK_STREAM, 0)) == -1) {
 		free(p);
 		return NULL;
 	}
-	else
+	else {
+        p->unix_socket = unix_socket;
 		return p;
+    }
 }
 
 int sock_listen(meta_socket p, int backlog)
@@ -271,11 +309,11 @@ int sock_listen(meta_socket p, int backlog)
 		return 1;
 }
 
-meta_socket create_server_socket(const char* host, int port)
+meta_socket create_server_socket(int unix_socket, const char* host, int port)
 {
 	meta_socket p;
 
-	if( (p = sock_socket()) == NULL) {
+	if( (p = sock_socket(unix_socket)) == NULL) {
 		return NULL;
 	}
 	else if(!sock_set_reuseaddr(p)
@@ -305,7 +343,7 @@ meta_socket create_client_socket(const char* host, int port)
     sa.sin_port = htons(port);
 
     /* Open a socket to the server */
-	if ( (p = sock_socket()) == NULL)
+	if ( (p = sock_socket(0)) == NULL)
 		return 0;
 
     /* Connect to the server. */

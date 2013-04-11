@@ -47,6 +47,7 @@ int tcp_server_free_root_resources(tcp_server s);
 
 /* Configuration */
 int  tcp_server_set_hostname(tcp_server srv, const char* host);
+void tcp_server_set_unix_socket(tcp_server s);
 void tcp_server_set_port(tcp_server srv, int port);
 void tcp_server_set_queue_size(tcp_server srv, size_t size);
 void tcp_server_set_readbuf_size(tcp_server s, size_t size);
