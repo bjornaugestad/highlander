@@ -258,15 +258,23 @@ static int sock_bind_unix(meta_socket p, const char* path)
 	assert(p->fd >= 0);
     assert(path != NULL);
     assert(strlen(path) > 0);
-    assert(strlen(path) < sizeof my_addr.sun_path);
+
+    // + 1 in case we map anon paths. That requires an extra byte.
+    assert(strlen(path) + 1 < sizeof my_addr.sun_path);
 
 	memset(&my_addr, '\0', sizeof(my_addr));
     my_addr.sun_family = AF_UNIX;
-    strcpy(my_addr.sun_path, path);
+
+    if (*path == '/')
+        strcpy(my_addr.sun_path, path);
+    else 
+        strcpy(my_addr.sun_path + 1, path);
 		
+    fprintf(stderr, "Binding to %s\n", path);
 	if(bind(p->fd, (struct sockaddr *)&my_addr, cb) == -1)
 		return 0;
 
+    fprintf(stderr, "bind() succeeded\n");
 	return 1;
 }
 
