@@ -251,7 +251,8 @@ sampler_check_LDADD=-lpthread
 sampler_check_LDFLAGS=-ggdb -O0
 
 EXTRA_DIST=$(man_MANS)\
-	webcache/webcached.conf 
+	webcache/webcached.conf \
+	COPYING  INSTALL AUTHORS NEWS README TODO
 
 
 man_MANS=\
