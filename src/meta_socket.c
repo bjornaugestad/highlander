@@ -270,11 +270,9 @@ static int sock_bind_unix(meta_socket p, const char* path)
     else 
         strcpy(my_addr.sun_path + 1, path);
 		
-    fprintf(stderr, "Binding to %s\n", path);
 	if(bind(p->fd, (struct sockaddr *)&my_addr, cb) == -1)
 		return 0;
 
-    fprintf(stderr, "bind() succeeded\n");
 	return 1;
 }
 

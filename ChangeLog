@@ -1,3 +1,5 @@
+0.9.96 Remove debug fprintfs().
+
 0.9.93 (20080128)
 Added the request_get_connection() function call which allows a callback
 function to access the connection we use to communicate with our client.
