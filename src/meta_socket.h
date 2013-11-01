@@ -20,6 +20,7 @@
 #ifndef META_SOCKET_H
 #define META_SOCKET_H
 
+#include <sys/socket.h>
 #include <meta_membuf.h>
 
 #ifdef __cplusplus
