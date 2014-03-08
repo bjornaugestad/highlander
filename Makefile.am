@@ -1,4 +1,5 @@
 LDADD=-lpthread -L.
+AUTOMAKE_OPTIONS=subdir-objects
 
 TESTS=\
 	sampler_check\
