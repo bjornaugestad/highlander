@@ -19,7 +19,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <errno.h>
+#include <stdarg.h>
 #include <assert.h>
 
 #include <meta_list.h>
@@ -392,6 +394,46 @@ list list_insert(list lst, void *data)
 	return lst;
 }
 
+int list_insert_before(list_iterator li, void *data)
+{
+	list new, curr;
+
+	assert(li.node != NULL);
+	assert(data != NULL);
+
+	if ((new = mem_calloc(1, sizeof *new)) == NULL)
+		return ENOMEM;
+
+	curr = li.node;
+	new->data = data;
+	new->next = curr;
+	new->prev = curr->prev;
+	curr->prev->next = new;
+	curr->prev = new;
+	return 0;
+}
+
+int list_insert_after(list_iterator li, void *data)
+{
+	list new, curr;
+
+	assert(li.node != NULL);
+	assert(data != NULL);
+
+	if ((new = mem_calloc(1, sizeof *new)) == NULL)
+		return ENOMEM;
+
+	curr = li.node;
+	new->data = data;
+	new->prev = curr;
+	new->next = curr->next;
+	if (curr->next != NULL)
+		curr->next->prev = new;
+
+	curr->next = new;
+	return 0;
+}
+
 void list_sort(list lst, int(*func)(const void *p1, const void *p2))
 {
 	int i;
@@ -558,9 +600,14 @@ static int item_sep(void* arg)
 	return 1;
 }
 
-static void return77(const char* a)
+static void return77(const char* fmt, ...)
 {
-	fprintf(stderr, "%s\n", a);
+	va_list ap;
+
+	va_start(ap, fmt);
+	vfprintf(stderr, fmt, ap);
+	va_end(ap);
+	fprintf(stderr, "\n");
 	exit(77);
 }
 	
@@ -570,6 +617,7 @@ int main(void)
 	list_iterator li;
 	size_t i, nelem = 1000;
 	struct item *node, searchterm;
+	const char *s;
 
 #if 0
 	if( (a = list_new()) == NULL)
@@ -749,6 +797,59 @@ int main(void)
 
     list_free(a, item_dtor);
 
+	/* Check list_insert_before. Should work for lists with 1..n items,
+	 * but not 0 items since we cannot have a valid list iterator for
+	 * such lists. */
+	if( (a = list_new()) == NULL)
+		return77("Could not allocate memory");
+
+	list_add(a, strdup("foo"));
+	if (list_size(a) != 1)
+		return77("List has incorrect size. Expected 1, got %zu.", list_size(a));
+
+	li = list_first(a);
+	if (list_insert_before(li, strdup("bar")) != 0)
+		return77("Could not add 'bar' before 'foo'");
+
+	if (list_size(a) != 2)
+		return77("List has incorrect size. Expected 2, got %zu.", list_size(a));
+
+	// Check that the first item really is bar.
+	li = list_first(a);
+	s = list_get(li);
+	if (strcmp(s, "bar") != 0)
+		return77("Wrong value for item. Expected bar.");
+
+	// Now insert baz after bar, so that the list will have three
+	// items: bar, baz, foo
+	if (list_insert_after(li, strdup("baz")))
+		return77("Unable to add baz");
+
+	if (list_size(a) != 3)
+		return77("Expected 3 items in list. Got %zu", list_size(a));
+
+	s = list_get_item(a, 0);
+	if (strcmp(s, "bar") != 0)
+		return77("Wrong value for item. Expected bar, got %s.", s);
+
+	s = list_get_item(a, 1);
+	if (strcmp(s, "baz") != 0)
+		return77("Wrong value for item. Expected baz, got %s.", s);
+
+	s = list_get_item(a, 2);
+	if (strcmp(s, "foo") != 0)
+		return77("Wrong value for item. Expected foo, got %s.", s);
+	list_free(a, NULL);
+
+	// Now test adding with one item in the list.
+	a = list_new();
+	list_add(a, strdup("foo"));
+	list_insert_after(list_first(a), strdup("bar"));
+	s = list_get_item(a, 1);
+	if (strcmp(s, "bar") != 0)
+		return77("Expected 'bar', got %s\n", s);
+
+	list_free(a, NULL);
 	return 0;
 }
 

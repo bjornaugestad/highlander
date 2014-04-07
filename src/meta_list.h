@@ -64,20 +64,14 @@ void list_free(list lst, dtor free_fn);
 list list_copy(list lst, void*(*copier)(const void*), dtor dtor_fn);
 list list_add(list lst, void *data);
 list list_insert(list lst, void *data);
+int list_insert_before(list_iterator li, void *data);
+int list_insert_after(list_iterator li, void *data);
 size_t list_size(list lst);
 
 list_iterator list_delete(list lst, list_iterator i, dtor dtor_fn);
 list_iterator list_remove_node(list lst, list_iterator i);
 list_iterator list_find(list lst, const void *data, int(*compar)(const void*, const void*));
 
-
-#ifdef WIN32
-extern list_iterator list_first(list lst);
-extern int list_end(list_iterator li);
-extern void* list_get(list_iterator i);
-extern list_iterator list_next(list_iterator i);
-#else
-/* Proper compilers support C99 */
 
 static inline list_iterator list_first(list lst)
 {
@@ -104,8 +98,6 @@ static inline list_iterator list_next(list_iterator i)
 	i.node = ((list)i.node)->next;
 	return i;
 }
-
-#endif
 
 int list_last(list_iterator li);
 
