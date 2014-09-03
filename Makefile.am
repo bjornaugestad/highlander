@@ -191,7 +191,7 @@ attribute_check_CFLAGS=-DCHECK_ATTRIBUTE $(AM_CFLAGS)
 
 cookie_check_SOURCES=src/cookies.c src/cstring.c
 cookie_check_CFLAGS=-DCHECK_COOKIE $(AM_CFLAGS)
-cookie_check_LDADD=-L$(distdir) -L. -lhighlander
+cookie_check_LDADD=-L. -lhighlander -lpthread
 
 
 list_check_SOURCES=src/meta_list.c src/meta_common.c
