@@ -1,3 +1,0 @@
-Sun Apr  1 15:54:42 CEST 2007
-hipp -m now generates a complete main() function for you.
-hipp -A generates Makefile.am and configure.ac with appropriate options
