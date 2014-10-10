@@ -1,4 +1,5 @@
 *.o
+*.lo
 *.a
 *.swp
 autom4te.cache
