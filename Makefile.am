@@ -488,6 +488,10 @@ webcached_LDADD=-lhighlander -lpthread
 webcached_LDFLAGS=-L.
 webcached_DEPENDENCIES=bin2c hipp
 
+# Specify dependencies manually. The above _DEP.. does not work as expected.
+webcache/webcache_styles.css: bin2c
+webcache/webcache_logo.gif: bin2c
+
 # Convert the GIF logo to C source code
 %.c : %.gif
 	./bin2c -bt image/gif -i httpcache.h -c $*.c $<
