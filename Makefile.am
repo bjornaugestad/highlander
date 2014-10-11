@@ -23,19 +23,12 @@ TESTS=\
 	attribute_check\
 	cookie_check
 
-# Some utility programs we need
-if WITH_UTILS
-bin_PROGRAMS=bin2c hipp 
-else
-bin_PROGRAMS=
-endif
-
-if WITH_WEBCACHE
-bin_PROGRAMS+=webcached
-endif
-
 # The main target
 lib_LTLIBRARIES=libhighlander.la 
+
+# Some utility programs we need
+bin_PROGRAMS=bin2c hipp webcached
+
 
 
 include_HEADERS=\
@@ -128,13 +121,12 @@ libhighlander_la_SOURCES=\
 # -D_BSD_SOURCE is to get the prototype for strerror_r.
 # _SVID_SOURCE will do the same thing.
 
-if WITH_UTILS
 hipp_SOURCES=src/hipp.c
-hipp_LDADD=-L.
+hipp_DEPENDENCIES=libhighlander.la
+hipp_LDADD=-lhighlander -lpthread
+hipp_LDFLAGS=-L.
 
 bin2c_SOURCES=src/bin2c.c
-bin2c_LDADD=-L.
-endif
 
 libhighlander_a_CFLAGS=\
 	-D_GNU_SOURCE -std=gnu99 -D_REENTRANT -pthread\
@@ -191,7 +183,8 @@ attribute_check_CFLAGS=-DCHECK_ATTRIBUTE $(AM_CFLAGS)
 
 cookie_check_SOURCES=src/cookies.c src/cstring.c
 cookie_check_CFLAGS=-DCHECK_COOKIE $(AM_CFLAGS)
-cookie_check_LDADD=-L. -lhighlander -lpthread
+cookie_check_LDADD=-lhighlander -lpthread
+cookie_check_LDFLAGS=-L.
 
 
 list_check_SOURCES=src/meta_list.c src/meta_common.c
@@ -476,7 +469,6 @@ man_MANS=\
  #
 
 
-if WITH_WEBCACHE
 webcached_SOURCES=\
 	webcache/webcache_styles.css\
 	webcache/webcache_logo.gif\
@@ -491,10 +483,10 @@ webcached_SOURCES=\
 	webcache/html_utilities.c\
 	webcache/statpack.c
 
-nodist_webcached_SOURCES=webcache/webcache_logo.c webcache/webcache_styles.c
 
-webcached_LDADD=-L. -lhighlander -lpthread
-webcached_DEPENDENCIES=./bin2c
+webcached_LDADD=-lhighlander -lpthread
+webcached_LDFLAGS=-L.
+webcached_DEPENDENCIES=bin2c hipp
 
 # Convert the GIF logo to C source code
 %.c : %.gif
@@ -503,9 +495,6 @@ webcached_DEPENDENCIES=./bin2c
 %.c : %.css
 	./bin2c -bt text/css -i httpcache.h -c $*.c $<
 
-
 CLEANFILES=webcache/webcache_logo.c webcache/webcache_styles.c
 BUILT_SOURCES=webcache/webcache_logo.c webcache/webcache_styles.c
-endif
-
-
+nodist_webcached_SOURCES=webcache/webcache_logo.c webcache/webcache_styles.c
