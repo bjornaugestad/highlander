@@ -1,4 +1,6 @@
 EXTRA_DIST=$(man_MANS)
+
+
 man_MANS=\
 	attribute_free.3\
 	attribute_get_charset.3\
@@ -113,5 +115,110 @@ man_MANS=\
 	response_set_via.3\
 	response_set_warning.3\
 	response_set_www_authenticate.3\
-	td2p.3
+	td2p.3\
+	hipp.1\
+	\
+	cstring.3\
+	cstring_charcat.3\
+	cstring_concat.3\
+	cstring_copy.3\
+	cstring_extend.3\
+	cstring_left.3\
+	cstring_length.3\
+	cstring_lower.3\
+	cstring_new.3\
+	cstring_pcat.3\
+	cstring_printf.3\
+	cstring_recycle.3\
+	cstring_reverse.3\
+	cstring_right.3\
+	cstring_strip.3\
+	cstring_substring.3\
+	cstring_upper.3\
+	cstring_vprintf.3\
+	\
+	list_add.3\
+	list_copy.3\
+	list_count.3\
+	list_delete.3\
+	list_end.3\
+	list_find.3\
+	list_first.3\
+	list_foreach.3\
+	list_get.3\
+	list_get_item.3\
+	list_insert.3\
+	list_last.3\
+	list_merge.3\
+	list_new.3\
+	list_next.3\
+	list_remove_node.3\
+	list_size.3\
+	list_sort.3\
+	sublist_adaptor.3\
+	sublist_copy.3\
+	sublist_create.3\
+	sublist_free.3\
+	\
+	meta_process.3\
+	process_add_object_to_start.3\
+	process_free.3\
+	process_get_exitcode.3\
+	process_new.3\
+	process_set_rootdir.3\
+	process_set_username.3\
+	process_shutting_down.3\
+	process_start.3\
+	process_wait_for_shutdown.3\
+	\
+	meta_pool.3\
+	pool_new.3\
+	pool_free.3\
+	pool_add.3\
+	pool_get.3\
+	pool_recycle.3\
+	\
+	meta_array.3\
+	array_new.3\
+	array_free.3\
+	array_nelem.3\
+	array_extend.3\
+	array_get.3\
+	array_add.3\
+	\
+	meta_bitset.3\
+	bitset_new.3\
+	bitset_free.3\
+	bitset_clear.3\
+	bitset_clear_all.3\
+	bitset_data.3\
+	bitset_is_set.3\
+	bitset_map.3\
+	bitset_remap.3\
+	bitset_set.3\
+	bitset_set_all.3\
+	bitset_size.3\
+	bitset_unmap.3\
+	\
+	meta_cache.3\
+	cache_add.3\
+	cache_exists.3\
+	cache_free.3\
+	cache_get.3\
+	cache_new.3\
+	cache_remove.3\
+	\
+	meta_configfile.3\
+	configfile_exists.3\
+	configfile_free.3\
+	configfile_get_int.3\
+	configfile_get_long.3\
+	configfile_get_string.3\
+	configfile_get_uint.3\
+	configfile_get_ulong.3\
+	configfile_read.3\
+	\
+ #
+
+
 
