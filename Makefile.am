@@ -1,4 +1,4 @@
-SUBDIRS=tools src webcache ftp
+SUBDIRS=tools src apps
 LDADD=-lpthread -L.
 AUTOMAKE_OPTIONS=subdir-objects
 
