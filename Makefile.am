@@ -27,7 +27,7 @@ TESTS=\
 lib_LTLIBRARIES=libhighlander.la 
 
 # Some utility programs we need
-bin_PROGRAMS=bin2c hipp webcached
+bin_PROGRAMS=bin2c hipp webcached 
 
 
 
@@ -500,5 +500,9 @@ webcache/webcache_logo.gif: bin2c
 	./bin2c -bt text/css -i httpcache.h -c $*.c $<
 
 CLEANFILES=webcache/webcache_logo.c webcache/webcache_styles.c
-BUILT_SOURCES=webcache/webcache_logo.c webcache/webcache_styles.c
+
+BUILT_SOURCES=\
+	webcache/webcache_logo.c webcache/webcache_styles.c
+
 nodist_webcached_SOURCES=webcache/webcache_logo.c webcache/webcache_styles.c
+
