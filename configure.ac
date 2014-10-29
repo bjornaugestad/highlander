@@ -3,6 +3,7 @@ AC_INIT(highlander, 0.9.97, bjorn.augestad@gmail.com)
 AC_CONFIG_AUX_DIR([extras])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE
+AM_EXTRA_RECURSIVE_TARGETS([foo])
 #AC_PROG_LIBTOOL
 LT_INIT([dlopen])
 LT_PREREQ([2.2])
@@ -32,16 +33,6 @@ AC_FUNC_STAT
 AC_FUNC_STRFTIME
 AC_CHECK_FUNCS([strerror_r inet_ntop localtime_r socket strerror strtol sendfile])
 
-# With or without threads
-#AC_ARG_ENABLE(tiny, 
-#[ --enable-tiny, Enable Tiny build],
-#[case "${enableval}" in
-	#yes) tiny=true ;;
-	#no)  tiny=false ;;
-	#*) AC_MSG_ERROR(bad value ${enableval} for --enable-tiny) ;;
-	#esac],[tiny=false])
-#AM_CONDITIONAL(TINY, test x$tiny = xtrue)
-
 AC_ARG_ENABLE([valgrind], 
 	[--enable-valgrind Enable valgrind integration],
 	[case ${enableval} in
@@ -51,25 +42,6 @@ AC_ARG_ENABLE([valgrind],
 	esac],[valgrind=false])
 AM_CONDITIONAL([WITH_VALGRIND], [test x$valgrind = xtrue])
 
-AC_ARG_ENABLE([webcache], 
-	[--enable-webcache Build webcache daemon],
-	[case ${enableval} in
-	 	yes) webcache=true;;
-		no) webcache=false;;
-		*) AC_MSG_ERROR([bad value ${enableval} for --enable-webcache]) ;;
-	esac],[webcache=false])
-AM_CONDITIONAL([WITH_WEBCACHE], [test x$webcache = xtrue])
-
-AC_ARG_ENABLE([utils], 
-	[--enable-utils Build utility programs hipp and bin2c],
-	[case ${enableval} in
-	 	yes) utils=true;;
-		no) utils=false;;
-		*) AC_MSG_ERROR([bad value ${enableval} for --enable-utils]) ;;
-	esac],[utils=false])
-AM_CONDITIONAL([WITH_UTILS], [test x$utils = xtrue])
-
-
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile tools/Makefile src/Makefile webcache/Makefile ftp/Makefile])
 AC_OUTPUT
 

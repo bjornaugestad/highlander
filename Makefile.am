@@ -1,3 +1,4 @@
+SUBDIRS=tools src webcache ftp
 LDADD=-lpthread -L.
 AUTOMAKE_OPTIONS=subdir-objects
 
@@ -22,132 +23,6 @@ TESTS=\
 	pair_check\
 	attribute_check\
 	cookie_check
-
-# The main target
-lib_LTLIBRARIES=libhighlander.la 
-
-# Some utility programs we need
-bin_PROGRAMS=bin2c hipp webcached 
-
-
-
-include_HEADERS=\
-	src/cstring.h\
-	src/meta_atomic.h\
-	src/meta_sampler.h\
-	src/meta_common.h\
-	src/meta_ticker.h\
-	src/meta_process.h\
-	src/meta_slotbuf.h\
-	src/meta_pool.h\
-	src/meta_array.h\
-	src/meta_list.h\
-	src/meta_fifo.h\
-	src/meta_socket.h\
-	src/meta_membuf.h\
-	src/meta_stack.h\
-	src/meta_bitset.h\
-	src/meta_misc.h\
-	src/meta_cache.h\
-	src/meta_configfile.h\
-	src/meta_filecache.h\
-	src/meta_stringmap.h\
-	src/meta_map.h\
-	src/meta_tsb.h\
-	src/connection.h\
-	src/tcp_server.h\
-	src/meta_pair.h\
-	src/rfc1738.h\
-	src/meta_error.h\
-	src/meta_wlock.h\
-	src/threadpool.h\
-	src/highlander.h\
-	src/meta_html.h
-
-noinst_HEADERS=\
-	src/internals.h
-
-libhighlander_la_LDFLAGS=-release $(PACKAGE_VERSION) -version-info 0:0:0
-libhighlander_la_SOURCES=\
-	src/meta_common.c\
-	src/meta_sampler.c\
-	src/meta_wlock.c\
-	src/meta_ticker.c\
-	src/meta_slotbuf.c\
-	src/meta_map.c\
-	src/meta_stack.c\
-	src/meta_bitset.c\
-	src/meta_process.c\
-	src/meta_socket.c\
-	src/meta_error.c\
-	src/meta_tsb.c\
-	src/tcp_server.c\
-	src/connection.c\
-	src/cstring.c\
-	src/meta_membuf.c\
-	src/meta_fifo.c\
-	src/meta_pair.c\
-	src/meta_array.c\
-	src/meta_misc.c\
-	src/meta_pool.c\
-	src/threadpool.c\
-	src/meta_configfile.c\
-	src/rfc1738.c\
-	src/meta_cache.c\
-	src/meta_filecache.c\
-	src/meta_list.c\
-	src/meta_stringmap.c\
-	src/attribute.c\
-	src/cookies.c\
-	src/dynamic_page.c\
-	src/highlander.c\
-	src/html_buffer.c\
-	src/html_menu.c\
-	src/html_section.c\
-	src/html_template.c\
-	src/html_template_repository.c\
-	src/http_server.c\
-	src/parse_http.c\
-	src/parse_time.c\
-	src/request.c\
-	src/response.c\
-	src/general_header.c\
-	src/entity_header.c\
-	src/send_status_code.c
-
-# Flags.
-# _XOPEN_SOURCE=600 is there to get rwlocks in pthread
-# __POSIX_C_SOURCE=199506L ->
-# -D_BSD_SOURCE is to get the prototype for strerror_r.
-# _SVID_SOURCE will do the same thing.
-
-hipp_SOURCES=src/hipp.c
-hipp_DEPENDENCIES=libhighlander.la
-hipp_LDADD=-lhighlander -lpthread
-hipp_LDFLAGS=-L.
-
-bin2c_SOURCES=src/bin2c.c
-
-libhighlander_a_CFLAGS=\
-	-D_GNU_SOURCE -std=gnu99 -D_REENTRANT -pthread\
-	-I$(srcdir)\
-	-I$(top_srcdir)/src\
-	-Werror -Wshadow -W -Wmissing-prototypes\
-	-O2 -ggdb -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
-    -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
-
-if WITH_VALGRIND
-libhighlander_a_CFLAGS+=-DWITH_VALGRIND=1 
-endif
-
-webcached_CFLAGS=\
-	-D_GNU_SOURCE -std=gnu99 -D_REENTRANT -pthread\
-	-I$(srcdir)\
-	-I$(srcdir)/webcache\
-	-I$(top_srcdir)/src\
-	-Werror -Wshadow -W -Wmissing-prototypes\
-	-O2 -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
-    -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
 
 AM_CFLAGS=\
 	-D_GNU_SOURCE -std=gnu99 -D_REENTRANT\
@@ -245,7 +120,6 @@ sampler_check_LDADD=-lpthread
 sampler_check_LDFLAGS=-ggdb -O0
 
 EXTRA_DIST=$(man_MANS)\
-	webcache/webcached.conf \
 	COPYING  INSTALL AUTHORS NEWS README TODO
 
 
@@ -468,41 +342,4 @@ man_MANS=\
 	\
  #
 
-
-webcached_SOURCES=\
-	webcache/webcache_styles.css\
-	webcache/webcache_logo.gif\
-	webcache/httpcache.h\
-	webcache/highcached.c \
-	webcache/show_about.c\
-	webcache/find_files.c\
-	webcache/show_disk.c\
-	webcache/show_cache.c\
-	webcache/show_configuration.c\
-	webcache/handle_requests.c\
-	webcache/html_utilities.c\
-	webcache/statpack.c
-
-
-webcached_LDADD=-lhighlander -lpthread
-webcached_LDFLAGS=-L.
-webcached_DEPENDENCIES=bin2c hipp
-
-# Specify dependencies manually. The above _DEP.. does not work as expected.
-webcache/webcache_styles.css: bin2c
-webcache/webcache_logo.gif: bin2c
-
-# Convert the GIF logo to C source code
-%.c : %.gif
-	./bin2c -bt image/gif -i httpcache.h -c $*.c $<
-
-%.c : %.css
-	./bin2c -bt text/css -i httpcache.h -c $*.c $<
-
-CLEANFILES=webcache/webcache_logo.c webcache/webcache_styles.c
-
-BUILT_SOURCES=\
-	webcache/webcache_logo.c webcache/webcache_styles.c
-
-nodist_webcached_SOURCES=webcache/webcache_logo.c webcache/webcache_styles.c
 
