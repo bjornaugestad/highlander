@@ -42,6 +42,9 @@ AC_ARG_ENABLE([valgrind],
 	esac],[valgrind=false])
 AM_CONDITIONAL([WITH_VALGRIND], [test x$valgrind = xtrue])
 
-AC_CONFIG_FILES([Makefile tools/Makefile src/Makefile apps/Makefile apps/webcache/Makefile apps/ftp/Makefile doc/Makefile])
+AC_CONFIG_FILES([Makefile tools/Makefile src/Makefile apps/Makefile
+    apps/webcache/Makefile apps/ftp/Makefile apps/helloworld/Makefile
+    doc/Makefile
+    ])
 AC_OUTPUT
 
