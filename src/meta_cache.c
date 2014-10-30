@@ -343,7 +343,7 @@ int cache_exists(cache c, size_t id)
     return !list_end(i);
 }
 
-int cache_get(cache c, size_t id, void* pdata, size_t* pcb)
+int cache_get(cache c, size_t id, void** pdata, size_t* pcb)
 {
     struct cache_entry *p;
     list_iterator i;

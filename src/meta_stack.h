@@ -24,10 +24,6 @@
 extern "C" {
 #endif
 
-/*
- * file
- * @brief Implements a normal stack.
- */
 typedef struct stack_tag* stack;
 
 /*

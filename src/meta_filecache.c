@@ -248,7 +248,7 @@ int filecache_exists(filecache fc, const char* filename)
     return rc;
 }
 
-int filecache_get(filecache fc, const char* filename, void* pdata, size_t* pcb)
+int filecache_get(filecache fc, const char* filename, void** pdata, size_t* pcb)
 {
     unsigned long id;
     int rc = 0;
@@ -413,7 +413,7 @@ int main(void)
                 perror(de->d_name);
                 exit(EXIT_FAILURE);
             }
-            else if(!filecache_get(fc, de->d_name, (void*)&pdata, &cb)) {
+            else if(!filecache_get(fc, de->d_name, &pdata, &cb)) {
                 perror(de->d_name);
                 exit(EXIT_FAILURE);
             }

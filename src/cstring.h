@@ -30,7 +30,6 @@ extern "C" {
 #endif
 
 
-typedef struct cstring_tag* cstring;
 /*
  * Implementation of the cstring ADT.
  * We store the number of bytes allocated so that we know when we have to
@@ -43,6 +42,7 @@ struct cstring_tag
     size_t cbUsed;
     char* data;
 };
+typedef struct cstring_tag* cstring;
 
 
 cstring cstring_new(void);
@@ -118,7 +118,7 @@ static inline void cstring_recycle(cstring s)
  * of items in the array. Each item must be freed separately.
  * delim can contain any number of characters, see strcspn()
  */
-size_t cstring_split(cstring* dest, const char* src, const char* delim);
+size_t cstring_split(cstring** dest, const char* src, const char* delim);
 
 /* Free multiple cstrings with one call. Note that pstr itself will
  * not be freed. */

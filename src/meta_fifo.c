@@ -46,7 +46,7 @@ struct fifo_tag {
     size_t nelem;
     size_t iread;	/* Where to read from */
     size_t iwrite;  /* Where to write to */
-    void* pelem;
+    void** pelem;
     wlock lock;
 };
 

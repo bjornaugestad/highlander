@@ -45,7 +45,7 @@
  * a returned resource in the first free slot.
  */
 struct pool_tag {
-    void* pdata;			/* Array of void* pointers */
+    void** pdata;			/* Array of void* pointers */
     size_t size;			/* Size of the pool */
     size_t nelem;			/* Number of elements added to the pool */
     pthread_mutex_t mutex;	/* access control */

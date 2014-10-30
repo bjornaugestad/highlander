@@ -29,7 +29,7 @@ struct array_tag {
     int can_grow;		/* Can the array grow automatically? */
     size_t cUsed;		/* How many that currently is in use */
     size_t cAllocated;	/* How many that currently is allocated */
-    void* elements;	/* Pointer to data */
+    void** elements;	/* Pointer to data */
 };
 
 array array_new(size_t nmemb, int can_grow)

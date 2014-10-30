@@ -186,7 +186,7 @@ double filecache_hitratio(filecache fc);
 /*
  * Gets a file from the cache.
  */
-int filecache_get(filecache fc, const char* filename, void* pdata, size_t* pcb);
+int filecache_get(filecache fc, const char* filename, void** pdata, size_t* pcb);
 int filecache_get_mime_type(filecache fc, const char* filename, char mime[], size_t cb);
 
 

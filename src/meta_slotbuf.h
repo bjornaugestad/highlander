@@ -34,6 +34,7 @@ extern "C" {
  * The special thing is that the pointers can be indexed by any
  * value, this adt will modify the index to fit within the size
  * of the buffer.
+ *
  * So what's the purpose of this adt? The idea is to have a general
  * buffer/array with a fixed size and then be able to address
  * entries in the buffer with a steadily increasing index, e.g. time
