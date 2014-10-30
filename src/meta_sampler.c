@@ -21,6 +21,7 @@
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <pthread.h>
 
 #include <meta_common.h>
@@ -71,9 +72,9 @@ sampler sampler_new(size_t entities, size_t values)
 	assert(values > 0);
 
 	/* IMPORTANT: entities MUST be calloc()ed for error handling to work . */
-	if ((s = mem_calloc(1, sizeof *s)) == NULL
-	|| (s->times = mem_malloc(sizeof *s->times * values)) == NULL
-	|| (s->entities = mem_calloc(entities, sizeof *s->entities)) == NULL) {
+	if ((s = calloc(1, sizeof *s)) == NULL
+	|| (s->times = malloc(sizeof *s->times * values)) == NULL
+	|| (s->entities = calloc(entities, sizeof *s->entities)) == NULL) {
 		goto err;
 	}
 	else {
@@ -91,7 +92,7 @@ sampler sampler_new(size_t entities, size_t values)
 
 		cb = values * sizeof(*s->entities[0].data);
 		for (i = 0; i < entities; i++) {
-			if ((s->entities[i].data = mem_malloc(cb)) == NULL)
+			if ((s->entities[i].data = malloc(cb)) == NULL)
 				goto err;
 
 			/* Set all values to 'invalid' */
@@ -114,13 +115,13 @@ err:
 	if (s != NULL) {
 		if (s->entities != NULL) {
 			for (i = 0; i < entities; i++)
-				mem_free(s->entities[i].data);
+				free(s->entities[i].data);
 		}
 
-		mem_free(s->entities);
-		mem_free(s->times);
+		free(s->entities);
+		free(s->times);
 		pthread_rwlock_destroy(&s->lock);
-		mem_free(s);
+		free(s);
 	}
 	assert(0);
 	return NULL;
@@ -174,13 +175,13 @@ void sampler_free(sampler s)
 
 	if (s != NULL) {
 		pthread_rwlock_destroy(&s->lock);
-		mem_free(s->times);
+		free(s->times);
 
 		for (i = 0; i < s->nentity; i++)
-			mem_free(s->entities[i].data);
+			free(s->entities[i].data);
 
-		mem_free(s->entities);
-		mem_free(s);
+		free(s->entities);
+		free(s);
 	}
 }
 

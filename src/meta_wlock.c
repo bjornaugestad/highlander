@@ -53,7 +53,7 @@ wlock wlock_new(void)
 {
 	wlock p;
 
-	if ((p = mem_malloc(sizeof *p)) != NULL) {
+	if ((p = malloc(sizeof *p)) != NULL) {
 		pthread_mutexattr_init(&p->ma);
 		pthread_mutexattr_settype(&p->ma, PTHREAD_MUTEX_ERRORCHECK);
 		pthread_mutex_init(&p->lock, &p->ma);
@@ -75,7 +75,7 @@ void wlock_free(wlock p)
 		pthread_mutex_destroy(&p->lock);
 		pthread_mutexattr_destroy(&p->ma);
 		pthread_cond_destroy(&p->condvar);
-		mem_free(p);
+		free(p);
 	}
 }
 

@@ -296,7 +296,7 @@ void* serviceConnection(void* psa)
 	http_server_recycle_response(srv, response);
 
 	meta_error_free(e);
-	return (void*)success;
+	return (void*)(intptr_t)success;
 }
 
 static int serviceConnection2(

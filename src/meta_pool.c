@@ -57,10 +57,10 @@ pool pool_new(size_t size)
 
 	assert(size > 0); /* No point in zero-sized pools */
 
-	if ((p = mem_calloc(1, sizeof *p)) == NULL)
+	if ((p = calloc(1, sizeof *p)) == NULL)
 		;
-	else if((p->pdata = mem_calloc(size, sizeof *p->pdata)) == NULL) {
-		mem_free(p);
+	else if((p->pdata = calloc(size, sizeof *p->pdata)) == NULL) {
+		free(p);
 		p = NULL;
 	}
 	else {
@@ -88,9 +88,9 @@ void pool_free(pool p, dtor free_fn)
 					free_fn(p->pdata[i]);
 		}
 
-		mem_free(p->pdata);
+		free(p->pdata);
 		pthread_mutex_destroy(&p->mutex);
-		mem_free(p);
+		free(p);
 	}
 }
 

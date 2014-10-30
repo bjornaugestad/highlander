@@ -39,7 +39,7 @@ fileinfo fileinfo_new(void)
 {
 	fileinfo p;
 
-	if ((p = mem_malloc(sizeof *p)) != NULL) {
+	if ((p = malloc(sizeof *p)) != NULL) {
 		p->mimetype = NULL;
 		p->name = NULL;
 		p->alias = NULL;
@@ -76,11 +76,11 @@ fileinfo fileinfo_dup(const fileinfo src)
 void fileinfo_free(fileinfo p)
 {
 	if (p != NULL) {
-		mem_free(p->contents);
-		mem_free(p->mimetype);
-		mem_free(p->alias);
-		mem_free(p->name);
-		mem_free(p);
+		free(p->contents);
+		free(p->mimetype);
+		free(p->alias);
+		free(p->name);
+		free(p);
 	}
 }
 
@@ -98,9 +98,9 @@ int fileinfo_set_name(fileinfo p, const char* s)
 	assert(s != NULL);
 
 	if (p->name != NULL)
-		mem_free(p->name);
+		free(p->name);
 
-	if ((p->name = mem_malloc(strlen(s) + 1)) == NULL)
+	if ((p->name = malloc(strlen(s) + 1)) == NULL)
 		return 0;
 
 	strcpy(p->name, s);
@@ -113,9 +113,9 @@ int fileinfo_set_alias(fileinfo p, const char* s)
 	assert(s != NULL);
 
 	if (p->alias != NULL)
-		mem_free(p->alias);
+		free(p->alias);
 
-	if ((p->alias = mem_malloc(strlen(s) + 1)) == NULL)
+	if ((p->alias = malloc(strlen(s) + 1)) == NULL)
 		return 0;
 
 	strcpy(p->alias, s);
@@ -128,9 +128,9 @@ int fileinfo_set_mimetype(fileinfo p, const char* s)
 	assert(s != NULL);
 
 	if (p->mimetype != NULL)
-		mem_free(p->mimetype);
+		free(p->mimetype);
 
-	if ((p->mimetype = mem_malloc(strlen(s) + 1)) == NULL)
+	if ((p->mimetype = malloc(strlen(s) + 1)) == NULL)
 		return 0;
 
 	strcpy(p->mimetype, s);
@@ -147,11 +147,11 @@ filecache filecache_new(size_t nelem, size_t bytes)
 	assert(nelem > 0);
 	assert(bytes > 0);
 
-	if ((fc = mem_malloc(sizeof *fc)) == NULL
+	if ((fc = malloc(sizeof *fc)) == NULL
 	||  (fc->filenames = stringmap_new(nelem)) == NULL
 	||  (fc->metacache = cache_new(nelem, HOTLIST_SIZE, bytes)) == NULL) {
 		stringmap_free(fc->filenames);
-		mem_free(fc);
+		free(fc);
 		fc = NULL;
 	}
 	else  {
@@ -169,7 +169,7 @@ void filecache_free(filecache fc)
 		cache_free(fc->metacache, (dtor)fileinfo_free);
 		stringmap_free(fc->filenames);
 		pthread_rwlock_destroy(&fc->lock);
-		mem_free(fc);
+		free(fc);
 	}
 }
 
@@ -185,7 +185,7 @@ int filecache_add(filecache fc, fileinfo finfo, int pin, unsigned long* pid)
 
 	if ((fd = open(fileinfo_name(finfo), O_RDONLY)) == -1)
 		goto err;
-	else if((finfo->contents = mem_malloc(finfo->st.st_size)) == NULL)
+	else if((finfo->contents = malloc(finfo->st.st_size)) == NULL)
 		goto err;
 	else if(read(fd, finfo->contents, (size_t)finfo->st.st_size) != (ssize_t)finfo->st.st_size)
 		goto err;
@@ -204,7 +204,7 @@ int filecache_add(filecache fc, fileinfo finfo, int pin, unsigned long* pid)
 err:
 	if (fd != -1)
 		close(fd);
-	mem_free(contents);
+	free(contents);
 	fileinfo_free(finfo);
 	return 0;
 }

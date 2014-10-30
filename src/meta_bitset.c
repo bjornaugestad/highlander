@@ -39,10 +39,10 @@ bitset bitset_new(size_t bitcount)
 	bitset b;
 	size_t size = bitcount / CHAR_BIT + (bitcount % CHAR_BIT ? 1 : 0);
 
-	if ((b = mem_calloc(1, sizeof *b)) == NULL)
+	if ((b = calloc(1, sizeof *b)) == NULL)
 		;
-	else if((b->data = mem_malloc(size)) == NULL) {
-		mem_free(b);
+	else if((b->data = malloc(size)) == NULL) {
+		free(b);
 		b = NULL;
 	}
 	else {
@@ -55,8 +55,8 @@ bitset bitset_new(size_t bitcount)
 
 void bitset_free(bitset b)
 {
-	mem_free(b->data);
-	mem_free(b);
+	free(b->data);
+	free(b);
 }
 
 bitset bitset_map(void* data, size_t elemcount)
@@ -65,7 +65,7 @@ bitset bitset_map(void* data, size_t elemcount)
 
 	assert(data != NULL);
 
-	if ((b = mem_calloc(1, sizeof *b)) != NULL) {
+	if ((b = calloc(1, sizeof *b)) != NULL) {
 		b->size = elemcount;
 		b->data = data;
 	}
@@ -75,7 +75,7 @@ bitset bitset_map(void* data, size_t elemcount)
 
 void bitset_unmap(bitset b)
 {
-	mem_free(b);
+	free(b);
 }
 
 void bitset_set(bitset b, size_t i)
@@ -132,7 +132,7 @@ void bitset_remap(bitset b, void* mem, size_t cb)
 	assert(mem != NULL);
 	assert(cb > 0);
 
-	mem_free(b->data);
+	free(b->data);
 	b->data = mem;
 	b->size = cb;
 }

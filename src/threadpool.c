@@ -172,8 +172,8 @@ threadpool threadpool_new(
 	assert(max_queue_size > 0);
 
 	/* Allocate space for the pool */
-	if ((tpool = mem_malloc(sizeof(struct threadpool_tag))) == NULL
-	|| (tpool->threads = mem_malloc(sizeof(pthread_t) * num_worker_threads)) == NULL) {
+	if ((tpool = malloc(sizeof(struct threadpool_tag))) == NULL
+	|| (tpool->threads = malloc(sizeof(pthread_t) * num_worker_threads)) == NULL) {
 		mem_free(tpool);
 		return NULL;
 	}
@@ -277,7 +277,7 @@ int threadpool_add_work(
 	}
 
 	/* Now add a new entry to the queue */
-	if ((wp = mem_malloc(sizeof *wp)) == NULL) {
+	if ((wp = malloc(sizeof *wp)) == NULL) {
 		pthread_mutex_unlock(&pool->queue_lock);
 		return 0;
 	}

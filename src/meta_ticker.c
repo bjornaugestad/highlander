@@ -51,7 +51,7 @@ ticker ticker_new(int usec)
 {
 	ticker t;
 
-	if ((t = mem_malloc(sizeof *t)) == NULL
+	if ((t = malloc(sizeof *t)) == NULL
 	||  (t->actions = list_new()) == NULL) {
 		mem_free(t);
 		t = NULL;
@@ -76,7 +76,7 @@ int ticker_add_action(ticker t, void(*pfn)(void*), void* arg)
 {
 	struct action *pa;
 
-	if ((pa = mem_malloc(sizeof *pa)) == NULL)
+	if ((pa = malloc(sizeof *pa)) == NULL)
 		return 0;
 
 	pa->pfn = pfn;

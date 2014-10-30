@@ -96,9 +96,9 @@ cache cache_new(size_t nelem, size_t hotlist_nelem, size_t cb)
 
 	assert(cb > 0);
 
-	if ((c = mem_malloc(sizeof *c)) != NULL
-	&& (c->hashtable = mem_calloc(nelem, sizeof *c->hashtable)) != NULL
-	&& (c->hotlist = mem_calloc(hotlist_nelem, sizeof *c->hotlist)) != NULL) {
+	if ((c = malloc(sizeof *c)) != NULL
+	&& (c->hashtable = calloc(nelem, sizeof *c->hashtable)) != NULL
+	&& (c->hotlist = calloc(hotlist_nelem, sizeof *c->hotlist)) != NULL) {
 
 		c->nelem = nelem;
 		c->max_bytes = cb;
@@ -107,9 +107,9 @@ cache cache_new(size_t nelem, size_t hotlist_nelem, size_t cb)
 	}
 	else {
 		if (c != NULL)
-			mem_free(c->hashtable);
+			free(c->hashtable);
 
-		mem_free(c);
+		free(c);
 		c = NULL;
 	}
 
@@ -119,8 +119,8 @@ cache cache_new(size_t nelem, size_t hotlist_nelem, size_t cb)
 static void cache_entry_free(struct cache_entry* p)
 {
 	if (p != NULL) {
-		mem_free(p->data);
-		mem_free(p);
+		free(p->data);
+		free(p);
 	}
 }
 
@@ -130,7 +130,7 @@ static void cache_entry_free(struct cache_entry* p)
  *
  * We therefore free like this:
  * if cleanup != NULL, call cleanup for each entry and set p->data to NULL
- * else just call mem_free(p->data) in the cache_entry_free() function.
+ * else just call free(p->data) in the cache_entry_free() function.
  */
 void cache_free(cache c, dtor cleanup)
 {
@@ -157,9 +157,9 @@ void cache_free(cache c, dtor cleanup)
 			}
 		}
 
-		mem_free(c->hotlist);
-		mem_free(c->hashtable);
-		mem_free(c);
+		free(c->hotlist);
+		free(c->hashtable);
+		free(c);
 	}
 }
 
@@ -247,7 +247,7 @@ int cache_add(cache c, size_t id, void* data, size_t cb, int pin)
 
 	if (!make_space(c, cb))
 		;
-	else if((p = mem_malloc(sizeof *p)) == NULL)
+	else if((p = malloc(sizeof *p)) == NULL)
 		;
 	else {
 		p->id = id;
@@ -257,15 +257,15 @@ int cache_add(cache c, size_t id, void* data, size_t cb, int pin)
 
 		if (cache_exists(c, id)) {
 			/* Hmm, duplicate. We don't like that (for now) */
-			mem_free(p);
+			free(p);
 			assert(0);
 		}
 		else if(c->hashtable[hid] == NULL
 		&& (c->hashtable[hid] = list_new()) == NULL) {
-			mem_free(p);
+			free(p);
 		}
 		else if(list_add(c->hashtable[hid], p) == NULL) {
-			mem_free(p);
+			free(p);
 		}
 		else
 			rc = 1;
@@ -424,7 +424,7 @@ int main(void)
 
 	start = clock();
 	for (i = 0; i < nelem; i++) {
-		data = mem_malloc(50);
+		data = malloc(50);
 		sprintf(data, "streng %lu", (unsigned long)i);
 
 

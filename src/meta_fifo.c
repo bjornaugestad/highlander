@@ -56,12 +56,12 @@ fifo fifo_new(size_t size)
 
 	assert(size > 0);
 
-	if ((p = mem_malloc(sizeof *p)) == NULL)
+	if ((p = malloc(sizeof *p)) == NULL)
 		;
 	else if((p->lock = wlock_new()) == NULL
-	||  (p->pelem = mem_calloc(size, sizeof *p->pelem)) == NULL) {
+	||  (p->pelem = calloc(size, sizeof *p->pelem)) == NULL) {
 		wlock_free(p->lock);
-		mem_free(p);
+		free(p);
 		p = NULL;
 	}
 	else {
@@ -86,8 +86,8 @@ void fifo_free(fifo p, dtor dtor_fn)
 		}
 
 		wlock_free(p->lock);
-		mem_free(p->pelem);
-		mem_free(p);
+		free(p->pelem);
+		free(p);
 	}
 }
 
@@ -247,7 +247,7 @@ static void* writer(void* arg)
 	char* s;
 
 	for (i = 0; i < n; i++) {
-		if ((s = mem_malloc(100)) == NULL)
+		if ((s = malloc(100)) == NULL)
 			return NULL;
 
 		sprintf(s, "writer %d", i);
@@ -272,7 +272,7 @@ static void* reader(void* arg)
 
 		while ((s = fifo_get(f)) != NULL) {
 			fprintf(stderr, "From reader, who read: %s\n", s);
-			mem_free(s);
+			free(s);
 		}
 		fifo_unlock(f);
 	}

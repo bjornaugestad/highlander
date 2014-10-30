@@ -38,10 +38,10 @@ array array_new(size_t nmemb, int can_grow)
 
 	assert(nmemb > 0);
 
-	if ((p = mem_calloc(1, sizeof *p)) == NULL)
+	if ((p = calloc(1, sizeof *p)) == NULL)
 		;
-	else if((p->elements = mem_calloc(nmemb, sizeof *p->elements)) == NULL) {
-		mem_free(p);
+	else if((p->elements = calloc(nmemb, sizeof *p->elements)) == NULL) {
+		free(p);
 		p = NULL;
 	}
 	else {
@@ -61,8 +61,8 @@ void array_free(array a, dtor free_fn)
 				(*free_fn)(a->elements[a->cUsed]);
 		}
 
-		mem_free(a->elements);
-		mem_free(a);
+		free(a->elements);
+		free(a);
 	}
 }
 
@@ -94,7 +94,7 @@ int array_extend(array a, size_t nmemb)
 	n = a->cAllocated + nmemb;
 	cb = sizeof(*a->elements) * n;
 
-	if ((pnew = mem_realloc(a->elements, cb)) == NULL)
+	if ((pnew = realloc(a->elements, cb)) == NULL)
 		return 0;
 
 	a->elements = pnew;

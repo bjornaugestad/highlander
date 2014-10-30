@@ -52,7 +52,7 @@ meta_error meta_error_new(void)
 {
 	meta_error e;
 
-	e = mem_calloc(1, sizeof *e);
+	e = calloc(1, sizeof *e);
 	return e;
 }
 

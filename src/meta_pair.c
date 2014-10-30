@@ -60,10 +60,10 @@ pair pair_new(size_t nelem)
 
 	assert(nelem > 0);
 
-	if ((p = mem_malloc(sizeof *p)) == NULL)
+	if ((p = malloc(sizeof *p)) == NULL)
 		;
-	else if((p->element = mem_calloc(nelem, sizeof *p->element)) == NULL) {
-		mem_free(p);
+	else if((p->element = calloc(nelem, sizeof *p->element)) == NULL) {
+		free(p);
 		p = NULL;
 	}
 	else {
@@ -81,12 +81,12 @@ void pair_free(pair p)
 	assert(p != NULL);
 
 	for (i = 0; i < p->used; i++) {
-		mem_free(p->element[i].name);
-		mem_free(p->element[i].value);
+		free(p->element[i].name);
+		free(p->element[i].value);
 	}
 
-	mem_free(p->element);
-	mem_free(p);
+	free(p->element);
+	free(p);
 }
 
 static int pair_extend(pair p, size_t cElementsToAdd)
@@ -171,10 +171,10 @@ int pair_add(pair p, const char* name, const char* value)
 
 	/* Assign the helper */
 	pnew = &p->element[p->used];
-	if ((pnew->name = mem_malloc(strlen(name) + 1)) == NULL)
+	if ((pnew->name = malloc(strlen(name) + 1)) == NULL)
 		return 0;
-	else if((pnew->value = mem_malloc(strlen(value) + 1)) == NULL) {
-		mem_free(pnew->name);
+	else if((pnew->value = malloc(strlen(value) + 1)) == NULL) {
+		free(pnew->name);
 		return 0;
 	}
 	else {

@@ -31,9 +31,9 @@ membuf membuf_new(size_t size)
 
 	assert(size > 0);
 
-	if ((mb = mem_malloc(sizeof *mb)) == NULL
-	|| (mb->data = mem_malloc(size)) == NULL) {
-		mem_free(mb);
+	if ((mb = malloc(sizeof *mb)) == NULL
+	|| (mb->data = malloc(size)) == NULL) {
+		free(mb);
 		mb = NULL;
 	}
 	else {
@@ -47,8 +47,8 @@ membuf membuf_new(size_t size)
 void membuf_free(membuf mb)
 {
 	if (mb != NULL) {
-		mem_free(mb->data);
-		mem_free(mb);
+		free(mb->data);
+		free(mb);
 	}
 }
 

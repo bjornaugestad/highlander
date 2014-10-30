@@ -50,7 +50,7 @@ int cstring_extend(cstring s, size_t size)
 			newsize = s->cbAllocated + size;
 		}
 
-		if ((data = mem_realloc(s->data, newsize)) == NULL)
+		if ((data = realloc(s->data, newsize)) == NULL)
 			return 0;
 		else {
 			s->data = data;
@@ -184,10 +184,10 @@ cstring cstring_new(void)
 	 * Hmm, what's a poor coder to do? Write to the page? That hurts
 	 * performance...
 	 */
-	if ((p = mem_calloc(1, sizeof *p)) == NULL)
+	if ((p = calloc(1, sizeof *p)) == NULL)
 		;
-	else if((p->data = mem_calloc(1, CSTRING_INITIAL_SIZE)) == NULL) {
-		mem_free(p);
+	else if((p->data = calloc(1, CSTRING_INITIAL_SIZE)) == NULL) {
+		free(p);
 		p = NULL;
 	}
 	else {
@@ -425,10 +425,10 @@ size_t cstring_split(cstring** dest, const char* src, const char* delim)
 	}
 
 	/* allocate space */
-	if ((*dest = mem_malloc(sizeof **dest * nelem)) == NULL)
+	if ((*dest = malloc(sizeof **dest * nelem)) == NULL)
 		return 0;
 	else if(cstring_multinew(*dest, nelem) == 0) {
-		mem_free(*dest);
+		free(*dest);
 		return 0;
 	}
 
@@ -628,23 +628,23 @@ int main(void)
 		rc = cstring_split(&pstr, "foo bar baz", " ");
 		assert(rc == 3);
 		cstring_multifree(pstr, rc);
-		mem_free(pstr);
+		free(pstr);
 
 
 		rc = cstring_split(&pstr, "       foo bar baz", " ");
 		assert(rc == 3);
 		cstring_multifree(pstr, rc);
-		mem_free(pstr);
+		free(pstr);
 
 		rc = cstring_split(&pstr, "    foo bar baz    ", " ");
 		assert(rc == 3);
 		cstring_multifree(pstr, rc);
-		mem_free(pstr);
+		free(pstr);
 
 		rc = cstring_split(&pstr, "    foo ", " ");
 		assert(rc == 1);
 		cstring_multifree(pstr, rc);
-		mem_free(pstr);
+		free(pstr);
 
 
 	}

@@ -227,7 +227,7 @@ connection connection_new(
 	assert(retries_writes >= 0);
 
 	/* Allocate memory needed */
-	if ((p = mem_calloc(1, sizeof *p)) != NULL) {
+	if ((p = calloc(1, sizeof *p)) != NULL) {
 		p->readbuf = NULL;
 		p->writebuf = NULL;
 		p->persistent = 0;

@@ -53,8 +53,8 @@ static void entry_free(void* pe)
 	struct entry* p = pe;
 	assert(p != NULL);
 	assert(p->s != NULL);
-	mem_free(p->s);
-	mem_free(p);
+	free(p->s);
+	free(p);
 }
 
 /**
@@ -98,9 +98,9 @@ stringmap stringmap_new(size_t nelem)
 
 	assert(nelem > 0);
 
-	if ((sm = mem_malloc(sizeof *sm)) == NULL
-	|| (sm->hashtable = mem_calloc(nelem, sizeof *sm->hashtable)) == NULL) {
-		mem_free(sm);
+	if ((sm = malloc(sizeof *sm)) == NULL
+	|| (sm->hashtable = calloc(nelem, sizeof *sm->hashtable)) == NULL) {
+		free(sm);
 		sm = NULL;
 	}
 	else {
@@ -121,8 +121,8 @@ void stringmap_free(stringmap sm)
 				list_free(sm->hashtable[i], entry_free);
 		}
 
-		mem_free(sm->hashtable);
-		mem_free(sm);
+		free(sm->hashtable);
+		free(sm);
 	}
 }
 
@@ -187,10 +187,10 @@ int stringmap_add(stringmap sm, const char* s, unsigned long* pid)
 		/* HMM, Should we not return pid too? */
 		;
 	}
-	else if((e = mem_malloc(sizeof *e)) == NULL) {
+	else if((e = malloc(sizeof *e)) == NULL) {
 		goto err;
 	}
-	else if((e->s = mem_malloc(strlen(s) + 1)) == NULL) {
+	else if((e->s = malloc(strlen(s) + 1)) == NULL) {
 		goto err;
 	}
 	else {
@@ -213,8 +213,8 @@ int stringmap_add(stringmap sm, const char* s, unsigned long* pid)
 
 err:
 	if (e) {
-		mem_free(e->s);
-		mem_free(e);
+		free(e->s);
+		free(e);
 	}
 
 	return 0;
@@ -304,7 +304,7 @@ list stringmap_tolist(stringmap sm)
 			list_iterator li;
 			for (li = list_first(sm->hashtable[i]); !list_end(li); li = list_next(li)) {
 				struct entry* p =  list_get(li);
-				if ((s = mem_malloc(strlen(p->s) + 1)) == NULL)
+				if ((s = malloc(strlen(p->s) + 1)) == NULL)
 					goto err;
 
 				strcpy(s, p->s);

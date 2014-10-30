@@ -36,9 +36,9 @@ stack stack_new(void)
 {
 	stack s;
 
-	if ((s = mem_malloc(sizeof *s)) != NULL) {
+	if ((s = malloc(sizeof *s)) != NULL) {
 		if ((s->lst = list_new()) == NULL) {
-			mem_free(s);
+			free(s);
 			s = NULL;
 		}
 	}
@@ -57,7 +57,7 @@ void stack_free(stack s)
 		if (s->lst != NULL)
 			sublist_free(s->lst);
 
-		mem_free(s);
+		free(s);
 	}
 }
 

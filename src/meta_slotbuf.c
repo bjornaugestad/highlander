@@ -39,8 +39,8 @@ slotbuf slotbuf_new(size_t size, int can_overwrite, dtor pfn)
 
 	assert(size > 0);
 
-	if ((p = mem_malloc(sizeof *p)) == NULL
-	||  (p->data = mem_calloc(size, sizeof *p->data)) == NULL) {
+	if ((p = malloc(sizeof *p)) == NULL
+	||  (p->data = calloc(size, sizeof *p->data)) == NULL) {
 		mem_free(p);
 		p = NULL;
 	}

@@ -96,7 +96,7 @@ map map_new(void(*freefunc)(void* arg))
 {
 	map m;
 
-	if ((m = mem_calloc(1, sizeof *m)) == NULL)
+	if ((m = calloc(1, sizeof *m)) == NULL)
 		;
 	else if((m->a = list_new()) == NULL) {
 		mem_free(m);
@@ -154,9 +154,9 @@ int map_set(map m, const char* key, void* value)
 
 		return 0;
 	}
-	else if((p = mem_malloc(sizeof(pair))) == NULL)
+	else if((p = malloc(sizeof(pair))) == NULL)
 		return 0;
-	else if((p->key = mem_malloc(strlen(key) + 1)) == NULL)  {
+	else if((p->key = malloc(strlen(key) + 1)) == NULL)  {
 		mem_free(p);
 		return 0;
 	}

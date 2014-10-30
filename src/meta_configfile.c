@@ -122,11 +122,11 @@ static int add(configfile cf, const char* name, const char* value)
 	if (cf->used >= MAX_DIRECTIVES)
 		return 0;
 
-	if ((n = mem_malloc(strlen(name) + 1)) == NULL
-	||  (v = mem_malloc(strlen(value) + 1)) == NULL
-	||  (cf->values[cf->used] = mem_malloc(sizeof(struct nameval))) == NULL) {
-		mem_free(n);
-		mem_free(v);
+	if ((n = malloc(strlen(name) + 1)) == NULL
+	||  (v = malloc(strlen(value) + 1)) == NULL
+	||  (cf->values[cf->used] = malloc(sizeof(struct nameval))) == NULL) {
+		free(n);
+		free(v);
 		return 0;
 	}
 
@@ -150,7 +150,7 @@ configfile configfile_read(const char *path)
 	if ((f = fopen(path, "r")) == NULL)
 		return NULL;
 
-	if ((p = mem_calloc(1, sizeof *p)) == NULL) {
+	if ((p = calloc(1, sizeof *p)) == NULL) {
 		fclose(f);
 		return NULL;
 	}
@@ -316,12 +316,12 @@ void configfile_free(configfile cf)
 		size_t i;
 
 		for (i = 0; i < cf->used; i++) {
-			mem_free(cf->values[i]->name);
-			mem_free(cf->values[i]->value);
-			mem_free(cf->values[i]);
+			free(cf->values[i]->name);
+			free(cf->values[i]->value);
+			free(cf->values[i]);
 		}
 
-		mem_free(cf);
+		free(cf);
 	}
 }
 

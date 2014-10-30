@@ -83,7 +83,7 @@ process process_new(const char* appname)
 {
 	process p;
 
-	if ((p = mem_calloc(1, sizeof *p)) == NULL)
+	if ((p = calloc(1, sizeof *p)) == NULL)
 		;
 	else if((p->rootdir = cstring_new()) == NULL
 	|| (p->appname = cstring_new()) == NULL
@@ -279,7 +279,7 @@ static void* launcher(void* args)
 	int exitcode;
 	struct srv* s = args;
 	exitcode = s->run_func(s->object);
-	return (void*)exitcode;
+	return (void*)(intptr_t)exitcode;
 }
 
 /**

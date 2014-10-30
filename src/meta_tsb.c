@@ -78,9 +78,9 @@ tsb* tsb_new(size_t unit_duration, size_t units_per_frame, void* buffer)
 	assert(unit_duration != 0);
 	assert(units_per_frame != 0);
 
-	if ((p = mem_malloc(sizeof *p)) == NULL
-	||  (p->handlers = mem_malloc(sizeof *p->handlers * units_per_frame)) == NULL) {
-		mem_free(p);
+	if ((p = malloc(sizeof *p)) == NULL
+	||  (p->handlers = malloc(sizeof *p->handlers * units_per_frame)) == NULL) {
+		free(p);
 		p = NULL;
 	}
 	else {
@@ -102,11 +102,11 @@ void tsb_free(tsb* p)
 
 	for (i = 0; i < p->units_per_frame; i++) {
 		if (p->handlers[i].threads != NULL)
-			mem_free(p->handlers[i].threads);
+			free(p->handlers[i].threads);
 	}
 
-	mem_free(p->handlers);
-	mem_free(p);
+	free(p->handlers);
+	free(p);
 }
 
 const struct timeval* tsb_get_epoch(tsb* p)
@@ -149,7 +149,7 @@ int tsb_set_threads(
 	p->handlers[iunit].nthreads = nthreads;
 	p->handlers[iunit].callback = callback;
 	p->handlers[iunit].arg = arg;
-	if ((p->handlers[iunit].threads = mem_calloc(nthreads, sizeof *p->handlers[iunit].threads)) == NULL)
+	if ((p->handlers[iunit].threads = calloc(nthreads, sizeof *p->handlers[iunit].threads)) == NULL)
 		return 0;
 
 	return 1;
@@ -312,7 +312,7 @@ static void* threadfunc(void* arg)
 			break;
 	}
 
-	mem_free(arg);
+	free(arg);
 	return NULL;
 }
 
@@ -331,7 +331,7 @@ int tsb_start(tsb* p)
 	for (i = 0; i < p->units_per_frame; i++) {
 		for (j = 0; j < p->handlers[i].nthreads; j++) {
 			struct args* pargs;
-			if ((pargs = mem_malloc(sizeof *pargs)) == NULL)
+			if ((pargs = malloc(sizeof *pargs)) == NULL)
 				return 0;
 
 			pargs->iunit = i;

@@ -119,7 +119,7 @@ tcp_server tcp_server_new(void)
 {
 	tcp_server p;
 
-	if ((p = mem_calloc(1, sizeof *p)) != NULL) {
+	if ((p = calloc(1, sizeof *p)) != NULL) {
 		/* Some defaults */
 		p->timeout_reads = 5000;
 		p->timeout_writes = 1000;
@@ -643,7 +643,7 @@ int tcp_server_set_hostname(tcp_server srv, const char* host)
 
 	if (host == NULL)
 		srv->host = NULL;
-	else if((srv->host = mem_malloc(strlen(host) + 1)) == NULL)
+	else if((srv->host = malloc(strlen(host) + 1)) == NULL)
 		return 0;
 	else
 		strcpy(srv->host, host);

@@ -30,7 +30,7 @@ list list_new(void)
 {
 	list lst;
 
-	if ((lst = mem_malloc(sizeof *lst)) != NULL) {
+	if ((lst = malloc(sizeof *lst)) != NULL) {
 		lst->next = NULL;
 		lst->prev = NULL;
 		lst->data = NULL;
@@ -49,14 +49,14 @@ void list_free(list lst, void(*cleanup)(void*))
 			if (cleanup != NULL)
 				cleanup(p->data);
 			else
-				mem_free(p->data);
+				free(p->data);
 		}
 
 		/* Free the list itself */
 		while (lst) {
 			p = lst;
 			lst = lst->next;
-			mem_free(p);
+			free(p);
 		}
 	}
 }
@@ -75,7 +75,7 @@ list list_add(list lst, void *data)
 			we_allocated_list = 1;
 	}
 
-	if ((node = mem_calloc(1, sizeof *node)) == NULL) {
+	if ((node = calloc(1, sizeof *node)) == NULL) {
 		if (we_allocated_list)
 			list_free(lst, NULL);
 		return NULL;
@@ -130,7 +130,7 @@ list_iterator list_remove_node(list lst, list_iterator old)
 	/* Free memory used by the node, but do not free
 	 * memory used by the data. This is intended.
 	 */
-	mem_free(node);
+	free(node);
 	return new;
 }
 
@@ -143,7 +143,7 @@ list_iterator list_delete(list lst, list_iterator i, void(*cleanup)(void*))
 	if (cleanup != NULL)
 		cleanup(node->data);
 	else
-		mem_free(node->data);
+		free(node->data);
 
 	return list_remove_node(lst, i);
 }
@@ -279,7 +279,7 @@ void sublist_free(list lst)
 	while (lst != NULL) {
 		p = lst;
 		lst = lst->next;
-		mem_free(p);
+		free(p);
 	}
 }
 
@@ -373,7 +373,7 @@ list list_insert(list lst, void *data)
 	if (lst != NULL) {
 		list node;
 
-		if ((node = mem_calloc(1, sizeof *node)) == NULL) {
+		if ((node = calloc(1, sizeof *node)) == NULL) {
 			if (we_allocated_list)
 				list_free(lst, NULL);
 
@@ -401,7 +401,7 @@ int list_insert_before(list_iterator li, void *data)
 	assert(li.node != NULL);
 	assert(data != NULL);
 
-	if ((new = mem_calloc(1, sizeof *new)) == NULL)
+	if ((new = calloc(1, sizeof *new)) == NULL)
 		return ENOMEM;
 
 	curr = li.node;
@@ -420,7 +420,7 @@ int list_insert_after(list_iterator li, void *data)
 	assert(li.node != NULL);
 	assert(data != NULL);
 
-	if ((new = mem_calloc(1, sizeof *new)) == NULL)
+	if ((new = calloc(1, sizeof *new)) == NULL)
 		return ENOMEM;
 
 	curr = li.node;
@@ -536,7 +536,7 @@ struct item {
 
 static void item_dtor(void *p)
 {
-	mem_free(p);
+	free(p);
 }
 
 static int item_cmp(const void* p1, const void* p2)
@@ -551,7 +551,7 @@ static void* item_dup(const void* arg)
 	const struct item* src = arg;
 	struct item* p;
 
-	if ((p = mem_malloc(sizeof *p)) != NULL)
+	if ((p = malloc(sizeof *p)) != NULL)
 		*p = *src;
 
 	return p;
@@ -619,13 +619,13 @@ int main(void)
 	struct item *node, searchterm;
 	const char *s;
 
-#if 0
+#if 1
 	if ((a = list_new()) == NULL)
 		return77("Could not allocate memory");
 
 	/* Add items to the list */
 	for (i = 0; i < nelem; i++)  {
-		if ((node = mem_malloc(sizeof *node)) == NULL)
+		if ((node = malloc(sizeof *node)) == NULL)
 			return77("Could not create nodes");
 
 		node->value = i;
@@ -712,7 +712,7 @@ int main(void)
 	/* Insert an item in front of other items, then retrieve it and check that
 	 * we got the right item back.
 	 */
-	if ((node = mem_malloc(sizeof *node)) == NULL)
+	if ((node = malloc(sizeof *node)) == NULL)
 		return77("Could not alloc mem");
 	node->value = 0xbeef;
 	if (list_insert(a, node) == NULL)
@@ -779,7 +779,7 @@ int main(void)
     /* Add items to the list. Then delete each of them using
      * list_delete within a traditional for() loop. */
 	for (i = 0; i < nelem; i++)  {
-		if ((node = mem_malloc(sizeof *node)) == NULL)
+		if ((node = malloc(sizeof *node)) == NULL)
 			return77("Could not create nodes");
 
 		node->value = i;
