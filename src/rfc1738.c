@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -24,7 +24,7 @@
 
 #include <rfc1738.h>
 
-/* Local helper 
+/* Local helper
  * Returns 1 on success, 0 on illegal input.
  */
 static int encode(int c, char* dest)
@@ -32,18 +32,18 @@ static int encode(int c, char* dest)
     int high, low;
 
 	/* Don't encode illegal input */
-	if(c < 0 || c > 255)
+	if (c < 0 || c > 255)
 		return 0;
 
     high = (c & 0xf0) >> 4;
     low = (c & 0x0f);
 
-    if(high > 9) 
+    if (high > 9)
         high = 'A' + high - 10;
     else
         high = '0' + high;
 
-    if(low > 9)
+    if (low > 9)
         low = 'A' + low - 10;
     else
         low = '0' + low;
@@ -55,23 +55,23 @@ static int encode(int c, char* dest)
 }
 
 /* Local helper.
- * Accepts an alphanumeric character in the range [0-9a-fA-F] 
- * and returns it converted to an integer in the range 0-15. 
+ * Accepts an alphanumeric character in the range [0-9a-fA-F]
+ * and returns it converted to an integer in the range 0-15.
  */
 static int hexchar2int(int c)
 {
-    if(c >= '0' && c <= '9')
+    if (c >= '0' && c <= '9')
         return c - '0';
-    else if(c >= 'a' && c <= 'f') 
+    else if(c >= 'a' && c <= 'f')
         return 10 + c - 'a';
-    else if(c >= 'A' && c <= 'F') 
+    else if(c >= 'A' && c <= 'F')
         return 10 + c - 'A';
     else /* Illegal input. */
         return -1;
 }
-    
+
 /* Local helper.
- * Decodes an encoded character. Returns -1 on errors, else an 
+ * Decodes an encoded character. Returns -1 on errors, else an
  * integer which represents a decoded character. Note that hexchar2int
  * will implicitly detect end of string ('\0').
  */
@@ -79,15 +79,15 @@ static int decode(const char* src)
 {
     int c1, c2;
 
-	if(*src != '%')
+	if (*src != '%')
 		return -1;
 
-    c1 = hexchar2int((unsigned char)*++src); 
-    if(c1 == -1) 
+    c1 = hexchar2int((unsigned char)*++src);
+    if (c1 == -1)
         return -1;
 
     c2 = hexchar2int((unsigned char)*++src);
-    if(c2 == -1)
+    if (c2 == -1)
         return -1;
 
     return (c1 << 4) + c2;
@@ -102,10 +102,10 @@ size_t rfc1738_encode(char* dest, size_t cbdest, const char* src, size_t cbsrc)
     assert(cbdest > 0);
     assert(cbsrc > 0);
 
-    while(cbsrc > 0 && cbdest > 0) {
+    while (cbsrc > 0 && cbdest > 0) {
 
         /* No isalnum() due to locale */
-        if((*src >= 'A' && *src <= 'Z')
+        if ((*src >= 'A' && *src <= 'Z')
         || (*src >= 'a' && *src <= 'z')
         || (*src >= '0' && *src <= '9')) {
             *dest++ = *src++;
@@ -114,13 +114,13 @@ size_t rfc1738_encode(char* dest, size_t cbdest, const char* src, size_t cbsrc)
 			cbdest--;
         }
         else if(cbdest > 2) {
-            if(!encode((unsigned char)*src, dest)) {
+            if (!encode((unsigned char)*src, dest)) {
 				errno = EINVAL;
 				return 0;
 			}
 
-            dest+=3; 
-            cbdest-=3;   
+            dest+=3;
+            cbdest-=3;
             src++;
 			size += 3;
 			cbsrc--;
@@ -132,7 +132,7 @@ size_t rfc1738_encode(char* dest, size_t cbdest, const char* src, size_t cbsrc)
     }
 
     /* If we ran out of buffer space */
-    if(*src != '\0') {
+    if (*src != '\0') {
 		errno = ENOSPC;
         return 0;
 	}
@@ -149,18 +149,18 @@ size_t rfc1738_decode(char* dest, size_t cbdest, const char* src, size_t cbsrc)
     assert(src != NULL);
     assert(dest != NULL);
 
-    while(cbdest > 0 && cbsrc > 0) {
-        if(*src == '%') {
-            if( (c = decode(src)) == -1) {
+    while (cbdest > 0 && cbsrc > 0) {
+        if (*src == '%') {
+            if ((c = decode(src)) == -1) {
                 errno = EINVAL;
                 return 0;
             }
 
             *dest++ = c;
-            src += 3; 
+            src += 3;
 			cbsrc-=2;
         }
-        else 
+        else
             *dest++ = *src++;
 
 		size++;
@@ -168,7 +168,7 @@ size_t rfc1738_decode(char* dest, size_t cbdest, const char* src, size_t cbsrc)
 		cbsrc--;
     }
 
-    if(cbdest == 0) {
+    if (cbdest == 0) {
         errno = ENOSPC;
 		return 0;
 	}
@@ -181,7 +181,7 @@ size_t rfc1738_encode_string(char* dest, size_t cbdest, const char* src)
 {
 	size_t size;
 
-	if( (size = rfc1738_encode(dest, cbdest, src, strlen(src))) == 0)
+	if ((size = rfc1738_encode(dest, cbdest, src, strlen(src))) == 0)
 		return 0;
 	else if(size == cbdest)
 		return 0; /* No room for null character */
@@ -195,7 +195,7 @@ size_t rfc1738_decode_string(char* dest, size_t cbdest, const char* src)
 {
 	size_t size;
 
-	if( (size = rfc1738_decode(dest, cbdest, src, strlen(src))) == 0)
+	if ((size = rfc1738_decode(dest, cbdest, src, strlen(src))) == 0)
 		return 0;
 	else if(size == cbdest)
 		return 0; /* No room for null character */
@@ -229,13 +229,13 @@ int main(void)
     size_t i, nelem;
 
     nelem = sizeof(tests) / sizeof(tests[0]);
-    for(i = 0; i < nelem; i++) {
+    for (i = 0; i < nelem; i++) {
         buf1[0] = '\0';
         buf2[0] = '\0';
-        if( (cb = rfc1738_encode(buf1, sizeof buf1, tests[i], strlen(tests[i]))) == 0) {
+        if ((cb = rfc1738_encode(buf1, sizeof buf1, tests[i], strlen(tests[i]))) == 0) {
             fprintf(stderr, "1.Could not encode %s\n", tests[i]);
         }
-        else if( (cb = rfc1738_decode(buf2, sizeof buf2, buf1, cb)) == 0) {
+        else if((cb = rfc1738_decode(buf2, sizeof buf2, buf1, cb)) == 0) {
             fprintf(stderr, "2.Could not decode %s\n", buf1);
         }
         else if(memcmp(buf2, tests[i], cb) != 0) {
@@ -247,10 +247,10 @@ int main(void)
     }
 
 	/* Enc/dec all char codes */
-	for(i = 1; i < 256; i++) 
+	for (i = 1; i < 256; i++)
 		buf1[i - 1] = (int)i;
 	buf1[i - 1] = '\0';
-	if(!rfc1738_encode(buf2, sizeof buf2, buf1, strlen(buf1)) ) {
+	if (!rfc1738_encode(buf2, sizeof buf2, buf1, strlen(buf1)) ) {
 		perror("encode");
 		exit(1);
 	}
@@ -260,17 +260,17 @@ int main(void)
 	}
 
 	/* some illegal input */
-	if(rfc1738_decode(buf1, sizeof buf1, "%", 1))
+	if (rfc1738_decode(buf1, sizeof buf1, "%", 1))
 		assert(0 && "Oops, accepted illegal input");
 
-	if(rfc1738_decode(buf1, sizeof(buf1), "%5", 2))
+	if (rfc1738_decode(buf1, sizeof(buf1), "%5", 2))
 		assert(0 && "Oops, accepted illegal input");
 
-	if(rfc1738_decode(buf1, sizeof(buf1), "%5X", 3))
+	if (rfc1738_decode(buf1, sizeof(buf1), "%5X", 3))
 		assert(0 && "Oops, accepted illegal input");
 
 	/* buffer too small */
-	if(rfc1738_decode(buf1, 4, "hello, world", 12))
+	if (rfc1738_decode(buf1, 4, "hello, world", 12))
 		assert(0 && "Oops, accepted illegal input");
 
     /* Performance */
@@ -278,7 +278,7 @@ int main(void)
     speedy1[128] = '\0';
     nelem = 10 * 1000;
     start = clock();
-    for(i = 0; i < nelem; i++) {
+    for (i = 0; i < nelem; i++) {
         rfc1738_encode(speedy2, sizeof speedy2, speedy1, strlen(speedy1));
         rfc1738_decode(speedy1, sizeof speedy1, speedy2, strlen(speedy2));
     }

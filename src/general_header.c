@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -29,23 +29,23 @@
  *
  * - Add support for cache-extension. parse/set/get/send. cache-extension
  * fields are hard to parse as the value isn't specified in RFC2616. The
- * format is: token [ = (token | quoted-string)] 
+ * format is: token [ = (token | quoted-string)]
  * Example: Cache-Control: foo = bar, foobar, foz = "quoted string"
  * This example has 3 tokens that extend the Cache-Control field. Two has
- * values, 1 has no value. HOW TO PARSE: 
+ * values, 1 has no value. HOW TO PARSE:
  * 1. Read the token name.
  * 2. If the name is unknown, it is an extension field.
  * 2.1 Read until , or \r\n
- * 2.2 Put token and value in string variable. (Just copy it?) 
+ * 2.2 Put token and value in string variable. (Just copy it?)
  *     or maybe in a map.
 
- * HOW TO GET/SET/SEND Cache-Extensions: 
+ * HOW TO GET/SET/SEND Cache-Extensions:
  * -If we settle for a string, let the user set a string directly
  * regardless of format.
  * - The get functions just returns a const char pointer to that string.
  * - A send function just sends the string.
- * - What about field-separating commas? 
- * MORE ABOUT Cache-Extensions: 
+ * - What about field-separating commas?
+ * MORE ABOUT Cache-Extensions:
  * - Reread RFC2616, IIRC there was some note requiring us to
  * accept more or less anything (if we are a proxy).
  *
@@ -53,13 +53,13 @@
 
 /*
  * About general_header.c:
- * The General-Header is described in §4.5 and is supposed to 
+ * The General-Header is described in §4.5 and is supposed to
  * contain fields and values common to both HTTP requests and responses.
- * There are 9 fields: Cache-Control, Connection, Date, Pragma, 
+ * There are 9 fields: Cache-Control, Connection, Date, Pragma,
  * Trailer, Transfer-Encoding, Upgrade, Via and Warning.
- * 
+ *
  * Some fields are easy to manage, e.g. Date. Others are a mess,
- * like Cache-Control and Pragma. They're a mess because they 
+ * like Cache-Control and Pragma. They're a mess because they
  * contain subfields and subvalues. Some fields also overlap in
  * functionality, Cache-Control: no-cache equals Pragma: No-cache.
  */
@@ -96,7 +96,7 @@
  */
 
 /*
- * STATUS for the different fields and directions. 
+ * STATUS for the different fields and directions.
  * We need to know if we parse a request field and send a response field.
  * We also need to know if we have an API for the field.
 -------------------------------------------------------------------------
@@ -130,7 +130,7 @@ response:cache-extension
  * I.e. 2: We shall never parse a s-maxage field if we parse a request.
 
  * A: We don't care. It is the callers responsibility
- * 
+ *
  */
 
 typedef unsigned long flagtype;
@@ -191,7 +191,7 @@ struct general_header_tag {
 
 void general_header_free(general_header p)
 {
-	if(p != NULL) {
+	if (p != NULL) {
 		cstring_free(p->connection);
 		cstring_free(p->pragma);
 		cstring_free(p->trailer);
@@ -207,7 +207,7 @@ general_header general_header_new(void)
 {
 	general_header p;
 
-	if( (p = malloc(sizeof *p)) != NULL) {
+	if ((p = malloc(sizeof *p)) != NULL) {
 		general_header_clear_flags(p);
 		p->connection = cstring_new();
 		p->pragma = cstring_new();
@@ -226,7 +226,7 @@ void general_header_recycle(general_header p)
 	general_header_clear_flags(p);
 }
 
-void general_header_set_date(general_header gh, time_t value) 
+void general_header_set_date(general_header gh, time_t value)
 {
 	assert(NULL != gh);
 	assert(value != (time_t)-1);
@@ -235,12 +235,12 @@ void general_header_set_date(general_header gh, time_t value)
 	general_header_set_flag(gh, GENERAL_HEADER_DATE_SET);
 }
 
-int general_header_set_connection(general_header gh, const char* value) 
+int general_header_set_connection(general_header gh, const char* value)
 {
 	assert(NULL != gh);
 	assert(NULL != value);
 
-	if(!cstring_copy(gh->connection, value)) 
+	if (!cstring_copy(gh->connection, value))
 		return 0;
 
 	general_header_set_flag(gh, GENERAL_HEADER_CONNECTION_SET);
@@ -252,7 +252,7 @@ int general_header_set_pragma(general_header gh, const char* value)
 	assert(NULL !=  gh);
 	assert(NULL != value);
 
-	if(!cstring_copy(gh->pragma, value))
+	if (!cstring_copy(gh->pragma, value))
 		return 0;
 
 	general_header_set_flag(gh, GENERAL_HEADER_PRAGMA_SET);
@@ -264,7 +264,7 @@ int general_header_set_trailer(general_header gh, const char* value)
 	assert(NULL != gh);
 	assert(NULL != value);
 
-	if(!cstring_copy(gh->trailer, value)) 
+	if (!cstring_copy(gh->trailer, value))
 		return 0;
 
 	general_header_set_flag(gh, GENERAL_HEADER_TRAILER_SET);
@@ -276,7 +276,7 @@ int general_header_set_transfer_encoding(general_header gh, const char* value)
 	assert(NULL != gh);
 	assert(NULL != value);
 
-	if(!cstring_copy(gh->transfer_encoding, value)) 
+	if (!cstring_copy(gh->transfer_encoding, value))
 		return 0;
 
 	general_header_set_flag(gh, GENERAL_HEADER_TRANSFER_ENCODING_SET);
@@ -288,7 +288,7 @@ int general_header_set_upgrade(general_header gh, const char* value)
 	assert(NULL != gh);
 	assert(NULL != value);
 
-	if(!cstring_copy(gh->upgrade, value)) 
+	if (!cstring_copy(gh->upgrade, value))
 		return 0;
 
 	general_header_set_flag(gh, GENERAL_HEADER_UPGRADE_SET);
@@ -300,7 +300,7 @@ int general_header_set_via(general_header gh, const char* value)
 	assert(NULL != gh);
 	assert(NULL != value);
 
-	if(!cstring_copy(gh->via, value)) 
+	if (!cstring_copy(gh->via, value))
 		return 0;
 
 	general_header_set_flag(gh, GENERAL_HEADER_VIA_SET);
@@ -312,7 +312,7 @@ int general_header_set_warning(general_header gh, const char* value)
 	assert(NULL != gh);
 	assert(NULL != value);
 
-	if(!cstring_copy(gh->warning, value)) 
+	if (!cstring_copy(gh->warning, value))
 		return 0;
 
 	general_header_set_flag(gh, GENERAL_HEADER_WARNING_SET);
@@ -507,7 +507,7 @@ time_t general_header_get_date(general_header gh)
 const char* general_header_get_connection(general_header gh)
 {
 	assert(gh != NULL);
-	if(!general_header_flag_is_set(gh, GENERAL_HEADER_CONNECTION_SET))
+	if (!general_header_flag_is_set(gh, GENERAL_HEADER_CONNECTION_SET))
 		return "";
 	else
 		return c_str(gh->connection);
@@ -666,9 +666,9 @@ static inline int send_date(general_header gh, connection conn)
 	return http_send_date(conn, "Date: ", gh->date);
 }
 
-static inline int cachecontrol_field_set(general_header gh) 
+static inline int cachecontrol_field_set(general_header gh)
 {
-	int i  
+	int i
 		= general_header_flag_is_set(gh, GENERAL_HEADER_NO_CACHE_SET)
 		+ general_header_flag_is_set(gh, GENERAL_HEADER_NO_STORE_SET)
 		+ general_header_flag_is_set(gh, GENERAL_HEADER_MAX_AGE_SET)
@@ -689,11 +689,11 @@ static inline int send_cachecontrol(general_header gh, connection conn)
 {
 	int nfields = cachecontrol_field_set(gh);
 
-	if(!http_send_string(conn, "Cache-Control: "))
+	if (!http_send_string(conn, "Cache-Control: "))
 		return 0;
 
-	if(general_header_flag_is_set(gh, GENERAL_HEADER_NO_CACHE_SET)) {
-		if(!http_send_string(conn, "no-cache"))
+	if (general_header_flag_is_set(gh, GENERAL_HEADER_NO_CACHE_SET)) {
+		if (!http_send_string(conn, "no-cache"))
 			return 0;
 		else if(nfields && !http_send_string(conn, ", "))
 			return 0;
@@ -701,87 +701,87 @@ static inline int send_cachecontrol(general_header gh, connection conn)
 		nfields--;
 	}
 
-	if(general_header_flag_is_set(gh, GENERAL_HEADER_NO_STORE_SET)) {
-		if(!http_send_string(conn, "no-store"))
+	if (general_header_flag_is_set(gh, GENERAL_HEADER_NO_STORE_SET)) {
+		if (!http_send_string(conn, "no-store"))
 			return 0;
 		else if(nfields && !http_send_string(conn, ", "))
 			return 0;
 		nfields--;
 	}
 
-	if(general_header_flag_is_set(gh, GENERAL_HEADER_MAX_AGE_SET)) {
-		if(!http_send_ulong(conn, "max-age=", gh->max_age))
+	if (general_header_flag_is_set(gh, GENERAL_HEADER_MAX_AGE_SET)) {
+		if (!http_send_ulong(conn, "max-age=", gh->max_age))
 			return 0;
 		else if(nfields && !http_send_string(conn, ", "))
 			return 0;
 		nfields--;
 	}
 
-	if(general_header_flag_is_set(gh, GENERAL_HEADER_MAX_STALE_SET)) {
-		if(!http_send_ulong(conn, "max-stale=", gh->max_stale))
+	if (general_header_flag_is_set(gh, GENERAL_HEADER_MAX_STALE_SET)) {
+		if (!http_send_ulong(conn, "max-stale=", gh->max_stale))
 			return 0;
 		else if(nfields && !http_send_string(conn, ", "))
 			return 0;
 		nfields--;
 	}
 
-	if(general_header_flag_is_set(gh, GENERAL_HEADER_MIN_FRESH_SET)) {
-		if(!http_send_ulong(conn, "min-fresh=", gh->min_fresh))
+	if (general_header_flag_is_set(gh, GENERAL_HEADER_MIN_FRESH_SET)) {
+		if (!http_send_ulong(conn, "min-fresh=", gh->min_fresh))
 			return 0;
 		else if(nfields && !http_send_string(conn, ", "))
 			return 0;
 		nfields--;
 	}
 
-	if(general_header_flag_is_set(gh, GENERAL_HEADER_NO_TRANSFORM_SET)) {
-		if(!http_send_string(conn, "no-transform"))
+	if (general_header_flag_is_set(gh, GENERAL_HEADER_NO_TRANSFORM_SET)) {
+		if (!http_send_string(conn, "no-transform"))
 			return 0;
 		else if(nfields && !http_send_string(conn, ", "))
 			return 0;
 		nfields--;
 	}
 
-	if(general_header_flag_is_set(gh, GENERAL_HEADER_PUBLIC_SET)) {
-		if(!http_send_string(conn, "public"))
+	if (general_header_flag_is_set(gh, GENERAL_HEADER_PUBLIC_SET)) {
+		if (!http_send_string(conn, "public"))
 			return 0;
 		else if(nfields && !http_send_string(conn, ", "))
 			return 0;
 		nfields--;
 	}
 
-	if(general_header_flag_is_set(gh, GENERAL_HEADER_PRIVATE_SET)) {
-		if(!http_send_string(conn, "private"))
+	if (general_header_flag_is_set(gh, GENERAL_HEADER_PRIVATE_SET)) {
+		if (!http_send_string(conn, "private"))
 			return 0;
 		else if(nfields && !http_send_string(conn, ", "))
 			return 0;
 		nfields--;
 	}
 
-	if(general_header_flag_is_set(gh, GENERAL_HEADER_MUST_REVALIDATE_SET)) {
-		if(!http_send_string(conn, "must-revalidate"))
+	if (general_header_flag_is_set(gh, GENERAL_HEADER_MUST_REVALIDATE_SET)) {
+		if (!http_send_string(conn, "must-revalidate"))
 			return 0;
 		else if(nfields && !http_send_string(conn, ", "))
 			return 0;
 		nfields--;
 	}
 
-	if(general_header_flag_is_set(gh, GENERAL_HEADER_PROXY_REVALIDATE_SET)) {
-		if(!http_send_string(conn, "proxy-revalidate"))
+	if (general_header_flag_is_set(gh, GENERAL_HEADER_PROXY_REVALIDATE_SET)) {
+		if (!http_send_string(conn, "proxy-revalidate"))
 			return 0;
 		else if(nfields && !http_send_string(conn, ", "))
 			return 0;
 		nfields--;
 	}
 
-	if(general_header_flag_is_set(gh, GENERAL_HEADER_S_MAXAGE_SET)) {
-		if(!http_send_ulong(conn, "s-maxage=", gh->s_maxage))
+	if (general_header_flag_is_set(gh, GENERAL_HEADER_S_MAXAGE_SET)) {
+		if (!http_send_ulong(conn, "s-maxage=", gh->s_maxage))
 			return 0;
 		else if(nfields && !http_send_string(conn, ", "))
 			return 0;
 		nfields--;
 	}
 
-	if(general_header_flag_is_set(gh, GENERAL_HEADER_CACHE_EXTENSION_SET)) {
+	if (general_header_flag_is_set(gh, GENERAL_HEADER_CACHE_EXTENSION_SET)) {
 	}
 
 	assert(nfields == 0);
@@ -807,22 +807,22 @@ int general_header_send_fields(general_header gh, connection c)
 		{ GENERAL_HEADER_WARNING_SET,			send_warning }
 	};
 
-	
+
 	nelem = sizeof fields / sizeof *fields;
-	for(i = 0; i < nelem; i++) {
-		if(general_header_flag_is_set(gh, fields[i].flag))
-			if( (success = fields[i].func(gh, c)) == 0)
+	for (i = 0; i < nelem; i++) {
+		if (general_header_flag_is_set(gh, fields[i].flag))
+			if ((success = fields[i].func(gh, c)) == 0)
 				break;
 	}
 
 	/*
-	 * We must also send the cache control fields. 
+	 * We must also send the cache control fields.
 	 * They're treated a bit special, because 0..n fields are part
-	 * of 0..1 header field, the Cache-Control field. So if 1..n 
+	 * of 0..1 header field, the Cache-Control field. So if 1..n
 	 * fields are set, we send the Cache-Control field along with
 	 * all appropriate values.
 	 */
-	if(success && cachecontrol_field_set(gh)) 
+	if (success && cachecontrol_field_set(gh))
 		success = send_cachecontrol(gh, c);
 
 	return success;
@@ -858,8 +858,8 @@ static const struct {
 int find_general_header(const char* name)
 {
 	int i, nelem = sizeof general_header_fields / sizeof *general_header_fields;
-	for(i = 0; i < nelem; i++) {
-		if(strcmp(general_header_fields[i].name, name) == 0)
+	for (i = 0; i < nelem; i++) {
+		if (strcmp(general_header_fields[i].name, name) == 0)
 			return i;
 	}
 
@@ -879,7 +879,7 @@ static int parse_pragma(general_header gh, const char* value, meta_error e)
 	UNUSED(e);
 
 	/* The only pragma we understand is no-cache */
-	if(strstr(value, "no-cache") == value) 
+	if (strstr(value, "no-cache") == value)
 		general_header_set_no_cache(gh);
 
 	/* Silently ignore unknown pragmas */
@@ -900,7 +900,7 @@ static int parse_warning(general_header gh, const char* value, meta_error e)
 	assert(gh != NULL);
 	assert(value != NULL);
 
-	if(!general_header_set_warning(gh, value))
+	if (!general_header_set_warning(gh, value))
 		return set_os_error(e, errno);
 	return 1;
 }
@@ -927,13 +927,13 @@ static int parse_cache_control(general_header gh, const char* value, meta_error 
 	/* Loop through the values looking for separating space.
 	 * Then look for the actual word
 	 */
-	for(;*value != '\0';) {
-		if( (s = strchr(value, ' ')) == NULL)
+	for (;*value != '\0';) {
+		if ((s = strchr(value, ' ')) == NULL)
 			break;
 
 		/* Skip the space */
 		s++;
-		if(!set_cache_control(gh, s, e))
+		if (!set_cache_control(gh, s, e))
 			return 0;
 
 		value = s + 1;
@@ -950,29 +950,29 @@ static int parse_date(general_header gh, const char* value, meta_error e)
 	assert(NULL != value);
 
 	/* Parse date and create a time_t */
-	if( (d = parse_rfc822_date(value)) == -1)
+	if ((d = parse_rfc822_date(value)) == -1)
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
-	
+
 	general_header_set_date(gh, d);
 	return 1;
 }
 
 /*
  * We only accept "close" or "keep-alive". Other values are regarded as invalid.
- * Do we report 400 or do we just ignore the values? 
+ * Do we report 400 or do we just ignore the values?
  * We start off being strict.
- * Update 20070918: Being strict is not the best solution. From now on 
+ * Update 20070918: Being strict is not the best solution. From now on
  * we accept "keep-alive" and any other value is interpreted as "close".
  */
 static int parse_connection(general_header gh, const char* value, meta_error e)
 {
 	assert(NULL != gh);
 	assert(NULL != value);
-	
-	if(strcasecmp(value, "keep-alive"))
+
+	if (strcasecmp(value, "keep-alive"))
 		value = "close";
 
-	if(!general_header_set_connection(gh, value))
+	if (!general_header_set_connection(gh, value))
 		return set_os_error(e, errno);
 	else
 		return 1;
@@ -983,7 +983,7 @@ static int parse_trailer(general_header gh, const char* value, meta_error e)
 	assert(NULL != gh);
 	assert(NULL != value);
 
-	if(!general_header_set_trailer(gh, value))
+	if (!general_header_set_trailer(gh, value))
 		return set_os_error(e, errno);
 	return 1;
 }
@@ -994,14 +994,14 @@ static int parse_upgrade(general_header gh, const char* value, meta_error e)
 	assert(NULL != value);
 
 	/* Since we only understand http 1.0 and 1.1, I see
-	 * no reason whatsoever to support Upgrade. 
+	 * no reason whatsoever to support Upgrade.
 	 *
 	 * NOTE: Sat Apr 28 18:51:36 CEST 2001
 	 * Hmmh, maybe we should? How else do we support SSL/SHTTP?
-	 * If we decide to support Upgrade, the proper return status is 
+	 * If we decide to support Upgrade, the proper return status is
 	 * 		101 Switching Protocols
 	 */
-	if(!general_header_set_upgrade(gh, value))
+	if (!general_header_set_upgrade(gh, value))
 		return set_os_error(e, errno);
 	return 1;
 }
@@ -1012,13 +1012,13 @@ static int parse_via(general_header gh, const char* value, meta_error e)
 	assert(NULL != value);
 
 	/* NOTE: This is incorrect, we may receive multiple Via: 's */
-	if(!general_header_set_via(gh, value))
+	if (!general_header_set_via(gh, value))
 		return set_os_error(e, errno);
 
 	return 1;
 }
 
-/* Local helper for parse_cache_control. Needed since 
+/* Local helper for parse_cache_control. Needed since
  * a lot of code is duplicated inside and after the loop
  * The s argument must/should point to a legal request-directive
  * to be understood.
@@ -1028,8 +1028,8 @@ static int parse_via(general_header gh, const char* value, meta_error e)
 static int set_cache_control(general_header gh, const char* s, meta_error e)
 {
 	/*
-	 * We have 2 types of cache-request-directives, with and 
-	 * without a numeric argument. We ignore extensions for now. 
+	 * We have 2 types of cache-request-directives, with and
+	 * without a numeric argument. We ignore extensions for now.
 	 */
 	static const struct {
 		const char* directive;
@@ -1053,12 +1053,12 @@ static int set_cache_control(general_header gh, const char* s, meta_error e)
 	size_t i;
 
 	/* Now look for type1 request-directives */
-	for(i = 0; i < sizeof(type1) / sizeof(type1[0]); i++) {
-		if(strstr(s, type1[i].directive) == s) {
+	for (i = 0; i < sizeof(type1) / sizeof(type1[0]); i++) {
+		if (strstr(s, type1[i].directive) == s) {
 			/* NOTE: There MAY slip in a bug here, in case
 			 * a new directive starts with the same name
 			 * as an existing directive. We ignore that now,
-			 * then we don't have to extract the name from 
+			 * then we don't have to extract the name from
 			 * the string 'value'
 			 */
 			(*type1[i].func)(gh);
@@ -1067,21 +1067,21 @@ static int set_cache_control(general_header gh, const char* s, meta_error e)
 	}
 
 	/* Not a type1 directive, try type2 */
-	for(i = 0; i < sizeof(type2) / sizeof(type2[0]); i++) {
-		if(strstr(s, type2[i].directive) == s) {
+	for (i = 0; i < sizeof(type2) / sizeof(type2[0]); i++) {
+		if (strstr(s, type2[i].directive) == s) {
 			/* NOTE: Same 'bug' as above */
 			char *eq = strchr(s, '=');
 			int arg;
 
 			/* Could not find = as in NAME=value */
-			if(NULL == eq)
+			if (NULL == eq)
 				return set_http_error(e, HTTP_400_BAD_REQUEST);
 
 			/* Skip = and convert arg to integer */
-			eq++; 
+			eq++;
 			arg = -1;
 			arg = atoi(eq);
-			if(-1 == arg) {
+			if (-1 == arg) {
 				/* Conversion error. NOTE: How about strtol() instead? */
 				return set_http_error(e, HTTP_400_BAD_REQUEST);
 			}
@@ -1098,7 +1098,7 @@ static int set_cache_control(general_header gh, const char* s, meta_error e)
 
 static int parse_transfer_encoding(general_header gh, const char* value, meta_error e)
 {
-	if(!general_header_set_transfer_encoding(gh, value))
+	if (!general_header_set_transfer_encoding(gh, value))
 		return set_os_error(e, errno);
 
 	return 1;

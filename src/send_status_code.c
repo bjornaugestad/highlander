@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -100,7 +100,7 @@ int send_status_code(connection conn, int status_code, http_version version)
 
 	assert(conn != NULL);
 
-	if(version == VERSION_10) {
+	if (version == VERSION_10) {
 		pstatus = m_http_status10;
 		cCodes = sizeof(m_http_status10)/sizeof(m_http_status10[0]);
 	}
@@ -109,8 +109,8 @@ int send_status_code(connection conn, int status_code, http_version version)
 		cCodes = sizeof(m_http_status11)/sizeof(m_http_status11[0]);
 	}
 
-	for(i = 0; i < cCodes; i++) {
-		if(pstatus[i].code == status_code) {
+	for (i = 0; i < cCodes; i++) {
+		if (pstatus[i].code == status_code) {
 			cb = strlen(pstatus[i].text);
 			return connection_write(conn, pstatus[i].text, cb);
 		}

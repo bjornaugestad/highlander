@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -47,14 +47,14 @@ struct tcp_server_tag {
 	int port;
 
 	/* timeout in seconds */
-	int timeout_reads; 
-	int timeout_writes; 
+	int timeout_reads;
+	int timeout_writes;
 	int timeout_accepts;
 
-	/* How many times should we try to read/write 
+	/* How many times should we try to read/write
 	 * before we disconnect? */
-	int retries_reads; 
-	int retries_writes; 
+	int retries_reads;
+	int retries_writes;
 
 	/* The size of the connections read/write buffers */
 	size_t readbuf_size, writebuf_size;
@@ -77,7 +77,7 @@ struct tcp_server_tag {
 	 * tcp_server_init(), freed in tcp_server_free().
 	 * Accessed by tcp_server_get_connection() and
 	 * tcp_server_recycle_connection(). Size equals
-	 * the # of queue entries + # of worker threads + 1 as 
+	 * the # of queue entries + # of worker threads + 1 as
 	 * each entry consumes one connection.
 	 * The +1 is in case the queue is full.
 	 */
@@ -99,7 +99,7 @@ struct tcp_server_tag {
 
     /* We want to support UNIX Domain Protocol type sockets (AF_UNIX).
      * This member is by default set to 0, which means AF_INET. If it's
-     * set to 1, then hostname is pathname used in sun_path/bind(). 
+     * set to 1, then hostname is pathname used in sun_path/bind().
      * Use the tcp_server_set_unix_socket() function to enable unix sockets.
      */
     int unix_socket;
@@ -107,7 +107,7 @@ struct tcp_server_tag {
 	/* Our performance counters */
 	atomic_ulong sum_poll_intr; /* # of times poll() returned EINTR */
 	atomic_ulong sum_poll_again; /* # of times poll() returned EAGAIN */
-	atomic_ulong sum_accept_failed; 
+	atomic_ulong sum_accept_failed;
 	atomic_ulong sum_denied_clients;
 
 };
@@ -119,7 +119,7 @@ tcp_server tcp_server_new(void)
 {
 	tcp_server p;
 
-	if( (p = mem_calloc(1, sizeof *p)) != NULL) {
+	if ((p = mem_calloc(1, sizeof *p)) != NULL) {
 		/* Some defaults */
 		p->timeout_reads = 5000;
 		p->timeout_writes = 1000;
@@ -155,9 +155,9 @@ tcp_server tcp_server_new(void)
 
 void tcp_server_free(tcp_server srv)
 {
-	if(srv != NULL) {
+	if (srv != NULL) {
 		/* Terminate the session */
-		if(srv->queue != NULL) {
+		if (srv->queue != NULL) {
 			threadpool_destroy(srv->queue, 1);
 			srv->queue = NULL;
 		}
@@ -169,7 +169,7 @@ void tcp_server_free(tcp_server srv)
 		mem_free(srv->host);
 
 		/* Free the regex struct */
-		if(srv->pattern_compiled) {
+		if (srv->pattern_compiled) {
 			regfree(&srv->allowed_clients);
 			srv->pattern_compiled = 0;
 		}
@@ -194,19 +194,19 @@ int tcp_server_init(tcp_server srv)
 	assert(srv->read_buffers == NULL);
 	assert(srv->write_buffers == NULL);
 
-	if( (srv->queue = threadpool_new(srv->worker_threads, srv->queue_size, srv->block_when_full)) == NULL)
+	if ((srv->queue = threadpool_new(srv->worker_threads, srv->queue_size, srv->block_when_full)) == NULL)
 		goto err;
 
 	/*
 	 * Every running worker thread use one connection.
-	 * Every queue entry use one connection 
+	 * Every queue entry use one connection
 	 * One extra is needed for the current connection
 	 */
 	conncount = srv->queue_size + srv->worker_threads + 1;
-	if( (srv->connections = pool_new(conncount)) == NULL)
+	if ((srv->connections = pool_new(conncount)) == NULL)
 		goto err;
 
-	for(i = 0; i < conncount; i++) {
+	for (i = 0; i < conncount; i++) {
 		connection c = connection_new(
 			srv->timeout_reads,
 			srv->timeout_writes,
@@ -214,23 +214,23 @@ int tcp_server_init(tcp_server srv)
 			srv->retries_writes,
 			srv->service_arg);
 
-		if(c != NULL)
+		if (c != NULL)
 			pool_add(srv->connections, c);
-		else 
+		else
 			goto err;
 	}
 
 	/* Only worker threads can use read/write buffers */
 	bufcount = srv->worker_threads;
-	if( (srv->read_buffers = pool_new(bufcount)) == NULL
-	|| (srv->write_buffers = pool_new(bufcount)) == NULL) 
+	if ((srv->read_buffers = pool_new(bufcount)) == NULL
+	|| (srv->write_buffers = pool_new(bufcount)) == NULL)
 		goto err;
 
-	for(i = 0; i < bufcount; i++) {
+	for (i = 0; i < bufcount; i++) {
 		membuf rb, wb;
 
-		if( (rb = membuf_new(srv->readbuf_size)) == NULL
-		||  (wb = membuf_new(srv->writebuf_size)) == NULL) 
+		if ((rb = membuf_new(srv->readbuf_size)) == NULL
+		||  (wb = membuf_new(srv->writebuf_size)) == NULL)
 			goto err;
 
 		pool_add(srv->read_buffers, rb);
@@ -286,7 +286,7 @@ int tcp_server_allow_clients(tcp_server srv, const char* filter)
 
 	tcp_server_clear_client_filter(srv);
 
-	if( (err = regcomp(&srv->allowed_clients, filter, flags)) != 0) {
+	if ((err = regcomp(&srv->allowed_clients, filter, flags)) != 0) {
 		errno = err;
 		return 0;
 	}
@@ -300,13 +300,13 @@ void tcp_server_clear_client_filter(tcp_server srv)
 {
 	assert(srv != NULL);
 
-	if(srv->pattern_compiled) {
+	if (srv->pattern_compiled) {
 		regfree(&srv->allowed_clients);
 		srv->pattern_compiled = 0;
 	}
 }
 
-static void 
+static void
 tcp_server_recycle_connection(void* vse, void* vconn)
 {
 	membuf rb, wb;
@@ -329,7 +329,7 @@ tcp_server_recycle_connection(void* vse, void* vconn)
 	pool_recycle(srv->connections, conn);
 }
 
-static void 
+static void
 assign_rw_buffers(void* vse, void* vconn)
 {
 	membuf rb, wb;
@@ -351,7 +351,7 @@ assign_rw_buffers(void* vse, void* vconn)
 	connection_assign_write_buffer(conn, wb);
 }
 
-static connection 
+static connection
 tcp_server_get_connection(tcp_server srv)
 {
 	connection conn;
@@ -377,22 +377,22 @@ static int accept_new_connections(tcp_server srv, meta_socket sock)
 	assert(sock != NULL);
 
 	/* Make the socket non-blocking so that accept() won't block */
-	if(!sock_set_nonblock(sock))
+	if (!sock_set_nonblock(sock))
 		return 0;
 
-	while(!srv->shutting_down) {
-		if(!wait_for_data(sock, srv->timeout_accepts)) {
-			if(errno == EINTR) {
-				/* Someone interrupted us, why? 
-				 * NOTE: This happens when the load is very high 
-				 * and the number of connections in TIME_WAIT 
+	while (!srv->shutting_down) {
+		if (!wait_for_data(sock, srv->timeout_accepts)) {
+			if (errno == EINTR) {
+				/* Someone interrupted us, why?
+				 * NOTE: This happens when the load is very high
+				 * and the number of connections in TIME_WAIT
 				 * state is high (800+).
 				 *
-				 * What do we do, just restart or try to handle some 
+				 * What do we do, just restart or try to handle some
 				 * condition? We just restart for now...
 				 *
-				 * See "Advanced Programming in the UNIX environment" 
-				 * for a discussion of EINTR, select(), SA_RESTART 
+				 * See "Advanced Programming in the UNIX environment"
+				 * for a discussion of EINTR, select(), SA_RESTART
 				 * and portability between SVR4 and BSD-based kernels.
 				 * Interesting chapters are 12.5 and 10.x
 				 */
@@ -403,7 +403,7 @@ static int accept_new_connections(tcp_server srv, meta_socket sock)
 				atomic_ulong_inc(&srv->sum_poll_again);
 				continue;
 			}
-			else 
+			else
 				return 0;
 		}
 
@@ -411,7 +411,7 @@ static int accept_new_connections(tcp_server srv, meta_socket sock)
 		 * Now we most likely have a new connection present.
 		 * The connection may have been closed between the select()
 		 * above and here, so the non-blocking accept() may return -1.
-		 * errno will then be EAGAIN | EWOULDBLOCK. 
+		 * errno will then be EAGAIN | EWOULDBLOCK.
 		 * In addition to this, Linux, according to accept(2), will
 		 * pass any pending errors as an error code to accept(). The
 		 * errors listed in the man page are:
@@ -428,10 +428,10 @@ static int accept_new_connections(tcp_server srv, meta_socket sock)
 		cbAddr = sizeof(addr);
 		newsock = sock_accept(sock, (struct sockaddr*)&addr, &cbAddr);
 		if (newsock == NULL) {
-			switch(errno) {
+			switch (errno) {
 				/*
-				 * NOTE: EPROTO is not defined for freebsd, and Stevens 
-				 * says, in UNP, vol. 1, page 424 that EPROTO should 
+				 * NOTE: EPROTO is not defined for freebsd, and Stevens
+				 * says, in UNP, vol. 1, page 424 that EPROTO should
 				 * be ignored. Hmm...
 				 */
 #ifdef EPROTO
@@ -439,7 +439,7 @@ static int accept_new_connections(tcp_server srv, meta_socket sock)
 #endif
 
 				/*
-				 * NOTE: ENONET does not exist under freebsd, and is 
+				 * NOTE: ENONET does not exist under freebsd, and is
 				 * not even mentioned in UNP1. Alan Cox refers to
 				 * RFC1122 in a patch posted to news...
 				 */
@@ -472,22 +472,22 @@ static int accept_new_connections(tcp_server srv, meta_socket sock)
 		/*
 		 * Now clear the NONBLOCK flag from the new socket .
 		 * According to socket(7), the O_NONBLOCK flag is inherited
-		 * through an accept(), but this is NOT correct 
+		 * through an accept(), but this is NOT correct
 		 * in my Linux kernel (2.2.14-5).
 		 * According to accept(2) it is not inherited.
 		 * I keep the code here anyway...
 		 */
-		if(!sock_clear_nonblock(newsock))
+		if (!sock_clear_nonblock(newsock))
 			return 0;
 
 		/* Check if the client is permitted to connect or not. */
-		if(!client_can_connect(srv, &addr)) {
+		if (!client_can_connect(srv, &addr)) {
 			sock_close(newsock);
 			atomic_ulong_inc(&srv->sum_denied_clients);
 			continue;
 		}
 
- 		/* Get a new, per-connection, struct containing data 
+ 		/* Get a new, per-connection, struct containing data
  		 * unique to this connection.tcp_server_get_connection()
 		 * never returns NULL as enough connection resources has
 		 * been allocated already.
@@ -507,20 +507,20 @@ static int accept_new_connections(tcp_server srv, meta_socket sock)
 			srv);
 
 
-		if(!rc) {
+		if (!rc) {
 			/* Could not add work to the queue */
 			/*
 			 *  NOTE: The proper HTTP response is:
 			 *	503 Service Unavailable
 			 *  but tcp_server does not know about HTTP.
-			 *  What do we do, add a callback error handler 
-			 *  or something else? It is, according to 
+			 *  What do we do, add a callback error handler
+			 *  or something else? It is, according to
 			 *  rfc2616, $10.5.4, OK just to ignore the request,
 			 *  but hardly the most userfriendly way of doing it...
 			 *  Anyway, if we choose to handle this,
 			 *	a) will that create even more overload?
-			 *	b) What do we do with the data(if any) that 
-			 *	the client tries to send us? Can we just 
+			 *	b) What do we do with the data(if any) that
+			 *	the client tries to send us? Can we just
 			 *	'dump' a 503 on the socket and then close it?
 			 */
 
@@ -544,7 +544,7 @@ static int accept_new_connections(tcp_server srv, meta_socket sock)
 int tcp_server_get_root_resources(tcp_server srv)
 {
 	srv->sock = create_server_socket(srv->unix_socket, srv->host, srv->port);
-	if(srv->sock == NULL)
+	if (srv->sock == NULL)
 		return 0;
 	else
 		return 1;
@@ -556,13 +556,13 @@ int tcp_server_start(tcp_server srv)
 
 	assert(NULL != srv);
 
-	if(!accept_new_connections(srv, srv->sock)) {
-		sock_close(srv->sock); 
+	if (!accept_new_connections(srv, srv->sock)) {
+		sock_close(srv->sock);
 		rc = 0;
 	}
-	else if(sock_close(srv->sock))  
+	else if(sock_close(srv->sock))
 		rc = 0;
-	else 
+	else
 		rc = 1;
 
 	srv->sock = NULL;
@@ -638,12 +638,12 @@ void tcp_server_set_service_function(
 
 int tcp_server_set_hostname(tcp_server srv, const char* host)
 {
-	if(srv->host != NULL) 
+	if (srv->host != NULL)
 		mem_free(srv->host);
 
-	if(host == NULL)
+	if (host == NULL)
 		srv->host = NULL;
-	else if( (srv->host = mem_malloc(strlen(host) + 1)) == NULL)
+	else if((srv->host = mem_malloc(strlen(host) + 1)) == NULL)
 		return 0;
 	else
 		strcpy(srv->host, host);
@@ -653,18 +653,18 @@ int tcp_server_set_hostname(tcp_server srv, const char* host)
 
 /**
  * Checks to see if the client can connect or not.
- * A client can connect if 
+ * A client can connect if
  * a) The ip is listed in the allowed list.
  * b) The list of allowed clients is empty.
  *
  * This is new stuff, so some notes.
- * a) Allow DNS names or not? 
+ * a) Allow DNS names or not?
  *    We do not want to be vulnerable to DNS spoofing attacks.
- *    At the same time we want easy configuration. 
+ *    At the same time we want easy configuration.
  *    Safety first, which means that we only match IP for now.
  *    DNS also means that we must do a getpeername(), which is slow.
  *
- * b) If the caller has set us up to do access control, we'll 
+ * b) If the caller has set us up to do access control, we'll
  *    already have a precompiled regexp available. All we now
  *    have to do is to regexec.
  */
@@ -681,7 +681,7 @@ static int client_can_connect(tcp_server srv, struct sockaddr_in* addr)
 	assert(addr != NULL);
 
 	vaddr = addr->sin_addr.s_addr;
-	if(!srv->pattern_compiled) {
+	if (!srv->pattern_compiled) {
 		/* No permissions set. Allow all */
 		return 1;
 	}

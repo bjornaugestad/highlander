@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -42,10 +42,10 @@ threadpool threadpool_new(
  * Adds work to the queue. The work will be performed by the work_func,
  * After the work_func has been executed, the cleanup function will
  * be executed. This way you can pass e.g. allocated memory to work_func
- * and cleanup_func can free it. 
+ * and cleanup_func can free it.
  * Note that initialize function and the cleanup function takes 2 parameters,
  * cleanup_arg and work_arg, in that order.
- * 
+ *
  * This function sets errno to ENOSPC if the work queue is full and
  * the pool is set to not block.
  */
@@ -62,7 +62,7 @@ int threadpool_add_work(
 
 int threadpool_destroy(threadpool tp, unsigned int finish);
 
-/* Performance counters: Returns the number of work requests 
+/* Performance counters: Returns the number of work requests
  * successfully added, discarded or blocked since startup.
  */
 unsigned long threadpool_sum_blocked(threadpool p);

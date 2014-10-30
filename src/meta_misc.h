@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -42,7 +42,7 @@ int string2size_t(const char *s, size_t *val);
 void remove_trailing_newline(char *s);
 
 /**
- * Replaces strcasecomp(), must be identical in use 
+ * Replaces strcasecomp(), must be identical in use
  * Probably a bit slow, as it is plain C.
  * Ignores LOCALE
  */
@@ -72,7 +72,7 @@ int get_word_count(const char *s);
 int find_word(const char* s, size_t iWord);
 
 /**
- * Extract the extension from a filename. Returns 
+ * Extract the extension from a filename. Returns
  * 1 if successful. Note that 1 will be returned even if
  * no extension exists as it is legal not to have an extension.
  */
@@ -82,7 +82,7 @@ const char* get_mime_type(const char* filename);
 /**
  * Copies one space-separated word from string.
  * Returns 0 on error and 1 on success
- * @param cchWordMax	Max # of chars excl. '\0' in word 
+ * @param cchWordMax	Max # of chars excl. '\0' in word
  * @param iWord			 zero-based index of word to copy
  */
 int get_word_from_string(
@@ -93,7 +93,7 @@ int get_word_from_string(
 
 /**
  * Copies one word from 'input' and places it in 'word'.
- * Stops at either '\0' or 'separator'. 
+ * Stops at either '\0' or 'separator'.
  * Terminates 'word' with a '\0' if enough space was available.
  * Returns -1 on buffer overflow and 0 on success.
  */

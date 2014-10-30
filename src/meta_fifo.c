@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -32,7 +32,7 @@
  * Implementation of the fifo. We store all data in an array of void* pointers.
  * A slot is empty if the void* is NULL. We also keep track of the first and
  * last entry in the fifo.
- * 
+ *
  * The indexes work like this:
  * a) iread and iwrite always point to the next item to read from or write to
  * b) Even so, that does not mean that an item is readable.
@@ -56,9 +56,9 @@ fifo fifo_new(size_t size)
 
 	assert(size > 0);
 
-	if( (p = mem_malloc(sizeof *p)) == NULL) 
+	if ((p = mem_malloc(sizeof *p)) == NULL)
 		;
-	else if( (p->lock = wlock_new()) == NULL
+	else if((p->lock = wlock_new()) == NULL
 	||  (p->pelem = mem_calloc(size, sizeof *p->pelem)) == NULL) {
 		wlock_free(p->lock);
 		mem_free(p);
@@ -75,11 +75,11 @@ fifo fifo_new(size_t size)
 
 void fifo_free(fifo p, dtor dtor_fn)
 {
-	if(p != NULL) {
-		if(dtor_fn != NULL) {
+	if (p != NULL) {
+		if (dtor_fn != NULL) {
 			size_t i;
-			for(i = 0; i < p->size; i++) {
-				if(p->pelem[i] != NULL) {
+			for (i = 0; i < p->size; i++) {
+				if (p->pelem[i] != NULL) {
 					dtor_fn(p->pelem[i]);
 				}
 			}
@@ -94,7 +94,7 @@ void fifo_free(fifo p, dtor dtor_fn)
 int fifo_lock(fifo p)
 {
 	assert(p != NULL);
-	if(!wlock_lock(p->lock))
+	if (!wlock_lock(p->lock))
 		return 0;
 
 	return 1;
@@ -103,7 +103,7 @@ int fifo_lock(fifo p)
 int fifo_unlock(fifo p)
 {
 	assert(p != NULL);
-	if(!wlock_unlock(p->lock))
+	if (!wlock_unlock(p->lock))
 		return 0;
 
 	return 1;
@@ -126,11 +126,11 @@ int fifo_add(fifo p, void* data)
 	assert(p != NULL);
 
 	/* Check for wraparounds. */
-	if(p->iwrite == p->size)
+	if (p->iwrite == p->size)
 		p->iwrite = 0;
 
 	/* Do not write if slot is taken already */
-	if(p->pelem[p->iwrite] != NULL)
+	if (p->pelem[p->iwrite] != NULL)
 		return 0;
 
 	p->pelem[p->iwrite++] = data;
@@ -156,11 +156,11 @@ void* fifo_get(fifo p)
 	assert(p != NULL);
 
 	/* Check for wraparound */
-	if(p->iread == p->size)
+	if (p->iread == p->size)
 		p->iread = 0;
 
 	/* Do not read empty slots */
-	if(p->pelem[p->iread] == NULL)
+	if (p->pelem[p->iread] == NULL)
 		return NULL;
 
 	data = p->pelem[p->iread];
@@ -177,10 +177,10 @@ int fifo_write_signal(fifo p, void* data)
 	assert(p != NULL);
 	assert(data != NULL);
 
-	if(!fifo_lock(p))
+	if (!fifo_lock(p))
 		return 0;
 
-	if(!fifo_add(p, data)) {
+	if (!fifo_add(p, data)) {
 		fifo_unlock(p);
 		return 0;
 	}
@@ -196,15 +196,15 @@ int fifo_wait_cond(fifo p)
 	assert(p != NULL);
 
 	fifo_lock(p);
-	if(!wlock_wait(p->lock)) {
+	if (!wlock_wait(p->lock)) {
 		fifo_unlock(p);
 		return 0;
 	}
 
 	/* OK, we have the lock. See if there are data or not.
-	 * No data means that fifo_wake() was called. 
+	 * No data means that fifo_wake() was called.
 	 */
-	if(fifo_nelem(p) == 0) {
+	if (fifo_nelem(p) == 0) {
 		errno = ENOENT;
 		fifo_unlock(p);
 		return 0;
@@ -246,12 +246,12 @@ static void* writer(void* arg)
 	fifo f = arg;
 	char* s;
 
-	for(i = 0; i < n; i++) {
-		if( (s = mem_malloc(100)) == NULL)
+	for (i = 0; i < n; i++) {
+		if ((s = mem_malloc(100)) == NULL)
 			return NULL;
 
 		sprintf(s, "writer %d", i);
-		if(!fifo_write_signal(f, s)) {
+		if (!fifo_write_signal(f, s)) {
 			fprintf(stderr, "fifo_write_signal failed!\n");
 			return NULL;
 		}
@@ -267,10 +267,10 @@ static void* reader(void* arg)
 {
 	fifo f = arg;
 
-	while(fifo_wait_cond(f)) {
+	while (fifo_wait_cond(f)) {
 		char* s;
 
-		while( (s = fifo_get(f)) != NULL) {
+		while ((s = fifo_get(f)) != NULL) {
 			fprintf(stderr, "From reader, who read: %s\n", s);
 			mem_free(s);
 		}
@@ -290,8 +290,8 @@ int main(void)
 	char dummydata[1000] = "Hello";
 	clock_t stop, start;
 	double duration;
-	
-	
+
+
 	nelem = 1*1000*1000;
 	f = fifo_new(nelem);
 
@@ -299,7 +299,7 @@ int main(void)
 
 	/* Fill the fifo completely */
 	start = clock();
-	for(i = 0; i < nelem; i++) {
+	for (i = 0; i < nelem; i++) {
 		rc = fifo_add(f, dummydata);
 		assert(rc != 0);
 	}
@@ -310,7 +310,7 @@ int main(void)
 	assert(fifo_nelem(f) == nelem);
 
 	/* Test fifo_peek() */
-	for(i = 0; i < nelem; i++) {
+	for (i = 0; i < nelem; i++) {
 		const char* s = fifo_peek(f, i);
 		/* Stupid workaround for gcc 4.0.2 optimization in conjunction with assert() */
 		int xi;
@@ -329,7 +329,7 @@ int main(void)
 	assert(fifo_nelem(f) == nelem - 1);
 
 	/* Test fifo_peek() */
-	for(i = 0; i < fifo_nelem(f); i++) {
+	for (i = 0; i < fifo_nelem(f); i++) {
 		const char* s = fifo_peek(f, i);
 		int xi;
 		xi = (s != NULL); assert(xi);
@@ -344,7 +344,7 @@ int main(void)
 	assert(fifo_nelem(f) == nelem);
 
 	start = clock();
-	for(i = 0; i < nelem; i++) {
+	for (i = 0; i < nelem; i++) {
 		char* x = fifo_get(f);
 		(void)x;
 	}
@@ -355,12 +355,12 @@ int main(void)
 #endif
 
 	/* Now check signalling and wait for data.
-	 * We start two threads, a reader and a writer. 
+	 * We start two threads, a reader and a writer.
 	 * The writer writes n times to the fifo and the reader
 	 * prints the data.
 	 * This thread joins the writer and calls fifo_wake() when
 	 * the writer is done, to stop the reader thread in a controlled
-	 * manner. 
+	 * manner.
 	 */
 	 {
 	 	pthread_t w, r;
@@ -371,7 +371,7 @@ int main(void)
 		fifo_wake(f);
 		pthread_join(r, NULL);
 	 }
-	
+
 	fifo_free(f, free);
 	return 0;
 }

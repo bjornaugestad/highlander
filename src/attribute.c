@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -33,8 +33,8 @@ page_attribute attribute_new(void)
 	page_attribute p;
 	cstring arr[4];
 
-	
-	if( (p = calloc(1, sizeof *p)) == NULL)
+
+	if ((p = calloc(1, sizeof *p)) == NULL)
 		;
 	else if(!cstring_multinew(arr, sizeof arr / sizeof *arr)) {
 		free(p);
@@ -52,7 +52,7 @@ page_attribute attribute_new(void)
 
 void attribute_free(page_attribute a)
 {
-	if(a != NULL) {
+	if (a != NULL) {
 		cstring_free(a->media_type);
 		cstring_free(a->language);
 		cstring_free(a->charset);
@@ -65,7 +65,7 @@ page_attribute attribute_dup(page_attribute a)
 {
 	page_attribute p;
 
-	if( (p = attribute_new()) == NULL) 
+	if ((p = attribute_new()) == NULL)
 		;
 	else if(!cstring_copy(p->language, c_str(a->language))
 	|| !cstring_copy(p->charset, c_str(a->charset))
@@ -138,47 +138,47 @@ int main(void)
 	const char* charset = "iso8859-1";
 	const char* encoding = "gzip";
 
-	for(i = 0; i < niter; i++) {
-		if( (a = attribute_new()) == NULL)
+	for (i = 0; i < niter; i++) {
+		if ((a = attribute_new()) == NULL)
 			return 77;
 
-		if(!attribute_set_media_type(a, media_type))
+		if (!attribute_set_media_type(a, media_type))
 			return 77;
 
-		if(!attribute_set_language(a, language))
+		if (!attribute_set_language(a, language))
 			return 77;
 
-		if(!attribute_set_charset(a, charset))
+		if (!attribute_set_charset(a, charset))
 			return 77;
 
-		if(!attribute_set_encoding(a, encoding))
+		if (!attribute_set_encoding(a, encoding))
 			return 77;
 
-		if(strcmp(attribute_get_media_type(a), media_type) != 0)
+		if (strcmp(attribute_get_media_type(a), media_type) != 0)
 			return 77;
 
-		if(strcmp(attribute_get_language(a), language) != 0)
+		if (strcmp(attribute_get_language(a), language) != 0)
 			return 77;
 
-		if(strcmp(attribute_get_charset(a), charset) != 0)
+		if (strcmp(attribute_get_charset(a), charset) != 0)
 			return 77;
 
-		if(strcmp(attribute_get_encoding(a), encoding) != 0)
+		if (strcmp(attribute_get_encoding(a), encoding) != 0)
 			return 77;
 
-		if( (b = attribute_dup(a)) == NULL)
+		if ((b = attribute_dup(a)) == NULL)
 			return 77;
 
-		if(strcmp(attribute_get_media_type(b), media_type) != 0)
+		if (strcmp(attribute_get_media_type(b), media_type) != 0)
 			return 77;
 
-		if(strcmp(attribute_get_language(b), language) != 0)
+		if (strcmp(attribute_get_language(b), language) != 0)
 			return 77;
 
-		if(strcmp(attribute_get_charset(b), charset) != 0)
+		if (strcmp(attribute_get_charset(b), charset) != 0)
 			return 77;
 
-		if(strcmp(attribute_get_encoding(b), encoding) != 0)
+		if (strcmp(attribute_get_encoding(b), encoding) != 0)
 			return 77;
 
 		attribute_free(a);

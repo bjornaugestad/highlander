@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -39,9 +39,9 @@ html_menu html_menu_new(void)
 	html_menu m;
 	cstring arr[4];
 
-	if( (m = malloc(sizeof *m)) == NULL)
+	if ((m = malloc(sizeof *m)) == NULL)
 		;
-	else if( (m->items = list_new()) == NULL
+	else if((m->items = list_new()) == NULL
 	|| !cstring_multinew(arr, 4)) {
 		list_free(m->items, NULL);
 		free(m);
@@ -59,7 +59,7 @@ html_menu html_menu_new(void)
 
 void html_menu_free(html_menu m)
 {
-	if(m != NULL) {
+	if (m != NULL) {
 		cstring_free(m->text);
 		cstring_free(m->image);
 		cstring_free(m->hover_image);
@@ -148,20 +148,20 @@ int html_menu_render(html_menu m, cstring buffer)
     (void)image;
     (void)hover_image;
 
-	if(text != NULL) { 
-		if(link != NULL) {
+	if (text != NULL) {
+		if (link != NULL) {
 			size_t cb = strlen(link) + strlen(text) + 100;
-			if(!cstring_printf(buffer, cb, "<a href='%s'>%s</a><br>\n", link, text)) 
+			if (!cstring_printf(buffer, cb, "<a href='%s'>%s</a><br>\n", link, text))
 				return 0;
 		}
 		else if(!cstring_concat(buffer, text))
 			return 0;
 	}
 
-	if(m->items != NULL) {
-		for(i = list_first(m->items); !list_end(i); i = list_next(i)) {
+	if (m->items != NULL) {
+		for (i = list_first(m->items); !list_end(i); i = list_next(i)) {
 			submenu = list_get(i);
-			if(!html_menu_render(submenu, buffer)) 
+			if (!html_menu_render(submenu, buffer))
 				return 0;
 		}
 	}

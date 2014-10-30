@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -27,7 +27,7 @@
  * @file meta_sampler.h - Implements a sampling storage ADT
  *
  * Lots of times we want to sample data on some periodic interval
- * and store data for each interval. You may want to sample stock 
+ * and store data for each interval. You may want to sample stock
  * prices, cpu consumption, webserver load, or any other interesting
  * data.
  * The problem is that you need to store the data somewhere, and probably
@@ -36,7 +36,7 @@
  * containing stats per minute. Some like to perform computations on
  * the datasets as well, like computing the min/max/high/low/avg value
  * for some value.
- * 
+ *
  * Some like to sample more than one value as well, I personally would
  * like to be able to sample e.g. all 200+ events from Oracle by
  * the minute for a long period of time, and later present it graphically.
@@ -52,7 +52,7 @@
  *
  * Sampling frequencies:
  * The minimum resolution is one second and there is no upper limit.
- * 
+ *
  * Size of samples:
  * The sampler should be able to handle 10.000 entities with 10.000
  * data values for each entity. The main memory consumer is the data
@@ -61,10 +61,10 @@
  * of RAM, quite a lot. A more common scenario may be that you sample
  * data for 200 different entities, once every minute and want data for
  * the last 24 hours. This means that you need approximately
- * (24*60*8*200) bytes, or 2250KB+, lets say 3MB. 
+ * (24*60*8*200) bytes, or 2250KB+, lets say 3MB.
  *
  * Transactional update:
- * The dataset is updated in a transactional way. You must 
+ * The dataset is updated in a transactional way. You must
  * call sampler_start_update() to be able to update sampling values
  * and call sampler_commit() to commit your changes. There is no
  * rollback. There are many reasons for this quite odd functionality
@@ -108,7 +108,7 @@ typedef struct sampler_tag* sampler;
 
 /**
  * Create a new sampler object. Remember that your entity id's must
- * be zero-based and contigous. 
+ * be zero-based and contigous.
  */
 sampler sampler_new(size_t entities, size_t values);
 void    sampler_free(sampler s);
@@ -121,7 +121,7 @@ sampler sampler_dup(sampler src);
 void sampler_copy(sampler dest, sampler src);
 
 /**
- * Prepares the dataset for update. This basically means locking the 
+ * Prepares the dataset for update. This basically means locking the
  * sampler object in write mode, computing the proper index offset
  * for the values which will be added, and setting the data entries
  * to LLONG_MIN. The latter is done in case we don't provide values
@@ -132,10 +132,10 @@ void sampler_add(sampler s, size_t entity_id, long long value);
 void sampler_commit(sampler s);
 
 /**
- * Returns the number of samples we have data for. 
+ * Returns the number of samples we have data for.
  * Use it when you want to iterate on the values, as in
  * @code
- *    
+ *
  *    size_t i, nelem;
  *    sampler s;
  *    ...
@@ -152,18 +152,18 @@ size_t sampler_samplecount(sampler s);
 
 /**
  * We must explicitly start and stop reading from the sampler,
- * and cannot just lock in the _get() function. The reason is that 
+ * and cannot just lock in the _get() function. The reason is that
  * to get a valid view of the data in the sampler we cannot allow
- * a writer to change data while we're reading. I don't like this 
- * anymore than you do. 
- * 
+ * a writer to change data while we're reading. I don't like this
+ * anymore than you do.
+ *
  * Remember read as fast as possible(as needed) so that we don't
  * block any writer thread, causing that thread to lose data. Imagine
  * that you sample data each second and the writer thread is blocked
  * for more than a second. Not a good thing. Use the sampler_dup() function
  * to get a duplicate of the sampler if that is needed. Could be a smart thing
- * to do if you sample lots of data very frequently and e.g. want to create a 
- * png image of the data in the sample. 
+ * to do if you sample lots of data very frequently and e.g. want to create a
+ * png image of the data in the sample.
  */
 void sampler_start_read(sampler s);
 void sampler_stop_read(sampler s);
@@ -177,8 +177,8 @@ int sampler_get(sampler s, size_t entity_id, size_t i, long long* pval);
 
 /**
  * eid == entity_id
- * Note that from is inclusive and to is exclusive, 
- * so use [0, sampler_samplecount()] to get all entries 
+ * Note that from is inclusive and to is exclusive,
+ * so use [0, sampler_samplecount()] to get all entries
  */
 int sampler_avg(sampler s, size_t eid, size_t from, size_t to, long long* pval);
 int sampler_min(sampler s, size_t eid, size_t from, size_t to, long long* pval);
@@ -190,17 +190,17 @@ int sampler_last(sampler s, size_t eid, size_t from, size_t to, long long* pval)
 time_t sampler_time(sampler s, size_t i);
 
 /**
- * Creates a new sampler instance, with values aggregated from the 
- * src sampler. The resolution parameter will be used to find 
- * the from/to values in the src sampler. A quick example: 
+ * Creates a new sampler instance, with values aggregated from the
+ * src sampler. The resolution parameter will be used to find
+ * the from/to values in the src sampler. A quick example:
  * If the src sampler has a resolution of minutes and you want to aggregate
- * on hours, use 60 for resolution. 
+ * on hours, use 60 for resolution.
  *
  * Note that resolution is exclusive, if you sample each second and want
- * to aggregate up to minutes, a resolution of 60 is fine and 59 is not needed. 
- * 
- * The new sampler will have the same number of entities as the 
- * source sampler, but you can choose the number of data entries. 
+ * to aggregate up to minutes, a resolution of 60 is fine and 59 is not needed.
+ *
+ * The new sampler will have the same number of entities as the
+ * source sampler, but you can choose the number of data entries.
  * This makes it easy to use the new sampler for other sampling purposes.
  *
  * The aggval parameter is one of the SAMPLER_AGG_xxx constants. They

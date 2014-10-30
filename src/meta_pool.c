@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -34,12 +34,12 @@
 
 /**
  * The implementation of the pool adt. We allocate room for
- * a set of void* pointers, where each pointer points to one 
+ * a set of void* pointers, where each pointer points to one
  * element in the pool. We use a mutex to control access to the pool.
  * The in_use member is 1 if the resource is used by someone, else 0.
  * We allocate one char for each pool member.
  *
- * Changes: 
+ * Changes:
  * 2005-12-15: Removed the in_use member and just zero out the
  * pointer when the resource is in use. pool_recycle() will add
  * a returned resource in the first free slot.
@@ -54,17 +54,17 @@ struct pool_tag {
 pool pool_new(size_t size)
 {
 	pool p;
-	
+
 	assert(size > 0); /* No point in zero-sized pools */
 
-	if( (p = mem_calloc(1, sizeof *p)) == NULL)
+	if ((p = mem_calloc(1, sizeof *p)) == NULL)
 		;
-	else if( (p->pdata = mem_calloc(size, sizeof *p->pdata)) == NULL) {
+	else if((p->pdata = mem_calloc(size, sizeof *p->pdata)) == NULL) {
 		mem_free(p);
 		p = NULL;
 	}
 	else {
-		pthread_mutex_init(&p->mutex, NULL); 
+		pthread_mutex_init(&p->mutex, NULL);
 		p->size = size;
 		p->nelem = 0;
 	}
@@ -72,19 +72,19 @@ pool pool_new(size_t size)
 	return p;
 }
 
-void pool_free(pool p, dtor free_fn) 
+void pool_free(pool p, dtor free_fn)
 {
 	size_t i;
 
 
-	if(p != NULL) {
+	if (p != NULL) {
 		/* Free entries if we have a dtor and the entry is not NULL */
-		if(free_fn != NULL) {
+		if (free_fn != NULL) {
 			assert(p->pdata != NULL);
 			assert(p->size > 0);
 
-			for(i = 0; i < p->nelem; i++) 
-				if(p->pdata[i] != NULL)
+			for (i = 0; i < p->nelem; i++)
+				if (p->pdata[i] != NULL)
 					free_fn(p->pdata[i]);
 		}
 
@@ -117,8 +117,8 @@ void* pool_get(pool p)
 	assert(!error);
 
 	/* Find a free resource */
-	for(i = 0; i < p->nelem; i++) {
-		if(p->pdata[i] != NULL) {
+	for (i = 0; i < p->nelem; i++) {
+		if (p->pdata[i] != NULL) {
 			resource = p->pdata[i];
 			p->pdata[i] = NULL;
 #ifdef WITH_VALGRIND
@@ -131,12 +131,12 @@ void* pool_get(pool p)
 	error = pthread_mutex_unlock(&p->mutex);
 	assert(!error);
 
-	/* It is not legal to return NULL, we must always 
+	/* It is not legal to return NULL, we must always
 	 * have enough resources.
 	 */
 	assert(i != p->nelem);
 	assert(NULL != resource);
-	if(resource == NULL) /* Release version paranoia */
+	if (resource == NULL) /* Release version paranoia */
 		abort();
 
 	return resource;
@@ -153,8 +153,8 @@ void pool_recycle(pool p, void* resource)
 	error = pthread_mutex_lock(&p->mutex);
 	assert(!error);
 
-	for(i = 0; i < p->nelem; i++) {
-		if(p->pdata[i] == NULL) {
+	for (i = 0; i < p->nelem; i++) {
+		if (p->pdata[i] == NULL) {
 			p->pdata[i] = resource;
 			break;
 		}
@@ -174,7 +174,7 @@ void pool_recycle(pool p, void* resource)
 #include <stdio.h>
 
 /* Create two threads. Each thread accesses the pool
- * in random ways for some time. 
+ * in random ways for some time.
  */
 #define NELEM 10000
 #define NITER 1000
@@ -184,11 +184,11 @@ static void* tfn(void* arg)
 	pool p;
 	size_t i, niter = NITER;
 	void* dummy;
-	
+
 	p = arg;
 
-	for(i = 0; i < niter; i++) {
-		if( (dummy = pool_get(p)) == NULL) {
+	for (i = 0; i < niter; i++) {
+		if ((dummy = pool_get(p)) == NULL) {
 			fprintf(stderr, "Unable to get resource\n");
 			exit(77);
 		}
@@ -205,11 +205,11 @@ int main(void)
 	pthread_t t1, t2;
 	size_t i;
 
-	if( (p = pool_new(NELEM)) == NULL)
+	if ((p = pool_new(NELEM)) == NULL)
 		return 77;
 
 	/* Add some items to the pool */
-	for(i = 0; i < NELEM; i++) {
+	for (i = 0; i < NELEM; i++) {
 		void* dummy = (void*)(i + 1);
 		pool_add(p, dummy);
 	}

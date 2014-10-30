@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -82,8 +82,8 @@ extern "C" {
 #define HTTP_STATUS_MAX 505
 
 
-#define LOGFILE_MAX	10240 
-#define DOCUMENTROOT_MAX 10240 
+#define LOGFILE_MAX	10240
+#define DOCUMENTROOT_MAX 10240
 
 /* The request methods we support */
 enum http_method {METHOD_UNKNOWN, METHOD_GET, METHOD_HEAD, METHOD_POST};
@@ -191,7 +191,7 @@ const char* request_get_content_type(http_request request);
 const char* request_get_user_agent(http_request request);
 
 /* Returns the HTTP header field if_modified_since or (time_t)-1
- * if the field wasn't set. 
+ * if the field wasn't set.
  */
 time_t request_get_if_modified_since(http_request r);
 
@@ -350,7 +350,7 @@ int response_send_file(http_response response, const char *path, const char* typ
 size_t response_send(http_response r, connection c, meta_error e);
 int response_receive(http_response r, connection c, size_t max_content, meta_error e);
 
-/* New stuff 2005-12-14 
+/* New stuff 2005-12-14
  * Some formatting functions to ease the generation of HTML.
  * The html module is still not ready so we just add some utility functions here.
  */
@@ -386,14 +386,14 @@ const char*	attribute_get_charset(page_attribute a);
 const char*	attribute_get_encoding(page_attribute a);
 const char*	attribute_get_media_type(page_attribute a);
 
-void warning(const char *fmt, ...) 
+void warning(const char *fmt, ...)
     __attribute__((format(printf,1,2)));
 
-void die(const char *fmt, ...) 
+void die(const char *fmt, ...)
     __attribute__((format(printf,1,2)))
     __attribute__ ((noreturn)) ;
 
-void die_perror(const char *fmt, ...) 
+void die_perror(const char *fmt, ...)
     __attribute__((format(printf,1,2)))
     __attribute__ ((noreturn));
 

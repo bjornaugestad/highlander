@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -32,7 +32,7 @@ extern "C" {
 
 typedef struct cstring_tag* cstring;
 /*
- * Implementation of the cstring ADT. 
+ * Implementation of the cstring ADT.
  * We store the number of bytes allocated so that we know when we have to
  * reallocate. We also store the number of bytes used to avoid calling
  * strlen() all the time.
@@ -89,7 +89,7 @@ static inline size_t cstring_length(cstring s)
 
 static inline void cstring_free(cstring s)
 {
-	if(s != NULL) {
+	if (s != NULL) {
 		free(s->data);
 		free(s);
 	}

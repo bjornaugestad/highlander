@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -40,7 +40,7 @@ int html_printf(html_buffer b, size_t cb, const char* fmt, ...)
 	assert(cb > 0);
 	assert(fmt != NULL);
 
-	if( (buf = malloc(cb + 1)) == NULL)
+	if ((buf = malloc(cb + 1)) == NULL)
 		return 0;
 
 	va_start(ap, fmt);
@@ -64,9 +64,9 @@ html_buffer html_buffer_new(void)
 {
 	html_buffer b;
 
-	if( (b = malloc(sizeof *b)) == NULL)
+	if ((b = malloc(sizeof *b)) == NULL)
 		;
-	else if( (b->buffer = cstring_new()) == NULL) {
+	else if((b->buffer = cstring_new()) == NULL) {
 		free(b);
 		b = NULL;
 	}
@@ -76,7 +76,7 @@ html_buffer html_buffer_new(void)
 
 void html_buffer_free(html_buffer b)
 {
-	if(b != NULL) {
+	if (b != NULL) {
 		cstring_free(b->buffer);
 		free(b);
 	}
@@ -204,7 +204,7 @@ int html_button(
 int html_table_start(html_buffer b, size_t ncol)
 {
 	assert(b != NULL);
-	if(ncol > 0) 
+	if (ncol > 0)
 		return cstring_printf(
 			b->buffer,
 			100,
@@ -559,21 +559,21 @@ int html_img(
 	assert(url != NULL);
 	assert(strlen(url) > 0);
 
-	if(!cstring_concat3(b->buffer, "<img src='", url, "'"))
+	if (!cstring_concat3(b->buffer, "<img src='", url, "'"))
 		return 0;
 
-	if(alt != NULL && strlen(alt) > 0) {
-		if(!cstring_concat3(b->buffer, " alt='", alt, "'"))
+	if (alt != NULL && strlen(alt) > 0) {
+		if (!cstring_concat3(b->buffer, " alt='", alt, "'"))
 			return 0;
 	}
 
-	if(height > 0) {
-		if(!cstring_printf(b->buffer, 100, " height='%lu'", (unsigned long)height))
+	if (height > 0) {
+		if (!cstring_printf(b->buffer, 100, " height='%lu'", (unsigned long)height))
 			return 0;
 	}
 
-	if(width > 0) {
-		if(!cstring_printf(b->buffer, 100, " width='%lu'", (unsigned long)width))
+	if (width > 0) {
+		if (!cstring_printf(b->buffer, 100, " width='%lu'", (unsigned long)width))
 			return 0;
 	}
 
@@ -652,16 +652,16 @@ int html_option(
 	assert(text != NULL);
 	assert(strlen(text) > 0);
 
-	if(!cstring_concat(b->buffer, "<option"))
+	if (!cstring_concat(b->buffer, "<option"))
 		return 0;
 
-	if(selected == 1) {
-		if(!cstring_concat(b->buffer, " selected "))
+	if (selected == 1) {
+		if (!cstring_concat(b->buffer, " selected "))
 			return 0;
 	}
 
-	if(value != NULL && strlen(value) > 0) {
-		if(!cstring_concat3(b->buffer, " value='", value, "'"))
+	if (value != NULL && strlen(value) > 0) {
+		if (!cstring_concat3(b->buffer, " value='", value, "'"))
 			return 0;
 	}
 
@@ -672,10 +672,10 @@ int html_optgroup_start(html_buffer b, const char* label)
 {
 	assert(b != NULL);
 
-	if(label != NULL)
+	if (label != NULL)
 		return cstring_printf(
 			b->buffer,
-			strlen(label) + 50, 
+			strlen(label) + 50,
 			"<optgroup label=\"%s\">",
 			label);
 	else
@@ -721,7 +721,7 @@ void html_buffer_set_template(html_buffer b, html_template t)
 int html_done(html_buffer b, http_response response, int returncode)
 {
 	int rc;
-	
+
 	rc = html_template_send(b->template, response, "fix later", c_str(b->buffer));
 	html_buffer_free(b);
 	return rc == 1 ? returncode : HTTP_500_INTERNAL_SERVER_ERROR;

@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -29,7 +29,7 @@
 #include <meta_tsb.h>
 
 /**
- * We store 1 of these per time unit. 
+ * We store 1 of these per time unit.
  */
 struct handler {
 	size_t nthreads;
@@ -78,7 +78,7 @@ tsb* tsb_new(size_t unit_duration, size_t units_per_frame, void* buffer)
 	assert(unit_duration != 0);
 	assert(units_per_frame != 0);
 
-	if( (p = mem_malloc(sizeof *p)) == NULL
+	if ((p = mem_malloc(sizeof *p)) == NULL
 	||  (p->handlers = mem_malloc(sizeof *p->handlers * units_per_frame)) == NULL) {
 		mem_free(p);
 		p = NULL;
@@ -100,8 +100,8 @@ void tsb_free(tsb* p)
 	assert(p != NULL);
 	assert(p->shutdown_flag); /* Don't free before shutdown */
 
-	for(i = 0; i < p->units_per_frame; i++) {
-		if(p->handlers[i].threads != NULL)
+	for (i = 0; i < p->units_per_frame; i++) {
+		if (p->handlers[i].threads != NULL)
 			mem_free(p->handlers[i].threads);
 	}
 
@@ -135,7 +135,7 @@ void* tsb_get_buffer(tsb* p)
 
 int tsb_set_threads(
 	tsb *p,
-	size_t iunit, 
+	size_t iunit,
 	size_t nthreads,
 	int (*callback)(void* buf, void* arg),
 	void* arg)
@@ -149,7 +149,7 @@ int tsb_set_threads(
 	p->handlers[iunit].nthreads = nthreads;
 	p->handlers[iunit].callback = callback;
 	p->handlers[iunit].arg = arg;
-	if( (p->handlers[iunit].threads = mem_calloc(nthreads, sizeof *p->handlers[iunit].threads)) == NULL) 
+	if ((p->handlers[iunit].threads = mem_calloc(nthreads, sizeof *p->handlers[iunit].threads)) == NULL)
 		return 0;
 
 	return 1;
@@ -185,7 +185,7 @@ static size_t units_since_epoch(
 /**
  * Create a timeval struct, dest, containing a proper time. The time
  * is offset since epoch, measured in units. Each unit has a duration
- * of unit_duration ms, so beware of overflows. 
+ * of unit_duration ms, so beware of overflows.
  */
 static void unit_to_timeval(
 	struct timeval* epoch,
@@ -205,7 +205,7 @@ static void unit_to_timeval(
 	tv.tv_sec = seconds;
 
 	/*
-	 * Resolution is in ms, but usec is in us. We multiply with 1000 
+	 * Resolution is in ms, but usec is in us. We multiply with 1000
 	 * to get things right.
 	 */
 	tv.tv_usec = (rest * unit_duration * 1000);
@@ -249,7 +249,7 @@ size_t tsb_get_current_frame(tsb* p)
 
 
 /**
- * The thread function we use. It requires a couple of arguments, 
+ * The thread function we use. It requires a couple of arguments,
  * the tsb itself as well as the unit index to run in. Since thread functions
  * accept only one argument, we need a separate struct.
  */
@@ -266,15 +266,15 @@ static void* threadfunc(void* arg)
 	int rc;
 
 	/* Loop until shutdown */
-	while(!parg->ptsb->shutdown_flag) {
-		
+	while (!parg->ptsb->shutdown_flag) {
+
 		/* What time is it right now? */
 		gettimeofday(&now, NULL);
 
 		/* How many time units have passed? */
 		units = units_since_epoch(
-			&parg->ptsb->epoch, 
-			&now, 
+			&parg->ptsb->epoch,
+			&now,
 			parg->ptsb->unit_duration);
 
 		/* Now we need to know if we're supposed to wait for
@@ -308,7 +308,7 @@ static void* threadfunc(void* arg)
 			parg->ptsb->handlers[parg->iunit].arg);
 
 		/* Exit if error in callback function */
-		if(rc == 0)
+		if (rc == 0)
 			break;
 	}
 
@@ -326,18 +326,18 @@ int tsb_start(tsb* p)
 
 	/* Set our epoch */
 	gettimeofday(&p->epoch, NULL);
-	
+
 	/* Start all threads */
-	for(i = 0; i < p->units_per_frame; i++) {
-		for(j = 0; j < p->handlers[i].nthreads; j++) {
+	for (i = 0; i < p->units_per_frame; i++) {
+		for (j = 0; j < p->handlers[i].nthreads; j++) {
 			struct args* pargs;
-			if( (pargs = mem_malloc(sizeof *pargs)) == NULL) 
+			if ((pargs = mem_malloc(sizeof *pargs)) == NULL)
 				return 0;
 
 			pargs->iunit = i;
 			pargs->ptsb = p;
 			err = pthread_create(&p->handlers[i].threads[j], NULL, threadfunc, pargs);
-			if(err)
+			if (err)
 				return 0;
 		}
 	}
@@ -355,8 +355,8 @@ int tsb_stop(tsb* p)
 	p->shutdown_flag = 1;
 
 	/* Now wait for the threads to finish */
-	for(i = 0; i < p->units_per_frame; i++) {
-		for(j = 0; j < p->handlers[i].nthreads; j++) {
+	for (i = 0; i < p->units_per_frame; i++) {
+		for (j = 0; j < p->handlers[i].nthreads; j++) {
 			pthread_join(p->handlers[i].threads[j], NULL);
 		}
 	}
@@ -415,7 +415,7 @@ int main(void)
 	char buf[1024];
 
 	tsb* p;
-	
+
 	p = tsb_new(UNIT_DURATION, UNITS_PER_FRAME, buf);
 	assert(p != NULL);
 

@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -32,7 +32,7 @@ extern "C"
  *
  * The short and simple rule is that if a character is A-Za-z0-9
  * it is not encoded, anything else is encoded. The character is
- * encoded as a two digit hex number, prefixed with %. 
+ * encoded as a two digit hex number, prefixed with %.
  *
  * Issues: This version decodes %00, which maps to '\0'.
  * Don't know if that's a serious issue or not(security).

@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -34,12 +34,12 @@
  */
 
 /**
- * @file meta_filecache.h 
+ * @file meta_filecache.h
  * @brief Cache files in memory.
- * 
+ *
  * This ADT reads files from disk and caches them in memory.
  * The files can later be accessed directly in user space without
- * any kernel calls. This is A Good Thing as it avoids 
+ * any kernel calls. This is A Good Thing as it avoids
  * slow context switches.
  *
  * You can specify both the number of files you want to be
@@ -120,10 +120,10 @@ int fileinfo_set_mimetype(fileinfo p, const char* s);
 
 
 /**
- * Creates a new filecache. 
+ * Creates a new filecache.
  * nelem is used to presize a table of entries in the cache,
  * so that we can perform lookups faster than if using a
- * dynamic solution. 
+ * dynamic solution.
  *
  * bytes are the total number of bytes the cache can use.
  * A megabyte is 1024*1024, btw.
@@ -138,7 +138,7 @@ filecache filecache_new(size_t nelem, size_t bytes);
 void filecache_free(filecache fc);
 
 /**
- * Reads a file into the file cache. Use it to add entries 
+ * Reads a file into the file cache. Use it to add entries
  * to the cache e.g. before you start a service.
  *
  * We read the file named by filename and refer to it by the
@@ -154,7 +154,7 @@ void filecache_free(filecache fc);
  * In most cases we already have stat()'ed the file so this is
  * a non-issue for most. We save a call to stat() by requiring this.
  *
- */ 
+ */
 int filecache_add(filecache fc, fileinfo finfo, int pin, unsigned long* pid);
 
 
@@ -176,7 +176,7 @@ static inline stringmap filecache_filenames(filecache fc)
 int filecache_invalidate(filecache fc);
 
 /**
- * Returns the percentage of files read from disk versus 
+ * Returns the percentage of files read from disk versus
  * files read from cache.
  * Not implemented...
  * @see filecache_get
@@ -184,7 +184,7 @@ int filecache_invalidate(filecache fc);
 double filecache_hitratio(filecache fc);
 
 /**
- * Gets a file from the cache. 
+ * Gets a file from the cache.
  */
 int filecache_get(filecache fc, const char* filename, void** pdata, size_t* pcb);
 int filecache_get_mime_type(filecache fc, const char* filename, char mime[], size_t cb);
@@ -201,14 +201,14 @@ int filecache_stat(filecache fc, const char* filename, struct stat* p);
 
 
 /* Call fn once for each element in the filecache, providing name of file
- * as argument s. 
+ * as argument s.
  * Function locks the filecache, so beware of deadlocks.
  */
 int filecache_foreach(filecache fc, int(*fn)(const char*s, void* arg), void* arg);
 
 /*
  * Return a pointer to the fileinfo metadata struct for a file, or NULL
- * if the file doesn't exist. 
+ * if the file doesn't exist.
  */
 fileinfo filecache_fileinfo(filecache fc, const char* alias);
 

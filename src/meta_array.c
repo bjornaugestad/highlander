@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -37,10 +37,10 @@ array array_new(size_t nmemb, int can_grow)
 	array p;
 
 	assert(nmemb > 0);
-	
-	if( (p = mem_calloc(1, sizeof *p)) == NULL)
+
+	if ((p = mem_calloc(1, sizeof *p)) == NULL)
 		;
-	else if( (p->elements = mem_calloc(nmemb, sizeof *p->elements)) == NULL) {
+	else if((p->elements = mem_calloc(nmemb, sizeof *p->elements)) == NULL) {
 		mem_free(p);
 		p = NULL;
 	}
@@ -55,9 +55,9 @@ array array_new(size_t nmemb, int can_grow)
 
 void array_free(array a, dtor free_fn)
 {
-	if(a != NULL) {
-		if(free_fn) {
-			while(a->cUsed--)
+	if (a != NULL) {
+		if (free_fn) {
+			while (a->cUsed--)
 				(*free_fn)(a->elements[a->cUsed]);
 		}
 
@@ -77,7 +77,7 @@ void* array_get(array a, size_t ielem)
 	assert(NULL != a);
 	assert(ielem < array_nelem(a));
 
-	if(ielem >= a->cUsed)
+	if (ielem >= a->cUsed)
 		return NULL;
 	else
 		return a->elements[ielem];
@@ -94,7 +94,7 @@ int array_extend(array a, size_t nmemb)
 	n = a->cAllocated + nmemb;
 	cb = sizeof(*a->elements) * n;
 
-	if( (pnew = mem_realloc(a->elements, cb)) == NULL)
+	if ((pnew = mem_realloc(a->elements, cb)) == NULL)
 		return 0;
 
 	a->elements = pnew;
@@ -107,13 +107,13 @@ int array_add(array a, void* elem)
 	assert(NULL != a);
 	assert(NULL != elem);
 
-	if(a->cUsed == a->cAllocated) {
-		if(!a->can_grow || !array_extend(a, a->cUsed)) 
+	if (a->cUsed == a->cAllocated) {
+		if (!a->can_grow || !array_extend(a, a->cUsed))
 			return 0;
 	}
 
 	a->elements[a->cUsed++] = elem;
-	return 1; 
+	return 1;
 }
 
 #ifdef CHECK_ARRAY
@@ -126,26 +126,26 @@ int main(void)
 	void* dummy;
 
 	/* First a growable array */
-	if( (a = array_new(nelem / 10, 1)) == NULL) {
+	if ((a = array_new(nelem / 10, 1)) == NULL) {
 		perror("array_new");
 		return 1;
 	}
 
-	for(i = 0; i < nelem; i++) {
+	for (i = 0; i < nelem; i++) {
 		dummy = (void*)(i+1);
-		if(!array_add(a, dummy)) {
+		if (!array_add(a, dummy)) {
 			perror("array_add");
 			return 1;
 		}
 	}
 
-	if(array_nelem(a) != nelem) {
+	if (array_nelem(a) != nelem) {
 		fprintf(stderr, "Mismatch between number of actual and expected items\n");
 		return 1;
 	}
 
-	for(i = 0; i < nelem; i++) {
-		if(array_get(a, i) == NULL) {
+	for (i = 0; i < nelem; i++) {
+		if (array_get(a, i) == NULL) {
 			fprintf(stderr, "Could not get array item %lu\n", (unsigned long)i);
 			return 1;
 		}
@@ -154,32 +154,32 @@ int main(void)
 	array_free(a, NULL);
 
 	/* Now for a non-growable array */
-	if( (a = array_new(nelem / 10, 0)) == NULL) {
+	if ((a = array_new(nelem / 10, 0)) == NULL) {
 		perror("array_new");
 		return 1;
 	}
 
-	for(i = 0; i < nelem / 10; i++) {
+	for (i = 0; i < nelem / 10; i++) {
 		dummy = (void*)(i+1);
-		if(!array_add(a, dummy)) {
+		if (!array_add(a, dummy)) {
 			perror("array_add");
 			return 1;
 		}
 	}
 
 	/* Now we've filled all slots, the next call should fail */
-	if(array_add(a, dummy) != 0) {
+	if (array_add(a, dummy) != 0) {
 		fprintf(stderr, "Able to add to array which is full!\n");
 		return 1;
 	}
 
-	if(array_nelem(a) != nelem / 10) {
+	if (array_nelem(a) != nelem / 10) {
 		fprintf(stderr, "Mismatch between number of actual and expected items\n");
 		return 1;
 	}
 
-	for(i = 0; i < nelem / 10; i++) {
-		if(array_get(a, i) == NULL) {
+	for (i = 0; i < nelem / 10; i++) {
+		if (array_get(a, i) == NULL) {
 			fprintf(stderr, "Could not get array item %lu\n", (unsigned long)i);
 			return 1;
 		}

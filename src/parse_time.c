@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -50,16 +50,16 @@ time_t parse_rfc822_date(const char* s)
 	assert(s != NULL);
 
 	/* We are going to read 29 bytes from the pointer, so it must be that many bytes long.  */
-	if(strlen(s) != 29) 
+	if (strlen(s) != 29)
 		return -1;
 
 	/* Get index for the day */
 	size = sizeof wkday / sizeof *wkday[0];
-	for(i = 0; i < size; i++) {
-		if(!memcmp(s, wkday[i], 3)) 
+	for (i = 0; i < size; i++) {
+		if (!memcmp(s, wkday[i], 3))
 			break;
 	}
-	
+
 	/* Not found */
 	if (i == size)
 		return -1;
@@ -75,8 +75,8 @@ time_t parse_rfc822_date(const char* s)
 
 	imonth = 0;
 	size = sizeof month / sizeof *month;
-	for(i = 0; i < size; i++) {
-		if(!memcmp(s, month[i], 3)) {
+	for (i = 0; i < size; i++) {
+		if (!memcmp(s, month[i], 3)) {
 			imonth = i;
 			break;
 		}
@@ -90,7 +90,7 @@ time_t parse_rfc822_date(const char* s)
 	/* Move to year */
 	s += 4;
 	year = 0;
-	for(i = 0; i < 4; i++) {
+	for (i = 0; i < 4; i++) {
 		assert(isdigit((unsigned char)s[i]));
 		year = (year * 10) + (s[i] - '0');
 	}
@@ -112,7 +112,7 @@ time_t parse_rfc822_date(const char* s)
 
 	/* Now move to the timezone, which must be GMT */
 	s += 9; /* 8 for the time and 1 for the separating space */
-	if(memcmp(s, "GMT", 3)) 
+	if (memcmp(s, "GMT", 3))
 		return -1;
 
 	/* That's it, convert it to a time_t */

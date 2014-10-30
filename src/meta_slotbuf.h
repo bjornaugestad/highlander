@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -29,20 +29,20 @@ extern "C" {
 #endif
 
 /*
- * @brief A slotbuf is a buffer of void* pointers. 
+ * @brief A slotbuf is a buffer of void* pointers.
  *
  * The special thing is that the pointers can be indexed by any
  * value, this adt will modify the index to fit within the size
- * of the buffer. 
+ * of the buffer.
  * So what's the purpose of this adt? The idea is to have a general
  * buffer/array with a fixed size and then be able to address
- * entries in the buffer with a steadily increasing index, e.g. time 
- * or some counter without having to adjust for offsets. 
+ * entries in the buffer with a steadily increasing index, e.g. time
+ * or some counter without having to adjust for offsets.
  * The set/get functions will compute the correct index like this:
  * 		actual_index = index % bufsize;
- * 
+ *
  * The buffer comes in two flavors, one will allow you to overwrite
- * entries without warnings and the other will not. 
+ * entries without warnings and the other will not.
  *
  * The buffer is thread safe and we use external locking.
  */
@@ -56,7 +56,7 @@ typedef struct slotbuf_tag *slotbuf;
 slotbuf slotbuf_new(size_t size, int can_overwrite, dtor fn);
 
 /**
- * Frees  the slotbuf and slot entries if a destructor is provided.  
+ * Frees  the slotbuf and slot entries if a destructor is provided.
  */
 void slotbuf_free(slotbuf p);
 
@@ -67,22 +67,22 @@ void slotbuf_free(slotbuf p);
 int slotbuf_set(slotbuf p, size_t i, void* value);
 
 /**
- * Returns the data in slot i, if any. Will clear the slot. 
+ * Returns the data in slot i, if any. Will clear the slot.
  */
 void* slotbuf_get(slotbuf p, size_t i);
 
 /**
- * Returns the data in slot i, if any. Does not clear the slot. 
+ * Returns the data in slot i, if any. Does not clear the slot.
  */
 void* slotbuf_peek(slotbuf p, size_t i);
 
 /**
- * Returns 1 if data exists in the slot, else 0 
+ * Returns 1 if data exists in the slot, else 0
  */
 int slotbuf_has_data(slotbuf p, size_t i);
 
 /**
- * Returns the number of elements in the slotbuf 
+ * Returns the number of elements in the slotbuf
  */
 size_t slotbuf_nelem(slotbuf p);
 

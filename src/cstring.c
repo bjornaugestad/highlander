@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -42,15 +42,15 @@ int cstring_extend(cstring s, size_t size)
 
 	/* Check for available space and reallocate if necessary */
 	bytes_needed = s->cbUsed + size;
-	if(bytes_needed > s->cbAllocated) {
+	if (bytes_needed > s->cbAllocated) {
 		/* Double the size of the buffer */
 		newsize = s->cbAllocated * 2;
-		if(newsize < bytes_needed) {
+		if (newsize < bytes_needed) {
 			/* Doubling wasn't sufficient */
 			newsize = s->cbAllocated + size;
 		}
 
-		if( (data = mem_realloc(s->data, newsize)) == NULL)
+		if ((data = mem_realloc(s->data, newsize)) == NULL)
 			return 0;
 		else {
 			s->data = data;
@@ -70,8 +70,8 @@ int cstring_vprintf(
 {
 	int i;
 
-	/* Adjust the size of needs_max. vsnprintf includes the '\0' 
-	 * in its computation, so vprintf(,,,strlen(x), "%s", x) fails. 
+	/* Adjust the size of needs_max. vsnprintf includes the '\0'
+	 * in its computation, so vprintf(,,,strlen(x), "%s", x) fails.
 	 */
 	needs_max++;
 
@@ -79,7 +79,7 @@ int cstring_vprintf(
 	assert(NULL != dest->data);
 	assert(dest->cbUsed == strlen(dest->data) + 1);
 
-	if(!cstring_extend(dest, needs_max))
+	if (!cstring_extend(dest, needs_max))
 		return 0;
 
 	/* We append the new data, therefore the & */
@@ -119,7 +119,7 @@ int cstring_pcat(cstring dest, const char *start, const char *end)
 	assert(start < end);
 
 	cb = end - start;
-	if(!cstring_extend(dest, cb))
+	if (!cstring_extend(dest, cb))
 		return 0;
 
 	memcpy(&dest->data[dest->cbUsed - 1], start, cb);
@@ -138,7 +138,7 @@ int cstring_concat(cstring dest, const char* src)
 	assert(NULL != dest);
 
 	cb = strlen(src);
-	if(!cstring_extend(dest, cb))
+	if (!cstring_extend(dest, cb))
 		return 0;
 
 	/* Now add the string to the dest */
@@ -153,13 +153,13 @@ int cstring_charcat(cstring dest, int c)
 {
 	assert(NULL != dest);
 
-	/* This function gets called a lot these days, esp. 
+	/* This function gets called a lot these days, esp.
 	 * after the html_template ADT was added. I've
 	 * therefore added a small extra test here to avoid
 	 * millions of function calls.
 	 */
-	if(dest->cbUsed + 1 >= dest->cbAllocated) {
-		if(!cstring_extend(dest, 1))
+	if (dest->cbUsed + 1 >= dest->cbAllocated) {
+		if (!cstring_extend(dest, 1))
 			return 0;
 	}
 
@@ -173,20 +173,20 @@ int cstring_charcat(cstring dest, int c)
 cstring cstring_new(void)
 {
 	cstring p;
-	
+
 	/*
 	 * Rumours are that some OS'es use an optimistic memory allocation
 	 * strategy, which means that they don't allocate memory until the
-	 * mem is accessed. We therefore request memory with calloc 
+	 * mem is accessed. We therefore request memory with calloc
 	 * instead of malloc.
-	 * Other rumours say that the OS just marks the page as a zeroed 
-	 * page and doesn't do anything until the page is read from. 
-	 * Hmm, what's a poor coder to do? Write to the page? That hurts 
+	 * Other rumours say that the OS just marks the page as a zeroed
+	 * page and doesn't do anything until the page is read from.
+	 * Hmm, what's a poor coder to do? Write to the page? That hurts
 	 * performance...
 	 */
-	if( (p = mem_calloc(1, sizeof *p)) == NULL)
+	if ((p = mem_calloc(1, sizeof *p)) == NULL)
 		;
-	else if( (p->data = mem_calloc(1, CSTRING_INITIAL_SIZE)) == NULL) {
+	else if((p->data = mem_calloc(1, CSTRING_INITIAL_SIZE)) == NULL) {
 		mem_free(p);
 		p = NULL;
 	}
@@ -204,8 +204,8 @@ cstring cstring_dup(const char* src)
 	cstring dest = NULL;
 
 	assert(src != NULL);
-	if( (dest = cstring_new()) != NULL) {
-		if(!cstring_copy(dest, src)) {
+	if ((dest = cstring_new()) != NULL) {
+		if (!cstring_copy(dest, src)) {
 			cstring_free(dest);
 			dest = NULL;
 		}
@@ -224,7 +224,7 @@ int cstring_copy(cstring dest, const char* src)
 
 	cstring_recycle(dest);
 	c = strlen(src);
-	if(!cstring_extend(dest, c))
+	if (!cstring_extend(dest, c))
 		return 0;
 
 	strcpy(dest->data, src);
@@ -244,10 +244,10 @@ int cstring_ncopy(cstring dest, const char* src, const size_t cch)
 
 	cstring_recycle(dest);
 	c = strlen(src);
-	if(c > cch)
+	if (c > cch)
 		c = cch;
 
-	if(!cstring_extend(dest, c))
+	if (!cstring_extend(dest, c))
 		return 0;
 
 	strncpy(dest->data, src, c);
@@ -263,8 +263,8 @@ int cstring_concat2(cstring dest, const char* s1, const char* s2)
 	assert(NULL != dest);
 	assert(NULL != s1);
 	assert(NULL != s2);
-	
-	if(cstring_concat(dest, s1) && cstring_concat(dest, s2))
+
+	if (cstring_concat(dest, s1) && cstring_concat(dest, s2))
 		return 1;
 	else
 		return 0;
@@ -280,9 +280,9 @@ int cstring_concat3(
 	assert(NULL != s1);
 	assert(NULL != s2);
 	assert(NULL != s3);
-	
-	if(cstring_concat(dest, s1) 
-	&& cstring_concat(dest, s2) 
+
+	if (cstring_concat(dest, s1)
+	&& cstring_concat(dest, s2)
 	&& cstring_concat(dest, s3))
 		return 1;
 	else
@@ -296,9 +296,9 @@ int cstring_multinew(cstring* pstr, size_t nelem)
 	assert(pstr != NULL);
 	assert(nelem > 0);
 
-	for(i = 0; i < nelem; i++) {
-		if( (pstr[i] = cstring_new()) == NULL) {
-			while(i-- > 0) 
+	for (i = 0; i < nelem; i++) {
+		if ((pstr[i] = cstring_new()) == NULL) {
+			while (i-- > 0)
 				cstring_free(pstr[i]);
 
 			return 0;
@@ -315,7 +315,7 @@ void cstring_multifree(cstring *pstr, size_t nelem)
 
 	assert(pstr != NULL);
 
-	for(i = 0; i < nelem; i++) 
+	for (i = 0; i < nelem; i++)
 		cstring_free(pstr[i]);
 }
 
@@ -326,7 +326,7 @@ cstring cstring_left(cstring src, size_t n)
 
 	assert(src != NULL);
 
-	if( (dest = cstring_new()) == NULL || !cstring_extend(dest, n)) {
+	if ((dest = cstring_new()) == NULL || !cstring_extend(dest, n)) {
 		cstring_free(dest);
 		dest = NULL;
 	}
@@ -341,7 +341,7 @@ cstring cstring_right(cstring src, size_t n)
 	cstring dest;
 
 	/* Get mem */
-	if( (dest = cstring_new()) == NULL || !cstring_extend(dest, n)) {
+	if ((dest = cstring_new()) == NULL || !cstring_extend(dest, n)) {
 		cstring_free(dest);
 		dest = NULL;
 	}
@@ -350,14 +350,14 @@ cstring cstring_right(cstring src, size_t n)
 		size_t cb = strlen(s);
 
 		/* Copy string */
-		if(cb > n) 
+		if (cb > n)
 			s += cb - n;
 		cstring_copy(dest, s);
 	}
 
 	return dest;
 }
-		
+
 cstring cstring_substring(cstring src, size_t from, size_t to)
 {
 	cstring dest;
@@ -367,15 +367,15 @@ cstring cstring_substring(cstring src, size_t from, size_t to)
 	assert(from <= to);
 	assert(to < src->cbUsed);
 
-	if(to > src->cbUsed)
+	if (to > src->cbUsed)
 		to = src->cbUsed;
 
 	cb = to - from + 1;
-	if( (dest = cstring_new()) == NULL || !cstring_extend(dest, cb)) {
+	if ((dest = cstring_new()) == NULL || !cstring_extend(dest, cb)) {
 		cstring_free(dest);
 		dest = NULL;
 	}
-	else 
+	else
 		cstring_pcat(dest, &src->data[from], &src->data[to]);
 
 	return dest;
@@ -383,10 +383,10 @@ cstring cstring_substring(cstring src, size_t from, size_t to)
 
 void cstring_reverse(cstring s)
 {
-	if(s->cbUsed > 1) {
+	if (s->cbUsed > 1) {
 		char *beg = s->data;
 		char *end = s->data + s->cbUsed - 2;
-		while(beg < end) {
+		while (beg < end) {
 			char tmp = *end;
 			*end-- = *beg;
 			*beg++ = tmp;
@@ -397,7 +397,7 @@ void cstring_reverse(cstring s)
 
 /*
  * 1. Count the number of words
- * 2. Allocate space for an array of cstrings. 
+ * 2. Allocate space for an array of cstrings.
  * 3. Allocate each cstring.
  * 4. Copy each word
  */
@@ -415,17 +415,17 @@ size_t cstring_split(cstring** dest, const char* src, const char* delim)
 	s = src + strspn(src, delim);
 
 	/* Only delimiters in src */
-	if(s - src == (int)len) 
+	if (s - src == (int)len)
 		return 0;
 
 	/* Count elements */
-	for(nelem = 0; *s != '\0'; nelem++) {
+	for (nelem = 0; *s != '\0'; nelem++) {
 		s += strcspn(s, delim);
 		s += strspn(s, delim);
 	}
 
 	/* allocate space */
-	if( (*dest = mem_malloc(sizeof **dest * nelem)) == NULL)
+	if ((*dest = mem_malloc(sizeof **dest * nelem)) == NULL)
 		return 0;
 	else if(cstring_multinew(*dest, nelem) == 0) {
 		mem_free(*dest);
@@ -434,9 +434,9 @@ size_t cstring_split(cstring** dest, const char* src, const char* delim)
 
 	/* Now copy */
 	s = src + strspn(src, delim); /* start of first substring */
-	for(i = 0; *s != '\0'; i++) {
+	for (i = 0; *s != '\0'; i++) {
 		end = strcspn(s, delim);
-		if(!cstring_pcat((*dest)[i], s, s + end)) {
+		if (!cstring_pcat((*dest)[i], s, s + end)) {
 			cstring_multifree(*dest, nelem);
 			return 0;
 		}
@@ -456,23 +456,23 @@ void cstring_strip(cstring s)
 
 	/* strip trailing ws first */
 	i = s->cbUsed - 1;
-	while(i-- > 0 && isspace((unsigned char)s->data[i])) {
+	while (i-- > 0 && isspace((unsigned char)s->data[i])) {
 		s->data[i] = '\0';
 		s->cbUsed--;
 	}
 
 	/* Now leading ws */
-	for(i = 0; i < s->cbUsed; i++) {
-		if(!isspace((unsigned char)s->data[i]))
+	for (i = 0; i < s->cbUsed; i++) {
+		if (!isspace((unsigned char)s->data[i]))
 			break;
 	}
 
-	if(i > 0) {
+	if (i > 0) {
 		s->cbUsed -= i;
 		memmove(&s->data[0], &s->data[i], s->cbUsed);
 		s->data[s->cbUsed] = '\0';
 	}
-			
+
 }
 
 void cstring_lower(cstring s)
@@ -480,9 +480,9 @@ void cstring_lower(cstring s)
 	size_t i;
 
 	assert(s != NULL);
-	
-	for(i = 0; i < s->cbUsed; i++) {
-		if(isupper((unsigned char)s->data[i]))
+
+	for (i = 0; i < s->cbUsed; i++) {
+		if (isupper((unsigned char)s->data[i]))
 			s->data[i] = tolower((unsigned char)s->data[i]);
 	}
 }
@@ -492,9 +492,9 @@ void cstring_upper(cstring s)
 	size_t i;
 
 	assert(s != NULL);
-	
-	for(i = 0; i < s->cbUsed; i++) {
-		if(islower((unsigned char)s->data[i]))
+
+	for (i = 0; i < s->cbUsed; i++) {
+		if (islower((unsigned char)s->data[i]))
 			s->data[i] = toupper((unsigned char)s->data[i]);
 	}
 }
@@ -517,7 +517,7 @@ int main(void)
 	longstring[sizeof(longstring) - 1] = '\0';
 
 
-	for(i = 0; i < nelem; i++) {
+	for (i = 0; i < nelem; i++) {
 		s = cstring_new();
 		assert(s != NULL);
 

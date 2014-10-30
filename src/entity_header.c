@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -60,7 +60,7 @@ entity_header entity_header_new(void)
 {
 	entity_header p;
 
-	if( (p = malloc(sizeof *p)) != NULL) {
+	if ((p = malloc(sizeof *p)) != NULL) {
 		entity_header_clear_flags(p);
 		p->allow = cstring_new();
 		p->content_encoding = cstring_new();
@@ -76,7 +76,7 @@ entity_header entity_header_new(void)
 
 void entity_header_free(entity_header p)
 {
-	if(p != NULL) {
+	if (p != NULL) {
 		cstring_free(p->allow);
 		cstring_free(p->content_encoding);
 		cstring_free(p->content_language);
@@ -100,7 +100,7 @@ int entity_header_set_allow(entity_header eh, const char* value)
 	assert(NULL != eh);
 	assert(NULL != value);
 
-	if(!cstring_copy(eh->allow, value))
+	if (!cstring_copy(eh->allow, value))
 		return 0;
 
 	entity_header_set_flag(eh, ENTITY_HEADER_ALLOW_SET);
@@ -128,7 +128,7 @@ int entity_header_set_content_language(entity_header eh, const char* value)
 	assert(NULL != eh);
 	assert(NULL != value);
 
-	if(!cstring_copy(eh->content_language, value))
+	if (!cstring_copy(eh->content_language, value))
 		return 0;
 
 	entity_header_set_flag(eh, ENTITY_HEADER_CONTENT_LANGUAGE_SET);
@@ -148,7 +148,7 @@ int entity_header_set_content_encoding(entity_header eh, const char* value)
 	assert(NULL != eh);
 	assert(NULL != value);
 
-	if(!cstring_copy(eh->content_encoding, value)) 
+	if (!cstring_copy(eh->content_encoding, value))
 		return 0;
 
 	entity_header_set_flag(eh, ENTITY_HEADER_CONTENT_ENCODING_SET);
@@ -160,7 +160,7 @@ int entity_header_set_content_type(entity_header eh, const char* value)
 	assert(NULL != eh);
 	assert(NULL != value);
 
-	if(!cstring_copy(eh->content_type, value)) 
+	if (!cstring_copy(eh->content_type, value))
 		return 0;
 
 	entity_header_set_flag(eh, ENTITY_HEADER_CONTENT_TYPE_SET);
@@ -173,7 +173,7 @@ int entity_header_set_content_md5(entity_header eh, const char* value)
 	assert(NULL != eh);
 	assert(NULL != value);
 
-	if(!cstring_copy(eh->content_md5, value)) 
+	if (!cstring_copy(eh->content_md5, value))
 		return 0;
 
 	entity_header_set_flag(eh, ENTITY_HEADER_CONTENT_MD5_SET);
@@ -185,7 +185,7 @@ int entity_header_set_content_location(entity_header eh, const char* value)
 	assert(NULL != eh);
 	assert(NULL != value);
 
-	if(!cstring_copy(eh->content_location, value))
+	if (!cstring_copy(eh->content_location, value))
 		return 0;
 
 	entity_header_set_flag(eh, ENTITY_HEADER_CONTENT_LOCATION_SET);
@@ -197,7 +197,7 @@ int entity_header_set_content_range(entity_header eh, const char* value)
 	assert(NULL != eh);
 	assert(NULL != value);
 
-	if(!cstring_copy(eh->content_range, value))
+	if (!cstring_copy(eh->content_range, value))
 		return 0;
 
 	entity_header_set_flag(eh, ENTITY_HEADER_CONTENT_RANGE_SET);
@@ -439,9 +439,9 @@ int entity_header_send_fields(entity_header eh, connection c)
 	};
 
 	nelem = sizeof fields / sizeof *fields;
-	for(i = 0; i < nelem; i++) {
-		if(entity_header_flag_is_set(eh, fields[i].flag))
-			if( (success = fields[i].func(eh, c)) == 0)
+	for (i = 0; i < nelem; i++) {
+		if (entity_header_flag_is_set(eh, fields[i].flag))
+			if ((success = fields[i].func(eh, c)) == 0)
 				break;
 	}
 
@@ -482,8 +482,8 @@ static const struct {
 int find_entity_header(const char* name)
 {
 	int i, nelem = sizeof entity_header_fields / sizeof *entity_header_fields;
-	for(i = 0; i < nelem; i++) {
-		if(strcmp(entity_header_fields[i].name, name) == 0) {
+	for (i = 0; i < nelem; i++) {
+		if (strcmp(entity_header_fields[i].name, name) == 0) {
 			return i;
 		}
 	}
@@ -503,17 +503,17 @@ static int parse_content_encoding(entity_header eh, const char* value, meta_erro
 {
 	assert(NULL != eh);
 	assert(NULL != value);
-	/* 
-	 * §14.11 
+	/*
+	 * §14.11
 	 * Used as a modifier to the Content-Type
 	 * a) Reply with 415 if the encoding type isn't acceptable
 	 * b) If multiple encodings has been applied, they must be
 	 * listed in the order they were applied.
 	 *
-	 * Typical: "Content-Encoding: gzip" 
+	 * Typical: "Content-Encoding: gzip"
 	 * See §3.5 for definition, the basic point is that gzip, compress, deflate is OK.
 	 */
-	if(!entity_header_set_content_encoding(eh, value))
+	if (!entity_header_set_content_encoding(eh, value))
 		return set_os_error(e, errno);
 
 	return 1;
@@ -531,13 +531,13 @@ static int parse_content_length(entity_header eh, const char* value, meta_error 
 
 	/*
 	 * We do a "manual" conversion here instead of using
-	 * e.g. strtoul(), since strtoul() 1) removes WS and 2) stops 
+	 * e.g. strtoul(), since strtoul() 1) removes WS and 2) stops
 	 * if it finds non-digits. We require digits in all bytes.
 	 */
 	assert(NULL != eh);
 	assert(NULL != value);
 
-	if(!string2size_t(value, &len)) 
+	if (!string2size_t(value, &len))
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
 	entity_header_set_content_length(eh, (unsigned long)len);
@@ -549,7 +549,7 @@ static int parse_content_md5(entity_header eh, const char* value, meta_error e)
 	assert(NULL != eh);
 	assert(NULL != value);
 
-	if(!entity_header_set_allow(eh, value))
+	if (!entity_header_set_allow(eh, value))
 		return set_os_error(e, errno);
 
 	return 1;
@@ -576,7 +576,7 @@ static int parse_allow(entity_header eh, const char* value, meta_error e)
 	assert(NULL != eh);
 	assert(NULL != value);
 
-	if(!entity_header_set_allow(eh, value))
+	if (!entity_header_set_allow(eh, value))
 		return set_os_error(e, errno);
 
 	return 1;
@@ -587,7 +587,7 @@ static int parse_content_location(entity_header eh, const char* value, meta_erro
 	assert(NULL != eh);
 	assert(NULL != value);
 
-	if(!entity_header_set_content_location(eh, value))
+	if (!entity_header_set_content_location(eh, value))
 		return set_os_error(e, errno);
 
 	return 1;
@@ -598,7 +598,7 @@ static int parse_content_range(entity_header eh, const char* value, meta_error e
 	assert(NULL != eh);
 	assert(NULL != value);
 
-	if(!entity_header_set_content_range(eh, value))
+	if (!entity_header_set_content_range(eh, value))
 		return set_os_error(e, errno);
 
 	return 1;
@@ -606,7 +606,7 @@ static int parse_content_range(entity_header eh, const char* value, meta_error e
 
 static int parse_content_type(entity_header eh, const char* value, meta_error e)
 {
-	if(!entity_header_set_content_type(eh, value))
+	if (!entity_header_set_content_type(eh, value))
 		return set_os_error(e, errno);
 
 	return 1;
@@ -619,7 +619,7 @@ static int parse_expires(entity_header eh, const char* value, meta_error e)
 	assert(NULL != eh);
 	assert(NULL != value);
 
-	if( (t = parse_rfc822_date(value)) == (time_t)-1)
+	if ((t = parse_rfc822_date(value)) == (time_t)-1)
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
 	entity_header_set_expires(eh, t);
@@ -633,9 +633,9 @@ static int parse_last_modified(entity_header eh, const char* value, meta_error e
 	assert(NULL != eh);
 	assert(NULL != value);
 
-	if( (t = parse_rfc822_date(value)) == (time_t)-1)
+	if ((t = parse_rfc822_date(value)) == (time_t)-1)
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
-	
+
 	entity_header_set_last_modified(eh, t);
 	return 1;
 }

@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -35,7 +35,7 @@ struct action {
 };
 
 /**
- * Implementation of the ticker ADT 
+ * Implementation of the ticker ADT
  */
 struct ticker_tag {
 	int usec;
@@ -51,7 +51,7 @@ ticker ticker_new(int usec)
 {
 	ticker t;
 
-	if( (t = mem_malloc(sizeof *t)) == NULL
+	if ((t = mem_malloc(sizeof *t)) == NULL
 	||  (t->actions = list_new()) == NULL) {
 		mem_free(t);
 		t = NULL;
@@ -76,7 +76,7 @@ int ticker_add_action(ticker t, void(*pfn)(void*), void* arg)
 {
 	struct action *pa;
 
-	if( (pa = mem_malloc(sizeof *pa)) == NULL)
+	if ((pa = mem_malloc(sizeof *pa)) == NULL)
 		return 0;
 
 	pa->pfn = pfn;
@@ -88,11 +88,11 @@ int ticker_start(ticker t)
 {
 	t->running = 1;
 	t->stop = 0;
-	if(pthread_create(&t->id, NULL, tickerfn, t)) {
+	if (pthread_create(&t->id, NULL, tickerfn, t)) {
 		t->running = 0;
 		return 0;
 	}
-	else 
+	else
 		return 1;
 }
 
@@ -100,7 +100,7 @@ void ticker_stop(ticker t)
 {
 	struct timespec ts = {0, 100000};
 	t->stop = 1;
-	while(t->running) 
+	while (t->running)
 		nanosleep(&ts, NULL);
 }
 
@@ -112,15 +112,15 @@ static void* tickerfn(void* arg)
 	ts.tv_sec = t->usec / 1000000;
 	ts.tv_nsec= (t->usec % 1000000) * 1000;
 
-	while(!t->stop) {
+	while (!t->stop) {
 		nanosleep(&ts, NULL);
-		if(!t->stop) {
+		if (!t->stop) {
 			/* Perform the actions in the list */
 			list_iterator i;
-			for(i = list_first(t->actions); !list_end(i); i = list_next(i)) {
+			for (i = list_first(t->actions); !list_end(i); i = list_next(i)) {
 				struct action* pa = list_get(i);
 				pa->pfn(pa->arg);
-				if(t->stop) /* Check again */
+				if (t->stop) /* Check again */
 					break;
 			}
 		}

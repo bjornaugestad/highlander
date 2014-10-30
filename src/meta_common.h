@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -34,7 +34,7 @@ extern "C" {
  */
 typedef void(*dtor)(void*);
 
-/* Memory allocation. 
+/* Memory allocation.
  * We use these functions to handle memory instead of the standard
  * functions. Why? We want to be able to set process wide error handling
  * for memory problems.
@@ -59,7 +59,7 @@ void  mem_set_error_policy(int policy);
 
 /* We always need to be able to trace stuff, mainly for debugging.
  * Even if we think that everything is working fine, shit happens.
- * We therefore trace all functions called, including tid (if any) 
+ * We therefore trace all functions called, including tid (if any)
  * We always support the following global variables:
  * int meta_verbose_level. 0 means no output
  * int meta_indent_level. For output

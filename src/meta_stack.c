@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -36,8 +36,8 @@ stack stack_new(void)
 {
 	stack s;
 
-	if( (s = mem_malloc(sizeof *s)) != NULL) {
-		if( (s->lst = list_new()) == NULL) {
+	if ((s = mem_malloc(sizeof *s)) != NULL) {
+		if ((s->lst = list_new()) == NULL) {
 			mem_free(s);
 			s = NULL;
 		}
@@ -53,8 +53,8 @@ void stack_free(stack s)
 	 * we don't free items in the list.
 	 */
 
-	if(s != NULL) {
-		if(s->lst != NULL)
+	if (s != NULL) {
+		if (s->lst != NULL)
 			sublist_free(s->lst);
 
 		mem_free(s);
@@ -66,7 +66,7 @@ int stack_push(stack s, void *p)
 	assert(s != NULL);
 	assert(p != NULL);
 
-	if(list_insert(s->lst, p) == NULL)
+	if (list_insert(s->lst, p) == NULL)
 		return 0;
 	else
 		return 1;
@@ -81,7 +81,7 @@ void *stack_top(stack s)
 	assert(list_size(s->lst) != 0);
 
 	i = list_first(s->lst);
-	if(!list_end(i))
+	if (!list_end(i))
 		d = list_get(i);
 
 	assert(d != NULL);
@@ -96,7 +96,7 @@ void stack_pop(stack s)
 	assert(list_size(s->lst) != 0);
 
 	i = list_first(s->lst);
-	if(!list_end(i))
+	if (!list_end(i))
 		list_remove_node(s->lst, i);
 }
 
@@ -117,8 +117,8 @@ void* stack_get(stack s, size_t i)
 #ifdef CHECK_STACK
 #include <stdio.h>
 
-/* 
- * What do we want to test here? 
+/*
+ * What do we want to test here?
  */
 
 int main(void)
@@ -127,8 +127,8 @@ int main(void)
 	char *str;
 	stack s = stack_new();
 
-	for(i = 0; i < nelem; i++) {
-		if( (str = malloc(10)) == NULL) {
+	for (i = 0; i < nelem; i++) {
+		if ((str = malloc(10)) == NULL) {
 			fprintf(stderr, "Out of memory");
 			exit(EXIT_FAILURE);
 		}
@@ -138,7 +138,7 @@ int main(void)
 	}
 
 	assert(nelem == stack_nelem(s));
-	while(stack_nelem(s) > 0) {
+	while (stack_nelem(s) > 0) {
 		str = stack_top(s);
 		free(str);
 		stack_pop(s);

@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -39,7 +39,7 @@ fileinfo fileinfo_new(void)
 {
 	fileinfo p;
 
-	if( (p = mem_malloc(sizeof *p)) != NULL) {
+	if ((p = mem_malloc(sizeof *p)) != NULL) {
 		p->mimetype = NULL;
 		p->name = NULL;
 		p->alias = NULL;
@@ -54,8 +54,8 @@ fileinfo fileinfo_dup(const fileinfo src)
 {
 	fileinfo p;
 
-	if( (p = fileinfo_new()) != NULL) {
-		if( (p->mimetype = mem_malloc(strlen(src->mimetype) + 1)) == NULL
+	if ((p = fileinfo_new()) != NULL) {
+		if ((p->mimetype = mem_malloc(strlen(src->mimetype) + 1)) == NULL
 		||  (p->name = mem_malloc(strlen(src->name) + 1)) == NULL
 		||  (p->alias = mem_malloc(strlen(src->alias) + 1)) == NULL) {
 			fileinfo_free(p);
@@ -71,11 +71,11 @@ fileinfo fileinfo_dup(const fileinfo src)
 	return p;
 }
 #endif
-	
+
 
 void fileinfo_free(fileinfo p)
 {
-	if(p != NULL) {
+	if (p != NULL) {
 		mem_free(p->contents);
 		mem_free(p->mimetype);
 		mem_free(p->alias);
@@ -97,10 +97,10 @@ int fileinfo_set_name(fileinfo p, const char* s)
 	assert(p != NULL);
 	assert(s != NULL);
 
-	if(p->name != NULL)
+	if (p->name != NULL)
 		mem_free(p->name);
 
-	if( (p->name = mem_malloc(strlen(s) + 1)) == NULL)
+	if ((p->name = mem_malloc(strlen(s) + 1)) == NULL)
 		return 0;
 
 	strcpy(p->name, s);
@@ -112,10 +112,10 @@ int fileinfo_set_alias(fileinfo p, const char* s)
 	assert(p != NULL);
 	assert(s != NULL);
 
-	if(p->alias != NULL)
+	if (p->alias != NULL)
 		mem_free(p->alias);
 
-	if( (p->alias = mem_malloc(strlen(s) + 1)) == NULL)
+	if ((p->alias = mem_malloc(strlen(s) + 1)) == NULL)
 		return 0;
 
 	strcpy(p->alias, s);
@@ -127,10 +127,10 @@ int fileinfo_set_mimetype(fileinfo p, const char* s)
 	assert(p != NULL);
 	assert(s != NULL);
 
-	if(p->mimetype != NULL)
+	if (p->mimetype != NULL)
 		mem_free(p->mimetype);
 
-	if( (p->mimetype = mem_malloc(strlen(s) + 1)) == NULL)
+	if ((p->mimetype = mem_malloc(strlen(s) + 1)) == NULL)
 		return 0;
 
 	strcpy(p->mimetype, s);
@@ -147,7 +147,7 @@ filecache filecache_new(size_t nelem, size_t bytes)
 	assert(nelem > 0);
 	assert(bytes > 0);
 
-	if( (fc = mem_malloc(sizeof *fc)) == NULL
+	if ((fc = mem_malloc(sizeof *fc)) == NULL
 	||  (fc->filenames = stringmap_new(nelem)) == NULL
 	||  (fc->metacache = cache_new(nelem, HOTLIST_SIZE, bytes)) == NULL) {
 		stringmap_free(fc->filenames);
@@ -165,7 +165,7 @@ filecache filecache_new(size_t nelem, size_t bytes)
 
 void filecache_free(filecache fc)
 {
-	if(fc != NULL) {
+	if (fc != NULL) {
 		cache_free(fc->metacache, (dtor)fileinfo_free);
 		stringmap_free(fc->filenames);
 		pthread_rwlock_destroy(&fc->lock);
@@ -183,9 +183,9 @@ int filecache_add(filecache fc, fileinfo finfo, int pin, unsigned long* pid)
 	assert(finfo != NULL);
 	assert(finfo->contents == NULL);
 
-	if( (fd = open(fileinfo_name(finfo), O_RDONLY)) == -1)
+	if ((fd = open(fileinfo_name(finfo), O_RDONLY)) == -1)
 		goto err;
-	else if( (finfo->contents = mem_malloc(finfo->st.st_size)) == NULL)
+	else if((finfo->contents = mem_malloc(finfo->st.st_size)) == NULL)
 		goto err;
 	else if(read(fd, finfo->contents, (size_t)finfo->st.st_size) != (ssize_t)finfo->st.st_size)
 		goto err;
@@ -198,11 +198,11 @@ int filecache_add(filecache fc, fileinfo finfo, int pin, unsigned long* pid)
 	rc = stringmap_add(fc->filenames, fileinfo_alias(finfo), pid)
 		&& cache_add(fc->metacache, *pid, finfo, sizeof *finfo, pin) ;
 	pthread_rwlock_unlock(&fc->lock);
-	if(rc)
+	if (rc)
 		return 1;
 
 err:
-	if(fd != -1)
+	if (fd != -1)
 		close(fd);
 	mem_free(contents);
 	fileinfo_free(finfo);
@@ -218,7 +218,7 @@ int filecache_invalidate(filecache fc)
 	stringmap_free(fc->filenames);
 	cache_free(fc->metacache, (dtor)fileinfo_free);
 
-	if( (fc->filenames = stringmap_new(fc->nelem)) == NULL
+	if ((fc->filenames = stringmap_new(fc->nelem)) == NULL
 	||  (fc->metacache = cache_new(fc->nelem, HOTLIST_SIZE, fc->bytes)) == NULL) {
 		stringmap_free(fc->filenames);
 		fc->filenames = NULL;
@@ -241,7 +241,7 @@ int filecache_exists(filecache fc, const char* filename)
 	int rc = 0;
 
 	pthread_rwlock_rdlock(&fc->lock);
-	if(stringmap_get_id(fc->filenames, filename, &id)) 
+	if (stringmap_get_id(fc->filenames, filename, &id))
 		rc = 1;
 
 	pthread_rwlock_unlock(&fc->lock);
@@ -257,9 +257,9 @@ int filecache_get(filecache fc, const char* filename, void** pdata, size_t* pcb)
 
 	pthread_rwlock_rdlock(&fc->lock);
 
-	if(stringmap_get_id(fc->filenames, filename, &id)) {
+	if (stringmap_get_id(fc->filenames, filename, &id)) {
 		rc = cache_get(fc->metacache, id, (void**)&p, pcb);
-		if(rc) {
+		if (rc) {
 			fileinfo fi = p;
 			*pdata = fi->contents;
 			*pcb = fi->st.st_size;
@@ -282,7 +282,7 @@ int filecache_foreach(filecache fc, int(*fn)(const char*s, void* arg), void* arg
 	rc = stringmap_foreach(fc->filenames, fn, arg);
 	pthread_rwlock_unlock(&fc->lock);
 	return rc;
-	
+
 }
 
 int filecache_stat(filecache fc, const char* filename, struct stat* p)
@@ -297,8 +297,8 @@ int filecache_stat(filecache fc, const char* filename, struct stat* p)
 
 	pthread_rwlock_rdlock(&fc->lock);
 
-	if(stringmap_get_id(fc->filenames, filename, &id)) {
-		if(cache_get(fc->metacache, id, (void**)&pst, &cb)) {
+	if (stringmap_get_id(fc->filenames, filename, &id)) {
+		if (cache_get(fc->metacache, id, (void**)&pst, &cb)) {
 			*p = *fileinfo_stat(pst);
 			rc = 1;
 		}
@@ -317,8 +317,8 @@ int filecache_get_mime_type(filecache fc, const char* filename, char mime[], siz
 
 	pthread_rwlock_rdlock(&fc->lock);
 
-	if(stringmap_get_id(fc->filenames, filename, &id)) {
-		if(cache_get(fc->metacache, id, (void**)&p, &cbptr)) {
+	if (stringmap_get_id(fc->filenames, filename, &id)) {
+		if (cache_get(fc->metacache, id, (void**)&p, &cbptr)) {
 			mime[0] = '\0';
 			strncat(mime, fileinfo_mimetype(p), cb - 1);
 			rc = 1;
@@ -342,12 +342,12 @@ fileinfo filecache_fileinfo(filecache fc, const char* filename)
 
 	pthread_rwlock_rdlock(&fc->lock);
 
-	if(stringmap_get_id(fc->filenames, filename, &id)) 
+	if (stringmap_get_id(fc->filenames, filename, &id))
 		found = cache_get(fc->metacache, id, (void**)&pst, &cb);
 
 	pthread_rwlock_unlock(&fc->lock);
 
-	if(found)
+	if (found)
 		return pst;
 	else
 		return NULL;
@@ -369,30 +369,30 @@ int main(void)
 	FILE* f;
 	char mime[128];
 	fileinfo fi;
-	
+
 
 	fc = filecache_new(100, 100*1024*1024);
 
-	if( (d = opendir(".")) == NULL) {
+	if ((d = opendir(".")) == NULL) {
 		perror("opendir");
 		exit(EXIT_FAILURE);
 	}
 
-	while( (de = readdir(d)) != NULL) {
-		if(stat(de->d_name, &st) == -1) {
+	while ((de = readdir(d)) != NULL) {
+		if (stat(de->d_name, &st) == -1) {
 			perror("fstat");
 			exit(EXIT_FAILURE);
 		}
 
-		if(S_ISREG(st.st_mode)) {
+		if (S_ISREG(st.st_mode)) {
 			char buf[10240];
 			size_t offset;
 			sprintf(buf, "file -bi %s", de->d_name);
-			if( (f = popen(buf, "r")) == NULL) {
+			if ((f = popen(buf, "r")) == NULL) {
 				perror("popen");
 				exit(EXIT_FAILURE);
 			}
-			if(fgets(buf, sizeof buf, f) == NULL) {
+			if (fgets(buf, sizeof buf, f) == NULL) {
 				perror("fgets");
 				exit(EXIT_FAILURE);
 			}
@@ -408,7 +408,7 @@ int main(void)
 			fileinfo_set_stat(fi, &st);
 			fileinfo_set_mimetype(fi, buf);
 
-			if(st.st_size == 0)
+			if (st.st_size == 0)
 				; /* Do not add empty files */
 			else if(!filecache_add(fc, fi, 0, &id)) {
 				perror(de->d_name);

@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -20,7 +20,7 @@
 #ifndef META_HTML_H
 #define META_HTML_H
 
-/* These files will probably be moved to highlander.h 
+/* These files will probably be moved to highlander.h
  * later on. First we must implement and test them properly.
  */
 
@@ -53,7 +53,7 @@ typedef struct html_buffer_tag* html_buffer;
  *
  * There's nothing magic with a HTML template, you just add sections
  * and associated code to the template, which stores it for you until
- * someone wants to use it. You can have any number of sections, and 
+ * someone wants to use it. You can have any number of sections, and
  * you don't have to have a menu section. You don't even need a "user"
  * section, but then data added by a page handler function will not
  * be displayed.
@@ -68,7 +68,7 @@ void html_buffer_set_template(html_buffer b, html_template t);
 int html_add(html_buffer b, const char* s);
 int html_printf(html_buffer b, size_t cb, const char* fmt, ...);
 
-/* Sends the generated html to the client and will return the 
+/* Sends the generated html to the client and will return the
  * appropriate returncode (e.g. 200 OK) to the client as well.
  * This function will also free the html_buffer object.
  */
@@ -192,7 +192,7 @@ int html_menu_render(html_menu m, cstring buffer);
 
 /** @defgroup html_template template and template repository functions */
 /**
- * Create a new template. 
+ * Create a new template.
  */
 html_template html_template_new(void);
 void html_template_free(html_template t);
@@ -205,14 +205,14 @@ void html_template_free(html_template t);
  * The following directives exist:
  * %S Section code should be added here. The code for the first section
  *    will be added wherever the first %S is found, and so forth.
- *    
+ *
  * %H Head. Code that belongs to the <HEAD></HEAD> tag will be added here.
- *    The html_buffer object as two functions, html_head_begin() and 
- *    html_head_end(). The html_buffer object will store everything 
+ *    The html_buffer object as two functions, html_head_begin() and
+ *    html_head_end(). The html_buffer object will store everything
  *    added to the buffer between html_head_begin() and html_head_end()
  *    to a special buffer. This buffer will later be inserted wherever
  *    the %H directive is found.
- * 
+ *
  * An example:
  * "<html>%H<body><table><tr><td>%S</td></tr><tr><td>%S</td></tr></table>"
  * "</body></html>"
@@ -231,7 +231,7 @@ int html_template_send(
 	const char* usercode);
 
 /**
- * We don't want valgrind to report memleaks, so this function 
+ * We don't want valgrind to report memleaks, so this function
  * empties the repository.
  */
 void html_template_repository_empty(void);

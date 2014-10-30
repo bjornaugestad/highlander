@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -36,23 +36,23 @@ extern "C" {
 #define EFS_UNKNOWN_HEADER_FIELD 1000
 
 /**
- * Params are here parameters to the uri 
+ * Params are here parameters to the uri
  */
 #define CCH_PARAMNAME_MAX	100
 #define CCH_PARAMVALUE_MAX	500
 
 /**
- * Max len of a request keyword, e.g. GET, HEAD 
+ * Max len of a request keyword, e.g. GET, HEAD
  */
-#define CCH_METHOD_MAX	256			
+#define CCH_METHOD_MAX	256
 
 /**
- * Max length of version part, HTTP/x.x . 20 should do for a while... 
+ * Max length of version part, HTTP/x.x . 20 should do for a while...
  */
-#define CCH_VERSION_MAX	20	
+#define CCH_VERSION_MAX	20
 
 /**
- * Max len of requested URI 
+ * Max len of requested URI
  * This includes any parameters given,
  * like foo.html?bar=foobar&f=asdasdasdasdasdasd
  * I guess this can become very large?
@@ -60,18 +60,18 @@ extern "C" {
 #define CCH_URI_MAX 10240
 
 /**
- * 
- * The max # of characters for a http header fieldname. 
+ *
+ * The max # of characters for a http header fieldname.
  * The longest in http 1.1 is If-Unmodified-Since which is 19 bytes (+ 1 for '\0')
  */
 #define CCH_FIELDNAME_MAX	30
 #define CCH_FIELDVALUE_MAX	10000
 
 /**
- * Quality is not used in http 1.0. 
+ * Quality is not used in http 1.0.
  * It is used in conjunction with accept-xxx to prioritize the different formats
  * a client accepts. My guess is that it is not used a lot... We support it anyway.
- * The format is q=float where float is limited by me to be 0.nnn 
+ * The format is q=float where float is limited by me to be 0.nnn
  * This means that we need 8 bytes. We safe a little and size for 12.
  */
 #define CCH_QUALITY_MAX		12
@@ -119,7 +119,7 @@ int http_send_ulong(connection conn, const char* name, unsigned long value);
 int http_send_string(connection conn, const char* s);
 
 int read_line(connection conn, char* buf, size_t cchMax, meta_error e);
-/* 
+/*
  * A field name, in HTTP, is everything to the left of : in
  * header fields like "name: value". We copy the name part here.
  * returns 0 on failure, else !0
@@ -278,7 +278,7 @@ int parse_request_headerfield(
 int parse_response_headerfield(
 	const char* name,
 	const char* value,
-	http_response req, 
+	http_response req,
 	meta_error e);
 
 int parse_multivalued_fields(
@@ -291,7 +291,7 @@ int find_entity_header(const char* name);
 int parse_entity_header(int idx, entity_header gh, const char* value, meta_error e);
 
 /*
- * The general header fields are shared between http requests and http 
+ * The general header fields are shared between http requests and http
  * responses. The fields are described in RFC 2616, section 4.5.
  * This function itself returns -1 if the field was NOT a general header field
  */
@@ -314,5 +314,5 @@ int cookie_dump(cookie c, FILE *f);
 }
 #endif
 
-#endif 
+#endif
 

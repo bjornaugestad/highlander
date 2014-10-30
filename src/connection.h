@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -36,7 +36,7 @@ connection connection_new(int timeout_reads, int timeout_writes, int retries_rea
 void connection_free(connection conn);
 void connection_recycle(connection conn);
 
-void* connection_arg2(connection conn); 
+void* connection_arg2(connection conn);
 
 /* connect to a host on a port, return 0 on errors */
 int connection_connect(connection c, const char* host, int port);
@@ -53,8 +53,8 @@ int connection_getc(connection conn, int* pchar);
 int connection_gets(connection conn, char *buf, size_t size);
 int connection_ungetc(connection conn, int c);
 
-void connection_discard(connection conn); 
-int connection_close(connection conn); 
+void connection_discard(connection conn);
+int connection_close(connection conn);
 
 void connection_set_persistent(connection conn, int val);
 int  connection_is_persistent(connection conn);

@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -40,7 +40,7 @@ cookie cookie_new(void)
 	cookie p;
 	cstring arr[5];
 
-	if( (p = malloc(sizeof *p)) == NULL)
+	if ((p = malloc(sizeof *p)) == NULL)
 		;
 	else if(!cstring_multinew(arr, 5)) {
 		free(p);
@@ -62,7 +62,7 @@ cookie cookie_new(void)
 
 void cookie_free(cookie p)
 {
-	if(p != NULL) {
+	if (p != NULL) {
 		cstring_free(p->name);
 		cstring_free(p->value);
 		cstring_free(p->domain);
@@ -202,30 +202,30 @@ static int get_cookie_attribute(
 
 	assert(attribute != NULL);
 
-	if( (location = strstr(s, attribute)) == NULL) 
+	if ((location = strstr(s, attribute)) == NULL)
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
 	/* Remove ws, = and first " */
 	location += strlen(attribute);
-	if( (i = strspn(location, " \t=\"")) == 0) 
+	if ((i = strspn(location, " \t=\"")) == 0)
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
-	location += i; 
-	while(*location != '\0' && *location != '"') {
-		if(!cstring_charcat(value, *location++)) 
+	location += i;
+	while (*location != '\0' && *location != '"') {
+		if (!cstring_charcat(value, *location++))
 			return set_os_error(e, ENOMEM);
 	}
 
-	if(*location != '"')
+	if (*location != '"')
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
 	return 1;
 }
 
-/* Cookies are defined in rfc2109 
+/* Cookies are defined in rfc2109
  * Format is: (copy from rfc)
  * The syntax for the header is:
- *  
+ *
  *  cookie = "Cookie:" cookie-version
  *           1*((";" | ",") cookie-value)
  *  cookie-value = NAME "=" VALUE [";" path] [";" domain]
@@ -233,12 +233,12 @@ static int get_cookie_attribute(
  *  NAME   = attr
  *  VALUE  = value
  *  path   = "$Path" "=" value
- *  domain = "$Domain" "=" value   
- *  
- *  NOTES: 
+ *  domain = "$Domain" "=" value
+ *
+ *  NOTES:
  *  Now for the fun part :-(
  *  a) Netscape Communicator 4.72 sends no $Version
- *  b) Lynx sends cookie2 as fieldname if no version is 
+ *  b) Lynx sends cookie2 as fieldname if no version is
  *  included in outgoing cookie.
  *  c) Lynx does not send Path and Domain back
  *  d) kfm (KDE File Manager) looks good!
@@ -252,15 +252,15 @@ int parse_cookie(http_request req, const char *value, meta_error e)
 {
 	/* Locate version */
 	char* s;
-	
+
 #define SUPPORT_EMPTY_COOKIES 1
 #ifdef SUPPORT_EMPTY_COOKIES
-	if(strcmp(value, "") == 0) {
+	if (strcmp(value, "") == 0) {
 		return 1;
 	}
 #endif
 
-	if( (s = strstr(value, "$Version")) != NULL)
+	if ((s = strstr(value, "$Version")) != NULL)
 		return parse_new_cookie(req, value, e);
 	else
 		return parse_old_cookie(req, value, e);
@@ -279,17 +279,17 @@ int parse_new_cookie(http_request req, const char* value, meta_error e)
 	assert(NULL != req);
 	assert(NULL != value);
 
-	if( (c = cookie_new()) == NULL) 
+	if ((c = cookie_new()) == NULL)
 		return set_os_error(e, ENOMEM);
 
 	/* New cookies require this field! */
-	if(!parse_new_cookie_version(c, value, e)) {
+	if (!parse_new_cookie_version(c, value, e)) {
 		cookie_free(c);
 		return 0;
 	}
 
 	/* Now for the rest of the attributes */
-	if(!parse_new_cookie_name(c, value, e)
+	if (!parse_new_cookie_name(c, value, e)
 	|| !parse_new_cookie_path(c, value, e)
 	|| !parse_new_cookie_domain(c, value, e)
 	|| !parse_new_cookie_secure(c, value, e)) {
@@ -297,7 +297,7 @@ int parse_new_cookie(http_request req, const char* value, meta_error e)
 		return 0;
 	}
 
-	if(!request_add_cookie(req, c)) {
+	if (!request_add_cookie(req, c)) {
 		set_os_error(e, errno);
 		cookie_free(c);
 		return 0;
@@ -315,36 +315,36 @@ int parse_old_cookie(http_request req, const char* input, meta_error e)
 	cookie c = NULL;
 	cstring name = NULL, value = NULL;
 
-	if( (name = cstring_new()) == NULL
-	||  (value = cstring_new()) == NULL) 
+	if ((name = cstring_new()) == NULL
+	||  (value = cstring_new()) == NULL)
 		goto memerr;
 
-	while(*input != '\0' && *input != '=') {
-		if(!cstring_charcat(name, *input++)) 
+	while (*input != '\0' && *input != '=') {
+		if (!cstring_charcat(name, *input++))
 			goto memerr;
 	}
 
-	if(*input != '=') {
+	if (*input != '=') {
 		cstring_free(name);
 		cstring_free(value);
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 	}
 
 	input++; /* Skip '=' */
-	if(!cstring_copy(value, input)) 
+	if (!cstring_copy(value, input))
 		goto memerr;
 
-	if( (c = cookie_new()) == NULL) 
+	if ((c = cookie_new()) == NULL)
 		goto memerr;
 
-	if(!cookie_set_name(c, c_str(name)) 
-	|| !cookie_set_value(c, c_str(value))) 
+	if (!cookie_set_name(c, c_str(name))
+	|| !cookie_set_value(c, c_str(value)))
 		goto memerr;
 
 	cstring_free(name);
 	cstring_free(value);
 	cookie_set_version(c, 0);
-	if(!request_add_cookie(req, c)) {
+	if (!request_add_cookie(req, c)) {
 		set_os_error(e, errno);
 		cookie_free(c);
 		return 0;
@@ -362,14 +362,14 @@ memerr:
 
 static int parse_cookie_attr(
 	cookie c,
-	const char* input, 
-	const char* look_for, 
+	const char* input,
+	const char* look_for,
 	int (*set_attr)(cookie, const char*),
 	meta_error e)
 {
 	cstring str;
 
-	if( (str = cstring_new()) == NULL) 
+	if ((str = cstring_new()) == NULL)
 		return set_os_error(e, ENOMEM);
 	else if(!get_cookie_attribute(input, look_for, str, e)) {
 		cstring_free(str);
@@ -387,10 +387,10 @@ static int parse_new_cookie_version(cookie c, const char* value, meta_error e)
 	int version;
 	cstring str;
 
-	if( (str = cstring_new()) == NULL) 
+	if ((str = cstring_new()) == NULL)
 		return set_os_error(e, ENOMEM);
 
-	if(!get_cookie_attribute(value, "$Version", str, e)) {
+	if (!get_cookie_attribute(value, "$Version", str, e)) {
 		cstring_free(str);
 		return 0;
 	}
@@ -398,7 +398,7 @@ static int parse_new_cookie_version(cookie c, const char* value, meta_error e)
 	version = atoi(c_str(str));
 	cstring_free(str);
 
-	if(version != 1) 
+	if (version != 1)
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
 	cookie_set_version(c, version);
@@ -419,17 +419,17 @@ static int parse_new_cookie_secure(cookie c, const char* value, meta_error e)
 {
 	int secure;
 	cstring str;
-	
-	if( (str = cstring_new()) == NULL) 
+
+	if ((str = cstring_new()) == NULL)
 		return set_os_error(e, errno);
 
-	if(!get_cookie_attribute(value, "$Secure", str, e)) {
+	if (!get_cookie_attribute(value, "$Secure", str, e)) {
 		cstring_free(str);
 		return 0;
 	}
 
 	secure = atoi(c_str(str));
-	if(secure != 1 && secure != 0) {
+	if (secure != 1 && secure != 0) {
 		cstring_free(str);
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 	}
@@ -441,14 +441,14 @@ static int parse_new_cookie_secure(cookie c, const char* value, meta_error e)
 
 static const char* find_first_non_space(const char* s)
 {
-	while(*s != '\0' && (*s == ' ' || *s == '\t'))
+	while (*s != '\0' && (*s == ' ' || *s == '\t'))
 		s++;
-	
+
 	return s;
 }
 
 /*
- * look for name=value as in $Version="1";foo=bar  and 
+ * look for name=value as in $Version="1";foo=bar  and
  * add name and value to the cookie .
  * Returns 1 on success, else a http error do
  */
@@ -457,47 +457,47 @@ static int parse_new_cookie_name(cookie c, const char* input, meta_error e)
 	const char *s, *s2;
 	cstring str;
 
-	if( (s = strchr(input, ';')) == NULL) 
+	if ((s = strchr(input, ';')) == NULL)
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
 	/* skip ; and white space (if any) */
-	if( (s = find_first_non_space(++s)) == NULL) {
+	if ((s = find_first_non_space(++s)) == NULL) {
 		/* If all we had was ws */
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 	}
 
-	if( (s2 = strchr(s, '=')) == NULL) {
+	if ((s2 = strchr(s, '=')) == NULL) {
 		/* Missing = in Name= */
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 	}
 
-	if( (str = cstring_new()) == NULL)  
+	if ((str = cstring_new()) == NULL)
 		return set_os_error(e, errno);
 
-	if(!cstring_ncopy(str, s, (size_t) (s2 - s + 1))) {
+	if (!cstring_ncopy(str, s, (size_t) (s2 - s + 1))) {
 		cstring_free(str);
 		return set_os_error(e, errno);
 	}
-		
-	if(!cookie_set_name(c, c_str(str))) {
+
+	if (!cookie_set_name(c, c_str(str))) {
 		cstring_free(str);
 		return set_os_error(e, errno);
 	}
-		
+
 	s = s2 + 1;
 	cstring_recycle(str);
-	if( (s2 = strchr(s, ';')) == NULL) {
+	if ((s2 = strchr(s, ';')) == NULL) {
 		/* Missing ; in Name=value; */
 		cstring_free(str);
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 	}
 
-	if(!cstring_ncopy(str, s, (size_t)(s2 - s + 1))) {
+	if (!cstring_ncopy(str, s, (size_t)(s2 - s + 1))) {
 		cstring_free(str);
 		return set_os_error(e, errno);
 	}
 
-	if(!cookie_set_value(c, c_str(str))) {
+	if (!cookie_set_value(c, c_str(str))) {
 		cstring_free(str);
 		return set_os_error(e, errno);
 	}
@@ -529,7 +529,7 @@ int main(void)
 	cookie c;
 	size_t i, niter = 10000;
 	const char* name = "name";
-	const char* value = "value"; 
+	const char* value = "value";
 	const char* domain = "DOMAIN";
 	const char* path = "PATH";
 	const char* comment = "THIS IS A COMMENT";
@@ -537,27 +537,27 @@ int main(void)
 	int secure = 1;
 	int version = 1;
 
-	for(i = 0; i < niter; i++) {
-		if( (c = cookie_new()) == NULL)
+	for (i = 0; i < niter; i++) {
+		if ((c = cookie_new()) == NULL)
 			return 77;
 
-		if(!cookie_set_name(c, name)) return 77;
-		if(!cookie_set_value(c, value)) return 77;
-		if(!cookie_set_domain(c, domain)) return 77;
-		if(!cookie_set_path(c, path)) return 77;
-		if(!cookie_set_comment(c, comment)) return 77;
-		if(!cookie_set_max_age(c, max_age)) return 77;
+		if (!cookie_set_name(c, name)) return 77;
+		if (!cookie_set_value(c, value)) return 77;
+		if (!cookie_set_domain(c, domain)) return 77;
+		if (!cookie_set_path(c, path)) return 77;
+		if (!cookie_set_comment(c, comment)) return 77;
+		if (!cookie_set_max_age(c, max_age)) return 77;
 		cookie_set_secure(c, secure);
 		cookie_set_version(c, version);
 
-		if(strcmp(cookie_get_name(c), name) != 0) return 77;
-		if(strcmp(cookie_get_value(c), value) != 0) return 77;
-		if(strcmp(cookie_get_domain(c), domain) != 0) return 77;
-		if(strcmp(cookie_get_path(c), path) != 0) return 77;
-		if(strcmp(cookie_get_comment(c), comment) != 0) return 77;
-		if(cookie_get_max_age(c) != max_age) return 77;
-		if(cookie_get_secure(c) != secure) return 77;
-		if(cookie_get_version(c) != version) return 77;
+		if (strcmp(cookie_get_name(c), name) != 0) return 77;
+		if (strcmp(cookie_get_value(c), value) != 0) return 77;
+		if (strcmp(cookie_get_domain(c), domain) != 0) return 77;
+		if (strcmp(cookie_get_path(c), path) != 0) return 77;
+		if (strcmp(cookie_get_comment(c), comment) != 0) return 77;
+		if (cookie_get_max_age(c) != max_age) return 77;
+		if (cookie_get_secure(c) != secure) return 77;
+		if (cookie_get_version(c) != version) return 77;
 
 		cookie_free(c);
 	}

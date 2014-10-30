@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -36,7 +36,7 @@ html_section html_section_new(void)
 {
 	html_section p;
 
-	if( (p = malloc(sizeof *p)) == NULL) 
+	if ((p = malloc(sizeof *p)) == NULL)
 		;
 	else {
 		p->name = NULL;
@@ -48,7 +48,7 @@ html_section html_section_new(void)
 
 void html_section_free(html_section p)
 {
-	if(p != NULL) {
+	if (p != NULL) {
 		free(p->name);
 		free(p->code);
 		free(p);
@@ -60,10 +60,10 @@ int html_section_set_name(html_section s, const char* v)
 	assert(s != NULL);
 	assert(v != NULL);
 
-	if(s->name != NULL) 
+	if (s->name != NULL)
 		free(s->name);
 
-	if( (s->name = malloc(strlen(v) + 1)) != NULL)
+	if ((s->name = malloc(strlen(v) + 1)) != NULL)
 		strcpy(s->name, v);
 
 	return s->name != NULL;
@@ -74,10 +74,10 @@ int html_section_set_code(html_section s, const char* v)
 	assert(s != NULL);
 	assert(v != NULL);
 
-	if(s->code != NULL) 
+	if (s->code != NULL)
 		free(s->code);
 
-	if( (s->code = malloc(strlen(v) + 1)) != NULL)
+	if ((s->code = malloc(strlen(v) + 1)) != NULL)
 		strcpy(s->code, v);
 
 	return s->code != NULL;

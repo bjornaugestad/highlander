@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -53,7 +53,7 @@ typedef struct list_iterator_tag {
 
 /*
  * This function type is used by the functions
- * list_foreach, list_foreach_reversed and 
+ * list_foreach, list_foreach_reversed and
  * list_foreach_sep.
  */
 typedef int (*listfunc)(void* arg, void*data);
@@ -109,7 +109,7 @@ int list_foreach_sep(list lst, void* arg, listfunc f, int(*sep)(void*arg));
 int list_dual_foreach(list lst, void *arg1, void *arg2, int(*dual)(void* a1, void *a2, void *data));
 
 list list_merge(list dest, list src);
-void list_sort(list lst, int(*func)(const void *p1, const void *p2)); 
+void list_sort(list lst, int(*func)(const void *p1, const void *p2));
 size_t list_count(list lst, int (*include_node)(void*));
 
 /* Sublists */

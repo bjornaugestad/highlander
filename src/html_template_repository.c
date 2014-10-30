@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -26,7 +26,7 @@
 
 /**
  * A template repository is a thread safe storage for html_templates.
- * An application can contain multiple templates and each thread need 
+ * An application can contain multiple templates and each thread need
  * some thread safe way to get hold of templates after they've been created.
  * We don't want global variables, but implement a singleton repository
  * instead.
@@ -40,7 +40,7 @@ static struct html_template_repository* repos = NULL;
 
 void html_template_repository_empty(void)
 {
-	if(repos != NULL) {
+	if (repos != NULL) {
 		map_free(repos->templates);
 		free(repos);
 		repos = NULL;
@@ -49,10 +49,10 @@ void html_template_repository_empty(void)
 
 static int init_repos(void)
 {
-	if(repos == NULL) {
-		if( (repos = malloc(sizeof *repos)) == NULL)
+	if (repos == NULL) {
+		if ((repos = malloc(sizeof *repos)) == NULL)
 			return 0;
-		else if( (repos->templates = map_new((void(*)(void*))html_template_free)) == NULL) {
+		else if((repos->templates = map_new((void(*)(void*))html_template_free)) == NULL) {
 			free(repos);
 			repos = NULL;
 			return 0;
@@ -67,12 +67,12 @@ html_buffer html_template_repository_use(const char* template)
 	html_template t;
 	html_buffer b;
 
-	if(!init_repos())
+	if (!init_repos())
 		return NULL;
 
-	if( (t = map_get(repos->templates, template)) == NULL)
+	if ((t = map_get(repos->templates, template)) == NULL)
 		return NULL;
-	else if( (b = html_buffer_new()) == NULL)
+	else if((b = html_buffer_new()) == NULL)
 		return NULL;
 	else {
 		html_buffer_set_template(b, t);
@@ -82,7 +82,7 @@ html_buffer html_template_repository_use(const char* template)
 
 int html_template_repository_add(const char* name, html_template t)
 {
-	if(!init_repos())
+	if (!init_repos())
 		return 0;
 	else if(!map_set(repos->templates, name, t))
 		return 0;

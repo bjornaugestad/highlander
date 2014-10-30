@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -37,9 +37,9 @@
  * NOTE: Security
  * Black lists:
  * A black list is a list of IP adresses which aren't allowed to
- * connect. 
+ * connect.
  * Tar pitting:
- * - What is it? Tar pitting is to return data very slowly to a 
+ * - What is it? Tar pitting is to return data very slowly to a
  * malicious client. That way we bind his resources and slow him
  * down. It can easily be implemented by changing the connection_flush()
  * function to do a sleep() between each byte or two. Remember that
@@ -86,11 +86,11 @@ struct connection_tag {
 	/**
 	 * We need to count incoming and outgoing bytes. Outgoing bytes
 	 * are important for HTTP logging. Incoming bytes are used to
-	 * detect DoS attacks. We therefore need to compute 
+	 * detect DoS attacks. We therefore need to compute
 	 * the byte-per-second ratio to be able to disconnect very
 	 * slow clients. We don't need subsecond precision so we
-	 * can use time_t. We use two time_t's, one to be able to 
-	 * disconnect clients that has been connected too long, another to 
+	 * can use time_t. We use two time_t's, one to be able to
+	 * disconnect clients that has been connected too long, another to
 	 * track progress for the current request.
 	 * 2002-06-15 boa
 	 */
@@ -119,8 +119,8 @@ static inline int nFillReadBuffer(connection conn)
 		&cbRead);
 
 	/* NOTE: errors may indicate bad clients */
-	if(success) {
-		if(cbRead == 0) {
+	if (success) {
+		if (cbRead == 0) {
 			errno = EAGAIN;
 			success = 0;
 		}
@@ -140,7 +140,7 @@ static inline void reset_counters(connection conn)
 	conn->conn_established = conn->request_started = time(NULL);
 }
 
-static inline void 
+static inline void
 AddDataToWriteBuffer(connection conn, const void* buf, size_t cb)
 {
 	size_t cbWritten;
@@ -152,53 +152,53 @@ AddDataToWriteBuffer(connection conn, const void* buf, size_t cb)
 
 }
 
-static inline size_t 
+static inline size_t
 cbCopyFromReadBuffer(connection conn, void* buf, size_t cb)
 {
 	return membuf_read(conn->readbuf, buf, cb);
 }
 
-static inline int 
+static inline int
 fReadBufferContainsAtLeast(connection conn, size_t cb)
 {
 	size_t cbInBuf = membuf_canread(conn->readbuf);
 	return (cbInBuf >= cb) ? 1 : 0;
 }
 
-static inline int 
+static inline int
 fReadBufferContainsData(connection conn)
 {
 	size_t cbInBuf = membuf_canread(conn->readbuf);
 	return cbInBuf != 0 ? 1 : 0;
 }
 
-static inline int 
+static inline int
 fReadBufferEmpty(connection conn)
 {
 	return fReadBufferContainsData(conn) == 0;
 }
 
 #if 0
-static int 
+static int
 fWriteBufferEmpty(connection conn)
 {
-	/* The buffer is empty if we can write the same number 
+	/* The buffer is empty if we can write the same number
 	 * of bytes as the buffer size. */
-	int empty = 
+	int empty =
 		(membuf_size(conn->writebuf) == membuf_canwrite(conn->writebuf));
 
 	return empty;
 }
 #endif
 
-static inline int 
+static inline int
 fWriteBufferHasRoomFor(connection conn, size_t cb)
 {
 	size_t cbAvailable = membuf_canwrite(conn->writebuf);
 	return cbAvailable >= cb ? 1 : 0;
 }
 
-static inline int 
+static inline int
 chGetOneCharacter(connection conn)
 {
 	char c;
@@ -206,7 +206,7 @@ chGetOneCharacter(connection conn)
 	assert(NULL != conn);
 	assert(membuf_canread(conn->readbuf) > 0);
 
-	if(membuf_read(conn->readbuf, &c, 1) == 1)
+	if (membuf_read(conn->readbuf, &c, 1) == 1)
 		return (int)c;
 	else
 		return EOF;
@@ -225,9 +225,9 @@ connection connection_new(
 	assert(timeout_writes >= 0);
 	assert(retries_reads >= 0);
 	assert(retries_writes >= 0);
-	
+
 	/* Allocate memory needed */
-	if( (p = mem_calloc(1, sizeof *p)) != NULL) {
+	if ((p = mem_calloc(1, sizeof *p)) != NULL) {
 		p->readbuf = NULL;
 		p->writebuf = NULL;
 		p->persistent = 0;
@@ -246,9 +246,9 @@ connection connection_new(
 int connection_connect(connection c, const char* host, int port)
 {
 	assert(c != NULL);
-	if ( (c->sock = create_client_socket(host, port)) == NULL)
+	if ((c->sock = create_client_socket(host, port)) == NULL)
 		return 0;
-	else 
+	else
 		return 1;
 }
 
@@ -302,7 +302,7 @@ int connection_flush(connection conn)
 	assert(conn != NULL);
 
 	cbInBuf = membuf_canread(conn->writebuf);
-	if(cbInBuf) {
+	if (cbInBuf) {
 		success = sock_write(
 			conn->sock,
 			membuf_data(conn->writebuf),
@@ -310,7 +310,7 @@ int connection_flush(connection conn)
 			conn->timeout_writes,
 			conn->retries_writes);
 
-		if(success) {
+		if (success) {
 			conn->outgoing_bytes += cbInBuf;
 			membuf_reset(conn->writebuf);
 		}
@@ -328,7 +328,7 @@ int connection_close(connection conn)
 	flush_success = connection_flush(conn);
 	close_success = sock_close(conn->sock);
 
-	if(!flush_success) 
+	if (!flush_success)
 		rc = 0;
 	else if(!close_success)
 		rc = 0;
@@ -346,13 +346,13 @@ int connection_getc(connection conn, int* pchar)
 	assert(pchar != NULL);
 
 	/* Fill buffer if empty */
-	if(fReadBufferEmpty(conn)) 
+	if (fReadBufferEmpty(conn))
 		success = nFillReadBuffer(conn);
 
 	/* Get one character from buffer */
-	if(success) {
+	if (success) {
 		*pchar = chGetOneCharacter(conn);
-		if(*pchar == EOF)
+		if (*pchar == EOF)
 			success = 0;
 	}
 
@@ -384,14 +384,14 @@ int connection_write(connection conn, const void* buf, size_t cb)
 	assert(conn != NULL);
 	assert(buf != NULL);
 
-	if(!fWriteBufferHasRoomFor(conn, cb))
+	if (!fWriteBufferHasRoomFor(conn, cb))
 		success = connection_flush(conn);
 
-	if(!success) 
+	if (!success)
 		;
-	else if(fWriteBufferHasRoomFor(conn, cb)) 
+	else if(fWriteBufferHasRoomFor(conn, cb))
 		AddDataToWriteBuffer(conn, buf, cb);
-	else if( (success = WriteToSocket(conn, buf, cb)))
+	else if((success = WriteToSocket(conn, buf, cb)))
 		conn->outgoing_bytes += cb;
 
 	return success;
@@ -411,9 +411,9 @@ int connection_write(connection conn, const void* buf, size_t cb)
  * data. All we have to do is to do a time(NULL) or clock() before
  * and after the call to sock_read(). Then we can compute
  * the duration and compare it with the number of bytes
- * read from the socket. 
- * 
- * The hard part is to set up general rules on how 
+ * read from the socket.
+ *
+ * The hard part is to set up general rules on how
  * to categorize our connected clients. Starting to
  * disconnect valid users will not be very popular.
  *
@@ -432,7 +432,7 @@ static int nReadFromSocket(connection conn, void *pbuf, size_t cb)
 	assert(conn != NULL);
 	assert(pbuf != NULL);
 	assert(fReadBufferEmpty(conn));
-	
+
 	success = sock_read(
 		conn->sock,
 		pbuf,
@@ -441,8 +441,8 @@ static int nReadFromSocket(connection conn, void *pbuf, size_t cb)
 		conn->retries_reads,
 		&cbRead);
 
-	if(success) {
-		if(cbRead != cb) {
+	if (success) {
+		if (cbRead != cb) {
 			errno = EAGAIN;
 			success = 0;
 		}
@@ -468,22 +468,22 @@ int connection_read(connection conn, void* buf, size_t cb)
 	/* We need a char buffer to be able to compute offsets */
 	cbuf = buf;
 
-	if(cbCopied < cb) {
+	if (cbCopied < cb) {
 		cb -= cbCopied;
 		cbuf += cbCopied;
 
 		/* Read from socket if buffer is too small anyway */
-		if(membuf_size(conn->readbuf) < cb) {
+		if (membuf_size(conn->readbuf) < cb) {
 			success = nReadFromSocket(conn, cbuf, cb);
 		}
 		else {
 			/* Fill the read buffer by reading data from the socket.
-			 * Then copy data from the read buffer to buf. 
+			 * Then copy data from the read buffer to buf.
 			 */
 			success = nFillReadBuffer(conn);
-			if(success) {
-				if(fReadBufferContainsAtLeast(conn, cb)) {
-					if(cbCopyFromReadBuffer(conn, cbuf, cb) != cb) {
+			if (success) {
+				if (fReadBufferContainsAtLeast(conn, cb)) {
+					if (cbCopyFromReadBuffer(conn, cbuf, cb) != cb) {
 						errno = EAGAIN;
 						success = 0;
 					}
@@ -517,7 +517,7 @@ void connection_discard(connection conn)
 int connection_ungetc(connection conn, int c)
 {
 	int rc;
-	
+
 	(void)c;
 	assert(conn != NULL);
 	rc = membuf_unget(conn->readbuf);
@@ -544,7 +544,7 @@ struct sockaddr_in* connection_get_addr(connection conn)
 
 void connection_free(connection conn)
 {
-	if(conn != NULL) {
+	if (conn != NULL) {
 		mem_free(conn);
 	}
 }
@@ -603,15 +603,15 @@ int connection_gets(connection conn, char *buf, size_t size)
 	/* Avoid buffer overflow by leaving room for \0 */
 	size--;
 
-	while(i < size && (success = connection_getc(conn, &c))) {
+	while (i < size && (success = connection_getc(conn, &c))) {
 		*buf++ = c;
 		i++;
 
-		if(c == '\n')
+		if (c == '\n')
 			break;
 	}
 
-	if(success)
+	if (success)
 		*buf = '\0';
 
 	return success;
@@ -631,7 +631,7 @@ int connection_write_big_buffer(
 	assert(timeout >= 0);
 	assert(retries >= 0);
 
-	if( (success = connection_flush(conn)))
+	if ((success = connection_flush(conn)))
 		success = sock_write(conn->sock, buf, cb, timeout, retries);
 
 	return success;

@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -26,16 +26,16 @@ extern "C" {
 
 /**
  * @brief Generalized error handling.
- * 
+ *
  * There can be multiple sources of errors in a server like metaweb.
  * 1. Socket errors due to network failure/hacking
  * 2. HTTP errors due to hacking or bugs
  * 3. Logical errors in metaweb-based apps
  * 4. OS errors such as ENOMEM, ENOENT
  * 5. Database errors if one is involved
- * 
+ *
  * All these different errors must be handled, and handled well.
- * Some functions has to handle all of them, and currently have 
+ * Some functions has to handle all of them, and currently have
  * a hard time doing so. The main problem is that it is hard to
  * store info about both the error code and the error group
  * in just one int (returned from a function).

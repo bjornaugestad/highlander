@@ -6,19 +6,19 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 /*
- * File contains misc functions, some to replace non-ansi functions 
+ * File contains misc functions, some to replace non-ansi functions
  * like strcasecmp()
  */
 
@@ -39,7 +39,7 @@
 
 /**
  * Aix has no vsyslog, so we use our own.
- * We limit the output to 1000 characters. That should be 
+ * We limit the output to 1000 characters. That should be
  * sufficient for most error messages.
  */
 void meta_vsyslog(int class, const char* fmt, va_list ap)
@@ -55,8 +55,8 @@ int casecompstr(const char* s1, const char* s2)
 	assert(s1 != NULL);
 	assert(s2 != NULL);
 
-	while(*s1 != '\0') {
-		if(*s2 == '\0')
+	while (*s1 != '\0') {
+		if (*s2 == '\0')
 			return 1;	/* s1 is greater as it is longer */
 		else if(*s1 != *s2)
 			return *s1 - *s2;
@@ -77,8 +77,8 @@ void fs_lower(char* s)
 {
 	assert(NULL != s);
 
-	while(*s != '\0') {
-		if(isupper((int)*s)) 
+	while (*s != '\0') {
+		if (isupper((int)*s))
 			*s = tolower((int)*s);
 
 		s++;
@@ -88,8 +88,8 @@ void fs_upper(char* s)
 {
 	assert(NULL != s);
 
-	while(*s != '\0') {
-		if(islower((int)*s)) 
+	while (*s != '\0') {
+		if (islower((int)*s))
 			*s = toupper((int)*s);
 
 		s++;
@@ -102,10 +102,10 @@ long fs_atol(const char* s)
 	long val = 0;
 	assert(s != NULL);
 
-	while(*s) {
-		if(isdigit((int)*s)) 
+	while (*s) {
+		if (isdigit((int)*s))
 			val = (val * 10) + (*s - '0');
-		else 
+		else
 			return -1;
 
 		s++;
@@ -120,10 +120,10 @@ int string2size_t(const char *s, size_t *val)
 	assert(val != NULL);
 
 	*val = 0;
-	while(*s) {
-		if(isdigit((int)*s)) 
+	while (*s) {
+		if (isdigit((int)*s))
 			*val = (*val * 10) + (*s - '0');
-		else 
+		else
 			return 0;
 
 		s++;
@@ -137,18 +137,18 @@ int find_word(const char* s, size_t iWord)
 
 	/* Loop 0..n times to skip words */
 	assert(s != NULL);
-	while(iWord--) {
+	while (iWord--) {
 		/* Skip until one space */
-		while(*string != '\0' && *string != ' ')
+		while (*string != '\0' && *string != ' ')
 			string++;
 
 		/* Skip the space(even multiple) */
-		while(*string != '\0' && *string == ' ') 
+		while (*string != '\0' && *string == ' ')
 			string++;
 	}
 
 	/* if index out of range */
-	if(*string == '\0') 
+	if (*string == '\0')
 		return -1;
 
 	return string - s;
@@ -162,15 +162,15 @@ int get_word_count(const char *s)
 	assert(s != NULL);
 
 	/* Remove leading ws */
-	while(*s == ' ')
+	while (*s == ' ')
 		s++;
 
-	if(*s != '\0')
+	if (*s != '\0')
 		n++;
 
-	while(*s != '\0') {
-		if(*s == ' ') {
-            if(!last_was_space)
+	while (*s != '\0') {
+		if (*s == ' ') {
+            if (!last_was_space)
                 n++;
 			last_was_space = 1;
 		}
@@ -194,11 +194,11 @@ int get_word_from_string(
 	assert(string != NULL);
 	assert(word != NULL);
 	assert(cchWordMax > 1);
-	
+
 	i = find_word(string, iWord);
 
 	/* if index out of range */
-	if(i == -1)
+	if (i == -1)
 		return 0;
 
 	/* copy the word */
@@ -219,10 +219,10 @@ int copy_word(
 	assert(separator != '\0');
 	assert(cchWordMax > 0);
 
-	while(*input != '\0' && *input != separator && i < cchWordMax)
+	while (*input != '\0' && *input != separator && i < cchWordMax)
 		word[i++] = *input++;
 
-	if(i == cchWordMax)
+	if (i == cchWordMax)
 		return 0;
 
 	word[i] = '\0';
@@ -236,9 +236,9 @@ void remove_trailing_newline(char *s)
 	assert(s != NULL);
 
 	i = strlen(s);
-	if(i > 0) {
+	if (i > 0) {
 		i--;
-		if(s[i] == '\n')
+		if (s[i] == '\n')
 			s[i] = '\0';
 	}
 }
@@ -278,7 +278,7 @@ int tprintf(FILE *f, int tabs, const char *format, ...)
 	va_list ap;
 	int rc;
 
-	while(tabs--)
+	while (tabs--)
 		fputc('\t', f);
 
 	va_start(ap, format);
@@ -297,12 +297,12 @@ int get_extension(const char* src, char* dest, size_t cb)
 	assert(src != NULL);
 	assert(dest != NULL);
 	assert(cb > 1);
-	
+
 	end = src + strlen(src);
 	dest[i] = '\0';
 
-	while(end >= src && i > 0) {
-		if(*end == '.') {
+	while (end >= src && i > 0) {
+		if (*end == '.') {
 			found = 1;
 			break;
 		}
@@ -310,14 +310,14 @@ int get_extension(const char* src, char* dest, size_t cb)
 		dest[i--] = *end--;
 	}
 
-	if(i == 0) {
+	if (i == 0) {
 		errno = ENOSPC;
 		return 0;
 	}
 	else if(found) {
 		memmove(dest, &dest[i + 1], cb - i);
 	}
-	else 
+	else
 		*dest = '\0';
 
 	return 1;
@@ -333,7 +333,7 @@ int get_basename(const char* name, const char* suffix, char* dest, size_t cb)
 	assert(cb > 1);
 
 	/* Locate the rightmost / to remove the directory part */
-	if( (s = strrchr(name, '/')) != NULL)
+	if ((s = strrchr(name, '/')) != NULL)
 		s++;	/* Skip the slash */
 	else
 		s = (char*)name; /* The cast is OK. :-) */
@@ -343,7 +343,7 @@ int get_basename(const char* name, const char* suffix, char* dest, size_t cb)
 	dest[cb - 1] = '\0';
 
 	/* Locate the suffix, if any */
-	if(suffix == NULL || (s = strstr(dest, suffix)) == NULL)
+	if (suffix == NULL || (s = strstr(dest, suffix)) == NULL)
 		return 1;
 
 	/* Be sure that the suffix actually is a suffix.
@@ -352,7 +352,7 @@ int get_basename(const char* name, const char* suffix, char* dest, size_t cb)
 	 * at the end of the string.
 	 */
 	i = strlen(suffix);
-	if(s[i] == '\0')
+	if (s[i] == '\0')
 		*s = '\0';
 
 	return 1;
@@ -366,10 +366,10 @@ const char* get_inet_addr(void* paddr, char* dst, size_t cnt)
 
 	static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
-	if(pthread_mutex_lock(&lock))
+	if (pthread_mutex_lock(&lock))
 		return NULL;
 
-	if( (pa = inet_ntoa(*pinaddr)) == NULL || strlen(pa) >= cnt) {
+	if ((pa = inet_ntoa(*pinaddr)) == NULL || strlen(pa) >= cnt) {
 		pthread_mutex_unlock(&lock);
 		return NULL;
 	}
@@ -416,9 +416,9 @@ const char* get_mime_type(const char* filename)
 	size_t i, nelem = sizeof(map) / sizeof(map[0]);
 	char ext[100];
 
-	if(get_extension(filename, ext, sizeof ext)) {
-		for(i = 0; i < nelem; i++) {
-			if(strcmp(map[i].ext, ext) == 0) {
+	if (get_extension(filename, ext, sizeof ext)) {
+		for (i = 0; i < nelem; i++) {
+			if (strcmp(map[i].ext, ext) == 0) {
 				return map[i].mime;
 			}
 		}
@@ -433,19 +433,19 @@ int main(void)
 {
 	{ /* Check get_basename */
 		char sz[1024] = { '\0' };
-		if(!get_basename("foo.bar", ".bar", sz, sizeof sz)
+		if (!get_basename("foo.bar", ".bar", sz, sizeof sz)
 		|| strcmp(sz, "foo") != 0) {
 			fprintf(stderr, "get_basename failed: %s\n", sz);
 			return EXIT_FAILURE;
 		}
 
-		if(!get_basename("/foo.bar", NULL, sz, sizeof sz)
+		if (!get_basename("/foo.bar", NULL, sz, sizeof sz)
 		|| strcmp(sz, "foo.bar") != 0) {
 			fprintf(stderr, "get_basename failed(2)\n");
 			return EXIT_FAILURE;
 		}
 		memset(sz, '\0', sizeof sz);
-		if(!get_basename("/a/b/z/d/e/foo.bar", "bar", sz, sizeof sz)
+		if (!get_basename("/a/b/z/d/e/foo.bar", "bar", sz, sizeof sz)
 		|| strcmp(sz, "foo.") != 0) {
 			fprintf(stderr, "get_basename failed(3): %s\n", sz);
 			return EXIT_FAILURE;

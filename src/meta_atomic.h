@@ -6,19 +6,19 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 #ifndef META_ATOMIC_H
-#define META_ATOMIC_H 
+#define META_ATOMIC_H
 
 #include <stdint.h>
 #include <pthread.h>
@@ -53,7 +53,7 @@ typedef struct {unsigned long long val; pthread_mutex_t lock;} atomic_ull;
 		pthread_mutex_unlock(&p->lock);\
 		return v;\
 	}
-	
+
 
 #define ATOMIC_SET(t, n) \
 	static inline void atomic_##n##_set(atomic_##n * p, t val)\

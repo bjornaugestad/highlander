@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -20,8 +20,8 @@
 #ifndef META_MEMBUF_H
 #define META_MEMBUF_H
 
-#include <assert.h> 
-#include <stdlib.h> 
+#include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -30,12 +30,12 @@ extern "C" {
 #endif
 
 /**
- * @brief High speed memory buffering. 
+ * @brief High speed memory buffering.
  *
  * We some places have memory buffers, which is a collection of
  * bytes with a fixed size. These buffers aren't zero terminated
  * in any way, which means that it can be quite easy to miscalculate
- * e.g. offsets or lengths when we access them. 
+ * e.g. offsets or lengths when we access them.
  *
  * You can write data to the buffer and you can read data from the buffer,
  * assuming that there's data in the buffer.
@@ -51,14 +51,14 @@ typedef struct membuf_tag *membuf;
 struct membuf_tag {
 	size_t size;
 
-	/* These two member are used when reading and writing 
+	/* These two member are used when reading and writing
 	 * from/to the buffer. We always append data to the buffer
 	 * and we always read from the start of the buffer. So
 	 * Bytes available for reading is written - read, and bytes
 	 * available for writing is size - written. If we try to
 	 * write more than there's room for at the end of the buffer
 	 * *and* written == read, then the membuf_write() function will
-	 * do an automatic reset of the buffer and start writing 
+	 * do an automatic reset of the buffer and start writing
 	 * from the beginning of the buffer.
 	 */
 	size_t written;
@@ -109,7 +109,7 @@ static inline size_t membuf_canwrite(membuf mb)
 	assert(mb != NULL);
 
 	/* Report full size if next write will reset anyway */
-	if(mb->read == mb->written)
+	if (mb->read == mb->written)
 		return mb->size;
 	else
 		return mb->size - mb->written;
@@ -126,17 +126,17 @@ static inline void membuf_reset(membuf mb)
 /*
  * Ungets a previous read of one character. It will fail if the e.g. the
  * buffer has been explicitly or implicitly reset since
- * the character was read from the buffer. Since this is a 
+ * the character was read from the buffer. Since this is a
  * membuf, you can unget more than one character, but this
  * version supports one character only.
- * 
+ *
  * Returns 1 if successful, else 0.
  */
 static inline int membuf_unget(membuf mb)
 {
 	assert(mb != NULL);
 
-	if(mb->read > 0) {
+	if (mb->read > 0) {
 		mb->read--;
 		return 1;
 	}
@@ -157,12 +157,12 @@ static inline void* membuf_data(membuf mb)
 }
 
 /**
- * Sets the entire content of the buffer to the character c. 
- * This function does not change any internal status pointers, 
+ * Sets the entire content of the buffer to the character c.
+ * This function does not change any internal status pointers,
  * and is excellent to use if you want to zero-terminate the
  * buffer and magically create a string. To do that, first set
  * the entire buffer to '\0', then write data to the buffer. Remember
- * not to write to the last byte in the buffer, since that will 
+ * not to write to the last byte in the buffer, since that will
  * overwrite the last '\0' added by membuf_set().
  */
 static inline void membuf_set(membuf mb, int c)

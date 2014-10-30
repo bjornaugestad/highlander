@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -29,7 +29,7 @@
 #include <meta_misc.h>
 
 enum meta_error_group {
-	meg_unknown,	
+	meg_unknown,
 	meg_tcpip,		/* network related error */
 	meg_protocol,	/* Protocol, e.g. HTTP, syntax/semantic error */
 	meg_app,		/* Some application error, unable to handle */
@@ -73,7 +73,7 @@ int set_tcpip_error(meta_error e, int val)
 
 int set_http_error(meta_error e, int val)
 {
-	if(e != NULL) {
+	if (e != NULL) {
 		e->group = meg_protocol;
 		e->code = val;
 	}
@@ -83,7 +83,7 @@ int set_http_error(meta_error e, int val)
 
 int set_app_error(meta_error e, int val)
 {
-	if(e != NULL) {
+	if (e != NULL) {
 		e->group = meg_app;
 		e->code = val;
 	}
@@ -93,7 +93,7 @@ int set_app_error(meta_error e, int val)
 
 int set_os_error(meta_error e, int val)
 {
-	if(e != NULL) {
+	if (e != NULL) {
 		e->group = meg_os;
 		e->code = val;
 	}
@@ -103,7 +103,7 @@ int set_os_error(meta_error e, int val)
 
 int set_db_error(meta_error e, int val)
 {
-	if(e != NULL) {
+	if (e != NULL) {
 		e->group = meg_db;
 		e->code = val;
 	}
@@ -113,7 +113,7 @@ int set_db_error(meta_error e, int val)
 
 int set_other_error(meta_error e, int val)
 {
-	if(e != NULL) {
+	if (e != NULL) {
 		e->group = meg_other;
 		e->code = val;
 	}
@@ -162,11 +162,11 @@ int get_error_code(meta_error e)
 	assert(e != NULL);
 	return e->code;
 }
-	
+
 
 void set_error_message(meta_error e, const char *msg)
 {
-	if(e != NULL) {
+	if (e != NULL) {
 		strncpy(e->message, msg, META_ERROR_MESSAGE_MAX);
 		e->message[META_ERROR_MESSAGE_MAX] = '\0';
 	}
@@ -192,7 +192,7 @@ void die_with_error(meta_error e, const char *fmt, ...)
 
 	va_start(ap, fmt);
 
-	if(is_tcpip_error(e))
+	if (is_tcpip_error(e))
 		syslog(LOG_ERR, "A tcp/ip error has occured");
 	else if(is_protocol_error(e))
 		syslog(LOG_ERR, "A protocol error has occured");
@@ -205,9 +205,9 @@ void die_with_error(meta_error e, const char *fmt, ...)
 	else if(is_other_error(e))
 		syslog(LOG_ERR, "An unknown error has occured");
 
-	if(has_error_message(e)) 
+	if (has_error_message(e))
 		syslog(LOG_ERR, "Error message: %s", get_error_message(e));
-	else if( (rc = get_error_code(e)) != 0) 
+	else if((rc = get_error_code(e)) != 0)
 		syslog(LOG_ERR, "Possible error: %d %s\n", rc, strerror(rc));
 
 	meta_vsyslog(LOG_ERR, fmt, ap);

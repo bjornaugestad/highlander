@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -19,7 +19,7 @@
 
 /*
     libcoremeta - A library of useful C functions and ADT's
-    Copyright (C) 2000-2006 B. Augestad, bjorn.augestad@gmail.com 
+    Copyright (C) 2000-2006 B. Augestad, bjorn.augestad@gmail.com
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -69,14 +69,14 @@ struct cache_tag {
 	size_t hotlist_nelem;
 };
 
-/* OK, nå har vi en meget rask og fin cache, men ingen 
- * oversikt over LRU items. Det må vi ha. 
- * Det er ikke noe poeng i å vite MRU da lookups er 
- * såpass raskt at det ikke er noe tema, men vi må vite 
- * hvilke noder vi skal slette når cachen er full. 
+/* OK, nå har vi en meget rask og fin cache, men ingen
+ * oversikt over LRU items. Det må vi ha.
+ * Det er ikke noe poeng i å vite MRU da lookups er
+ * såpass raskt at det ikke er noe tema, men vi må vite
+ * hvilke noder vi skal slette når cachen er full.
  * Vi skal ikke slette de mest populære(MRU) ei heller
  * de som er pinned i cachen. Så hva gjør vi?
- * - Vi ønsker ikke å traversere hashmapen. 
+ * - Vi ønsker ikke å traversere hashmapen.
  * - Vi ønsker ikke å telle hvor ofte et item
  *   er brukt.
  *
@@ -96,17 +96,17 @@ cache cache_new(size_t nelem, size_t hotlist_nelem, size_t cb)
 
 	assert(cb > 0);
 
-	if( (c = mem_malloc(sizeof *c)) != NULL
+	if ((c = mem_malloc(sizeof *c)) != NULL
 	&& (c->hashtable = mem_calloc(nelem, sizeof *c->hashtable)) != NULL
 	&& (c->hotlist = mem_calloc(hotlist_nelem, sizeof *c->hotlist)) != NULL) {
-	
+
 		c->nelem = nelem;
 		c->max_bytes = cb;
 		c->current_bytes = 0;
 		c->hotlist_nelem = hotlist_nelem;
 	}
 	else {
-		if(c != NULL) 
+		if (c != NULL)
 			mem_free(c->hashtable);
 
 		mem_free(c);
@@ -118,7 +118,7 @@ cache cache_new(size_t nelem, size_t hotlist_nelem, size_t cb)
 
 static void cache_entry_free(struct cache_entry* p)
 {
-	if(p != NULL) {
+	if (p != NULL) {
 		mem_free(p->data);
 		mem_free(p);
 	}
@@ -134,18 +134,18 @@ static void cache_entry_free(struct cache_entry* p)
  */
 void cache_free(cache c, dtor cleanup)
 {
-	if(cleanup == NULL)
+	if (cleanup == NULL)
 		cleanup = free;
 
-	if(c != NULL) {
+	if (c != NULL) {
 		size_t i;
 
-		for(i = 0; i < c->nelem; i++) {
+		for (i = 0; i < c->nelem; i++) {
 			list lst = c->hashtable[i];
-			if(lst != NULL) {
-				if(cleanup != NULL) {
+			if (lst != NULL) {
+				if (cleanup != NULL) {
 					list_iterator li;
-					for(li = list_first(lst); !list_end(li); li = list_next(li)) {
+					for (li = list_first(lst); !list_end(li); li = list_next(li)) {
 						struct cache_entry* p = list_get(li);
 						assert(p != NULL);
 						assert(p->data != NULL);
@@ -170,8 +170,8 @@ void cache_invalidate(cache c, dtor cleanup)
 
 	assert(c != NULL);
 
-	for(i = 0; i < c->nelem; i++) {
-		if(c->hashtable[i] != NULL) {
+	for (i = 0; i < c->nelem; i++) {
+		if (c->hashtable[i] != NULL) {
 			list_free(c->hashtable[i], (dtor)cache_entry_free);
 			c->hashtable[i] = NULL;
 		}
@@ -183,15 +183,15 @@ static int on_hotlist(cache c, size_t id)
 	size_t i;
 
 	assert(c != NULL);
-	for(i = 0; i < c->hotlist_nelem; i++) 
-		if(c->hotlist[i] == id)
+	for (i = 0; i < c->hotlist_nelem; i++)
+		if (c->hotlist[i] == id)
 			return 1;
 
 	return 0;
 }
 
 /*
- * Check that we have room for the entry or free items if needed. 
+ * Check that we have room for the entry or free items if needed.
  */
 static int make_space(cache c, size_t cb)
 {
@@ -202,30 +202,30 @@ static int make_space(cache c, size_t cb)
 	assert(c != NULL);
 
 	/* Can the item fit at all? */
-	if(cb > c->max_bytes) {
+	if (cb > c->max_bytes) {
 		errno = ENOSPC;
 		return 0;
 	}
 
-	for(;;) {
+	for (;;) {
 		/* Do we have space? */
-		if(c->current_bytes + cb <= c->max_bytes) 
+		if (c->current_bytes + cb <= c->max_bytes)
 			return 1;
 
 		/* Locate an item to remove from the cache.
-		 * We just pick one of the lists by random 
-		 * and find an item to delete. 
+		 * We just pick one of the lists by random
+		 * and find an item to delete.
 		 */
 		hid = (size_t)rand() % c->nelem;
 
 		/* Does the slot have a list? If not, pick another */
-		if(c->hashtable[hid] == NULL)
+		if (c->hashtable[hid] == NULL)
 			continue;
 
 		/* Iterate through the list and delete an item */
-		for(i =list_first(c->hashtable[hid]); !list_end(i); i = list_next(i)) {
+		for (i =list_first(c->hashtable[hid]); !list_end(i); i = list_next(i)) {
 			p = list_get(i);
-			if(!on_hotlist(c, p->id) && !p->pinned)
+			if (!on_hotlist(c, p->id) && !p->pinned)
 				cache_remove(c, p->id);
 		}
 	}
@@ -235,7 +235,7 @@ static int make_space(cache c, size_t cb)
 	return 0;
 }
 
-	
+
 int cache_add(cache c, size_t id, void* data, size_t cb, int pin)
 {
 	struct cache_entry *p;
@@ -245,9 +245,9 @@ int cache_add(cache c, size_t id, void* data, size_t cb, int pin)
 	assert(c != NULL);
 	assert(data != NULL);
 
-	if(!make_space(c, cb))
+	if (!make_space(c, cb))
 		;
-	else if( (p = mem_malloc(sizeof *p)) == NULL)
+	else if((p = mem_malloc(sizeof *p)) == NULL)
 		;
 	else {
 		p->id = id;
@@ -255,7 +255,7 @@ int cache_add(cache c, size_t id, void* data, size_t cb, int pin)
 		p->size = cb;
 		p->pinned = pin;
 
-		if(cache_exists(c, id)) {
+		if (cache_exists(c, id)) {
 			/* Hmm, duplicate. We don't like that (for now) */
 			mem_free(p);
 			assert(0);
@@ -267,14 +267,14 @@ int cache_add(cache c, size_t id, void* data, size_t cb, int pin)
 		else if(list_add(c->hashtable[hid], p) == NULL) {
 			mem_free(p);
 		}
-		else 
+		else
 			rc = 1;
 	}
 
 	return rc;
 }
 
-/** 
+/**
  * Add an item to the hotlist by moving old items to the back
  * and adding the new id in front of the hotlist.
  * Special case: The item may already be in the list, but not
@@ -287,11 +287,11 @@ static void add_to_hotlist(cache c, size_t id)
 	assert(c != NULL);
 
 	/* Already at front */
-	if(c->hotlist[0] == id)
+	if (c->hotlist[0] == id)
 		return;
 
-	for(i = 0; i < c->hotlist_nelem; i++) {
-		if(c->hotlist[i] == id) {
+	for (i = 0; i < c->hotlist_nelem; i++) {
+		if (c->hotlist[i] == id) {
 			/* id already in hot list, move it to front.
 			 * We do that by moving nelem 0..i-1 to 1..i
 			 * and then use elem 0 to store id. We know that
@@ -319,14 +319,14 @@ static inline list_iterator find_entry(cache c, size_t id)
 
 	i.node = NULL; /* Which means list_end() */
 	hid = id % c->nelem;
-	if(c->hashtable[hid] == NULL)
+	if (c->hashtable[hid] == NULL)
 		return i;
 
-	for(i = list_first(c->hashtable[hid]); !list_end(i); i = list_next(i)) {
+	for (i = list_first(c->hashtable[hid]); !list_end(i); i = list_next(i)) {
 		p = list_get(i);
 		assert(p != NULL);
 
-		if(p->id == id) 
+		if (p->id == id)
 			break;
 	}
 
@@ -347,13 +347,13 @@ int cache_get(cache c, size_t id, void** pdata, size_t* pcb)
 {
 	struct cache_entry *p;
 	list_iterator i;
-	
+
 	assert(c != NULL);
 	assert(pdata != NULL);
 	assert(pcb != NULL);
 
 	i = find_entry(c, id);
-	if(!list_end(i)) {
+	if (!list_end(i)) {
 		p = list_get(i);
 		*pdata = p->data;
 		*pcb = p->size;
@@ -365,7 +365,7 @@ int cache_get(cache c, size_t id, void** pdata, size_t* pcb)
 }
 
 /*
- * Removes an item from the hotlist. 
+ * Removes an item from the hotlist.
  * Special case: What if the item to be removed is the last one?
  * Then we just zero it.
  */
@@ -375,9 +375,9 @@ static void remove_from_hotlist(cache c, size_t id)
 
 	assert(c != NULL);
 
-	for(i = 0; i < c->hotlist_nelem; i++) {
-		if(c->hotlist[i] == id) {
-			if(i + 1 != c->hotlist_nelem)
+	for (i = 0; i < c->hotlist_nelem; i++) {
+		if (c->hotlist[i] == id) {
+			if (i + 1 != c->hotlist_nelem)
 				memmove(&c->hotlist[i], &c->hotlist[i + 1], (c->hotlist_nelem - i - 1) * sizeof *c->hotlist);
 
 			c->hotlist[c->hotlist_nelem - 1] = 0;
@@ -393,7 +393,7 @@ int cache_remove(cache c, size_t id)
 	assert(c != NULL);
 
 	i = find_entry(c, id);
-	if(list_end(i)) {
+	if (list_end(i)) {
 		errno = ENOENT;
 		return 0;
 	}
@@ -410,7 +410,7 @@ int cache_remove(cache c, size_t id)
 #ifdef CHECK_CACHE
 #include <time.h>
 
-int main(void) 
+int main(void)
 {
 	size_t i, nelem = 10 * 1;
 	char* data;
@@ -423,12 +423,12 @@ int main(void)
 	c = cache_new(nelem / 10, 10, 1024 * 1024 * 40);
 
 	start = clock();
-	for(i = 0; i < nelem; i++) {
+	for (i = 0; i < nelem; i++) {
 		data = mem_malloc(50);
 		sprintf(data, "streng %lu", (unsigned long)i);
 
 
-		if(!cache_exists(c, i)) {
+		if (!cache_exists(c, i)) {
 			rc = cache_add(c, i, data, 50, 0);
 			assert(rc && "Could not add items to cache");
 		}
@@ -441,7 +441,7 @@ int main(void)
 	fprintf(stderr, "inserts: %lu items in %f seconds\n", (unsigned long)nelem, diff);
 
 	start = clock();
-	for(i = 0; i < nelem; i++) {
+	for (i = 0; i < nelem; i++) {
 		void* xdata;
 		size_t cb;
 
@@ -459,7 +459,7 @@ int main(void)
 	/* Random retrieval */
 	start = clock();
 	srand(time(NULL));
-	for(i = 0; i < nelem; i++) {
+	for (i = 0; i < nelem; i++) {
 		void* xdata;
 		size_t cb;
 
@@ -473,7 +473,7 @@ int main(void)
 
 	/* Remove all items, one by one */
 	start = clock();
-	for(i = 0; i < nelem; i++) {
+	for (i = 0; i < nelem; i++) {
 		rc = cache_remove(c, i);
 		assert(rc && "rand:Could not remove item");
 	}

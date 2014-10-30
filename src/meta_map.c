@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -26,7 +26,7 @@
 #include <meta_map.h>
 
 /**
- * We implement the map as a list containing pairs. The pair 
+ * We implement the map as a list containing pairs. The pair
  * is private to this file size we have another class named pair.
  * (That other class should really be renamed one day)
  */
@@ -35,9 +35,9 @@ struct pair_tag {
 	void *value;
 };
 typedef struct pair_tag pair;
-	
+
 /**
- * Wrap the list to provide type safety 
+ * Wrap the list to provide type safety
  */
 struct map_tag {
 	list a;
@@ -48,7 +48,7 @@ map_iterator map_first(map m)
 {
 	map_iterator mi;
 	list_iterator li;
-	
+
 	li = list_first(m->a);
 	mi.node = li.node;
 	return mi;
@@ -57,7 +57,7 @@ map_iterator map_first(map m)
 map_iterator map_next(map_iterator mi)
 {
 	list_iterator li;
-	
+
 	li.node = mi.node;
 	li = list_next(li);
 	mi.node = li.node;
@@ -67,7 +67,7 @@ map_iterator map_next(map_iterator mi)
 int map_end(map_iterator mi)
 {
 	list_iterator li;
-	
+
 	li.node = mi.node;
 	return list_end(li);
 }
@@ -76,7 +76,7 @@ char* map_key(map_iterator mi)
 {
 	pair *p;
 	list_iterator li;
-	
+
 	li.node = mi.node;
 	p = list_get(li);
 	return p->key;
@@ -86,7 +86,7 @@ void* map_value(map_iterator mi)
 {
 	pair *p;
 	list_iterator li;
-	
+
 	li.node = mi.node;
 	p = list_get(li);
 	return p->value;
@@ -96,9 +96,9 @@ map map_new(void(*freefunc)(void* arg))
 {
 	map m;
 
-	if( (m = mem_calloc(1, sizeof *m)) == NULL)
+	if ((m = mem_calloc(1, sizeof *m)) == NULL)
 		;
-	else if( (m->a = list_new()) == NULL) {
+	else if((m->a = list_new()) == NULL) {
 		mem_free(m);
 		m = NULL;
 	}
@@ -113,11 +113,11 @@ void map_free(map m)
 	list_iterator i;
 	pair *p;
 
-	if(m != NULL && m->a != NULL) {
-		for(i = list_first(m->a); !list_end(i); i = list_next(i)) {
+	if (m != NULL && m->a != NULL) {
+		for (i = list_first(m->a); !list_end(i); i = list_next(i)) {
 			p = list_get(i);
 			mem_free(p->key);
-			if(m->freefunc != NULL)
+			if (m->freefunc != NULL)
 				m->freefunc(p->value);
 		}
 	}
@@ -131,12 +131,12 @@ map_find(map m, const char* key)
 {
 	list_iterator i;
 
-	for(i = list_first(m->a); !list_end(i); i = list_next(i)) {
+	for (i = list_first(m->a); !list_end(i); i = list_next(i)) {
 		pair *p;
 
 		p = list_get(i);
 
-		if(strcmp(key, p->key) == 0)
+		if (strcmp(key, p->key) == 0)
 			return p;
 	}
 
@@ -148,18 +148,18 @@ int map_set(map m, const char* key, void* value)
 	pair *p, *i;
 
 
-	if( (i = map_find(m, key)) != NULL) {
+	if ((i = map_find(m, key)) != NULL) {
 		mem_free(i->value);
 		i->value = value;
 
 		return 0;
 	}
-	else if( (p = mem_malloc(sizeof(pair))) == NULL) 
+	else if((p = mem_malloc(sizeof(pair))) == NULL)
 		return 0;
-	else if( (p->key = mem_malloc(strlen(key) + 1)) == NULL)  {
+	else if((p->key = mem_malloc(strlen(key) + 1)) == NULL)  {
 		mem_free(p);
 		return 0;
-	} 
+	}
 	else {
 		strcpy(p->key, key);
 		p->value = value;
@@ -169,7 +169,7 @@ int map_set(map m, const char* key, void* value)
 
 int map_exists(map m, const char* key)
 {
-	if(map_find(m, key))
+	if (map_find(m, key))
 		return 1;
 	else
 		return 0;
@@ -179,7 +179,7 @@ void* map_get(map m, const char* key)
 {
 	pair *p;
 
-	if( (p = map_find(m, key)) != NULL) 
+	if ((p = map_find(m, key)) != NULL)
 		return p->value;
 	else
 		return NULL;
@@ -201,11 +201,11 @@ int map_foreach(map m, void* args, int(*f)(void* args, char* key, void* data))
 {
 	list_iterator i;
 
-	for(i = list_first(m->a); !list_end(i); i = list_next(i)) {
+	for (i = list_first(m->a); !list_end(i); i = list_next(i)) {
 		pair *p;
 
 		p = list_get(i);
-		if(f(args, p->key, p->value) == 0) 
+		if (f(args, p->key, p->value) == 0)
 			return 0;
 	}
 

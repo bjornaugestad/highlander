@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -53,7 +53,7 @@ wlock wlock_new(void)
 {
 	wlock p;
 
-	if( (p = mem_malloc(sizeof *p)) != NULL) {
+	if ((p = mem_malloc(sizeof *p)) != NULL) {
 		pthread_mutexattr_init(&p->ma);
 		pthread_mutexattr_settype(&p->ma, PTHREAD_MUTEX_ERRORCHECK);
 		pthread_mutex_init(&p->lock, &p->ma);
@@ -63,7 +63,7 @@ wlock wlock_new(void)
 		p->locked = 0;
 		pthread_mutex_init(&p->debuglock, NULL);
 #endif
-		
+
 	}
 
 	return p;
@@ -71,7 +71,7 @@ wlock wlock_new(void)
 
 void wlock_free(wlock p)
 {
-	if(p != NULL) {
+	if (p != NULL) {
 		pthread_mutex_destroy(&p->lock);
 		pthread_mutexattr_destroy(&p->ma);
 		pthread_cond_destroy(&p->condvar);
@@ -86,14 +86,14 @@ int wlock_lock(wlock p)
 	assert(p != NULL);
 #ifdef DEBUG_ME
 	pthread_mutex_lock(&p->debuglock);
-	if(p->locked && pthread_equal(pthread_self(), p->locked_by)) {
+	if (p->locked && pthread_equal(pthread_self(), p->locked_by)) {
 		fprintf(stderr, "Recursive lock detected, tid==%ld\n",
 			(long)pthread_self());
 	}
 	pthread_mutex_unlock(&p->debuglock);
 #endif
-		
-	if( (err = pthread_mutex_lock(&p->lock))) {
+
+	if ((err = pthread_mutex_lock(&p->lock))) {
 		errno = err;
 		return 0;
 	}
@@ -116,7 +116,7 @@ int wlock_unlock(wlock p)
 #ifdef DEBUG_ME
 	pthread_mutex_lock(&p->debuglock);
 	fprintf(stderr, "Unlocking\n");
-	if(!p->locked) {
+	if (!p->locked) {
 		fprintf(stderr, "Thread %lu tried to unlock an unlocked lock\n",
 			pthread_self());
 	}
@@ -126,13 +126,13 @@ int wlock_unlock(wlock p)
 	}
 	pthread_mutex_unlock(&p->debuglock);
 #endif
-	
-	if( (err = pthread_mutex_unlock(&p->lock))) {
+
+	if ((err = pthread_mutex_unlock(&p->lock))) {
 		errno = err;
 		return 0;
 	}
 
-	
+
 #ifdef DEBUG_ME
 	pthread_mutex_lock(&p->debuglock);
 	p->locked = 0;
@@ -149,7 +149,7 @@ int wlock_signal(wlock p)
 
 	assert(p != NULL);
 
-	if( (err = pthread_cond_signal(&p->condvar))) {
+	if ((err = pthread_cond_signal(&p->condvar))) {
 		errno = err;
 		return 0;
 	}
@@ -163,7 +163,7 @@ int wlock_broadcast(wlock p)
 
 	assert(p != NULL);
 
-	if( (err = pthread_cond_broadcast(&p->condvar))) {
+	if ((err = pthread_cond_broadcast(&p->condvar))) {
 		errno = err;
 		return 0;
 	}
@@ -184,7 +184,7 @@ int wlock_wait(wlock p)
 #endif
 
 	/* wait for someone to signal us */
-	if( (err = pthread_cond_wait(&p->condvar, &p->lock))) {
+	if ((err = pthread_cond_wait(&p->condvar, &p->lock))) {
 		errno = err;
 		return 0;
 	}
@@ -219,8 +219,8 @@ static void* signaler(void *parg)
 	return NULL;
 }
 
-/* 
- * Now, how do we test a waitable lock? 
+/*
+ * Now, how do we test a waitable lock?
  * We need at least two threads, one that waits and one that signals.
  * We also need a lock, of course.
  *

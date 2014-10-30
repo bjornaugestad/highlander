@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -58,54 +58,54 @@ static int get_name_and_value(char *line, char *name, char *value)
 	int quoted = 0;
 
 	/* Remove comments, if any */
-	if( (s = strchr(line, '#')) != NULL)
+	if ((s = strchr(line, '#')) != NULL)
 		*s = '\0';
 
 	/* Get first non-ws character */
 	s = line;
-	while(*s != '\0' && isspace((unsigned char)*s))
+	while (*s != '\0' && isspace((unsigned char)*s))
 		s++;
 
 	/* Was the line ws only? */
-	if(*s == '\0') 
+	if (*s == '\0')
 		return 0;
 
 	/* Now s points to the first char in name.
 	 * Copy to the param name */
-	 while(*s != '\0' && !isspace((unsigned char)*s)) 
+	 while (*s != '\0' && !isspace((unsigned char)*s))
 	 	*name++ = *s++;
 
 	/* See if we found a space or not.
 	 * The space(or tab) is required */
-	if(*s == '\0')
+	if (*s == '\0')
 		return -1;
 
 	/* Terminate name and look for next non-ws
 	 * which is the start of the value
 	 */
 	*name = '\0';
-	while(*s != '\0' && isspace((unsigned char)*s))
+	while (*s != '\0' && isspace((unsigned char)*s))
 		s++;
 
 	/* Skip leading ", if any */
-	if(*s == '"') {
+	if (*s == '"') {
 		quoted = 1;
 		s++;
 	}
 
 	/* Now copy value */
-	if(quoted) {
-		while(*s != '\0' && *s != '"')
+	if (quoted) {
+		while (*s != '\0' && *s != '"')
 			*value++ = *s++;
 	}
 	else {
-		while(*s != '\0' && !isspace((unsigned char)*s))
+		while (*s != '\0' && !isspace((unsigned char)*s))
 			*value++ = *s++;
 	}
 
 	/* Terminate value and perform sanity check */
 	*value = '\0';
-	if(strlen(org_name) == 0)
+	if (strlen(org_name) == 0)
 		return -1;
 
 	return 1;
@@ -119,10 +119,10 @@ static int add(configfile cf, const char* name, const char* value)
 	assert(name != NULL);
 	assert(value != NULL);
 
-	if(cf->used >= MAX_DIRECTIVES)
+	if (cf->used >= MAX_DIRECTIVES)
 		return 0;
 
-	if( (n = mem_malloc(strlen(name) + 1)) == NULL
+	if ((n = mem_malloc(strlen(name) + 1)) == NULL
 	||  (v = mem_malloc(strlen(value) + 1)) == NULL
 	||  (cf->values[cf->used] = mem_malloc(sizeof(struct nameval))) == NULL) {
 		mem_free(n);
@@ -146,26 +146,26 @@ configfile configfile_read(const char *path)
 	char name[2048];
 	char value[2048];
 	configfile p;
-	
-	if( (f = fopen(path, "r")) == NULL) 
+
+	if ((f = fopen(path, "r")) == NULL)
 		return NULL;
 
-	if( (p = mem_calloc(1, sizeof *p)) == NULL) {
+	if ((p = mem_calloc(1, sizeof *p)) == NULL) {
 		fclose(f);
 		return NULL;
 	}
 
 	p->used = 0;
-	while(fgets(line, (int)sizeof(line), f)) {
+	while (fgets(line, (int)sizeof(line), f)) {
 		int i = get_name_and_value(line, name, value);
-		if(i == -1) {
+		if (i == -1) {
 			fclose(f);
 			configfile_free(p);
 			errno = EINVAL;
 			return NULL;
 		}
 		else if(i == 1) {
-			if(!add(p, name, value)) {
+			if (!add(p, name, value)) {
 				fclose(f);
 				configfile_free(p);
 				return NULL;
@@ -184,8 +184,8 @@ static struct nameval* find(configfile cf, const char* name)
 	assert(cf != NULL);
 	assert(name != NULL);
 
-	for(i = 0; i < cf->used; i++) {
-		if(strcmp(name, cf->values[i]->name) == 0)
+	for (i = 0; i < cf->used; i++) {
+		if (strcmp(name, cf->values[i]->name) == 0)
 			return cf->values[i];
 	}
 
@@ -197,7 +197,7 @@ int configfile_exists(configfile cf, const char* name)
 	assert(cf != NULL);
 	assert(name != NULL);
 
-	if(find(cf, name) != NULL)
+	if (find(cf, name) != NULL)
 		return 1;
 	else
 		return 0;
@@ -212,7 +212,7 @@ int configfile_get_string(configfile cf, const char *name, char *value, size_t c
 	assert(value != NULL);
 	assert(cb > 1);
 
-	if( (pnv = find(cf, name)) == NULL) {
+	if ((pnv = find(cf, name)) == NULL) {
 		errno = ENOENT;
 		return 0;
 	}
@@ -234,12 +234,12 @@ int configfile_get_long(configfile cf, const char *name, long *value)
 	assert(name != NULL);
 	assert(value != NULL);
 
-	if(!configfile_get_string(cf, name, sz, sizeof sz))
+	if (!configfile_get_string(cf, name, sz, sizeof sz))
 		return 0;
-	
+
 	errno = 0;
 	*value = strtol(sz, NULL, 10);
-	if(*value == LONG_MIN || *value == LONG_MAX) 
+	if (*value == LONG_MIN || *value == LONG_MAX)
 		return 0;
 	else if(*value == 0 && errno == EINVAL)
 		return 0;
@@ -255,12 +255,12 @@ int configfile_get_ulong(configfile cf, const char *name, unsigned long *value)
 	assert(name != NULL);
 	assert(value != NULL);
 
-	if(!configfile_get_string(cf, name, sz, sizeof sz))
+	if (!configfile_get_string(cf, name, sz, sizeof sz))
 		return 0;
-	
+
 	errno = 0;
 	*value = strtol(sz, NULL, 10);
-	if(*value == ULONG_MAX) 
+	if (*value == ULONG_MAX)
 		return 0;
 	else if(*value == 0 && errno == EINVAL)
 		return 0;
@@ -277,10 +277,10 @@ int configfile_get_uint(configfile cf, const char *name, unsigned int *value)
 	assert(name != NULL);
 	assert(value != NULL);
 
-	if(!configfile_get_ulong(cf, name, &tmp))
+	if (!configfile_get_ulong(cf, name, &tmp))
 		return 0;
-	
-	if(tmp > UINT_MAX) {
+
+	if (tmp > UINT_MAX) {
 		errno = EINVAL;
 		return 0;
 	}
@@ -297,10 +297,10 @@ int configfile_get_int(configfile cf, const char *name, int *value)
 	assert(name != NULL);
 	assert(value != NULL);
 
-	if(!configfile_get_long(cf, name, &tmp))
+	if (!configfile_get_long(cf, name, &tmp))
 		return 0;
-	
-	if(tmp < INT_MIN || tmp > INT_MAX) {
+
+	if (tmp < INT_MIN || tmp > INT_MAX) {
 		errno = EINVAL;
 		return 0;
 	}
@@ -312,10 +312,10 @@ int configfile_get_int(configfile cf, const char *name, int *value)
 
 void configfile_free(configfile cf)
 {
-	if(cf != NULL) {
+	if (cf != NULL) {
 		size_t i;
 
-		for(i = 0; i < cf->used; i++) {
+		for (i = 0; i < cf->used; i++) {
 			mem_free(cf->values[i]->name);
 			mem_free(cf->values[i]->value);
 			mem_free(cf->values[i]);
@@ -336,22 +336,22 @@ int main(void)
 	configfile cf;
 
 
-	if( (cf = configfile_read(filename)) == NULL)
+	if ((cf = configfile_read(filename)) == NULL)
 		return 77;
 
-	if(!configfile_get_string(cf, "logrotate", string, sizeof(string)))
+	if (!configfile_get_string(cf, "logrotate", string, sizeof(string)))
 		return 77;
 
-	if(!configfile_get_int(cf, "logrotate", &nint))
+	if (!configfile_get_int(cf, "logrotate", &nint))
 		return 77;
 
-	if(!configfile_get_long(cf, "logrotate", &nlong))
+	if (!configfile_get_long(cf, "logrotate", &nlong))
 		return 77;
 
-	if(!configfile_get_string(cf, "quotedstring", string, sizeof(string)))
+	if (!configfile_get_string(cf, "quotedstring", string, sizeof(string)))
 		return 77;
 
-	if(strcmp(string, quotedstring)) {
+	if (strcmp(string, quotedstring)) {
 		fprintf(stderr, "Expected %s, got %s\n", quotedstring, string);
 		return 77;
 	}

@@ -6,12 +6,12 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -50,9 +50,9 @@ html_template html_template_new(void)
 {
 	html_template t;
 
-	if( (t = malloc(sizeof *t)) == NULL)
+	if ((t = malloc(sizeof *t)) == NULL)
 		;
-	else if( (t->sections = list_new()) == NULL) {
+	else if((t->sections = list_new()) == NULL) {
 		free(t);
 		t = NULL;
 	}
@@ -70,7 +70,7 @@ html_template html_template_new(void)
 
 void html_template_set_menu(html_template t, html_menu m)
 {
-	if(t->menu != NULL)
+	if (t->menu != NULL)
 		html_menu_free(t->menu);
 
 	t->menu = m;
@@ -79,7 +79,7 @@ void html_template_set_menu(html_template t, html_menu m)
 
 void html_template_free(html_template t)
 {
-	if(t != NULL) {
+	if (t != NULL) {
 		list_free(t->sections, (void(*)(void*))html_section_free);
 		free(t->layout);
 		html_menu_free(t->menu);
@@ -94,10 +94,10 @@ int html_template_set_layout(html_template t, const char* s)
 	assert(t != NULL);
 	assert(s != NULL);
 
-	if(t->layout != NULL)
+	if (t->layout != NULL)
 		free(t->layout);
 
-	if( (t->layout = malloc(strlen(s) + 1)) != NULL)
+	if ((t->layout = malloc(strlen(s) + 1)) != NULL)
 		strcpy(t->layout, s);
 
 	return t->layout != NULL;
@@ -115,7 +115,7 @@ int html_template_add_user_section(html_template t)
 {
 	html_section s;
 
-	if( (s = html_section_new()) == NULL)
+	if ((s = html_section_new()) == NULL)
 		return 0;
 	else if(html_section_set_name(s, "user") == 0) {
 		html_section_free(s);
@@ -149,12 +149,12 @@ int html_template_send(
 	assert(t->layout != NULL);
 
 	/* Render the menu once to avoid too much rt overhead */
-	if(t->menu != NULL) {
+	if (t->menu != NULL) {
 		pthread_mutex_lock(&t->menulock);
-		if(t->rendered_menu != NULL) {
+		if (t->rendered_menu != NULL) {
 			pthread_mutex_unlock(&t->menulock);
 		}
-		else if( (t->rendered_menu = cstring_new()) == NULL) {
+		else if((t->rendered_menu = cstring_new()) == NULL) {
 			pthread_mutex_unlock(&t->menulock);
 			return 0;
 		}
@@ -174,23 +174,23 @@ int html_template_send(
 	s = t->layout;
 
 	i = 0;
-	while( (identifier = strchr(s, '%')) != NULL) {
+	while ((identifier = strchr(s, '%')) != NULL) {
 		/* Print everything from s to (identifier - 1) */
-		if(!response_add_end(response, s, identifier))
+		if (!response_add_end(response, s, identifier))
 			return 0;
 
 		identifier++; /* Skip the % */
-		
-		switch(*identifier) {
+
+		switch (*identifier) {
 			case '\0':
 				break;
 
 			case 'S':
-				if( (sect = list_get_item(t->sections, i++)) == NULL)
+				if ((sect = list_get_item(t->sections, i++)) == NULL)
 					return 0;
 
 				sectname = html_section_get_name(sect);
-				if(strcmp(sectname, "user") == 0)
+				if (strcmp(sectname, "user") == 0)
 					response_add(response, usercode);
 				else
 					response_add(response, html_section_get_code(sect));
@@ -201,8 +201,8 @@ int html_template_send(
 				break;
 
 			case 'M':
-				if(t->menu != NULL) {
-					if(!response_add(response, c_str(t->rendered_menu))) {
+				if (t->menu != NULL) {
+					if (!response_add(response, c_str(t->rendered_menu))) {
 						return 0;
 					}
 				}
@@ -216,7 +216,7 @@ int html_template_send(
 		}
 
 		/* was % found as last character */
-		if(identifier != '\0')
+		if (identifier != '\0')
 			identifier++;
 
 		s = identifier;
