@@ -44,6 +44,7 @@ AM_CONDITIONAL([WITH_VALGRIND], [test x$valgrind = xtrue])
 
 AC_CONFIG_FILES([Makefile tools/Makefile src/Makefile apps/Makefile
     apps/webcache/Makefile apps/ftp/Makefile apps/helloworld/Makefile
+    tests/Makefile
     doc/Makefile
     ])
 AC_OUTPUT
