@@ -37,7 +37,7 @@ enum meta_error_group {
     meg_other		/* Other errors */
 };
 
-/**
+/*
  * Implementation of the meta_error ADT.
  */
 struct meta_error_tag {

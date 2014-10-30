@@ -33,7 +33,7 @@
  * is used.
  */
 
-/**
+/*
  * @file meta_filecache.h
  * @brief Cache files in memory.
  *
@@ -59,7 +59,7 @@
  * as filecache just builds on cache.
  */
 
-/** Declaration of our filecache ADT */
+/* Declaration of our filecache ADT */
 typedef struct filecache_tag* filecache;
 
 /* What we store about each file. */
@@ -72,7 +72,7 @@ struct fileinfo_tag {
     void *contents;
 };
 
-/**
+/*
  * Implementation of the filecache ADT.
  * The file name is used as 'primary key' and stored in the filenames
  * stringmap.  the id from the stringmap will be used as
@@ -119,7 +119,7 @@ int fileinfo_set_alias(fileinfo p, const char* s);
 int fileinfo_set_mimetype(fileinfo p, const char* s);
 
 
-/**
+/*
  * Creates a new filecache.
  * nelem is used to presize a table of entries in the cache,
  * so that we can perform lookups faster than if using a
@@ -132,12 +132,12 @@ int fileinfo_set_mimetype(fileinfo p, const char* s);
  */
 filecache filecache_new(size_t nelem, size_t bytes);
 
-/**
+/*
  * Frees a filecache previously created with filecache_new()
  */
 void filecache_free(filecache fc);
 
-/**
+/*
  * Reads a file into the file cache. Use it to add entries
  * to the cache e.g. before you start a service.
  *
@@ -167,7 +167,7 @@ static inline stringmap filecache_filenames(filecache fc)
 }
 
 
-/**
+/*
  * Invalidates the whole cache. All memory used by cached
  * objects are freed and all objects are removed. The cache
  * itself is still usable, so you can start adding entries
@@ -175,7 +175,7 @@ static inline stringmap filecache_filenames(filecache fc)
  */
 int filecache_invalidate(filecache fc);
 
-/**
+/*
  * Returns the percentage of files read from disk versus
  * files read from cache.
  * Not implemented...
@@ -183,17 +183,17 @@ int filecache_invalidate(filecache fc);
  */
 double filecache_hitratio(filecache fc);
 
-/**
+/*
  * Gets a file from the cache.
  */
-int filecache_get(filecache fc, const char* filename, void** pdata, size_t* pcb);
+int filecache_get(filecache fc, const char* filename, void* pdata, size_t* pcb);
 int filecache_get_mime_type(filecache fc, const char* filename, char mime[], size_t cb);
 
 
 /* Returns 1 if a file exists, 0 if not */
 int filecache_exists(filecache fc, const char* filename);
 
-/**
+/*
  * Return a pointer to a struct stat object from the time we added
  * the file to the filecache, or NULL if the file isn't found.
  */

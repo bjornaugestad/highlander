@@ -248,7 +248,7 @@ int filecache_exists(filecache fc, const char* filename)
     return rc;
 }
 
-int filecache_get(filecache fc, const char* filename, void** pdata, size_t* pcb)
+int filecache_get(filecache fc, const char* filename, void* pdata, size_t* pcb)
 {
     unsigned long id;
     int rc = 0;
@@ -257,7 +257,7 @@ int filecache_get(filecache fc, const char* filename, void** pdata, size_t* pcb)
     pthread_rwlock_rdlock(&fc->lock);
 
     if (stringmap_get_id(fc->filenames, filename, &id)) {
-        rc = cache_get(fc->metacache, id, (void**)&p, pcb);
+        rc = cache_get(fc->metacache, id, (void*)&p, pcb);
         if (rc) {
             fileinfo fi = p;
             *pdata = fi->contents;
@@ -297,7 +297,7 @@ int filecache_stat(filecache fc, const char* filename, struct stat* p)
     pthread_rwlock_rdlock(&fc->lock);
 
     if (stringmap_get_id(fc->filenames, filename, &id)) {
-        if (cache_get(fc->metacache, id, (void**)&pst, &cb)) {
+        if (cache_get(fc->metacache, id, (void*)&pst, &cb)) {
             *p = *fileinfo_stat(pst);
             rc = 1;
         }
@@ -317,7 +317,7 @@ int filecache_get_mime_type(filecache fc, const char* filename, char mime[], siz
     pthread_rwlock_rdlock(&fc->lock);
 
     if (stringmap_get_id(fc->filenames, filename, &id)) {
-        if (cache_get(fc->metacache, id, (void**)&p, &cbptr)) {
+        if (cache_get(fc->metacache, id, (void*)&p, &cbptr)) {
             mime[0] = '\0';
             strncat(mime, fileinfo_mimetype(p), cb - 1);
             rc = 1;
@@ -342,7 +342,7 @@ fileinfo filecache_fileinfo(filecache fc, const char* filename)
     pthread_rwlock_rdlock(&fc->lock);
 
     if (stringmap_get_id(fc->filenames, filename, &id))
-        found = cache_get(fc->metacache, id, (void**)&pst, &cb);
+        found = cache_get(fc->metacache, id, (void*)&pst, &cb);
 
     pthread_rwlock_unlock(&fc->lock);
 
@@ -413,7 +413,7 @@ int main(void)
                 perror(de->d_name);
                 exit(EXIT_FAILURE);
             }
-            else if(!filecache_get(fc, de->d_name, (void**)&pdata, &cb)) {
+            else if(!filecache_get(fc, de->d_name, (void*)&pdata, &cb)) {
                 perror(de->d_name);
                 exit(EXIT_FAILURE);
             }

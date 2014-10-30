@@ -23,7 +23,7 @@
 
 #include <meta_map.h>
 
-/**
+/*
  * A template repository is a thread safe storage for html_templates.
  * An application can contain multiple templates and each thread need
  * some thread safe way to get hold of templates after they've been created.

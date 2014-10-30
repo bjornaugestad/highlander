@@ -31,7 +31,7 @@
 #define DEBUG_ME
 #endif
 
-/**
+/*
  * Implementation of the meta_wlock ADT.
  */
 struct wlock_tag {

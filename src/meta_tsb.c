@@ -28,7 +28,7 @@
 #include <meta_common.h>
 #include <meta_tsb.h>
 
-/**
+/*
  * We store 1 of these per time unit.
  */
 struct handler {
@@ -44,7 +44,7 @@ struct handler {
     pthread_t* threads;
 };
 
-/**
+/*
  * The Time Shared Buffer ADT
  */
 struct tsb_tag {
@@ -155,7 +155,7 @@ int tsb_set_threads(
     return 1;
 }
 
-/**
+/*
  * Returns the number of units since our epoch.
  * Recall that a unit == time unit, which is specified in milliseconds
  */
@@ -182,7 +182,7 @@ static size_t units_since_epoch(
     return units;
 }
 
-/**
+/*
  * Create a timeval struct, dest, containing a proper time. The time
  * is offset since epoch, measured in units. Each unit has a duration
  * of unit_duration ms, so beware of overflows.
@@ -212,7 +212,7 @@ static void unit_to_timeval(
     timeradd(epoch, &tv, dest);
 }
 
-/**
+/*
  * Compute the difference between now and when, then convert
  * things to a timespec struct and nanosleep() for a while.
  */
@@ -248,7 +248,7 @@ size_t tsb_get_current_frame(tsb* p)
 }
 
 
-/**
+/*
  * The thread function we use. It requires a couple of arguments,
  * the tsb itself as well as the unit index to run in. Since thread functions
  * accept only one argument, we need a separate struct.

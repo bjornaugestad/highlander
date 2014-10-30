@@ -32,7 +32,7 @@
 
 #include <meta_pool.h>
 
-/**
+/*
  * The implementation of the pool adt. We allocate room for
  * a set of void* pointers, where each pointer points to one
  * element in the pool. We use a mutex to control access to the pool.
@@ -45,7 +45,7 @@
  * a returned resource in the first free slot.
  */
 struct pool_tag {
-    void** pdata;			/* Array of void* pointers */
+    void* pdata;			/* Array of void* pointers */
     size_t size;			/* Size of the pool */
     size_t nelem;			/* Number of elements added to the pool */
     pthread_mutex_t mutex;	/* access control */

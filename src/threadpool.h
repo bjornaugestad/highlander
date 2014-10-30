@@ -24,10 +24,10 @@
 extern "C" {
 #endif
 
-/** Declaration of our threadpool ADT */
+/* Declaration of our threadpool ADT */
 typedef struct threadpool_tag* threadpool;
 
-/**
+/*
  * @file
  * Creates a new thread pool and returns zero if successful.
  * Returns an error code if not.
@@ -38,7 +38,7 @@ threadpool threadpool_new(
     unsigned int max_queue_size,
     int block_when_full);
 
-/**
+/*
  * Adds work to the queue. The work will be performed by the work_func,
  * After the work_func has been executed, the cleanup function will
  * be executed. This way you can pass e.g. allocated memory to work_func

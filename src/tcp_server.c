@@ -35,7 +35,7 @@
 #include <connection.h>
 #include <meta_socket.h>
 
-/**
+/*
  * Implementation of the TCP server ADT.
  */
 struct tcp_server_tag {
@@ -650,7 +650,7 @@ int tcp_server_set_hostname(tcp_server srv, const char* host)
     return 1;
 }
 
-/**
+/*
  * Checks to see if the client can connect or not.
  * A client can connect if
  * a) The ip is listed in the allowed list.

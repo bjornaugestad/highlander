@@ -22,7 +22,7 @@
 
 #include <stddef.h>
 
-/**
+/*
  * @file meta_sampler.h - Implements a sampling storage ADT
  *
  * Lots of times we want to sample data on some periodic interval
@@ -105,7 +105,7 @@
 
 typedef struct sampler_tag* sampler;
 
-/**
+/*
  * Create a new sampler object. Remember that your entity id's must
  * be zero-based and contigous.
  */
@@ -119,7 +119,7 @@ sampler sampler_dup(sampler src);
  * where dest must equal src.*/
 void sampler_copy(sampler dest, sampler src);
 
-/**
+/*
  * Prepares the dataset for update. This basically means locking the
  * sampler object in write mode, computing the proper index offset
  * for the values which will be added, and setting the data entries
@@ -130,7 +130,7 @@ void sampler_start_update(sampler s, time_t t);
 void sampler_add(sampler s, size_t entity_id, long long value);
 void sampler_commit(sampler s);
 
-/**
+/*
  * Returns the number of samples we have data for.
  * Use it when you want to iterate on the values, as in
  * @code
@@ -149,7 +149,7 @@ void sampler_commit(sampler s);
  */
 size_t sampler_samplecount(sampler s);
 
-/**
+/*
  * We must explicitly start and stop reading from the sampler,
  * and cannot just lock in the _get() function. The reason is that
  * to get a valid view of the data in the sampler we cannot allow
@@ -167,14 +167,14 @@ size_t sampler_samplecount(sampler s);
 void sampler_start_read(sampler s);
 void sampler_stop_read(sampler s);
 
-/**
+/*
  * Returns a value for an entity in the pval parameter and returns 1
  * if the entity had a value for that index. Returns 0 if no value existed.
  *
  */
 int sampler_get(sampler s, size_t entity_id, size_t i, long long* pval);
 
-/**
+/*
  * eid == entity_id
  * Note that from is inclusive and to is exclusive,
  * so use [0, sampler_samplecount()] to get all entries
@@ -185,10 +185,10 @@ int sampler_max(sampler s, size_t eid, size_t from, size_t to, long long* pval);
 int sampler_first(sampler s, size_t eid, size_t from, size_t to, long long* pval);
 int sampler_last(sampler s, size_t eid, size_t from, size_t to, long long* pval);
 
-/** Returns the time of the sample */
+/* Returns the time of the sample */
 time_t sampler_time(sampler s, size_t i);
 
-/**
+/*
  * Creates a new sampler instance, with values aggregated from the
  * src sampler. The resolution parameter will be used to find
  * the from/to values in the src sampler. A quick example:

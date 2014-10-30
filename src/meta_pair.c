@@ -24,7 +24,7 @@
 #include <meta_common.h>
 #include <meta_pair.h>
 
-/**
+/*
  * Local helper structure.
  */
 struct element {
@@ -32,7 +32,7 @@ struct element {
     char* value;
 };
 
-/**
+/*
  * Implementation of the meta_pair ADT
  */
 struct pair_tag {

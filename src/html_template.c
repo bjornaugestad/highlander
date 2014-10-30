@@ -128,7 +128,7 @@ int html_template_add_user_section(html_template t)
         return 1;
 }
 
-/**
+/*
  * Here we create the html page based on the template layout.
  */
 

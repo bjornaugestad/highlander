@@ -56,7 +56,7 @@ static void entry_free(void* pe)
     free(p);
 }
 
-/**
+/*
  * Implementation of the stringmap ADT
  */
 struct stringmap_tag {

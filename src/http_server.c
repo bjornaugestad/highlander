@@ -53,7 +53,7 @@ static void http_server_free_request_pool(http_server s);
 static void http_server_free_response_pool(http_server s);
 
 
-/**
+/*
  * NOTE:
  * Husk at vi kan ha URL requests som skal mappes direkte til
  * f. eks. 301 Moved Permanently. Disse bør mappes i main()
@@ -332,7 +332,7 @@ static int configure_tcp_server(http_server srv)
     return 1;
 }
 
-/**
+/*
  * Start running the server. This code has changed a bit after the
  * addition of the process object with process_start...().
  * This breaks older client code unless that code calls

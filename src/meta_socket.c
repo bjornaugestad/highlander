@@ -97,7 +97,7 @@ int sock_write(meta_socket p, const char* s, size_t cbToWrite, int timeout, int 
     return 1;
 }
 
-/**
+/*
  * This is a local helper function. It polls for some kind of event,
  * which normally is POLLIN or POLLOUT.
  * The function returns 1 if the event has occured, and 0 if an

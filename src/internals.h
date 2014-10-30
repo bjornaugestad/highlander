@@ -35,23 +35,23 @@ extern "C" {
 #define EFS_INTERNAL		8	/* Internal server error */
 #define EFS_UNKNOWN_HEADER_FIELD 1000
 
-/**
+/*
  * Params are here parameters to the uri
  */
 #define CCH_PARAMNAME_MAX	100
 #define CCH_PARAMVALUE_MAX	500
 
-/**
+/*
  * Max len of a request keyword, e.g. GET, HEAD
  */
 #define CCH_METHOD_MAX	256
 
-/**
+/*
  * Max length of version part, HTTP/x.x . 20 should do for a while...
  */
 #define CCH_VERSION_MAX	20
 
-/**
+/*
  * Max len of requested URI
  * This includes any parameters given,
  * like foo.html?bar=foobar&f=asdasdasdasdasdasd
@@ -59,7 +59,7 @@ extern "C" {
  */
 #define CCH_URI_MAX 10240
 
-/**
+/*
  *
  * The max # of characters for a http header fieldname.
  * The longest in http 1.1 is If-Unmodified-Since which is 19 bytes (+ 1 for '\0')
@@ -67,7 +67,7 @@ extern "C" {
 #define CCH_FIELDNAME_MAX	30
 #define CCH_FIELDVALUE_MAX	10000
 
-/**
+/*
  * Quality is not used in http 1.0.
  * It is used in conjunction with accept-xxx to prioritize the different formats
  * a client accepts. My guess is that it is not used a lot... We support it anyway.
@@ -82,7 +82,7 @@ extern "C" {
 /* Max length of a HTTP status line */
 #define CCH_STATUSLINE_MAX 256
 
-/**
+/*
  * Max length of a language, as in en, no, se
  * These are defined by IANA
  */

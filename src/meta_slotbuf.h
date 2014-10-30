@@ -49,39 +49,39 @@ extern "C" {
 
 typedef struct slotbuf_tag *slotbuf;
 
-/**
+/*
  * Creates a new slotbuf. If can_overwrite == 0, then we cannot
  * assign new values to a slot that hasn't been read.
  */
 slotbuf slotbuf_new(size_t size, int can_overwrite, dtor fn);
 
-/**
+/*
  * Frees  the slotbuf and slot entries if a destructor is provided.
  */
 void slotbuf_free(slotbuf p);
 
-/**
+/*
  * Assigns a new value to slot i. Returns 1 on succes and 0 if a slot
  * had a value and can_overwrite is 0.
  */
 int slotbuf_set(slotbuf p, size_t i, void* value);
 
-/**
+/*
  * Returns the data in slot i, if any. Will clear the slot.
  */
 void* slotbuf_get(slotbuf p, size_t i);
 
-/**
+/*
  * Returns the data in slot i, if any. Does not clear the slot.
  */
 void* slotbuf_peek(slotbuf p, size_t i);
 
-/**
+/*
  * Returns 1 if data exists in the slot, else 0
  */
 int slotbuf_has_data(slotbuf p, size_t i);
 
-/**
+/*
  * Returns the number of elements in the slotbuf
  */
 size_t slotbuf_nelem(slotbuf p);

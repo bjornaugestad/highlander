@@ -229,7 +229,7 @@ int handle_dynamic(
 /* uri params are separated by =, so if there are any = in the string, we have more params */
 
 #if 0
-/**
+/*
  * Call this function if the request ended in some kind of HTTP error.
  * Typical errors are 404 not found, 400 bad request.
  * Do not call it for other errors.
@@ -386,7 +386,7 @@ static int serviceConnection2(
         if (!connection_is_persistent(conn))
             return 1;
 
-        /**
+        /*
          * NOTE: Her må/bør vi legge inn ny funksjonalitet:
          * Disconnect connections som
          * a) Har kjørt lengst i tid

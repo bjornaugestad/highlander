@@ -400,7 +400,7 @@ void cstring_reverse(cstring s)
  * 3. Allocate each cstring.
  * 4. Copy each word
  */
-size_t cstring_split(cstring** dest, const char* src, const char* delim)
+size_t cstring_split(cstring* dest, const char* src, const char* delim)
 {
     const char* s;
     size_t end, i, len, nelem;
@@ -424,7 +424,7 @@ size_t cstring_split(cstring** dest, const char* src, const char* delim)
     }
 
     /* allocate space */
-    if ((*dest = malloc(sizeof **dest * nelem)) == NULL)
+    if ((*dest = malloc(sizeof *dest * nelem)) == NULL)
         return 0;
     else if(cstring_multinew(*dest, nelem) == 0) {
         free(*dest);

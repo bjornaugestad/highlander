@@ -20,7 +20,7 @@
 #ifndef META_TICKER_H
 #define META_TICKER_H
 
-/**
+/*
  * A ticker is a thread which at certain intervals performs
  * some caller defined actions.
  */

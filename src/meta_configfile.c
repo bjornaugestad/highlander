@@ -28,7 +28,7 @@
 #include <meta_common.h>
 #include <meta_configfile.h>
 
-/**
+/*
  * Local helper struct storing name and value for a directive.
  */
 struct nameval {
@@ -38,7 +38,7 @@ struct nameval {
 
 #define MAX_DIRECTIVES 2000
 
-/**
+/*
  * We keep it simple and just allocate up to MAX_DIRECTIVES pointers
  * to nameval structs. Then we use these pointers and place
  * names and values in them.
@@ -48,7 +48,7 @@ struct configfile_tag {
     size_t used;
 };
 
-/**
+/*
  * Returns 0 if no name/value was found, 1 if it was and -1 if syntax
  * error. Note that we write to line.
  */

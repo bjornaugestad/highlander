@@ -33,7 +33,7 @@
 #include <connection.h>
 #include <meta_socket.h>
 
-/**
+/*
  * NOTE: Security
  * Black lists:
  * A black list is a list of IP adresses which aren't allowed to
@@ -66,7 +66,7 @@
  * Then is is easier to switch protocols.
  */
 
-/**
+/*
  * Implementation of the connection ADT.
  */
 
@@ -83,7 +83,7 @@ struct connection_tag {
     membuf readbuf;
     membuf writebuf;
 
-    /**
+    /*
      * We need to count incoming and outgoing bytes. Outgoing bytes
      * are important for HTTP logging. Incoming bytes are used to
      * detect DoS attacks. We therefore need to compute

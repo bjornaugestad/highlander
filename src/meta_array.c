@@ -22,14 +22,14 @@
 
 #include <meta_array.h>
 
-/**
+/*
  * Implementation of the array ADT.
  */
 struct array_tag {
     int can_grow;		/* Can the array grow automatically? */
     size_t cUsed;		/* How many that currently is in use */
     size_t cAllocated;	/* How many that currently is allocated */
-    void** elements;	/* Pointer to data */
+    void* elements;	/* Pointer to data */
 };
 
 array array_new(size_t nmemb, int can_grow)
@@ -85,7 +85,7 @@ void* array_get(array a, size_t ielem)
 
 int array_extend(array a, size_t nmemb)
 {
-    void** pnew;
+    void* pnew;
     size_t n, cb;
 
     assert(NULL != a);

@@ -129,7 +129,7 @@ const char* html_menu_get_link(html_menu m)
     return c_str(m->link);
 }
 
-/**
+/*
  * Profiling shows us that we must pre-render the menu and store
  * the results internally. The menu struct contains a cstring member,
  * rendered, which initially is NULL. Render the data to that buffer

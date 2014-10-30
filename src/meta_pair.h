@@ -24,7 +24,7 @@
 extern "C" {
 #endif
 
-/**
+/*
  * pair is used as a thread-safe way of storing multiple name/value pairs.
  * COMMENT: This is a map, not a "pair". The adt really needs to be renamed some day.
  */

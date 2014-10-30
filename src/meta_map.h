@@ -31,15 +31,15 @@ extern "C" {
  * This class is reentrant like the others.
  */
 
-/** The map adt */
+/* The map adt */
 typedef struct map_tag* map;
 
-/** The map iterator */
+/* The map iterator */
 typedef struct map_iterator_tag {
     void *node;
 } map_iterator;
 
-/**
+/*
  * Creates a new map.
  *
  * The function pointer argument points to a function suitable
@@ -48,12 +48,12 @@ typedef struct map_iterator_tag {
  */
 map map_new(dtor free_fn);
 
-/**
+/*
  * Deletes a map.
  */
 void map_free(map m);
 
-/**
+/*
  * Creates a new entry or updates an existing entry.
  * Returns 0 on OK and ENOMEM if out of memory.
  * If an existing entry exists, the memory pointed to by the prev.
@@ -61,20 +61,20 @@ void map_free(map m);
  */
 int map_set(map m, const char* key, void* value);
 
-/**
+/*
  * Returns 1 if key exists in map, 0 if not.
  */
 int map_exists(map m, const char* key);
 
 void* map_get(map m, const char* key);
 
-/**
+/*
  * Deletes an entry from the map. Any data will also be deleted.
  * Returns 0 on success, ENOENT if no entry exists.
  */
 int map_delete(map m, const char *key);
 
-/**
+/*
  * Executes function f once for each member in the map. Function f should
  * treat the parameters as read only if the data will be used later.
  *
@@ -85,12 +85,12 @@ int map_delete(map m, const char *key);
  */
 int map_foreach(map m, void* args, int(*f)(void* args, char* key, void* data));
 
-map_iterator 	map_first(map m);
-map_iterator 	map_next(map_iterator mi);
-char*		map_key(map_iterator mi);
-void*		map_value(map_iterator mi);
+map_iterator map_first(map m);
+map_iterator map_next(map_iterator mi);
+char* map_key(map_iterator mi);
+void* map_value(map_iterator mi);
 
-/**
+/*
  * returns 1 if no more entries exist. map_next(mi) would then return NULL.
  */
 int map_end(map_iterator mi);

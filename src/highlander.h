@@ -228,11 +228,11 @@ int request_set_entity(http_request r, void *entity, size_t cb);
 void request_set_version(http_request r, http_version version);
 void request_recycle(http_request r);
 
-/** @return 0 for success or error code for failure (ENOMEM) */
+/* @return 0 for success or error code for failure (ENOMEM) */
 int request_add_param(http_request r, const char *name, const char *value);
 void request_set_method(http_request r, http_method method);
 
-/** @return 0 for success  or error code indicating failure(ENOMEM). */
+/* @return 0 for success  or error code indicating failure(ENOMEM). */
 int request_set_uri(http_request r, const char *value);
 int request_set_mime_version(http_request request, int major, int minor, meta_error e);
 

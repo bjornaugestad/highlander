@@ -27,7 +27,7 @@
 extern "C" {
 #endif
 
-/**
+/*
  * @file meta_socket.h
  * @brief Uitility functions for sockets
  *
@@ -54,7 +54,7 @@ meta_socket sock_socket(int unix_socket);
 int sock_listen(meta_socket p, int backlog);
 meta_socket sock_accept(meta_socket p, struct sockaddr *addr, socklen_t *addrsize);
 
-/**
+/*
  * Tries to read up to count bytes from the socket.
  * The function will poll for data with a timeout of \e timeout
  * seconds and retry \e retries times. sock_read() will return
@@ -78,7 +78,7 @@ int wait_for_data(meta_socket p, int timeout);
  */
 int wait_for_writability(meta_socket p, int timeout);
 
-/**
+/*
  * Tries to write \e count bytes to the socket, retrying \e retries
  * times, with a \e timeout seconds sleep (call to poll()).
  *
@@ -87,23 +87,23 @@ int wait_for_writability(meta_socket p, int timeout);
  */
 int sock_write(meta_socket p, const char* s, size_t count, int timeout, int retries);
 
-/**
+/*
  * Binds the socket to an address/port.
  * @return 1 on success, else 0.
  */
 int sock_bind(meta_socket p, const char* hostname, int port);
 
-/**
+/*
  * Sets the socket to be nonblocking.
  */
 int sock_set_nonblock(meta_socket p);
 
-/**
+/*
  * Clears the nonblocking flag.
  */
 int sock_clear_nonblock(meta_socket p);
 
-/**
+/*
  * Creates a server socket.
  * This function calls socket(), sets some socket options,
  * binds the socket to a host/port and calls listen with a

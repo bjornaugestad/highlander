@@ -24,7 +24,7 @@
 #include <meta_list.h>
 #include <meta_ticker.h>
 
-/**
+/*
  * The action to be performed when a tick occurs. We store a function pointer
  * and a void* to the argument of the function.
  */
@@ -33,7 +33,7 @@ struct action {
     void* arg;
 };
 
-/**
+/*
  * Implementation of the ticker ADT
  */
 struct ticker_tag {

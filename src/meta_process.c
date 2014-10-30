@@ -33,7 +33,7 @@
 
 #include <meta_process.h>
 
-/**
+/*
  * This small struct stores objects we handle.
  */
 struct srv {
@@ -54,7 +54,7 @@ struct srv {
     int exitcode;
 };
 
-/**
+/*
  * Max number of objects a process can start.
  * Each object uses (on x86) 7*4 bytes, so this is
  * very low overhead.
@@ -62,7 +62,7 @@ struct srv {
 #define MAX_OBJECTS 200
 
 
-/**
+/*
  * Implementation of our process ADT.
  */
 struct process_tag {
@@ -194,7 +194,7 @@ int process_shutting_down(process p)
     return p->shutting_down;
 }
 
-/**
+/*
  * Write the pid to /var/run/appname.pid
  * Return 1 on success, 0 on error.
  */
@@ -232,7 +232,7 @@ static void* shutdown_thread(void* arg)
 
     p = (process)arg;
 
-    /**
+    /*
      * Since this is the thread to receive the signal,
      * we save this threads pid. This is important under Linux,
      * as each thread has its own pid.
@@ -282,7 +282,7 @@ static void* launcher(void* args)
     return (void*)(intptr_t)exitcode;
 }
 
-/**
+/*
  * Handle the thread creation needed to create a thread
  * which starts the actual server.
  */
@@ -331,7 +331,7 @@ static void shutdown_started_objects(process p, struct srv* failed)
     }
 }
 
-/**
+/*
  * If we fail after the shutdown thread has started, we have to kill it.
  * That's done here.
  */
@@ -469,7 +469,7 @@ int process_wait_for_shutdown(process p)
          * boa 20070105
           */
 #if 0
-        if ((error = pthread_join(srv->tid, (void**)&srv->exitcode))) {
+        if ((error = pthread_join(srv->tid, (void*)&srv->exitcode))) {
             errno = error;
             return 0;
         }

@@ -37,7 +37,7 @@
 
 #include <meta_misc.h>
 
-/**
+/*
  * Aix has no vsyslog, so we use our own.
  * We limit the output to 1000 characters. That should be
  * sufficient for most error messages.
@@ -380,7 +380,7 @@ const char* get_inet_addr(void* paddr, char* dst, size_t cnt)
     return dst;
 }
 
-/**
+/*
  * This is probably bad, but the need for speed forces us to
  * do it this way. I cannot see any security issues unless the
  * user of Highlander actually wants it to fail, so here we go.

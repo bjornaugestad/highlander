@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-/**
+/*
  * This code is based on the code found in Pthreads Programming,
  * page 99+, with a few bugs removed :-)
  */
@@ -36,7 +36,7 @@
 #include <threadpool.h>
 #include <meta_atomic.h>
 
-/**
+/*
  * The queue contains this struct. It is basically a linked list, where
  * each node contains pointers to functions plus arguments to the
  * functions.
@@ -53,7 +53,7 @@ struct threadpool_work {
     struct threadpool_work* next;
 };
 
-/**
+/*
  * Implementation of the threadpool ADT.
  */
 struct threadpool_tag {

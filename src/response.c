@@ -1034,7 +1034,7 @@ int response_send_file(http_response p, const char *path, const char* ctype, met
         return set_os_error(e, errno);
 }
 
-/**
+/*
  * Send the entire contents of a file to the client.
  * Note that we manually call connection_flush(). This is done so that
  * we won't run out of retry attempts when sending big files.
@@ -1153,7 +1153,7 @@ static int write_406(connection conn, http_version v)
     return send_status_code(conn, code, v);
 }
 
-/**
+/*
  * It is meaningful for some status codes to send content, not
  * so meaningful for others. This function tests to see if
  * we should send the content buffer or not.

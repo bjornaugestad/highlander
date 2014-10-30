@@ -38,7 +38,7 @@ typedef struct html_section_tag* html_section;
 typedef struct html_menu_tag* html_menu;
 typedef struct html_buffer_tag* html_buffer;
 
-/**
+/*
  * A html template describes a html page. The template can contain
  * multiple sections which will be added to the page in sequence.
  * Two sections have special meaning, those are the menu section and
@@ -109,7 +109,7 @@ int html_abbr(html_buffer b, const char* s);
 int html_acronym(html_buffer b, const char* s);
 int html_small(html_buffer b, const char* s);
 
-/** Lists */
+/* Lists */
 /*@{*/
 int html_dl_start(html_buffer b);
 int html_dl_end(html_buffer b);
@@ -133,7 +133,7 @@ int html_p(html_buffer b, const char* s);
 int html_p_start(html_buffer b);
 int html_p_end(html_buffer b);
 
-/** Headings */
+/* Headings */
 /*@{*/
 int html_h1(html_buffer b, const char* s);
 int html_h2(html_buffer b, const char* s);
@@ -160,7 +160,7 @@ int html_samp(html_buffer b, const char* s);
 int html_sub(html_buffer b, const char* s);
 int html_sup(html_buffer b, const char* s);
 
-/** Combo boxes */
+/* Combo boxes */
 /*@{*/
 int html_select_start(html_buffer b);
 int html_select_end(html_buffer b);
@@ -174,7 +174,7 @@ int html_style_end(html_buffer b);
 int html_tt(html_buffer b, const char* s);
 
 
-/** Menu functions */
+/* Menu functions */
 html_menu html_menu_new(void);
 void html_menu_free(html_menu m);
 
@@ -190,14 +190,14 @@ const char* html_menu_get_hover_image(html_menu m);
 const char* html_menu_get_link(html_menu m);
 int html_menu_render(html_menu m, cstring buffer);
 
-/** @defgroup html_template template and template repository functions */
-/**
+/* @defgroup html_template template and template repository functions */
+/*
  * Create a new template.
  */
 html_template html_template_new(void);
 void html_template_free(html_template t);
 
-/**
+/*
  * Add a layout to the template.
  * A layout is just a string describing, in HTML, how the page should
  * look like. The string should contain special directives to identify
@@ -230,7 +230,7 @@ int html_template_send(
     const char* headcode,
     const char* usercode);
 
-/**
+/*
  * We don't want valgrind to report memleaks, so this function
  * empties the repository.
  */

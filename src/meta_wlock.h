@@ -20,7 +20,7 @@
 #ifndef META_WLOCK_H
 #define META_WLOCK_H
 
-/**
+/*
  * The meta_wlock adt implements a waitable/signalable lock
  * (Just a mutex/condvar combo) as one atomic type.
  *

@@ -23,18 +23,17 @@
 #include <meta_list.h>
 #include <meta_map.h>
 
-/**
+/*
  * We implement the map as a list containing pairs. The pair
  * is private to this file size we have another class named pair.
  * (That other class should really be renamed one day)
  */
-struct pair_tag {
+struct pair {
     char *key;
     void *value;
 };
-typedef struct pair_tag pair;
 
-/**
+/*
  * Wrap the list to provide type safety
  */
 struct map_tag {
@@ -72,7 +71,7 @@ int map_end(map_iterator mi)
 
 char* map_key(map_iterator mi)
 {
-    pair *p;
+    struct pair *p;
     list_iterator li;
 
     li.node = mi.node;
@@ -82,7 +81,7 @@ char* map_key(map_iterator mi)
 
 void* map_value(map_iterator mi)
 {
-    pair *p;
+    struct pair *p;
     list_iterator li;
 
     li.node = mi.node;
@@ -96,7 +95,7 @@ map map_new(void(*freefunc)(void* arg))
 
     if ((m = calloc(1, sizeof *m)) == NULL)
         ;
-    else if((m->a = list_new()) == NULL) {
+    else if ((m->a = list_new()) == NULL) {
         mem_free(m);
         m = NULL;
     }
@@ -109,7 +108,7 @@ map map_new(void(*freefunc)(void* arg))
 void map_free(map m)
 {
     list_iterator i;
-    pair *p;
+    struct pair *p;
 
     if (m != NULL && m->a != NULL) {
         for (i = list_first(m->a); !list_end(i); i = list_next(i)) {
@@ -124,13 +123,13 @@ void map_free(map m)
     mem_free(m);
 }
 
-static pair*
+static struct pair*
 map_find(map m, const char* key)
 {
     list_iterator i;
 
     for (i = list_first(m->a); !list_end(i); i = list_next(i)) {
-        pair *p;
+        struct pair *p;
 
         p = list_get(i);
 
@@ -143,7 +142,7 @@ map_find(map m, const char* key)
 
 int map_set(map m, const char* key, void* value)
 {
-    pair *p, *i;
+    struct pair *p, *i;
 
 
     if ((i = map_find(m, key)) != NULL) {
@@ -152,9 +151,9 @@ int map_set(map m, const char* key, void* value)
 
         return 0;
     }
-    else if((p = malloc(sizeof(pair))) == NULL)
+    else if ((p = malloc(sizeof *p)) == NULL)
         return 0;
-    else if((p->key = malloc(strlen(key) + 1)) == NULL)  {
+    else if ((p->key = malloc(strlen(key) + 1)) == NULL)  {
         mem_free(p);
         return 0;
     }
@@ -175,7 +174,7 @@ int map_exists(map m, const char* key)
 
 void* map_get(map m, const char* key)
 {
-    pair *p;
+    struct pair *p;
 
     if ((p = map_find(m, key)) != NULL)
         return p->value;
@@ -183,24 +182,12 @@ void* map_get(map m, const char* key)
         return NULL;
 }
 
-#if 0
-Tue Feb 12 17:59:51 CET 2002
-Not quite sure if we use this one..
-void free_node(void* args)
-{
-    pair* p = (pair*) args;
-
-    mem_free(p->key);
-    mem_free(p->value);
-}
-#endif
-
 int map_foreach(map m, void* args, int(*f)(void* args, char* key, void* data))
 {
     list_iterator i;
 
     for (i = list_first(m->a); !list_end(i); i = list_next(i)) {
-        pair *p;
+        struct pair *p;
 
         p = list_get(i);
         if (f(args, p->key, p->value) == 0)
@@ -209,4 +196,3 @@ int map_foreach(map m, void* args, int(*f)(void* args, char* key, void* data))
 
     return 1;
 }
-

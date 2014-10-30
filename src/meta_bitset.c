@@ -25,7 +25,7 @@
 #include <meta_common.h>
 #include <meta_bitset.h>
 
-/**
+/*
  * Implementation of the bitset ADT.
  * The bits are stored in an array of unsigned char, one bit per bit(Duh!)
  */

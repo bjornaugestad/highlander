@@ -30,7 +30,7 @@ void cache_free(cache c, dtor cleanup);
 
 int cache_add(cache c, size_t id, void* data, size_t cb, int pin);
 int cache_exists(cache c, size_t id);
-int cache_get(cache c, size_t id, void** pdata, size_t* pcb);
+int cache_get(cache c, size_t id, void* pdata, size_t* pcb);
 int cache_remove(cache c, size_t id);
 
 #if 0

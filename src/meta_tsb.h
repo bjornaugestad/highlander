@@ -20,7 +20,7 @@
 #ifndef META_TSB_H
 #define META_TSB_H
 
-/** @file meta_tsb.h
+/* @file meta_tsb.h
  * tsb is short for Time Shared Buffer. It is an ADT which lets threads
  * time share a common buffer. The idea is to use the ADT to simulate
  * physical elements like a radio transmission.
@@ -66,26 +66,26 @@
 extern "C" {
 #endif
 
-/** Declaration of our tsb ADT */
+/* Declaration of our tsb ADT */
 typedef struct tsb_tag tsb;
 
-/**
+/*
  * Creates a new tsb.
  */
 tsb* tsb_new(size_t unit_duration, size_t units_per_frame, void* buffer);
 
-/**
+/*
  * Deletes a tsb and frees all memory allocated by the tsb. The shared buffer
  * will not be freed.
  */
 void tsb_free(tsb* p);
 
-/**
+/*
  * Returns the duration of each unit
  */
 size_t tsb_get_unit_duration(tsb* p);
 
-/**
+/*
  * Returns the time that the tsb was started. You can only call this function
  * after tsb_start() has been called. Use it to synchronize multiple tsb's.
  * More specificly: You need the epoch of the dvbrct tsb to be able to
@@ -95,27 +95,27 @@ size_t tsb_get_unit_duration(tsb* p);
  */
 const struct timeval* tsb_get_epoch(tsb* p);
 
-/**
+/*
  * get number of time units per frame
  */
 size_t tsb_get_units_per_frame(tsb* p);
 
-/**
+/*
  *
  */
 size_t tsb_get_current_unit(tsb* p);
 
-/**
+/*
  *
  */
 size_t tsb_get_current_frame(tsb* p);
 
-/**
+/*
  * Returns a pointer to the shared buffer assigned to the tsb in tsb_new().
  */
 void* tsb_get_buffer(tsb* p);
 
-/**
+/*
  * Assign a callback function and number of threads to one or more
  * time units. The callback function is called once per time frame
  * and gets both the buffer and the args assigned to the tsb as arguments.
@@ -132,12 +132,12 @@ int tsb_set_threads(
     void* arg);
 
 
-/**
+/*
  * Start the threads and sets the epoch of the tsb.
  */
 int tsb_start(tsb* p);
 
-/**
+/*
  * Stops all threads.
  */
 int tsb_stop(tsb* p);

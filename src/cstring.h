@@ -118,7 +118,7 @@ static inline void cstring_recycle(cstring s)
  * of items in the array. Each item must be freed separately.
  * delim can contain any number of characters, see strcspn()
  */
-size_t cstring_split(cstring** dest, const char* src, const char* delim);
+size_t cstring_split(cstring* dest, const char* src, const char* delim);
 
 /* Free multiple cstrings with one call. Note that pstr itself will
  * not be freed. */

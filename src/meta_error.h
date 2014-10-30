@@ -24,7 +24,7 @@
 extern "C" {
 #endif
 
-/**
+/*
  * @brief Generalized error handling.
  *
  * There can be multiple sources of errors in a server like metaweb.
@@ -49,7 +49,7 @@ typedef struct meta_error_tag* meta_error;
 meta_error meta_error_new(void);
 void meta_error_free(meta_error e);
 
-/**
+/*
  * All set_ functions return 0. This way we can write code
  * like "return set_http_error(e, HTTP_400_BAD_REQUEST);"
  * instead of

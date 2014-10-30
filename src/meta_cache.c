@@ -44,7 +44,7 @@
 #include <meta_list.h>
 #include <meta_cache.h>
 
-/**
+/*
  * Data for one cache entry.
  */
 struct cache_entry {
@@ -55,7 +55,7 @@ struct cache_entry {
     int pinned;	/* Keep in ram, yes/no */
 };
 
-/**
+/*
  * Implementation of our cache ADT.
  */
 struct cache_tag {
@@ -274,7 +274,7 @@ int cache_add(cache c, size_t id, void* data, size_t cb, int pin)
     return rc;
 }
 
-/**
+/*
  * Add an item to the hotlist by moving old items to the back
  * and adding the new id in front of the hotlist.
  * Special case: The item may already be in the list, but not
@@ -343,7 +343,7 @@ int cache_exists(cache c, size_t id)
     return !list_end(i);
 }
 
-int cache_get(cache c, size_t id, void** pdata, size_t* pcb)
+int cache_get(cache c, size_t id, void* pdata, size_t* pcb)
 {
     struct cache_entry *p;
     list_iterator i;
@@ -445,7 +445,7 @@ int main(void)
         void* xdata;
         size_t cb;
 
-        rc = cache_get(c, i, (void**)&xdata, &cb);
+        rc = cache_get(c, i, (void*)&xdata, &cb);
         assert(rc && "Could not find item");
 
         sprintf(buf, "streng %lu", (unsigned long)i);
@@ -463,7 +463,7 @@ int main(void)
         void* xdata;
         size_t cb;
 
-        rc = cache_get(c, rand() % nelem, (void**)&xdata, &cb);
+        rc = cache_get(c, rand() % nelem, (void*)&xdata, &cb);
         assert(rc && "rand:Could not find item");
     }
 

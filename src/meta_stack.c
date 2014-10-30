@@ -23,7 +23,7 @@
 #include <meta_stack.h>
 #include <meta_list.h>
 
-/**
+/*
  * A stack is implemented (in v1) as a list. We insert new items
  * in the front of the list when we push items onto the stack. We
  * delete the first item from the list when we pop items from the stack.
@@ -48,7 +48,7 @@ stack stack_new(void)
 
 void stack_free(stack s)
 {
-    /**
+    /*
      * We use sublist_free to free the list. This way
      * we don't free items in the list.
      */

@@ -25,7 +25,7 @@
 #include <meta_slotbuf.h>
 
 struct slotbuf_tag {
-    void** data;
+    void* data;
     size_t size;
     int can_overwrite;
     pthread_mutex_t lock;
