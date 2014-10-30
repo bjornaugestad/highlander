@@ -1,0 +1,4 @@
+General tools not depending on highlander source,
+but used e.g. to build highlander. This is the first
+directory built, and is required by other directories,
+like webcache and ftp. They use bin2c.

@@ -354,7 +354,6 @@ static int parse_new_cookie_name(cookie c, const char* input, meta_error e)
     return 1;
 }
 
-
 static int parse_new_cookie_secure(cookie c, const char* value, meta_error e)
 {
     int secure;
@@ -411,6 +410,7 @@ static int parse_new_cookie_version(cookie c, const char* value, meta_error e)
     cookie_set_version(c, version);
     return 1;
 }
+
 int parse_new_cookie(http_request req, const char* value, meta_error e)
 {
     cookie c;
@@ -441,8 +441,8 @@ int parse_new_cookie(http_request req, const char* value, meta_error e)
         cookie_free(c);
         return 0;
     }
-    else
-        return 1;
+
+    return 1;
 }
 
 /*
