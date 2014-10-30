@@ -60,4 +60,3 @@ int show_webcache_logo_gif(http_request req, http_response page);
 int show_webcache_styles_css(http_request request, http_response response);
 
 #endif
-

@@ -8,4 +8,3 @@
 extern char g_dirs[];
 extern cstring* g_patterns;
 extern size_t g_npatterns;
-

@@ -18,117 +18,117 @@ extern filecache g_filecache;
 static void popen_mime_type(const char* filename, char *buf, size_t cb)
 {
 #if 0
-	FILE *f;
-	size_t offset;
+    FILE *f;
+    size_t offset;
 
-	snprintf(buf, cb, "file -bi %s", filename);
-	if( (f = popen(buf, "r")) == NULL) {
-		perror("popen");
-		exit(EXIT_FAILURE);
-	}
-	if(fgets(buf, cb, f) == NULL) {
-		perror("fgets");
-		exit(EXIT_FAILURE);
-	}
-	pclose(f);
+    snprintf(buf, cb, "file -bi %s", filename);
+    if ( (f = popen(buf, "r")) == NULL) {
+        perror("popen");
+        exit(EXIT_FAILURE);
+    }
+    if (fgets(buf, cb, f) == NULL) {
+        perror("fgets");
+        exit(EXIT_FAILURE);
+    }
+    pclose(f);
 
-	/* Nicify the mime type */
-	offset = strcspn(buf, ":;, \t\n");
-	buf[offset] = '\0';
+    /* Nicify the mime type */
+    offset = strcspn(buf, ":;, \t\n");
+    buf[offset] = '\0';
 #else
-	(void)cb;
-	const char* s = get_mime_type(filename);
-	strcpy(buf, s);
+    (void)cb;
+    const char* s = get_mime_type(filename);
+    strcpy(buf, s);
 #endif
 }
 
 
 static const char* create_known_as(const char* rootdir, const char* file)
 {
-	const char* s;
+    const char* s;
 
-	if(strstr(file, rootdir) != file) {
-		fprintf(stderr, "The file %s does not belong to our tree, %s\n", file, rootdir);
-		exit(EXIT_FAILURE);
-	}
+    if (strstr(file, rootdir) != file) {
+        fprintf(stderr, "The file %s does not belong to our tree, %s\n", file, rootdir);
+        exit(EXIT_FAILURE);
+    }
 
-	s = file + strlen(rootdir);
-	/* Skip slash, if any */
-	if(*s == '/')
-		s++;
+    s = file + strlen(rootdir);
+    /* Skip slash, if any */
+    if (*s == '/')
+        s++;
 
-	return s;
+    return s;
 }
 
 /* Returns a list of all new files. Remember to free the list */
 list find_new_files(const char* directories, cstring* patterns, size_t npatterns)
 {
-	list lst = NULL;
-	list_iterator i;
+    list lst = NULL;
+    list_iterator i;
 
-	if( (lst = list_new()) == NULL)
-		goto err;
-	else if(!walk_all_directories(directories, patterns, npatterns, lst, 1))
-		goto err;
-	else {
-		/* Now see if all files are int the cache */
-		i = list_first(lst); 
-		while(!list_end(i)) {
-			fileinfo fi = list_get(i);
-			assert(fi != NULL);
-			if(filecache_exists(g_filecache, fileinfo_alias(fi)))  
-				i = list_delete(lst, i, (dtor)fileinfo_free);
-			else 
-				i = list_next(i);
-		}
-	}
+    if ( (lst = list_new()) == NULL)
+        goto err;
+    else if(!walk_all_directories(directories, patterns, npatterns, lst, 1))
+        goto err;
+    else {
+        /* Now see if all files are int the cache */
+        i = list_first(lst); 
+        while (!list_end(i)) {
+            fileinfo fi = list_get(i);
+            assert(fi != NULL);
+            if (filecache_exists(g_filecache, fileinfo_alias(fi)))  
+                i = list_delete(lst, i, (dtor)fileinfo_free);
+            else 
+                i = list_next(i);
+        }
+    }
 
-	return lst;
+    return lst;
 
 err:
-	list_free(lst, (dtor)fileinfo_free);
-	return NULL;
+    list_free(lst, (dtor)fileinfo_free);
+    return NULL;
 }
 
 /* Returns a list of all modified files. Remember to free the list */
 list find_modified_files(const char* directories, cstring* patterns, size_t npatterns)
 {
-	list lst = NULL;
-	list_iterator i;
-	struct stat cachefile;
-	const struct stat *diskfile;
+    list lst = NULL;
+    list_iterator i;
+    struct stat cachefile;
+    const struct stat *diskfile;
 
-	if( (lst = list_new()) == NULL)
-		goto err;
-	else if(!walk_all_directories(directories, patterns, npatterns, lst, 1))
-		goto err;
-	else {
-		/* Now see if all files are int the cache */
-		i = list_first(lst); 
-		while(!list_end(i)) {
-			fileinfo fi = list_get(i);
-			assert(fi != NULL);
+    if ( (lst = list_new()) == NULL)
+        goto err;
+    else if(!walk_all_directories(directories, patterns, npatterns, lst, 1))
+        goto err;
+    else {
+        /* Now see if all files are int the cache */
+        i = list_first(lst); 
+        while (!list_end(i)) {
+            fileinfo fi = list_get(i);
+            assert(fi != NULL);
 
-			diskfile = fileinfo_stat(fi);
-			assert(diskfile != NULL);
+            diskfile = fileinfo_stat(fi);
+            assert(diskfile != NULL);
 
-			if(!filecache_stat(g_filecache, fileinfo_alias(fi), &cachefile)
-			|| cachefile.st_mtime == diskfile->st_mtime)  {
-				verbose(3, "File %s is not modified\n", fileinfo_alias(fi));
-				i = list_delete(lst, i, (dtor)fileinfo_free);
-			}
-			else  {
-				verbose(2, "File %s is modified\n", fileinfo_alias(fi));
-				i = list_next(i);
-			}
-		}
-	}
+            if (!filecache_stat(g_filecache, fileinfo_alias(fi), &cachefile)
+            || cachefile.st_mtime == diskfile->st_mtime)  {
+                verbose(3, "File %s is not modified\n", fileinfo_alias(fi));
+                i = list_delete(lst, i, (dtor)fileinfo_free);
+            }
+            else  {
+                verbose(2, "File %s is modified\n", fileinfo_alias(fi));
+                i = list_next(i);
+            }
+        }
+    }
 
-	return lst;
+    return lst;
 
 err:
-	list_free(lst, (dtor)fileinfo_free);
-	return NULL;
+    list_free(lst, (dtor)fileinfo_free);
+    return NULL;
 }
 
 /* To find deleted files, we must start by looking at
@@ -138,84 +138,84 @@ err:
  */
 list find_deleted_files(const char* directories, cstring* patterns, size_t npatterns)
 {
-	list diskfiles = NULL;
-	list_iterator li;
-	stringmap sm = NULL;
-	stringmap deleted = NULL;
-	stringmap sm_filecache = filecache_filenames(g_filecache);
-	list files = NULL;
-	unsigned long id;
-	size_t nfiles;
+    list diskfiles = NULL;
+    list_iterator li;
+    stringmap sm = NULL;
+    stringmap deleted = NULL;
+    stringmap sm_filecache = filecache_filenames(g_filecache);
+    list files = NULL;
+    unsigned long id;
+    size_t nfiles;
 
-	if( (diskfiles = list_new()) == NULL)
-		goto err;
-	else if(!walk_all_directories(directories, patterns, npatterns, diskfiles, 0))
-		goto err;
-	else if( (nfiles = list_size(diskfiles)) == 0) {
-		/* Found no files at all. Not exactly an internal server error,
-		 * so we return an empty list. 
-		 */
-		list_free(diskfiles, (dtor)fileinfo_free);
-		return list_new();
+    if ( (diskfiles = list_new()) == NULL)
+        goto err;
+    else if(!walk_all_directories(directories, patterns, npatterns, diskfiles, 0))
+        goto err;
+    else if( (nfiles = list_size(diskfiles)) == 0) {
+        /* Found no files at all. Not exactly an internal server error,
+         * so we return an empty list. 
+         */
+        list_free(diskfiles, (dtor)fileinfo_free);
+        return list_new();
 
-	}
-	else if( (sm = stringmap_new(nfiles)) == NULL)
-		goto err;
+    }
+    else if( (sm = stringmap_new(nfiles)) == NULL)
+        goto err;
 
-	/* Convert fileinfo to a stringmap */
-	verbose(3, "%s(): Converting fileinfo to a stringmap\n", __func__);
-	for(li = list_first(diskfiles); !list_end(li); li = list_next(li)) {
-		fileinfo fi = list_get(li);
-		const char* s = fileinfo_alias(fi);
-		if(!stringmap_add(sm, s, &id))
-			goto err;
-	}
+    /* Convert fileinfo to a stringmap */
+    verbose(3, "%s(): Converting fileinfo to a stringmap\n", __func__);
+    for (li = list_first(diskfiles); !list_end(li); li = list_next(li)) {
+        fileinfo fi = list_get(li);
+        const char* s = fileinfo_alias(fi);
+        if (!stringmap_add(sm, s, &id))
+            goto err;
+    }
 
-	/* Now get the deleted nodes */
-	verbose(3, "%s(): Finding deleted nodes\n", __func__);
-	if( (deleted = stringmap_subset(sm_filecache, sm)) == NULL)
-		goto err;
+    /* Now get the deleted nodes */
+    verbose(3, "%s(): Finding deleted nodes\n", __func__);
+    if ( (deleted = stringmap_subset(sm_filecache, sm)) == NULL)
+        goto err;
 
-	/* Convert the stringmap to a list */
-	verbose(3, "%s(): Converting deleted nodes to a list\n", __func__);
-	if( (files = stringmap_tolist(deleted)) == NULL)
-		goto err;
+    /* Convert the stringmap to a list */
+    verbose(3, "%s(): Converting deleted nodes to a list\n", __func__);
+    if ( (files = stringmap_tolist(deleted)) == NULL)
+        goto err;
 
-	verbose(3, "%s(): cleaning up\n", __func__);
-	list_free(diskfiles, (dtor)fileinfo_free);
-	stringmap_free(deleted);
-	stringmap_free(sm);
-	verbose(3, "%s(): Returning file list with %zu entries\n", __func__, list_size(files));
-	return files;
+    verbose(3, "%s(): cleaning up\n", __func__);
+    list_free(diskfiles, (dtor)fileinfo_free);
+    stringmap_free(deleted);
+    stringmap_free(sm);
+    verbose(3, "%s(): Returning file list with %zu entries\n", __func__, list_size(files));
+    return files;
 
 err:
-	list_free(diskfiles, (dtor)fileinfo_free);
-	list_free(files, NULL);
-	stringmap_free(sm);
-	stringmap_free(deleted);
-	return NULL;
+    list_free(diskfiles, (dtor)fileinfo_free);
+    list_free(files, NULL);
+    stringmap_free(sm);
+    stringmap_free(deleted);
+    return NULL;
 }
 
 
 int walk_all_directories(const char* directories, cstring* patterns, size_t npatterns, list lst, int get_mimetype)
 {
-	cstring *pstr;
-	size_t i, nelem;
-	
-	/* Split the directories argument and then walk each element in the path */
-	if( (nelem = cstring_split(&pstr, directories, " \t")) == 0)
-		return 0;
+    cstring *pstr;
+    size_t i, nelem;
+    
+    /* Split the directories argument and then walk each element in the path */
+    if ( (nelem = cstring_split(&pstr, directories, " \t")) == 0)
+        return 0;
 
-	/* Now walk the tree(s) */
-	for(i = 0; i < nelem; i++) {
-		const char* rootdir = c_str(pstr[i]);
-		if(!find_files(rootdir, rootdir, patterns, npatterns, lst, get_mimetype))
-			return 0;
-	}
+    /* Now walk the tree(s) */
+    for (i = 0; i < nelem; i++) {
+        const char* rootdir = c_str(pstr[i]);
+        if (!find_files(rootdir, rootdir, patterns, npatterns, lst, get_mimetype))
+            return 0;
+    }
 
-	cstring_multifree(pstr, nelem);
-	free(pstr);
-	return 1;
+    cstring_multifree(pstr, nelem);
+    free(pstr);
+    return 1;
 }
 
 /*
@@ -226,63 +226,63 @@ int walk_all_directories(const char* directories, cstring* patterns, size_t npat
  * We return 0 if errors, 1 if not.
  */
 static int handle_one_file(
-	const char* rootdir,
-	const char* path,
-	cstring* patterns,
-	size_t npatterns,
-	list lst,
-	struct stat *pst,
-	int get_mimetype)
+    const char* rootdir,
+    const char* path,
+    cstring* patterns,
+    size_t npatterns,
+    list lst,
+    struct stat *pst,
+    int get_mimetype)
 {
-	int rc = 0;
-	size_t i, cb;
-	const char *known_as;
-	char *base = NULL;
+    int rc = 0;
+    size_t i, cb;
+    const char *known_as;
+    char *base = NULL;
 
-	/* Extract the base name of the object, including 
-	 * extensions. */
-	cb = strlen(path) + 1;
-	if( (base = malloc(cb)) == NULL)
-		goto err;
-	get_basename(path, NULL, base, cb);
+    /* Extract the base name of the object, including 
+     * extensions. */
+    cb = strlen(path) + 1;
+    if ( (base = malloc(cb)) == NULL)
+        goto err;
+    get_basename(path, NULL, base, cb);
 
-	/* See if filename matches patterns */
-	for(i = 0; i < npatterns; i++) {
-		if(fnmatch(c_str(patterns[i]), base, 0) == 0) {
-			fileinfo fi;
-			char mimetype[2048];
+    /* See if filename matches patterns */
+    for (i = 0; i < npatterns; i++) {
+        if (fnmatch(c_str(patterns[i]), base, 0) == 0) {
+            fileinfo fi;
+            char mimetype[2048];
 
-			if( (fi = fileinfo_new()) == NULL) 
-				goto err;
+            if ( (fi = fileinfo_new()) == NULL) 
+                goto err;
 
-			if(get_mimetype)
-				popen_mime_type(path, mimetype, sizeof mimetype);
-			else
-				mimetype[0] = '\0';
+            if (get_mimetype)
+                popen_mime_type(path, mimetype, sizeof mimetype);
+            else
+                mimetype[0] = '\0';
 
-			/* Save info in a node and add it to the list */
-			known_as = create_known_as(rootdir, path);
-			if(fileinfo_set_alias(fi, known_as)
-			&& fileinfo_set_name(fi, path)
-			&& fileinfo_set_stat(fi, pst)
-			&& fileinfo_set_mimetype(fi, mimetype)
-			&& list_add(lst, fi)) {
-				/* Stop checking patterns */
-				break; 
-			}
-			else { /* Crapola, out of memory */
-				fileinfo_free(fi);
-				goto err;
-			}
-		}
-	}
+            /* Save info in a node and add it to the list */
+            known_as = create_known_as(rootdir, path);
+            if (fileinfo_set_alias(fi, known_as)
+            && fileinfo_set_name(fi, path)
+            && fileinfo_set_stat(fi, pst)
+            && fileinfo_set_mimetype(fi, mimetype)
+            && list_add(lst, fi)) {
+                /* Stop checking patterns */
+                break; 
+            }
+            else { /* Crapola, out of memory */
+                fileinfo_free(fi);
+                goto err;
+            }
+        }
+    }
 
-	/* Set return code to success and fall through to cleanup */
-	rc = 1;
+    /* Set return code to success and fall through to cleanup */
+    rc = 1;
 
 err:
-	free(base);
-	return rc;
+    free(base);
+    return rc;
 }
 
 /*
@@ -311,67 +311,66 @@ err:
  * lst is where we append our data. 
  */
 int find_files(
-	const char* rootdir,
-	const char* dirname,
-	cstring* patterns,
-	size_t npatterns,
-	list lst,
-	int get_mimetype)
+    const char* rootdir,
+    const char* dirname,
+    cstring* patterns,
+    size_t npatterns,
+    list lst,
+    int get_mimetype)
 {
-	DIR *d = NULL;
-	int rc = 0; 
+    DIR *d = NULL;
+    int rc = 0; 
 
-	/* Buffers used for string/path manipulation */
-	char *path = NULL;
-	size_t cb = 0;
+    /* Buffers used for string/path manipulation */
+    char *path = NULL;
+    size_t cb = 0;
 
-	struct dirent *de = NULL;
-	char debuff[sizeof(struct dirent) + 100];
-	struct stat st;
+    struct dirent *de = NULL;
+    char debuff[sizeof(struct dirent) + 100];
+    struct stat st;
 
-	/* We return error(0) for anything but permission errors */
-	if( (d = opendir(dirname)) == NULL)
-		return errno == EACCES ? 1 : 0;
+    /* We return error(0) for anything but permission errors */
+    if ( (d = opendir(dirname)) == NULL)
+        return errno == EACCES ? 1 : 0;
 
-	while(readdir_r(d, (struct dirent*)debuff, &de) == 0 && de != NULL) {
-		/* We do not walk parent or current directory */
-		if(strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0)
-			continue;
+    while (readdir_r(d, (struct dirent*)debuff, &de) == 0 && de != NULL) {
+        /* We do not walk parent or current directory */
+        if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0)
+            continue;
 
-		/* Compute the number of bytes needed for path */
-		cb = strlen(dirname) + 1 + strlen(de->d_name) + 1;
-		free(path); path = NULL;
-		if( (path = malloc(cb)) == NULL)
-			goto err;
+        /* Compute the number of bytes needed for path */
+        cb = strlen(dirname) + 1 + strlen(de->d_name) + 1;
+        free(path); path = NULL;
+        if ( (path = malloc(cb)) == NULL)
+            goto err;
 
-		/* Create new path */
-		snprintf(path, cb, "%s/%s", dirname, de->d_name);
+        /* Create new path */
+        snprintf(path, cb, "%s/%s", dirname, de->d_name);
 
-		/* Get file info */
-		if(stat(path, &st) == -1) 
-			goto err;
+        /* Get file info */
+        if (stat(path, &st) == -1) 
+            goto err;
 
-		/* Check subdirectory for more files */
-		if(S_ISDIR(st.st_mode)) {
-			/* We found a directory, check it */
-			verbose(2, "Checking path %s...\n", path);
-			if(find_files(rootdir, path,  patterns, npatterns, lst, get_mimetype) == 0) 
-				goto err;
-		}
-		else if(S_ISREG(st.st_mode)) {
-			if(!handle_one_file(rootdir, path, patterns, npatterns, lst, &st, get_mimetype))
-				goto err;
-		}
-	}
+        /* Check subdirectory for more files */
+        if (S_ISDIR(st.st_mode)) {
+            /* We found a directory, check it */
+            verbose(2, "Checking path %s...\n", path);
+            if (find_files(rootdir, path,  patterns, npatterns, lst, get_mimetype) == 0) 
+                goto err;
+        }
+        else if(S_ISREG(st.st_mode)) {
+            if (!handle_one_file(rootdir, path, patterns, npatterns, lst, &st, get_mimetype))
+                goto err;
+        }
+    }
 
-	/* Indicate success and fallthrough to cleanup */
-	rc = 1; 
+    /* Indicate success and fallthrough to cleanup */
+    rc = 1; 
 
 err:
-	if(d != NULL)
-		closedir(d);
+    if (d != NULL)
+        closedir(d);
 
-	free(path);
-	return rc;
+    free(path);
+    return rc;
 }
-
