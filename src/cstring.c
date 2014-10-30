@@ -319,7 +319,6 @@ void cstring_multifree(cstring *pstr, size_t nelem)
 		cstring_free(pstr[i]);
 }
 
-
 cstring cstring_left(cstring src, size_t n)
 {
 	cstring dest;

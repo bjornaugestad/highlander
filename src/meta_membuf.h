@@ -28,7 +28,7 @@
 extern "C" {
 #endif
 
-/**
+/*
  * @brief High speed memory buffering.
  *
  * We some places have memory buffers, which is a collection of
@@ -44,7 +44,7 @@ extern "C" {
  * then to read 50 bytes, this does not free up 50 bytes for writing.
  */
 
-/** The membuf adt */
+/* The membuf adt */
 typedef struct membuf_tag *membuf;
 
 struct membuf_tag {
@@ -155,7 +155,7 @@ static inline void* membuf_data(membuf mb)
 	return mb->data;
 }
 
-/**
+/*
  * Sets the entire content of the buffer to the character c.
  * This function does not change any internal status pointers,
  * and is excellent to use if you want to zero-terminate the
@@ -170,9 +170,7 @@ static inline void membuf_set(membuf mb, int c)
 	memset(mb->data, c, mb->size);
 }
 
-
-
-/**
+/*
  * Returns the total size of the buffer, which is the same
  * as the size parameter to the membuf_new() function.
  *

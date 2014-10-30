@@ -166,30 +166,17 @@ fReadBufferContainsAtLeast(connection conn, size_t cb)
 }
 
 static inline int
-fReadBufferContainsData(connection conn)
+readbuf_contains_data(connection conn)
 {
 	size_t cbInBuf = membuf_canread(conn->readbuf);
 	return cbInBuf != 0 ? 1 : 0;
 }
 
 static inline int
-fReadBufferEmpty(connection conn)
+readbuf_empty(connection conn)
 {
-	return fReadBufferContainsData(conn) == 0;
+	return readbuf_contains_data(conn) == 0;
 }
-
-#if 0
-static int
-fWriteBufferEmpty(connection conn)
-{
-	/* The buffer is empty if we can write the same number
-	 * of bytes as the buffer size. */
-	int empty =
-		(membuf_size(conn->writebuf) == membuf_canwrite(conn->writebuf));
-
-	return empty;
-}
-#endif
 
 static inline int
 fWriteBufferHasRoomFor(connection conn, size_t cb)
@@ -198,8 +185,7 @@ fWriteBufferHasRoomFor(connection conn, size_t cb)
 	return cbAvailable >= cb ? 1 : 0;
 }
 
-static inline int
-chGetOneCharacter(connection conn)
+static inline int conn_getc(connection conn)
 {
 	char c;
 
@@ -346,12 +332,12 @@ int connection_getc(connection conn, int* pchar)
 	assert(pchar != NULL);
 
 	/* Fill buffer if empty */
-	if (fReadBufferEmpty(conn))
+	if (readbuf_empty(conn))
 		success = nFillReadBuffer(conn);
 
 	/* Get one character from buffer */
 	if (success) {
-		*pchar = chGetOneCharacter(conn);
+		*pchar = conn_getc(conn);
 		if (*pchar == EOF)
 			success = 0;
 	}
@@ -431,7 +417,7 @@ static int nReadFromSocket(connection conn, void *pbuf, size_t cb)
 
 	assert(conn != NULL);
 	assert(pbuf != NULL);
-	assert(fReadBufferEmpty(conn));
+	assert(readbuf_empty(conn));
 
 	success = sock_read(
 		conn->sock,

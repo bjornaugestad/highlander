@@ -266,12 +266,151 @@ int parse_cookie(http_request req, const char *value, meta_error e)
 		return parse_old_cookie(req, value, e);
 }
 
-static int parse_new_cookie_version(cookie c, const char* value, meta_error e);
-static int parse_new_cookie_domain(cookie c, const char* value, meta_error e);
-static int parse_new_cookie_path(cookie c, const char* value, meta_error e);
-static int parse_new_cookie_secure(cookie c, const char* value, meta_error e);
-static int parse_new_cookie_name(cookie c, const char* input, meta_error e);
+static const char* find_first_non_space(const char* s)
+{
+	while (*s != '\0' && (*s == ' ' || *s == '\t'))
+		s++;
 
+	return s;
+}
+
+static int parse_cookie_attr(
+	cookie c,
+	const char* input,
+	const char* look_for,
+	int (*set_attr)(cookie, const char*),
+	meta_error e)
+{
+	cstring str;
+
+	if ((str = cstring_new()) == NULL)
+		return set_os_error(e, ENOMEM);
+	else if(!get_cookie_attribute(input, look_for, str, e)) {
+		cstring_free(str);
+		return 0;
+	}
+
+	set_attr(c, c_str(str));
+	cstring_free(str);
+	return 1;
+}
+
+/*
+ * look for name=value as in $Version="1";foo=bar  and
+ * add name and value to the cookie .
+ * Returns 1 on success, else a http error do
+ */
+static int parse_new_cookie_name(cookie c, const char* input, meta_error e)
+{
+	const char *s, *s2;
+	cstring str;
+
+	if ((s = strchr(input, ';')) == NULL)
+		return set_http_error(e, HTTP_400_BAD_REQUEST);
+
+	/* skip ; and white space (if any) */
+	if ((s = find_first_non_space(++s)) == NULL) {
+		/* If all we had was ws */
+		return set_http_error(e, HTTP_400_BAD_REQUEST);
+	}
+
+	if ((s2 = strchr(s, '=')) == NULL) {
+		/* Missing = in Name= */
+		return set_http_error(e, HTTP_400_BAD_REQUEST);
+	}
+
+	if ((str = cstring_new()) == NULL)
+		return set_os_error(e, errno);
+
+	if (!cstring_ncopy(str, s, (size_t) (s2 - s + 1))) {
+		cstring_free(str);
+		return set_os_error(e, errno);
+	}
+
+	if (!cookie_set_name(c, c_str(str))) {
+		cstring_free(str);
+		return set_os_error(e, errno);
+	}
+
+	s = s2 + 1;
+	cstring_recycle(str);
+	if ((s2 = strchr(s, ';')) == NULL) {
+		/* Missing ; in Name=value; */
+		cstring_free(str);
+		return set_http_error(e, HTTP_400_BAD_REQUEST);
+	}
+
+	if (!cstring_ncopy(str, s, (size_t)(s2 - s + 1))) {
+		cstring_free(str);
+		return set_os_error(e, errno);
+	}
+
+	if (!cookie_set_value(c, c_str(str))) {
+		cstring_free(str);
+		return set_os_error(e, errno);
+	}
+
+	cstring_free(str);
+	return 1;
+}
+
+
+static int parse_new_cookie_secure(cookie c, const char* value, meta_error e)
+{
+	int secure;
+	cstring str;
+
+	if ((str = cstring_new()) == NULL)
+		return set_os_error(e, errno);
+
+	if (!get_cookie_attribute(value, "$Secure", str, e)) {
+		cstring_free(str);
+		return 0;
+	}
+
+	secure = atoi(c_str(str));
+	if (secure != 1 && secure != 0) {
+		cstring_free(str);
+		return set_http_error(e, HTTP_400_BAD_REQUEST);
+	}
+
+	cookie_set_secure(c, secure);
+	cstring_free(str);
+	return 1;
+}
+
+static int parse_new_cookie_domain(cookie c, const char* value, meta_error e)
+{
+	return parse_cookie_attr(c, value, "$Domain", cookie_set_domain, e);
+}
+
+static int parse_new_cookie_path(cookie c, const char* value, meta_error e)
+{
+	return parse_cookie_attr(c, value, "$Path", cookie_set_path, e);
+}
+
+static int parse_new_cookie_version(cookie c, const char* value, meta_error e)
+{
+	int version;
+	cstring str;
+
+	if ((str = cstring_new()) == NULL)
+		return set_os_error(e, ENOMEM);
+
+	if (!get_cookie_attribute(value, "$Version", str, e)) {
+		cstring_free(str);
+		return 0;
+	}
+
+	version = atoi(c_str(str));
+	cstring_free(str);
+
+	if (version != 1)
+		return set_http_error(e, HTTP_400_BAD_REQUEST);
+
+	cookie_set_version(c, version);
+	return 1;
+}
 int parse_new_cookie(http_request req, const char* value, meta_error e)
 {
 	cookie c;
@@ -357,153 +496,6 @@ memerr:
 	cstring_free(value);
 	cookie_free(c);
 	return set_os_error(e, ENOMEM);
-}
-
-
-static int parse_cookie_attr(
-	cookie c,
-	const char* input,
-	const char* look_for,
-	int (*set_attr)(cookie, const char*),
-	meta_error e)
-{
-	cstring str;
-
-	if ((str = cstring_new()) == NULL)
-		return set_os_error(e, ENOMEM);
-	else if(!get_cookie_attribute(input, look_for, str, e)) {
-		cstring_free(str);
-		return 0;
-	}
-
-	set_attr(c, c_str(str));
-	cstring_free(str);
-	return 1;
-}
-
-
-static int parse_new_cookie_version(cookie c, const char* value, meta_error e)
-{
-	int version;
-	cstring str;
-
-	if ((str = cstring_new()) == NULL)
-		return set_os_error(e, ENOMEM);
-
-	if (!get_cookie_attribute(value, "$Version", str, e)) {
-		cstring_free(str);
-		return 0;
-	}
-
-	version = atoi(c_str(str));
-	cstring_free(str);
-
-	if (version != 1)
-		return set_http_error(e, HTTP_400_BAD_REQUEST);
-
-	cookie_set_version(c, version);
-	return 1;
-}
-
-static int parse_new_cookie_domain(cookie c, const char* value, meta_error e)
-{
-	return parse_cookie_attr(c, value, "$Domain", cookie_set_domain, e);
-}
-
-static int parse_new_cookie_path(cookie c, const char* value, meta_error e)
-{
-	return parse_cookie_attr(c, value, "$Path", cookie_set_path, e);
-}
-
-static int parse_new_cookie_secure(cookie c, const char* value, meta_error e)
-{
-	int secure;
-	cstring str;
-
-	if ((str = cstring_new()) == NULL)
-		return set_os_error(e, errno);
-
-	if (!get_cookie_attribute(value, "$Secure", str, e)) {
-		cstring_free(str);
-		return 0;
-	}
-
-	secure = atoi(c_str(str));
-	if (secure != 1 && secure != 0) {
-		cstring_free(str);
-		return set_http_error(e, HTTP_400_BAD_REQUEST);
-	}
-
-	cookie_set_secure(c, secure);
-	cstring_free(str);
-	return 1;
-}
-
-static const char* find_first_non_space(const char* s)
-{
-	while (*s != '\0' && (*s == ' ' || *s == '\t'))
-		s++;
-
-	return s;
-}
-
-/*
- * look for name=value as in $Version="1";foo=bar  and
- * add name and value to the cookie .
- * Returns 1 on success, else a http error do
- */
-static int parse_new_cookie_name(cookie c, const char* input, meta_error e)
-{
-	const char *s, *s2;
-	cstring str;
-
-	if ((s = strchr(input, ';')) == NULL)
-		return set_http_error(e, HTTP_400_BAD_REQUEST);
-
-	/* skip ; and white space (if any) */
-	if ((s = find_first_non_space(++s)) == NULL) {
-		/* If all we had was ws */
-		return set_http_error(e, HTTP_400_BAD_REQUEST);
-	}
-
-	if ((s2 = strchr(s, '=')) == NULL) {
-		/* Missing = in Name= */
-		return set_http_error(e, HTTP_400_BAD_REQUEST);
-	}
-
-	if ((str = cstring_new()) == NULL)
-		return set_os_error(e, errno);
-
-	if (!cstring_ncopy(str, s, (size_t) (s2 - s + 1))) {
-		cstring_free(str);
-		return set_os_error(e, errno);
-	}
-
-	if (!cookie_set_name(c, c_str(str))) {
-		cstring_free(str);
-		return set_os_error(e, errno);
-	}
-
-	s = s2 + 1;
-	cstring_recycle(str);
-	if ((s2 = strchr(s, ';')) == NULL) {
-		/* Missing ; in Name=value; */
-		cstring_free(str);
-		return set_http_error(e, HTTP_400_BAD_REQUEST);
-	}
-
-	if (!cstring_ncopy(str, s, (size_t)(s2 - s + 1))) {
-		cstring_free(str);
-		return set_os_error(e, errno);
-	}
-
-	if (!cookie_set_value(c, c_str(str))) {
-		cstring_free(str);
-		return set_os_error(e, errno);
-	}
-
-	cstring_free(str);
-	return 1;
 }
 
 int cookie_dump(cookie c, FILE *f)
