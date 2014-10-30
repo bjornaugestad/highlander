@@ -38,7 +38,7 @@
 #include <meta_socket.h>
 
 struct meta_socket_tag {
-	int fd;
+    int fd;
     int unix_socket;
 };
 
@@ -49,52 +49,52 @@ static int sock_set_reuseaddr(meta_socket p);
 
 int wait_for_writability(meta_socket p, int timeout)
 {
-	assert(p != NULL);
+    assert(p != NULL);
 
-	return sock_poll_for(p, timeout, POLLOUT);
+    return sock_poll_for(p, timeout, POLLOUT);
 }
 
 int wait_for_data(meta_socket p, int timeout)
 {
-	assert(p != NULL);
+    assert(p != NULL);
 
-	return sock_poll_for(p, timeout, POLLIN);
+    return sock_poll_for(p, timeout, POLLIN);
 }
 
 int sock_write(meta_socket p, const char* s, size_t cbToWrite, int timeout, int cRetries)
 {
-	ssize_t cbWritten = 0;
+    ssize_t cbWritten = 0;
 
-	assert(p != NULL);
-	assert(p->fd >= 0);
-	assert(s != NULL);
-	assert(timeout >= 0);
-	assert(cRetries >= 0);
+    assert(p != NULL);
+    assert(p->fd >= 0);
+    assert(s != NULL);
+    assert(timeout >= 0);
+    assert(cRetries >= 0);
 
 
-	do {
-		if (!wait_for_writability(p, timeout)) {
-			if (errno != EAGAIN)
-				return 0;
-		}
-		else if((cbWritten = write(p->fd, s, cbToWrite)) == -1) {
-			perror("write");
-			return 0;
-		}
-		else if(cbWritten != (ssize_t)cbToWrite) {
-			s += cbWritten;
-			cbToWrite -= cbWritten;
-		}
+    do {
+        if (!wait_for_writability(p, timeout)) {
+            if (errno != EAGAIN)
+                return 0;
+        }
+        else if((cbWritten = write(p->fd, s, cbToWrite)) == -1) {
+            perror("write");
+            return 0;
+        }
+        else if(cbWritten != (ssize_t)cbToWrite) {
+            s += cbWritten;
+            cbToWrite -= cbWritten;
+        }
 
-	} while((ssize_t)cbToWrite != cbWritten && cRetries--);
+    } while((ssize_t)cbToWrite != cbWritten && cRetries--);
 
-	/* If not able to write and no errors detected, we have a timeout */
-	if ((ssize_t)cbToWrite != cbWritten) {
-		errno = EAGAIN;
-		return 0;
-	}
+    /* If not able to write and no errors detected, we have a timeout */
+    if ((ssize_t)cbToWrite != cbWritten) {
+        errno = EAGAIN;
+        return 0;
+    }
 
-	return 1;
+    return 1;
 }
 
 /**
@@ -106,35 +106,35 @@ int sock_write(meta_socket p, const char* s, size_t cbToWrite, int timeout, int 
  */
 static int sock_poll_for(meta_socket p, int timeout, int poll_for)
 {
-	struct pollfd pfd;
-	int rc;
-	int status = 0;
+    struct pollfd pfd;
+    int rc;
+    int status = 0;
 
-	assert(p != NULL);
-	assert(p->fd >= 0);
-	assert(poll_for == POLLIN || poll_for == POLLOUT);
-	assert(timeout >= 0);
+    assert(p != NULL);
+    assert(p->fd >= 0);
+    assert(poll_for == POLLIN || poll_for == POLLOUT);
+    assert(timeout >= 0);
 
-	pfd.fd = p->fd;
-	pfd.events = (short)poll_for;
+    pfd.fd = p->fd;
+    pfd.events = (short)poll_for;
 
-	/* NOTE: poll is XPG4, not POSIX */
-	rc = poll(&pfd, 1, timeout);
-	if (rc == 1) {
-		/* We have info in pfd */
-		if (pfd.revents & POLLHUP)
-			errno = EPIPE;
-		else if(pfd.revents & POLLERR)
-			errno = EPIPE;
-		else if(pfd.revents & POLLNVAL)
-			errno = EINVAL;
-		else if((pfd.revents & poll_for)  == poll_for)
-			status = 1;
-	}
-	else if (rc == 0)
-		errno = EAGAIN;
+    /* NOTE: poll is XPG4, not POSIX */
+    rc = poll(&pfd, 1, timeout);
+    if (rc == 1) {
+        /* We have info in pfd */
+        if (pfd.revents & POLLHUP)
+            errno = EPIPE;
+        else if(pfd.revents & POLLERR)
+            errno = EPIPE;
+        else if(pfd.revents & POLLNVAL)
+            errno = EINVAL;
+        else if((pfd.revents & poll_for)  == poll_for)
+            status = 1;
+    }
+    else if (rc == 0)
+        errno = EAGAIN;
 
-	return status;
+    return status;
 }
 /* read UP TO AND INCLUDING cb bytes off the socket.
  *  The rules are:
@@ -149,61 +149,61 @@ static int sock_poll_for(meta_socket p, int timeout, int poll_for)
 /* NOTE that sock_read() will return 1 even if zero bytes were read.
  */
 int sock_read(
-	meta_socket p,
-	char *buf,
-	size_t cbMax,
-	int timeout,
-	int cRetries,
-	size_t* cbReadSum)
+    meta_socket p,
+    char *buf,
+    size_t cbMax,
+    int timeout,
+    int cRetries,
+    size_t* cbReadSum)
 {
-	ssize_t cbRead = 0;
-	size_t cbToRead;
+    ssize_t cbRead = 0;
+    size_t cbToRead;
 
-	assert(p != NULL);
-	assert(p->fd >= 0);
-	assert(timeout >= 0);
-	assert(cRetries >= 0);
-	assert(buf != NULL);
-	assert(cbReadSum != NULL);
+    assert(p != NULL);
+    assert(p->fd >= 0);
+    assert(timeout >= 0);
+    assert(cRetries >= 0);
+    assert(buf != NULL);
+    assert(cbReadSum != NULL);
 
-	*cbReadSum = 0;
-	do {
-		cbToRead = cbMax - *cbReadSum;
+    *cbReadSum = 0;
+    do {
+        cbToRead = cbMax - *cbReadSum;
 
-		if (!wait_for_data(p, timeout)) {
-			if (errno != EAGAIN)
-				return 0;
-		}
-		else if((cbRead = read(p->fd, &buf[*cbReadSum], cbToRead)) == -1) {
-			/*
-			 * We were unable to read data from the socket.
-			 * Inform the caller by returning 0.
-			 */
-			return 0;
-		}
-		else if(cbRead > 0) {
-			/* We read at least one byte off the socket. */
-			*cbReadSum += cbRead;
+        if (!wait_for_data(p, timeout)) {
+            if (errno != EAGAIN)
+                return 0;
+        }
+        else if((cbRead = read(p->fd, &buf[*cbReadSum], cbToRead)) == -1) {
+            /*
+             * We were unable to read data from the socket.
+             * Inform the caller by returning 0.
+             */
+            return 0;
+        }
+        else if(cbRead > 0) {
+            /* We read at least one byte off the socket. */
+            *cbReadSum += cbRead;
 
-			/* NOTE: This does not quite cut it, as servers will
-			 * block even when there's no more data to read. That
-			 * happens when we got all the data in the first call
-			 * to read(). So what to do?
-			 * 1. We can call poll() with a tiny timeout just to
-			 * see if there's more data available. If it is, increase
-			 * cRetries.
-			 * 2. We can retrieve the MTU from the OS and check if
-			 * MTU == cbRead. That will not support fragmentation, though.
-			 * 3. We can specify separate values for retry for servers
-			 * and clients. That's what we do now, but huge downloads
-			 * to clients requires lots of retries.
-			 */
-			//cRetries++;
-		}
+            /* NOTE: This does not quite cut it, as servers will
+             * block even when there's no more data to read. That
+             * happens when we got all the data in the first call
+             * to read(). So what to do?
+             * 1. We can call poll() with a tiny timeout just to
+             * see if there's more data available. If it is, increase
+             * cRetries.
+             * 2. We can retrieve the MTU from the OS and check if
+             * MTU == cbRead. That will not support fragmentation, though.
+             * 3. We can specify separate values for retry for servers
+             * and clients. That's what we do now, but huge downloads
+             * to clients requires lots of retries.
+             */
+            //cRetries++;
+        }
 
-	} while(*cbReadSum < cbMax && cRetries--);
+    } while(*cbReadSum < cbMax && cRetries--);
 
-	return 1;
+    return 1;
 }
 
 
@@ -214,55 +214,55 @@ int sock_read(
  */
 static int sock_bind_inet(meta_socket p, const char* hostname, int port)
 {
-	struct hostent* host = NULL;
-	struct sockaddr_in my_addr;
-	socklen_t cb = (socklen_t)sizeof(my_addr);
+    struct hostent* host = NULL;
+    struct sockaddr_in my_addr;
+    socklen_t cb = (socklen_t)sizeof(my_addr);
 
-	assert(p != NULL);
+    assert(p != NULL);
     assert(!p->unix_socket);
-	assert(p->fd >= 0);
-	assert(port > 0);
+    assert(p->fd >= 0);
+    assert(port > 0);
 
-	if (hostname != NULL) {
-		if ((host = gethostbyname(hostname)) ==NULL) {
-			errno = h_errno; /* OBSOLETE? */
-			return 0;
-		}
-	}
+    if (hostname != NULL) {
+        if ((host = gethostbyname(hostname)) ==NULL) {
+            errno = h_errno; /* OBSOLETE? */
+            return 0;
+        }
+    }
 
-	memset(&my_addr, '\0', sizeof(my_addr));
-	my_addr.sin_port = htons(port);
+    memset(&my_addr, '\0', sizeof(my_addr));
+    my_addr.sin_port = htons(port);
 
-	if (hostname == NULL) {
-		my_addr.sin_family = AF_INET;
-		my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	}
-	else {
-		my_addr.sin_family = host->h_addrtype;
-		my_addr.sin_addr.s_addr = ((struct in_addr*)host->h_addr)->s_addr;
-	}
+    if (hostname == NULL) {
+        my_addr.sin_family = AF_INET;
+        my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    }
+    else {
+        my_addr.sin_family = host->h_addrtype;
+        my_addr.sin_addr.s_addr = ((struct in_addr*)host->h_addr)->s_addr;
+    }
 
-	if (bind(p->fd, (struct sockaddr *)&my_addr, cb) == -1)
-		return 0;
+    if (bind(p->fd, (struct sockaddr *)&my_addr, cb) == -1)
+        return 0;
 
-	return 1;
+    return 1;
 }
 
 static int sock_bind_unix(meta_socket p, const char* path)
 {
-	struct sockaddr_un my_addr;
-	socklen_t cb = (socklen_t)sizeof(my_addr);
+    struct sockaddr_un my_addr;
+    socklen_t cb = (socklen_t)sizeof(my_addr);
 
-	assert(p != NULL);
+    assert(p != NULL);
     assert(p->unix_socket);
-	assert(p->fd >= 0);
+    assert(p->fd >= 0);
     assert(path != NULL);
     assert(strlen(path) > 0);
 
     // + 1 in case we map anon paths. That requires an extra byte.
     assert(strlen(path) + 1 < sizeof my_addr.sun_path);
 
-	memset(&my_addr, '\0', sizeof(my_addr));
+    memset(&my_addr, '\0', sizeof(my_addr));
     my_addr.sun_family = AF_UNIX;
 
     if (*path == '/')
@@ -270,10 +270,10 @@ static int sock_bind_unix(meta_socket p, const char* path)
     else
         strcpy(my_addr.sun_path + 1, path);
 
-	if (bind(p->fd, (struct sockaddr *)&my_addr, cb) == -1)
-		return 0;
+    if (bind(p->fd, (struct sockaddr *)&my_addr, cb) == -1)
+        return 0;
 
-	return 1;
+    return 1;
 }
 
 int sock_bind(meta_socket p, const char* hostname, int port)
@@ -288,113 +288,113 @@ int sock_bind(meta_socket p, const char* hostname, int port)
 
 meta_socket sock_socket(int unix_socket)
 {
-	meta_socket p;
+    meta_socket p;
     int af = unix_socket ? AF_UNIX : AF_INET;
 
-	if ((p = malloc(sizeof *p)) == NULL) {
-		return NULL;
-	}
-	else if((p->fd = socket(af, SOCK_STREAM, 0)) == -1) {
-		free(p);
-		return NULL;
-	}
-	else {
+    if ((p = malloc(sizeof *p)) == NULL) {
+        return NULL;
+    }
+    else if((p->fd = socket(af, SOCK_STREAM, 0)) == -1) {
+        free(p);
+        return NULL;
+    }
+    else {
         p->unix_socket = unix_socket;
-		return p;
+        return p;
     }
 }
 
 int sock_listen(meta_socket p, int backlog)
 {
-	assert(p != NULL);
-	assert(p->fd >= 0);
+    assert(p != NULL);
+    assert(p->fd >= 0);
 
-	if (listen(p->fd, backlog) == -1)
-		return 0;
-	else
-		return 1;
+    if (listen(p->fd, backlog) == -1)
+        return 0;
+    else
+        return 1;
 }
 
 meta_socket create_server_socket(int unix_socket, const char* host, int port)
 {
-	meta_socket p;
+    meta_socket p;
 
-	if ((p = sock_socket(unix_socket)) == NULL) {
-		return NULL;
-	}
-	else if(!sock_set_reuseaddr(p)
-	|| !sock_bind(p, host, port)
-	|| !sock_listen(p, 100)) {
-		sock_close(p);
-		return 0;
-	}
-	else
-		return p;
+    if ((p = sock_socket(unix_socket)) == NULL) {
+        return NULL;
+    }
+    else if(!sock_set_reuseaddr(p)
+    || !sock_bind(p, host, port)
+    || !sock_listen(p, 100)) {
+        sock_close(p);
+        return 0;
+    }
+    else
+        return p;
 }
 
 meta_socket create_client_socket(const char* host, int port)
 {
     struct hostent *phost;
     struct sockaddr_in sa;
-	meta_socket p;
+    meta_socket p;
 
     if ((phost = gethostbyname(host)) == NULL) {
-		errno = h_errno; /* OBSOLETE? */
-		return 0;
-	}
+        errno = h_errno; /* OBSOLETE? */
+        return 0;
+    }
 
     /* Create a socket structure */
     sa.sin_family = phost->h_addrtype;
-	memcpy(&sa.sin_addr, phost->h_addr, (size_t)phost->h_length);
+    memcpy(&sa.sin_addr, phost->h_addr, (size_t)phost->h_length);
     sa.sin_port = htons(port);
 
     /* Open a socket to the server */
-	if ((p = sock_socket(0)) == NULL)
-		return 0;
+    if ((p = sock_socket(0)) == NULL)
+        return 0;
 
     /* Connect to the server. */
     if (connect(p->fd, (struct sockaddr *) &sa, sizeof(sa)) == -1) {
-		sock_close(p);
-		return NULL;
-	}
-	else
-		return p;
+        sock_close(p);
+        return NULL;
+    }
+    else
+        return p;
 }
 
 int sock_set_nonblock(meta_socket p)
 {
-	int flags;
+    int flags;
 
-	assert(p != NULL);
-	assert(p->fd >= 0);
+    assert(p != NULL);
+    assert(p->fd >= 0);
 
-	flags = fcntl(p->fd, F_GETFL);
-	if (flags == -1)
-		return 0;
+    flags = fcntl(p->fd, F_GETFL);
+    if (flags == -1)
+        return 0;
 
-	flags |= O_NONBLOCK;
-	if (fcntl(p->fd, F_SETFL, flags) == -1)
-		return 0;
+    flags |= O_NONBLOCK;
+    if (fcntl(p->fd, F_SETFL, flags) == -1)
+        return 0;
 
-	return 1;
+    return 1;
 }
 
 int sock_clear_nonblock(meta_socket p)
 {
-	int flags;
+    int flags;
 
-	assert(p != NULL);
-	assert(p->fd >= 0);
+    assert(p != NULL);
+    assert(p->fd >= 0);
 
-	flags = fcntl(p->fd, F_GETFL);
-	if (flags == -1)
-		return 0;
+    flags = fcntl(p->fd, F_GETFL);
+    if (flags == -1)
+        return 0;
 
-	flags -= (flags & O_NONBLOCK);
-	if (fcntl(p->fd, F_SETFL, flags) == -1)
-		return 0;
-	else
-		return 1;
+    flags -= (flags & O_NONBLOCK);
+    if (fcntl(p->fd, F_SETFL, flags) == -1)
+        return 0;
+    else
+        return 1;
 }
 
 /*
@@ -403,62 +403,62 @@ int sock_clear_nonblock(meta_socket p)
  */
 static int sock_set_reuseaddr(meta_socket p)
 {
-	int optval;
-	socklen_t optlen;
+    int optval;
+    socklen_t optlen;
 
-	assert(p != NULL);
-	assert(p->fd >= 0);
+    assert(p != NULL);
+    assert(p->fd >= 0);
 
-	optval = 1;
-	optlen = (socklen_t)sizeof(optval);
-	if (setsockopt(p->fd, SOL_SOCKET, SO_REUSEADDR, &optval, optlen) == -1)
-		return 0;
-	else
-		return 1;
+    optval = 1;
+    optlen = (socklen_t)sizeof(optval);
+    if (setsockopt(p->fd, SOL_SOCKET, SO_REUSEADDR, &optval, optlen) == -1)
+        return 0;
+    else
+        return 1;
 }
 
 int sock_close(meta_socket p)
 {
-	int fd;
+    int fd;
 
-	assert(p != NULL);
-	assert(p->fd >= 0);
+    assert(p != NULL);
+    assert(p->fd >= 0);
 
-	fd = p->fd;
-	free(p);
+    fd = p->fd;
+    free(p);
 
-	/* shutdown() may return an error from time to time,
-	 * e.g. if the client already closed the socket. We then
-	 * get error ENOTCONN.
-	 * We still need to close the socket locally, therefore
-	 * the return code from shutdown is ignored.
-	 */
-	shutdown(fd, SHUT_RDWR);
+    /* shutdown() may return an error from time to time,
+     * e.g. if the client already closed the socket. We then
+     * get error ENOTCONN.
+     * We still need to close the socket locally, therefore
+     * the return code from shutdown is ignored.
+     */
+    shutdown(fd, SHUT_RDWR);
 
-	if (close(fd))
-		return 0;
-	else
-		return 1;
+    if (close(fd))
+        return 0;
+    else
+        return 1;
 }
 
 meta_socket sock_accept(meta_socket p, struct sockaddr *addr, socklen_t *addrsize)
 {
-	meta_socket newsock;
-	int fd;
+    meta_socket newsock;
+    int fd;
 
-	assert(p != NULL);
-	assert(addr != NULL);
-	assert(addrsize != NULL);
+    assert(p != NULL);
+    assert(addr != NULL);
+    assert(addrsize != NULL);
 
-	fd = accept(p->fd, addr, addrsize);
-	if (fd == -1)
-		return NULL;
-	else if ((newsock = malloc(sizeof *newsock)) == NULL) {
-		close(fd);
-		return NULL;
-	}
-	else {
-		newsock->fd = fd;
-		return newsock;
-	}
+    fd = accept(p->fd, addr, addrsize);
+    if (fd == -1)
+        return NULL;
+    else if ((newsock = malloc(sizeof *newsock)) == NULL) {
+        close(fd);
+        return NULL;
+    }
+    else {
+        newsock->fd = fd;
+        return newsock;
+    }
 }

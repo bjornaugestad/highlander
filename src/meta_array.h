@@ -41,4 +41,3 @@ int    array_extend(array a, size_t nmemb);
 #endif
 
 #endif
-

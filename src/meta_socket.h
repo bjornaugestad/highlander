@@ -62,12 +62,12 @@ meta_socket sock_accept(meta_socket p, struct sockaddr *addr, socklen_t *addrsiz
  * and return 0 if no error occured.
  */
 int sock_read(
-	meta_socket p,
-	char *buf,
-	size_t cbMax,
-	int timeout,
-	int retries,
-	size_t* cbReadSum);
+    meta_socket p,
+    char *buf,
+    size_t cbMax,
+    int timeout,
+    int retries,
+    size_t* cbReadSum);
 
 /* Waits for data to be available on the socket. */
 int wait_for_data(meta_socket p, int timeout);
@@ -141,4 +141,3 @@ int sock_close(meta_socket p);
 #endif
 
 #endif
-

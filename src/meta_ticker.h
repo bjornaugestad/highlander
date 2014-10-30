@@ -40,4 +40,3 @@ int ticker_start(ticker t);
 void ticker_stop(ticker t);
 
 #endif /* guard */
-

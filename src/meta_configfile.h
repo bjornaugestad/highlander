@@ -45,4 +45,3 @@ void configfile_free(configfile cf);
 #endif
 
 #endif
-

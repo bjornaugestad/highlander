@@ -39,9 +39,9 @@ typedef struct cstring_tag* cstring;
  */
 struct cstring_tag
 {
-	size_t cbAllocated;
-	size_t cbUsed;
-	char* data;
+    size_t cbAllocated;
+    size_t cbUsed;
+    char* data;
 };
 
 
@@ -72,45 +72,45 @@ void cstring_reverse(cstring s);
 
 static inline const char* c_str(cstring s)
 {
-	assert(NULL != s);
-	assert(NULL != s->data);
+    assert(NULL != s);
+    assert(NULL != s->data);
 
-	return s->data;
+    return s->data;
 }
 
 static inline size_t cstring_length(cstring s)
 {
-	assert(NULL != s);
-	assert(NULL != s->data);
-	assert((strlen(s->data) + 1) == s->cbUsed);
+    assert(NULL != s);
+    assert(NULL != s->data);
+    assert((strlen(s->data) + 1) == s->cbUsed);
 
-	return s->cbUsed - 1;
+    return s->cbUsed - 1;
 }
 
 static inline void cstring_free(cstring s)
 {
-	if (s != NULL) {
-		free(s->data);
-		free(s);
-	}
+    if (s != NULL) {
+        free(s->data);
+        free(s);
+    }
 }
 
 static inline int cstring_compare(cstring dest, const char* src)
 {
-	assert(NULL != dest);
-	assert(NULL != src);
-	assert(NULL != dest->data);
+    assert(NULL != dest);
+    assert(NULL != src);
+    assert(NULL != dest->data);
 
-	return strcmp(dest->data, src);
+    return strcmp(dest->data, src);
 }
 
 static inline void cstring_recycle(cstring s)
 {
-	assert(NULL != s);
-	assert(NULL != s->data);
+    assert(NULL != s);
+    assert(NULL != s->data);
 
-	*s->data = '\0';
-	s->cbUsed = 1;
+    *s->data = '\0';
+    s->cbUsed = 1;
 }
 
 /* NEW STUFF: 2005-12-06*/
@@ -136,4 +136,3 @@ void cstring_upper(cstring s);
 #endif
 
 #endif  /* guard */
-

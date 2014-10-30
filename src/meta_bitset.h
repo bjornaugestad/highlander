@@ -51,4 +51,3 @@ void* bitset_data(bitset b);
 #endif
 
 #endif /* guard */
-

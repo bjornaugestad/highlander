@@ -37,13 +37,8 @@ void general_header_free(general_header p);
 int general_header_set_date(general_header p, time_t value, meta_error e);
 
 
-
-
-
-
 #ifdef __cplusplus
 }
 #endif
 
 #endif
-

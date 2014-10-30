@@ -32,365 +32,365 @@
 
 int cstring_extend(cstring s, size_t size)
 {
-	size_t bytes_needed, newsize;
-	char* data;
+    size_t bytes_needed, newsize;
+    char* data;
 
-	assert(s != NULL);
-	assert(s->data != NULL);
-	assert(s->cbAllocated >= CSTRING_INITIAL_SIZE);
-	assert(s->cbUsed > 0 && s->cbUsed <= s->cbAllocated);
+    assert(s != NULL);
+    assert(s->data != NULL);
+    assert(s->cbAllocated >= CSTRING_INITIAL_SIZE);
+    assert(s->cbUsed > 0 && s->cbUsed <= s->cbAllocated);
 
-	/* Check for available space and reallocate if necessary */
-	bytes_needed = s->cbUsed + size;
-	if (bytes_needed > s->cbAllocated) {
-		/* Double the size of the buffer */
-		newsize = s->cbAllocated * 2;
-		if (newsize < bytes_needed) {
-			/* Doubling wasn't sufficient */
-			newsize = s->cbAllocated + size;
-		}
+    /* Check for available space and reallocate if necessary */
+    bytes_needed = s->cbUsed + size;
+    if (bytes_needed > s->cbAllocated) {
+        /* Double the size of the buffer */
+        newsize = s->cbAllocated * 2;
+        if (newsize < bytes_needed) {
+            /* Doubling wasn't sufficient */
+            newsize = s->cbAllocated + size;
+        }
 
-		if ((data = realloc(s->data, newsize)) == NULL)
-			return 0;
-		else {
-			s->data = data;
-			s->cbAllocated = newsize;
-		}
-	}
+        if ((data = realloc(s->data, newsize)) == NULL)
+            return 0;
+        else {
+            s->data = data;
+            s->cbAllocated = newsize;
+        }
+    }
 
-	assert(s->cbUsed == strlen(s->data) + 1);
-	return 1;
+    assert(s->cbUsed == strlen(s->data) + 1);
+    return 1;
 }
 
 int cstring_vprintf(
-	cstring dest,
-	size_t needs_max,
-	const char* fmt,
-	va_list ap)
+    cstring dest,
+    size_t needs_max,
+    const char* fmt,
+    va_list ap)
 {
-	int i;
+    int i;
 
-	/* Adjust the size of needs_max. vsnprintf includes the '\0'
-	 * in its computation, so vprintf(,,,strlen(x), "%s", x) fails.
-	 */
-	needs_max++;
+    /* Adjust the size of needs_max. vsnprintf includes the '\0'
+     * in its computation, so vprintf(,,,strlen(x), "%s", x) fails.
+     */
+    needs_max++;
 
-	assert(NULL != dest);
-	assert(NULL != dest->data);
-	assert(dest->cbUsed == strlen(dest->data) + 1);
+    assert(NULL != dest);
+    assert(NULL != dest->data);
+    assert(dest->cbUsed == strlen(dest->data) + 1);
 
-	if (!cstring_extend(dest, needs_max))
-		return 0;
+    if (!cstring_extend(dest, needs_max))
+        return 0;
 
-	/* We append the new data, therefore the & */
-	i = vsnprintf(&dest->data[dest->cbUsed - 1], needs_max, fmt, ap);
+    /* We append the new data, therefore the & */
+    i = vsnprintf(&dest->data[dest->cbUsed - 1], needs_max, fmt, ap);
 
-	/* We do not know the length of the data after vsnprintf()
-	 * We therefore recompute the cbUsed member.
-	 */
-	dest->cbUsed += i;
+    /* We do not know the length of the data after vsnprintf()
+     * We therefore recompute the cbUsed member.
+     */
+    dest->cbUsed += i;
 
-	assert(dest->cbUsed == strlen(dest->data) + 1);
-	return 1;
+    assert(dest->cbUsed == strlen(dest->data) + 1);
+    return 1;
 }
 
 int cstring_printf(cstring dest, size_t needs_max, const char* fmt, ...)
 {
-	int success;
-	va_list ap;
+    int success;
+    va_list ap;
 
-	assert(NULL != dest);
-	assert(NULL != fmt);
+    assert(NULL != dest);
+    assert(NULL != fmt);
 
-	va_start(ap, fmt);
-	success = cstring_vprintf(dest, needs_max, fmt, ap);
-	va_end(ap);
+    va_start(ap, fmt);
+    success = cstring_vprintf(dest, needs_max, fmt, ap);
+    va_end(ap);
 
-	return success;
+    return success;
 }
 
 int cstring_pcat(cstring dest, const char *start, const char *end)
 {
-	ptrdiff_t cb;
+    ptrdiff_t cb;
 
-	assert(dest != NULL);
-	assert(start != NULL);
-	assert(end != NULL);
-	assert(start < end);
+    assert(dest != NULL);
+    assert(start != NULL);
+    assert(end != NULL);
+    assert(start < end);
 
-	cb = end - start;
-	if (!cstring_extend(dest, cb))
-		return 0;
+    cb = end - start;
+    if (!cstring_extend(dest, cb))
+        return 0;
 
-	memcpy(&dest->data[dest->cbUsed - 1], start, cb);
-	dest->cbUsed += cb;
-	dest->data[dest->cbUsed - 1] = '\0';
+    memcpy(&dest->data[dest->cbUsed - 1], start, cb);
+    dest->cbUsed += cb;
+    dest->data[dest->cbUsed - 1] = '\0';
 
-	assert(dest->cbUsed == strlen(dest->data) + 1);
-	return 1;
+    assert(dest->cbUsed == strlen(dest->data) + 1);
+    return 1;
 }
 
 int cstring_concat(cstring dest, const char* src)
 {
-	size_t cb;
+    size_t cb;
 
-	assert(NULL != src);
-	assert(NULL != dest);
+    assert(NULL != src);
+    assert(NULL != dest);
 
-	cb = strlen(src);
-	if (!cstring_extend(dest, cb))
-		return 0;
+    cb = strlen(src);
+    if (!cstring_extend(dest, cb))
+        return 0;
 
-	/* Now add the string to the dest */
-	strcat(&dest->data[dest->cbUsed - 1], src);
-	dest->cbUsed += cb;
+    /* Now add the string to the dest */
+    strcat(&dest->data[dest->cbUsed - 1], src);
+    dest->cbUsed += cb;
 
-	assert(dest->cbUsed == strlen(dest->data) + 1);
-	return 1;
+    assert(dest->cbUsed == strlen(dest->data) + 1);
+    return 1;
 }
 
 int cstring_charcat(cstring dest, int c)
 {
-	assert(NULL != dest);
+    assert(NULL != dest);
 
-	/* This function gets called a lot these days, esp.
-	 * after the html_template ADT was added. I've
-	 * therefore added a small extra test here to avoid
-	 * millions of function calls.
-	 */
-	if (dest->cbUsed + 1 >= dest->cbAllocated) {
-		if (!cstring_extend(dest, 1))
-			return 0;
-	}
+    /* This function gets called a lot these days, esp.
+     * after the html_template ADT was added. I've
+     * therefore added a small extra test here to avoid
+     * millions of function calls.
+     */
+    if (dest->cbUsed + 1 >= dest->cbAllocated) {
+        if (!cstring_extend(dest, 1))
+            return 0;
+    }
 
-	dest->data[dest->cbUsed - 1] = c;
-	dest->data[dest->cbUsed++] = '\0';
+    dest->data[dest->cbUsed - 1] = c;
+    dest->data[dest->cbUsed++] = '\0';
 
-	assert(dest->cbUsed == strlen(dest->data) + 1);
-	return 1;
+    assert(dest->cbUsed == strlen(dest->data) + 1);
+    return 1;
 }
 
 cstring cstring_new(void)
 {
-	cstring p;
+    cstring p;
 
-	/*
-	 * Rumours are that some OS'es use an optimistic memory allocation
-	 * strategy, which means that they don't allocate memory until the
-	 * mem is accessed. We therefore request memory with calloc
-	 * instead of malloc.
-	 * Other rumours say that the OS just marks the page as a zeroed
-	 * page and doesn't do anything until the page is read from.
-	 * Hmm, what's a poor coder to do? Write to the page? That hurts
-	 * performance...
-	 */
-	if ((p = calloc(1, sizeof *p)) == NULL)
-		;
-	else if((p->data = calloc(1, CSTRING_INITIAL_SIZE)) == NULL) {
-		free(p);
-		p = NULL;
-	}
-	else {
-		p->cbUsed = 1;
-		p->cbAllocated = CSTRING_INITIAL_SIZE;
-		*p->data = '\0';
-	}
+    /*
+     * Rumours are that some OS'es use an optimistic memory allocation
+     * strategy, which means that they don't allocate memory until the
+     * mem is accessed. We therefore request memory with calloc
+     * instead of malloc.
+     * Other rumours say that the OS just marks the page as a zeroed
+     * page and doesn't do anything until the page is read from.
+     * Hmm, what's a poor coder to do? Write to the page? That hurts
+     * performance...
+     */
+    if ((p = calloc(1, sizeof *p)) == NULL)
+        ;
+    else if((p->data = calloc(1, CSTRING_INITIAL_SIZE)) == NULL) {
+        free(p);
+        p = NULL;
+    }
+    else {
+        p->cbUsed = 1;
+        p->cbAllocated = CSTRING_INITIAL_SIZE;
+        *p->data = '\0';
+    }
 
-	return p;
+    return p;
 }
 
 cstring cstring_dup(const char* src)
 {
-	cstring dest = NULL;
+    cstring dest = NULL;
 
-	assert(src != NULL);
-	if ((dest = cstring_new()) != NULL) {
-		if (!cstring_copy(dest, src)) {
-			cstring_free(dest);
-			dest = NULL;
-		}
-	}
+    assert(src != NULL);
+    if ((dest = cstring_new()) != NULL) {
+        if (!cstring_copy(dest, src)) {
+            cstring_free(dest);
+            dest = NULL;
+        }
+    }
 
-	return dest;
+    return dest;
 }
 
 int cstring_copy(cstring dest, const char* src)
 {
-	size_t c;
+    size_t c;
 
-	assert(NULL != dest);
-	assert(NULL != dest->data);
-	assert(NULL != src);
+    assert(NULL != dest);
+    assert(NULL != dest->data);
+    assert(NULL != src);
 
-	cstring_recycle(dest);
-	c = strlen(src);
-	if (!cstring_extend(dest, c))
-		return 0;
+    cstring_recycle(dest);
+    c = strlen(src);
+    if (!cstring_extend(dest, c))
+        return 0;
 
-	strcpy(dest->data, src);
-	dest->cbUsed += c;
+    strcpy(dest->data, src);
+    dest->cbUsed += c;
 
-	assert(dest->cbUsed == strlen(dest->data) + 1);
-	return 1;
+    assert(dest->cbUsed == strlen(dest->data) + 1);
+    return 1;
 }
 
 int cstring_ncopy(cstring dest, const char* src, const size_t cch)
 {
-	size_t c;
+    size_t c;
 
-	assert(NULL != dest);
-	assert(NULL != dest->data);
-	assert(NULL != src);
+    assert(NULL != dest);
+    assert(NULL != dest->data);
+    assert(NULL != src);
 
-	cstring_recycle(dest);
-	c = strlen(src);
-	if (c > cch)
-		c = cch;
+    cstring_recycle(dest);
+    c = strlen(src);
+    if (c > cch)
+        c = cch;
 
-	if (!cstring_extend(dest, c))
-		return 0;
+    if (!cstring_extend(dest, c))
+        return 0;
 
-	strncpy(dest->data, src, c);
-	dest->data[c] = '\0';
-	dest->cbUsed = c + 1;
+    strncpy(dest->data, src, c);
+    dest->data[c] = '\0';
+    dest->cbUsed = c + 1;
 
-	assert(dest->cbUsed == strlen(dest->data) + 1);
-	return 1;
+    assert(dest->cbUsed == strlen(dest->data) + 1);
+    return 1;
 }
 
 int cstring_concat2(cstring dest, const char* s1, const char* s2)
 {
-	assert(NULL != dest);
-	assert(NULL != s1);
-	assert(NULL != s2);
+    assert(NULL != dest);
+    assert(NULL != s1);
+    assert(NULL != s2);
 
-	if (cstring_concat(dest, s1) && cstring_concat(dest, s2))
-		return 1;
-	else
-		return 0;
+    if (cstring_concat(dest, s1) && cstring_concat(dest, s2))
+        return 1;
+    else
+        return 0;
 }
 
 int cstring_concat3(
-	cstring dest,
-	const char* s1,
-	const char* s2,
-	const char* s3)
+    cstring dest,
+    const char* s1,
+    const char* s2,
+    const char* s3)
 {
-	assert(NULL != dest);
-	assert(NULL != s1);
-	assert(NULL != s2);
-	assert(NULL != s3);
+    assert(NULL != dest);
+    assert(NULL != s1);
+    assert(NULL != s2);
+    assert(NULL != s3);
 
-	if (cstring_concat(dest, s1)
-	&& cstring_concat(dest, s2)
-	&& cstring_concat(dest, s3))
-		return 1;
-	else
-		return 0;
+    if (cstring_concat(dest, s1)
+    && cstring_concat(dest, s2)
+    && cstring_concat(dest, s3))
+        return 1;
+    else
+        return 0;
 }
 
 int cstring_multinew(cstring* pstr, size_t nelem)
 {
-	size_t i;
+    size_t i;
 
-	assert(pstr != NULL);
-	assert(nelem > 0);
+    assert(pstr != NULL);
+    assert(nelem > 0);
 
-	for (i = 0; i < nelem; i++) {
-		if ((pstr[i] = cstring_new()) == NULL) {
-			while (i-- > 0)
-				cstring_free(pstr[i]);
+    for (i = 0; i < nelem; i++) {
+        if ((pstr[i] = cstring_new()) == NULL) {
+            while (i-- > 0)
+                cstring_free(pstr[i]);
 
-			return 0;
-		}
-	}
+            return 0;
+        }
+    }
 
-	return 1;
+    return 1;
 }
 
 /* Free multiple cstrings with one call */
 void cstring_multifree(cstring *pstr, size_t nelem)
 {
-	size_t i;
+    size_t i;
 
-	assert(pstr != NULL);
+    assert(pstr != NULL);
 
-	for (i = 0; i < nelem; i++)
-		cstring_free(pstr[i]);
+    for (i = 0; i < nelem; i++)
+        cstring_free(pstr[i]);
 }
 
 cstring cstring_left(cstring src, size_t n)
 {
-	cstring dest;
+    cstring dest;
 
-	assert(src != NULL);
+    assert(src != NULL);
 
-	if ((dest = cstring_new()) == NULL || !cstring_extend(dest, n)) {
-		cstring_free(dest);
-		dest = NULL;
-	}
-	else
-		cstring_ncopy(dest, src->data, n);
+    if ((dest = cstring_new()) == NULL || !cstring_extend(dest, n)) {
+        cstring_free(dest);
+        dest = NULL;
+    }
+    else
+        cstring_ncopy(dest, src->data, n);
 
-	return dest;
+    return dest;
 }
 
 cstring cstring_right(cstring src, size_t n)
 {
-	cstring dest;
+    cstring dest;
 
-	/* Get mem */
-	if ((dest = cstring_new()) == NULL || !cstring_extend(dest, n)) {
-		cstring_free(dest);
-		dest = NULL;
-	}
-	else {
-		const char* s = src->data;
-		size_t cb = strlen(s);
+    /* Get mem */
+    if ((dest = cstring_new()) == NULL || !cstring_extend(dest, n)) {
+        cstring_free(dest);
+        dest = NULL;
+    }
+    else {
+        const char* s = src->data;
+        size_t cb = strlen(s);
 
-		/* Copy string */
-		if (cb > n)
-			s += cb - n;
-		cstring_copy(dest, s);
-	}
+        /* Copy string */
+        if (cb > n)
+            s += cb - n;
+        cstring_copy(dest, s);
+    }
 
-	return dest;
+    return dest;
 }
 
 cstring cstring_substring(cstring src, size_t from, size_t to)
 {
-	cstring dest;
-	size_t cb;
+    cstring dest;
+    size_t cb;
 
-	assert(src != NULL);
-	assert(from <= to);
-	assert(to < src->cbUsed);
+    assert(src != NULL);
+    assert(from <= to);
+    assert(to < src->cbUsed);
 
-	if (to > src->cbUsed)
-		to = src->cbUsed;
+    if (to > src->cbUsed)
+        to = src->cbUsed;
 
-	cb = to - from + 1;
-	if ((dest = cstring_new()) == NULL || !cstring_extend(dest, cb)) {
-		cstring_free(dest);
-		dest = NULL;
-	}
-	else
-		cstring_pcat(dest, &src->data[from], &src->data[to]);
+    cb = to - from + 1;
+    if ((dest = cstring_new()) == NULL || !cstring_extend(dest, cb)) {
+        cstring_free(dest);
+        dest = NULL;
+    }
+    else
+        cstring_pcat(dest, &src->data[from], &src->data[to]);
 
-	return dest;
+    return dest;
 }
 
 void cstring_reverse(cstring s)
 {
-	if (s->cbUsed > 1) {
-		char *beg = s->data;
-		char *end = s->data + s->cbUsed - 2;
-		while (beg < end) {
-			char tmp = *end;
-			*end-- = *beg;
-			*beg++ = tmp;
-		}
-	}
+    if (s->cbUsed > 1) {
+        char *beg = s->data;
+        char *end = s->data + s->cbUsed - 2;
+        while (beg < end) {
+            char tmp = *end;
+            *end-- = *beg;
+            *beg++ = tmp;
+        }
+    }
 }
 
 
@@ -402,253 +402,251 @@ void cstring_reverse(cstring s)
  */
 size_t cstring_split(cstring** dest, const char* src, const char* delim)
 {
-	const char* s;
-	size_t end, i, len, nelem;
+    const char* s;
+    size_t end, i, len, nelem;
 
-	assert(dest != NULL);
-	assert(src != NULL);
-	assert(delim != NULL);
+    assert(dest != NULL);
+    assert(src != NULL);
+    assert(delim != NULL);
 
-	/* Skip to first substring */
-	len = strlen(src);
-	s = src + strspn(src, delim);
+    /* Skip to first substring */
+    len = strlen(src);
+    s = src + strspn(src, delim);
 
-	/* Only delimiters in src */
-	if (s - src == (int)len)
-		return 0;
+    /* Only delimiters in src */
+    if (s - src == (int)len)
+        return 0;
 
-	/* Count elements */
-	for (nelem = 0; *s != '\0'; nelem++) {
-		s += strcspn(s, delim);
-		s += strspn(s, delim);
-	}
+    /* Count elements */
+    for (nelem = 0; *s != '\0'; nelem++) {
+        s += strcspn(s, delim);
+        s += strspn(s, delim);
+    }
 
-	/* allocate space */
-	if ((*dest = malloc(sizeof **dest * nelem)) == NULL)
-		return 0;
-	else if(cstring_multinew(*dest, nelem) == 0) {
-		free(*dest);
-		return 0;
-	}
+    /* allocate space */
+    if ((*dest = malloc(sizeof **dest * nelem)) == NULL)
+        return 0;
+    else if(cstring_multinew(*dest, nelem) == 0) {
+        free(*dest);
+        return 0;
+    }
 
-	/* Now copy */
-	s = src + strspn(src, delim); /* start of first substring */
-	for (i = 0; *s != '\0'; i++) {
-		end = strcspn(s, delim);
-		if (!cstring_pcat((*dest)[i], s, s + end)) {
-			cstring_multifree(*dest, nelem);
-			return 0;
-		}
+    /* Now copy */
+    s = src + strspn(src, delim); /* start of first substring */
+    for (i = 0; *s != '\0'; i++) {
+        end = strcspn(s, delim);
+        if (!cstring_pcat((*dest)[i], s, s + end)) {
+            cstring_multifree(*dest, nelem);
+            return 0;
+        }
 
-		s += end;
-		s += strspn(s, delim);
-	}
+        s += end;
+        s += strspn(s, delim);
+    }
 
-	return nelem;
+    return nelem;
 }
 
 void cstring_strip(cstring s)
 {
-	size_t i;
+    size_t i;
 
-	assert(s != NULL);
+    assert(s != NULL);
 
-	/* strip trailing ws first */
-	i = s->cbUsed - 1;
-	while (i-- > 0 && isspace((unsigned char)s->data[i])) {
-		s->data[i] = '\0';
-		s->cbUsed--;
-	}
+    /* strip trailing ws first */
+    i = s->cbUsed - 1;
+    while (i-- > 0 && isspace((unsigned char)s->data[i])) {
+        s->data[i] = '\0';
+        s->cbUsed--;
+    }
 
-	/* Now leading ws */
-	for (i = 0; i < s->cbUsed; i++) {
-		if (!isspace((unsigned char)s->data[i]))
-			break;
-	}
+    /* Now leading ws */
+    for (i = 0; i < s->cbUsed; i++) {
+        if (!isspace((unsigned char)s->data[i]))
+            break;
+    }
 
-	if (i > 0) {
-		s->cbUsed -= i;
-		memmove(&s->data[0], &s->data[i], s->cbUsed);
-		s->data[s->cbUsed] = '\0';
-	}
+    if (i > 0) {
+        s->cbUsed -= i;
+        memmove(&s->data[0], &s->data[i], s->cbUsed);
+        s->data[s->cbUsed] = '\0';
+    }
 
 }
 
 void cstring_lower(cstring s)
 {
-	size_t i;
+    size_t i;
 
-	assert(s != NULL);
+    assert(s != NULL);
 
-	for (i = 0; i < s->cbUsed; i++) {
-		if (isupper((unsigned char)s->data[i]))
-			s->data[i] = tolower((unsigned char)s->data[i]);
-	}
+    for (i = 0; i < s->cbUsed; i++) {
+        if (isupper((unsigned char)s->data[i]))
+            s->data[i] = tolower((unsigned char)s->data[i]);
+    }
 }
 
 void cstring_upper(cstring s)
 {
-	size_t i;
+    size_t i;
 
-	assert(s != NULL);
+    assert(s != NULL);
 
-	for (i = 0; i < s->cbUsed; i++) {
-		if (islower((unsigned char)s->data[i]))
-			s->data[i] = toupper((unsigned char)s->data[i]);
-	}
+    for (i = 0; i < s->cbUsed; i++) {
+        if (islower((unsigned char)s->data[i]))
+            s->data[i] = toupper((unsigned char)s->data[i]);
+    }
 }
-
 
 
 #ifdef CHECK_CSTRING
 int main(void)
 {
-	cstring s, dest, *pstr;
-	int rc;
-	const char* start = "This is a string";
-	const char* end = start + strlen(start);
+    cstring s, dest, *pstr;
+    int rc;
+    const char* start = "This is a string";
+    const char* end = start + strlen(start);
 
-	char longstring[10000];
+    char longstring[10000];
 
-	size_t i, nelem = 100;
+    size_t i, nelem = 100;
 
-	memset(longstring, 'A', sizeof(longstring));
-	longstring[sizeof(longstring) - 1] = '\0';
-
-
-	for (i = 0; i < nelem; i++) {
-		s = cstring_new();
-		assert(s != NULL);
-
-		rc = cstring_copy(s, "Hello");
-		assert(rc == 1);
-
-		rc = cstring_compare(s, "Hello");
-		assert(rc == 0);
-
-		rc = cstring_compare(s, "hello");
-		assert(rc != 0);
-
-		rc = cstring_concat(s, ", world");
-		assert(rc == 1);
-
-		rc = cstring_compare(s, "Hello, world");
-		assert(rc == 0);
-
-		rc = cstring_concat(s, longstring);
-		assert(rc == 1);
-
-		rc = cstring_charcat(s, 'A');
-		assert(rc == 1);
-
-		cstring_recycle(s);
-		rc = cstring_concat(s, longstring);
-		assert(rc == 1);
-
-		rc = cstring_concat2(s, longstring, longstring);
-		assert(rc == 1);
-
-		rc = cstring_concat3(s, longstring, longstring, longstring);
-		assert(rc == 1);
-
-		/* Test strpcat */
-		cstring_recycle(s);
-		rc = cstring_pcat(s, start, end);
-		assert(rc == 1);
-
-		rc = cstring_compare(s, start);
-		assert(rc == 0);
-
-		/* Test cstring_left() */
-		cstring_copy(s, "hello, world");
-		dest = cstring_left(s, 5);
-		rc = cstring_compare(dest, "hello");
-		assert(rc == 0);
-		cstring_free(dest);
-
-		/* Test cstring_left() with short strings */
-		dest = cstring_left(s, 5000);
-		rc = cstring_compare(dest, "hello, world");
-		assert(rc == 0);
-		cstring_free(dest);
-
-		/* cstring_right() */
-		cstring_copy(s, "hello, world");
-		dest = cstring_right(s, 5);
-		rc = cstring_compare(dest, "world");
-		assert(rc == 0);
-		cstring_free(dest);
-
-		dest = cstring_right(s, 5000);
-		rc = cstring_compare(dest, "hello, world");
-		assert(rc == 0);
-		cstring_free(dest);
-
-		/* cstring_substring */
-		cstring_copy(s, "hello, world");
-		dest = cstring_substring(s, 0, 5);
-		rc = cstring_compare(dest, "hello");
-		assert(rc == 0);
-		cstring_free(dest);
-
-		dest = cstring_substring(s, 1, 5);
-		rc = cstring_compare(dest, "ello");
-		assert(rc == 0);
-		cstring_free(dest);
-
-		dest = cstring_substring(s, 7, 12);
-		rc = cstring_compare(dest, "world");
-		assert(rc == 0);
-		cstring_free(dest);
-
-		/* cstring_reverse */
-		cstring_copy(s, "hello, world");
-		cstring_reverse(s);
-		rc = cstring_compare(s, "dlrow ,olleh");
-		assert(rc == 0);
-		/* cstring_strip */
-
-		cstring_copy(s, "  a b c d e f  ");
-		cstring_strip(s);
-		rc = cstring_compare(s, "a b c d e f");
-		assert(rc == 0);
-
-		cstring_upper(s);
-		rc = cstring_compare(s, "A B C D E F");
-		assert(rc == 0);
-
-		cstring_lower(s);
-		rc = cstring_compare(s, "a b c d e f");
-		assert(rc == 0);
-
-		cstring_free(s);
-
-		/* cstring_split() */
-		rc = cstring_split(&pstr, "foo bar baz", " ");
-		assert(rc == 3);
-		cstring_multifree(pstr, rc);
-		free(pstr);
+    memset(longstring, 'A', sizeof(longstring));
+    longstring[sizeof(longstring) - 1] = '\0';
 
 
-		rc = cstring_split(&pstr, "       foo bar baz", " ");
-		assert(rc == 3);
-		cstring_multifree(pstr, rc);
-		free(pstr);
+    for (i = 0; i < nelem; i++) {
+        s = cstring_new();
+        assert(s != NULL);
 
-		rc = cstring_split(&pstr, "    foo bar baz    ", " ");
-		assert(rc == 3);
-		cstring_multifree(pstr, rc);
-		free(pstr);
+        rc = cstring_copy(s, "Hello");
+        assert(rc == 1);
 
-		rc = cstring_split(&pstr, "    foo ", " ");
-		assert(rc == 1);
-		cstring_multifree(pstr, rc);
-		free(pstr);
+        rc = cstring_compare(s, "Hello");
+        assert(rc == 0);
+
+        rc = cstring_compare(s, "hello");
+        assert(rc != 0);
+
+        rc = cstring_concat(s, ", world");
+        assert(rc == 1);
+
+        rc = cstring_compare(s, "Hello, world");
+        assert(rc == 0);
+
+        rc = cstring_concat(s, longstring);
+        assert(rc == 1);
+
+        rc = cstring_charcat(s, 'A');
+        assert(rc == 1);
+
+        cstring_recycle(s);
+        rc = cstring_concat(s, longstring);
+        assert(rc == 1);
+
+        rc = cstring_concat2(s, longstring, longstring);
+        assert(rc == 1);
+
+        rc = cstring_concat3(s, longstring, longstring, longstring);
+        assert(rc == 1);
+
+        /* Test strpcat */
+        cstring_recycle(s);
+        rc = cstring_pcat(s, start, end);
+        assert(rc == 1);
+
+        rc = cstring_compare(s, start);
+        assert(rc == 0);
+
+        /* Test cstring_left() */
+        cstring_copy(s, "hello, world");
+        dest = cstring_left(s, 5);
+        rc = cstring_compare(dest, "hello");
+        assert(rc == 0);
+        cstring_free(dest);
+
+        /* Test cstring_left() with short strings */
+        dest = cstring_left(s, 5000);
+        rc = cstring_compare(dest, "hello, world");
+        assert(rc == 0);
+        cstring_free(dest);
+
+        /* cstring_right() */
+        cstring_copy(s, "hello, world");
+        dest = cstring_right(s, 5);
+        rc = cstring_compare(dest, "world");
+        assert(rc == 0);
+        cstring_free(dest);
+
+        dest = cstring_right(s, 5000);
+        rc = cstring_compare(dest, "hello, world");
+        assert(rc == 0);
+        cstring_free(dest);
+
+        /* cstring_substring */
+        cstring_copy(s, "hello, world");
+        dest = cstring_substring(s, 0, 5);
+        rc = cstring_compare(dest, "hello");
+        assert(rc == 0);
+        cstring_free(dest);
+
+        dest = cstring_substring(s, 1, 5);
+        rc = cstring_compare(dest, "ello");
+        assert(rc == 0);
+        cstring_free(dest);
+
+        dest = cstring_substring(s, 7, 12);
+        rc = cstring_compare(dest, "world");
+        assert(rc == 0);
+        cstring_free(dest);
+
+        /* cstring_reverse */
+        cstring_copy(s, "hello, world");
+        cstring_reverse(s);
+        rc = cstring_compare(s, "dlrow ,olleh");
+        assert(rc == 0);
+        /* cstring_strip */
+
+        cstring_copy(s, "  a b c d e f  ");
+        cstring_strip(s);
+        rc = cstring_compare(s, "a b c d e f");
+        assert(rc == 0);
+
+        cstring_upper(s);
+        rc = cstring_compare(s, "A B C D E F");
+        assert(rc == 0);
+
+        cstring_lower(s);
+        rc = cstring_compare(s, "a b c d e f");
+        assert(rc == 0);
+
+        cstring_free(s);
+
+        /* cstring_split() */
+        rc = cstring_split(&pstr, "foo bar baz", " ");
+        assert(rc == 3);
+        cstring_multifree(pstr, rc);
+        free(pstr);
 
 
-	}
+        rc = cstring_split(&pstr, "       foo bar baz", " ");
+        assert(rc == 3);
+        cstring_multifree(pstr, rc);
+        free(pstr);
 
-	return 0;
+        rc = cstring_split(&pstr, "    foo bar baz    ", " ");
+        assert(rc == 3);
+        cstring_multifree(pstr, rc);
+        free(pstr);
+
+        rc = cstring_split(&pstr, "    foo ", " ");
+        assert(rc == 1);
+        cstring_multifree(pstr, rc);
+        free(pstr);
+
+
+    }
+
+    return 0;
 }
 #endif
-

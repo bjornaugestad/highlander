@@ -51,4 +51,3 @@ int fifo_signal(fifo p);
 #endif
 
 #endif /* guard */
-

@@ -31,9 +31,9 @@ static int encode(int c, char* dest)
 {
     int high, low;
 
-	/* Don't encode illegal input */
-	if (c < 0 || c > 255)
-		return 0;
+    /* Don't encode illegal input */
+    if (c < 0 || c > 255)
+        return 0;
 
     high = (c & 0xf0) >> 4;
     low = (c & 0x0f);
@@ -51,7 +51,7 @@ static int encode(int c, char* dest)
     *dest++ = '%';
     *dest++ = high;
     *dest = low;
-	return 1;
+    return 1;
 }
 
 /* Local helper.
@@ -79,8 +79,8 @@ static int decode(const char* src)
 {
     int c1, c2;
 
-	if (*src != '%')
-		return -1;
+    if (*src != '%')
+        return -1;
 
     c1 = hexchar2int((unsigned char)*++src);
     if (c1 == -1)
@@ -95,7 +95,7 @@ static int decode(const char* src)
 
 size_t rfc1738_encode(char* dest, size_t cbdest, const char* src, size_t cbsrc)
 {
-	size_t size = 0;
+    size_t size = 0;
 
     assert(src != NULL);
     assert(dest != NULL);
@@ -109,33 +109,33 @@ size_t rfc1738_encode(char* dest, size_t cbdest, const char* src, size_t cbsrc)
         || (*src >= 'a' && *src <= 'z')
         || (*src >= '0' && *src <= '9')) {
             *dest++ = *src++;
-			size++;
-			cbsrc--;
-			cbdest--;
+            size++;
+            cbsrc--;
+            cbdest--;
         }
         else if(cbdest > 2) {
             if (!encode((unsigned char)*src, dest)) {
-				errno = EINVAL;
-				return 0;
-			}
+                errno = EINVAL;
+                return 0;
+            }
 
             dest+=3;
             cbdest-=3;
             src++;
-			size += 3;
-			cbsrc--;
+            size += 3;
+            cbsrc--;
         }
         else {
-			errno = ENOSPC;
+            errno = ENOSPC;
             return 0;
-		}
+        }
     }
 
     /* If we ran out of buffer space */
     if (*src != '\0') {
-		errno = ENOSPC;
+        errno = ENOSPC;
         return 0;
-	}
+    }
 
     *dest = '\0';
     return size;
@@ -144,7 +144,7 @@ size_t rfc1738_encode(char* dest, size_t cbdest, const char* src, size_t cbsrc)
 size_t rfc1738_decode(char* dest, size_t cbdest, const char* src, size_t cbsrc)
 {
     int c;
-	size_t size = 0;
+    size_t size = 0;
 
     assert(src != NULL);
     assert(dest != NULL);
@@ -158,51 +158,51 @@ size_t rfc1738_decode(char* dest, size_t cbdest, const char* src, size_t cbsrc)
 
             *dest++ = c;
             src += 3;
-			cbsrc-=2;
+            cbsrc-=2;
         }
         else
             *dest++ = *src++;
 
-		size++;
+        size++;
         cbdest--;
-		cbsrc--;
+        cbsrc--;
     }
 
     if (cbdest == 0) {
         errno = ENOSPC;
-		return 0;
-	}
+        return 0;
+    }
 
-	*dest = '\0';
+    *dest = '\0';
     return size;
 }
 
 size_t rfc1738_encode_string(char* dest, size_t cbdest, const char* src)
 {
-	size_t size;
+    size_t size;
 
-	if ((size = rfc1738_encode(dest, cbdest, src, strlen(src))) == 0)
-		return 0;
-	else if(size == cbdest)
-		return 0; /* No room for null character */
-	else {
-		dest[size] = '\0';
-		return size;
-	}
+    if ((size = rfc1738_encode(dest, cbdest, src, strlen(src))) == 0)
+        return 0;
+    else if(size == cbdest)
+        return 0; /* No room for null character */
+    else {
+        dest[size] = '\0';
+        return size;
+    }
 }
 
 size_t rfc1738_decode_string(char* dest, size_t cbdest, const char* src)
 {
-	size_t size;
+    size_t size;
 
-	if ((size = rfc1738_decode(dest, cbdest, src, strlen(src))) == 0)
-		return 0;
-	else if(size == cbdest)
-		return 0; /* No room for null character */
-	else {
-		dest[size] = '\0';
-		return size;
-	}
+    if ((size = rfc1738_decode(dest, cbdest, src, strlen(src))) == 0)
+        return 0;
+    else if(size == cbdest)
+        return 0; /* No room for null character */
+    else {
+        dest[size] = '\0';
+        return size;
+    }
 }
 
 #ifdef CHECK_RFC1738
@@ -215,10 +215,10 @@ int main(void)
 {
     char speedy1[2048];
     char speedy2[2048];
-	char buf1[1024] = { '\0' }, buf2[1024] = { '\0' };
+    char buf1[1024] = { '\0' }, buf2[1024] = { '\0' };
     clock_t start, stop;
     double duration;
-	size_t cb;
+    size_t cb;
 
     static const char*tests[] = {
         "זרו ֶ״ֵ",
@@ -240,38 +240,38 @@ int main(void)
         }
         else if(memcmp(buf2, tests[i], cb) != 0) {
             fprintf(stderr,
-				"enc/dec operation yielded different result: %s != %s\n"
+                "enc/dec operation yielded different result: %s != %s\n"
                 "Enc == %s\n",
                 tests[i], buf2, buf1);
         }
     }
 
-	/* Enc/dec all char codes */
-	for (i = 1; i < 256; i++)
-		buf1[i - 1] = (int)i;
-	buf1[i - 1] = '\0';
-	if (!rfc1738_encode(buf2, sizeof buf2, buf1, strlen(buf1)) ) {
-		perror("encode");
-		exit(1);
-	}
-	else if(!rfc1738_decode(buf1, sizeof buf1, buf2, strlen(buf2)) ) {
-		perror("decode");
-		exit(1);
-	}
+    /* Enc/dec all char codes */
+    for (i = 1; i < 256; i++)
+        buf1[i - 1] = (int)i;
+    buf1[i - 1] = '\0';
+    if (!rfc1738_encode(buf2, sizeof buf2, buf1, strlen(buf1)) ) {
+        perror("encode");
+        exit(1);
+    }
+    else if(!rfc1738_decode(buf1, sizeof buf1, buf2, strlen(buf2)) ) {
+        perror("decode");
+        exit(1);
+    }
 
-	/* some illegal input */
-	if (rfc1738_decode(buf1, sizeof buf1, "%", 1))
-		assert(0 && "Oops, accepted illegal input");
+    /* some illegal input */
+    if (rfc1738_decode(buf1, sizeof buf1, "%", 1))
+        assert(0 && "Oops, accepted illegal input");
 
-	if (rfc1738_decode(buf1, sizeof(buf1), "%5", 2))
-		assert(0 && "Oops, accepted illegal input");
+    if (rfc1738_decode(buf1, sizeof(buf1), "%5", 2))
+        assert(0 && "Oops, accepted illegal input");
 
-	if (rfc1738_decode(buf1, sizeof(buf1), "%5X", 3))
-		assert(0 && "Oops, accepted illegal input");
+    if (rfc1738_decode(buf1, sizeof(buf1), "%5X", 3))
+        assert(0 && "Oops, accepted illegal input");
 
-	/* buffer too small */
-	if (rfc1738_decode(buf1, 4, "hello, world", 12))
-		assert(0 && "Oops, accepted illegal input");
+    /* buffer too small */
+    if (rfc1738_decode(buf1, 4, "hello, world", 12))
+        assert(0 && "Oops, accepted illegal input");
 
     /* Performance */
     memset(speedy1, ' ', 128);
@@ -294,4 +294,3 @@ int main(void)
     return 0;
 }
 #endif
-

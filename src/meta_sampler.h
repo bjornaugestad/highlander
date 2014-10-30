@@ -212,12 +212,11 @@ time_t sampler_time(sampler s, size_t i);
 #define SAMPLER_AGG_LAST  5
 
 int sampler_aggregate(
-	sampler dest,
-	sampler src,
-	size_t nsamples,
-	unsigned int resolution,
-	int aggval);
+    sampler dest,
+    sampler src,
+    size_t nsamples,
+    unsigned int resolution,
+    int aggval);
 
 
 #endif
-

@@ -79,4 +79,3 @@ list stringmap_tolist(stringmap sm);
 
 
 #endif
-

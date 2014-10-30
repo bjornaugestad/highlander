@@ -79,4 +79,3 @@ int connection_get_fd(connection conn);
 #endif
 
 #endif /* guard */
-

@@ -53,4 +53,3 @@ size_t rfc1738_decode_string(char* dest, size_t cbdest, const char* src);
 #endif
 
 #endif
-

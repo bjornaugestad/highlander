@@ -50,4 +50,3 @@ size_t	pair_size(pair p);
 #endif
 
 #endif
-

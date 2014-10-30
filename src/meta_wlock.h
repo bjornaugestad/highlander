@@ -49,4 +49,3 @@ int   wlock_broadcast(wlock p);
 #endif
 
 #endif /* guard */
-

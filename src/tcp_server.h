@@ -89,4 +89,3 @@ unsigned long tcp_server_sum_denied_clients(tcp_server p);
 #endif
 
 #endif /* guard */
-

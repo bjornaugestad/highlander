@@ -49,7 +49,6 @@ extern int meta_indent_level;
 void verbose(int level, const char *fmt, ...);
 
 
-
 #ifdef __cplusplus
 }
 #endif

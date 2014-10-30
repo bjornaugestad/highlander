@@ -32,7 +32,7 @@
  * values for aggregate functions later.
  */
 struct entity {
-	long long* data;
+    long long* data;
 };
 
 /*
@@ -42,201 +42,201 @@ struct entity {
  * sample values for all entities simultaneously.
  */
 struct sampler_tag {
-	struct entity* entities;
+    struct entity* entities;
 
-	/* The number of entities we sample data for */
-	size_t nentity;
+    /* The number of entities we sample data for */
+    size_t nentity;
 
-	/* The number of values we store before wrapping */
-	size_t nvalue;
+    /* The number of values we store before wrapping */
+    size_t nvalue;
 
-	pthread_rwlock_t lock;
+    pthread_rwlock_t lock;
 
-	/* Index to use when adding new values */
-	size_t idx;
+    /* Index to use when adding new values */
+    size_t idx;
 
-	/* When the sampling  was done */
-	time_t* times;
+    /* When the sampling  was done */
+    time_t* times;
 
-	/* Number of samples performed */
-	size_t samplecount;
+    /* Number of samples performed */
+    size_t samplecount;
 };
 
 
 sampler sampler_new(size_t entities, size_t values)
 {
-	sampler s;
-	size_t i;
+    sampler s;
+    size_t i;
 
-	assert(entities > 0);
-	assert(values > 0);
+    assert(entities > 0);
+    assert(values > 0);
 
-	/* IMPORTANT: entities MUST be calloc()ed for error handling to work . */
-	if ((s = calloc(1, sizeof *s)) == NULL
-	|| (s->times = malloc(sizeof *s->times * values)) == NULL
-	|| (s->entities = calloc(entities, sizeof *s->entities)) == NULL) {
-		goto err;
-	}
-	else {
-		size_t j, cb;
+    /* IMPORTANT: entities MUST be calloc()ed for error handling to work . */
+    if ((s = calloc(1, sizeof *s)) == NULL
+    || (s->times = malloc(sizeof *s->times * values)) == NULL
+    || (s->entities = calloc(entities, sizeof *s->entities)) == NULL) {
+        goto err;
+    }
+    else {
+        size_t j, cb;
 
-		s->nentity = entities;
-		s->nvalue = values;
-		s->samplecount = 0;
+        s->nentity = entities;
+        s->nvalue = values;
+        s->samplecount = 0;
 
-		/* A little 'trick': sampler_start_update() will increment idx,
-		 * so to be able to add data in slot 0, we initialize it to
-		 * nvalue-1. That way sampler_start_update() will wrap to 0.
-		 */
-		s->idx = s->nvalue - 1;
+        /* A little 'trick': sampler_start_update() will increment idx,
+         * so to be able to add data in slot 0, we initialize it to
+         * nvalue-1. That way sampler_start_update() will wrap to 0.
+         */
+        s->idx = s->nvalue - 1;
 
-		cb = values * sizeof(*s->entities[0].data);
-		for (i = 0; i < entities; i++) {
-			if ((s->entities[i].data = malloc(cb)) == NULL)
-				goto err;
+        cb = values * sizeof(*s->entities[0].data);
+        for (i = 0; i < entities; i++) {
+            if ((s->entities[i].data = malloc(cb)) == NULL)
+                goto err;
 
-			/* Set all values to 'invalid' */
-			for (j = 0; j < values; j++) {
-				s->times[j] = (time_t)-1;
-				s->entities[i].data[j] = LLONG_MIN;
-			}
-		}
-	}
+            /* Set all values to 'invalid' */
+            for (j = 0; j < values; j++) {
+                s->times[j] = (time_t)-1;
+                s->entities[i].data[j] = LLONG_MIN;
+            }
+        }
+    }
 
-	/* Last thing we do to avoid having a flag indicating if we
-	 * did this or not. */
-	if (pthread_rwlock_init(&s->lock, NULL))
-		goto err;
+    /* Last thing we do to avoid having a flag indicating if we
+     * did this or not. */
+    if (pthread_rwlock_init(&s->lock, NULL))
+        goto err;
 
-	return s;
+    return s;
 
 /* Here we free allocated memory, if any */
 err:
-	if (s != NULL) {
-		if (s->entities != NULL) {
-			for (i = 0; i < entities; i++)
-				free(s->entities[i].data);
-		}
+    if (s != NULL) {
+        if (s->entities != NULL) {
+            for (i = 0; i < entities; i++)
+                free(s->entities[i].data);
+        }
 
-		free(s->entities);
-		free(s->times);
-		pthread_rwlock_destroy(&s->lock);
-		free(s);
-	}
-	assert(0);
-	return NULL;
+        free(s->entities);
+        free(s->times);
+        pthread_rwlock_destroy(&s->lock);
+        free(s);
+    }
+    assert(0);
+    return NULL;
 }
 
 sampler sampler_dup(sampler src)
 {
-	sampler dest;
+    sampler dest;
 
-	assert(src != NULL);
+    assert(src != NULL);
 
-	if ((dest = sampler_new(src->nentity, src->nvalue)) == NULL)
-		return NULL;
+    if ((dest = sampler_new(src->nentity, src->nvalue)) == NULL)
+        return NULL;
 
-	sampler_copy(dest, src);
-	return dest;
+    sampler_copy(dest, src);
+    return dest;
 }
 
 void sampler_copy(sampler dest, sampler src)
 {
-	size_t i, j;
+    size_t i, j;
 
-	assert(dest != NULL);
-	assert(src != NULL);
-	assert(dest->nvalue == src->nvalue);
-	assert(dest->nentity == src->nentity);
+    assert(dest != NULL);
+    assert(src != NULL);
+    assert(dest->nvalue == src->nvalue);
+    assert(dest->nentity == src->nentity);
 
-	/* Lock the src so that noone writes to it while copying. */
-	pthread_rwlock_wrlock(&src->lock);
+    /* Lock the src so that noone writes to it while copying. */
+    pthread_rwlock_wrlock(&src->lock);
 
-	/* Copy all the data sampled . There are so many pointers,
-	 * memcpy() is not the best option. We copy each element
-	 * manually (for now). */
-	for (i = 0; i < src->nentity; i++) {
-		for (j = 0; j < src->nvalue; j++)
-			dest->entities[i].data[j] = src->entities[i].data[j];
-	}
+    /* Copy all the data sampled . There are so many pointers,
+     * memcpy() is not the best option. We copy each element
+     * manually (for now). */
+    for (i = 0; i < src->nentity; i++) {
+        for (j = 0; j < src->nvalue; j++)
+            dest->entities[i].data[j] = src->entities[i].data[j];
+    }
 
-	/* copy misc data */
-	dest->idx = src->idx;
-	dest->samplecount = src->samplecount;
-	size_t cb = sizeof *src->times * src->nvalue;
-	memcpy(dest->times, src->times, cb);
+    /* copy misc data */
+    dest->idx = src->idx;
+    dest->samplecount = src->samplecount;
+    size_t cb = sizeof *src->times * src->nvalue;
+    memcpy(dest->times, src->times, cb);
 
-	pthread_rwlock_unlock(&src->lock);
+    pthread_rwlock_unlock(&src->lock);
 }
 
 void sampler_free(sampler s)
 {
-	size_t i;
+    size_t i;
 
-	if (s != NULL) {
-		pthread_rwlock_destroy(&s->lock);
-		free(s->times);
+    if (s != NULL) {
+        pthread_rwlock_destroy(&s->lock);
+        free(s->times);
 
-		for (i = 0; i < s->nentity; i++)
-			free(s->entities[i].data);
+        for (i = 0; i < s->nentity; i++)
+            free(s->entities[i].data);
 
-		free(s->entities);
-		free(s);
-	}
+        free(s->entities);
+        free(s);
+    }
 }
 
 size_t sampler_samplecount(sampler s)
 {
-	size_t n;
+    size_t n;
 
-	assert(s != NULL);
-	if (s->samplecount < s->nvalue)
-		n = s->samplecount;
-	else
-		n = s->nvalue;
+    assert(s != NULL);
+    if (s->samplecount < s->nvalue)
+        n = s->samplecount;
+    else
+        n = s->nvalue;
 
-	return n;
+    return n;
 }
 
 void sampler_start_update(sampler s, time_t t)
 {
-	size_t i;
+    size_t i;
 
-	assert(s != NULL);
+    assert(s != NULL);
 
-	/* Lock the object */
-	pthread_rwlock_wrlock(&s->lock);
+    /* Lock the object */
+    pthread_rwlock_wrlock(&s->lock);
 
-	/* use the next stot to store data for this update,
-	 * reusing previous slots if needed */
-	s->idx++;
-	if (s->idx == s->nvalue) {
-		s->idx = 0;
-	}
+    /* use the next stot to store data for this update,
+     * reusing previous slots if needed */
+    s->idx++;
+    if (s->idx == s->nvalue) {
+        s->idx = 0;
+    }
 
-	/* Clear all existing values, if any */
-	for (i = 0; i < s->nentity; i++)
-		s->entities[i].data[s->idx] = LLONG_MIN;
+    /* Clear all existing values, if any */
+    for (i = 0; i < s->nentity; i++)
+        s->entities[i].data[s->idx] = LLONG_MIN;
 
-	/* Update the time entry */
-	s->times[s->idx] = t;
+    /* Update the time entry */
+    s->times[s->idx] = t;
 }
 
 void sampler_commit(sampler s)
 {
-	assert(s != NULL);
+    assert(s != NULL);
 
-	s->samplecount++;
-	pthread_rwlock_unlock(&s->lock);
+    s->samplecount++;
+    pthread_rwlock_unlock(&s->lock);
 }
 
 void sampler_add(sampler s, size_t entity_id, long long value)
 {
-	assert(s != NULL);
-	assert(entity_id < s->nentity);
-	assert(value != LLONG_MIN);
+    assert(s != NULL);
+    assert(entity_id < s->nentity);
+    assert(value != LLONG_MIN);
 
-	s->entities[entity_id].data[s->idx] = value;
+    s->entities[entity_id].data[s->idx] = value;
 }
 
 /* The index i is zero based, but we must remap that index
@@ -277,213 +277,213 @@ void sampler_add(sampler s, size_t entity_id, long long value)
  */
 static inline size_t map_index(sampler s, size_t i)
 {
-	size_t idx;
+    size_t idx;
 
-	assert(i < s->nvalue);
+    assert(i < s->nvalue);
 
-	if (s->samplecount < s->nvalue)
-		idx = i;
-	else
-		idx = (s->idx + i + 1) % s->nvalue;
+    if (s->samplecount < s->nvalue)
+        idx = i;
+    else
+        idx = (s->idx + i + 1) % s->nvalue;
 
-	return idx;
+    return idx;
 }
 
 void sampler_start_read(sampler s)
 {
-	assert(s != NULL);
-	pthread_rwlock_rdlock(&s->lock);
+    assert(s != NULL);
+    pthread_rwlock_rdlock(&s->lock);
 }
 
 void sampler_stop_read(sampler s)
 {
-	assert(s != NULL);
-	pthread_rwlock_unlock(&s->lock);
+    assert(s != NULL);
+    pthread_rwlock_unlock(&s->lock);
 }
 
 time_t sampler_time(sampler s, size_t i)
 {
-	size_t idx;
-	time_t t;
+    size_t idx;
+    time_t t;
 
-	assert(s != NULL);
-	assert(i < s->nvalue);
+    assert(s != NULL);
+    assert(i < s->nvalue);
 
-	idx = map_index(s, i);
-	t = s->times[idx];
+    idx = map_index(s, i);
+    t = s->times[idx];
 
-	assert(t != (time_t)-1);
-	return t;
+    assert(t != (time_t)-1);
+    return t;
 }
 
 int sampler_get(sampler s, size_t entity_id, size_t i, long long* pval)
 {
-	size_t idx;
+    size_t idx;
 
-	assert(s != NULL);
-	assert(entity_id < s->nentity);
-	assert(i < s->nvalue);
-	assert(pval != NULL);
+    assert(s != NULL);
+    assert(entity_id < s->nentity);
+    assert(i < s->nvalue);
+    assert(pval != NULL);
 
-	idx = map_index(s, i);
-	*pval = s->entities[entity_id].data[idx];
+    idx = map_index(s, i);
+    *pval = s->entities[entity_id].data[idx];
 
-	return *pval != LLONG_MIN;
+    return *pval != LLONG_MIN;
 }
 
 int sampler_avg(sampler s, size_t eid, size_t from, size_t to, long long* pval)
 {
-	size_t i, valid_nelem = 0;
-	long long sum = 0LL;
+    size_t i, valid_nelem = 0;
+    long long sum = 0LL;
 
-	for (i = from; i < to; i++) {
-		long long val;
-		int ok = sampler_get(s, eid, i, &val);
-		if (ok) {
-			valid_nelem++;
-			sum += val;
-		}
-	}
+    for (i = from; i < to; i++) {
+        long long val;
+        int ok = sampler_get(s, eid, i, &val);
+        if (ok) {
+            valid_nelem++;
+            sum += val;
+        }
+    }
 
-	if (valid_nelem > 0) {
-		*pval = sum  / valid_nelem;
-		return 1;
-	}
-	else
-		return 0;
+    if (valid_nelem > 0) {
+        *pval = sum  / valid_nelem;
+        return 1;
+    }
+    else
+        return 0;
 }
 
 int sampler_min(sampler s, size_t eid, size_t from, size_t to, long long* pval)
 {
-	size_t i, valid_nelem = 0;
+    size_t i, valid_nelem = 0;
 
-	*pval = LLONG_MAX;
-	for (i = from; i < to; i++) {
-		long long val;
-		int ok = sampler_get(s, eid, i, &val);
-		if (ok) {
-			if (*pval > val)
-				*pval = val;
-		}
-	}
+    *pval = LLONG_MAX;
+    for (i = from; i < to; i++) {
+        long long val;
+        int ok = sampler_get(s, eid, i, &val);
+        if (ok) {
+            if (*pval > val)
+                *pval = val;
+        }
+    }
 
-	return valid_nelem > 0;
+    return valid_nelem > 0;
 }
 
 int sampler_max(sampler s, size_t eid, size_t from, size_t to, long long* pval)
 {
-	size_t i, valid_nelem = 0;
+    size_t i, valid_nelem = 0;
 
-	*pval = LLONG_MIN;
-	for (i = from; i < to; i++) {
-		long long val;
-		int ok = sampler_get(s, eid, i, &val);
-		if (ok) {
-			if (*pval < val)
-				*pval = val;
-		}
-	}
+    *pval = LLONG_MIN;
+    for (i = from; i < to; i++) {
+        long long val;
+        int ok = sampler_get(s, eid, i, &val);
+        if (ok) {
+            if (*pval < val)
+                *pval = val;
+        }
+    }
 
-	return valid_nelem > 0;
+    return valid_nelem > 0;
 }
 
 int sampler_first(sampler s, size_t eid, size_t from, size_t to, long long* pval)
 {
-	size_t i;
+    size_t i;
 
-	for (i = from; i < to; i++) {
-		long long val;
-		if (sampler_get(s, eid, i, &val)) {
-			*pval = val;
-			return 1;
-		}
-	}
+    for (i = from; i < to; i++) {
+        long long val;
+        if (sampler_get(s, eid, i, &val)) {
+            *pval = val;
+            return 1;
+        }
+    }
 
-	/* Found no valid items */
-	return 0;
+    /* Found no valid items */
+    return 0;
 }
 
 int sampler_last(sampler s, size_t eid, size_t from, size_t to, long long* pval)
 {
-	size_t i;
-	int status = 0;
+    size_t i;
+    int status = 0;
 
-	for (i = from; i < to; i++) {
-		long long val;
-		if (sampler_get(s, eid, i, &val)) {
-			*pval = val;
-			status = 1;
-		}
-	}
+    for (i = from; i < to; i++) {
+        long long val;
+        if (sampler_get(s, eid, i, &val)) {
+            *pval = val;
+            status = 1;
+        }
+    }
 
-	return status;
+    return status;
 }
 
 static inline int
 aggregate_any(sampler s, size_t eid, size_t from, size_t to, int aggval, long long* pval)
 {
-	int success = 0;
+    int success = 0;
 
-	switch (aggval) {
-		case SAMPLER_AGG_MIN:
-			success = sampler_min(s, eid, from, to, pval);
-			break;
+    switch (aggval) {
+        case SAMPLER_AGG_MIN:
+            success = sampler_min(s, eid, from, to, pval);
+            break;
 
-		case SAMPLER_AGG_MAX:
-			success = sampler_max(s, eid, from, to, pval);
-			break;
+        case SAMPLER_AGG_MAX:
+            success = sampler_max(s, eid, from, to, pval);
+            break;
 
-		case SAMPLER_AGG_AVG:
-			success = sampler_avg(s, eid, from, to, pval);
-			break;
+        case SAMPLER_AGG_AVG:
+            success = sampler_avg(s, eid, from, to, pval);
+            break;
 
-		case SAMPLER_AGG_FIRST:
-			success = sampler_first(s, eid, from, to, pval);
-			break;
+        case SAMPLER_AGG_FIRST:
+            success = sampler_first(s, eid, from, to, pval);
+            break;
 
-		case SAMPLER_AGG_LAST:
-			success = sampler_last(s, eid, from, to, pval);
-			break;
+        case SAMPLER_AGG_LAST:
+            success = sampler_last(s, eid, from, to, pval);
+            break;
 
-		default:
-			assert(0 && "Unknown aggregate type");
-			break;
-	}
+        default:
+            assert(0 && "Unknown aggregate type");
+            break;
+    }
 
-	return success;
+    return success;
 }
 
 int sampler_aggregate(
-	sampler dest,
-	sampler src,
-	size_t nsamples,
-	unsigned int resolution,
-	int aggval)
+    sampler dest,
+    sampler src,
+    size_t nsamples,
+    unsigned int resolution,
+    int aggval)
 {
-	size_t i;
+    size_t i;
 
-	assert(dest != NULL);
-	assert(src != NULL);
+    assert(dest != NULL);
+    assert(src != NULL);
 
-	for (i = 0; i < nsamples; i++) {
-		size_t from = i * resolution;
-		size_t to = from + resolution;
-		size_t eid;
+    for (i = 0; i < nsamples; i++) {
+        size_t from = i * resolution;
+        size_t to = from + resolution;
+        size_t eid;
 
-		time_t start = sampler_time(src, from);
+        time_t start = sampler_time(src, from);
 
-		sampler_start_update(dest, start);
-		for (eid = 0; eid < src->nentity; eid++) {
-			long long val = 0;
+        sampler_start_update(dest, start);
+        for (eid = 0; eid < src->nentity; eid++) {
+            long long val = 0;
 
-			if (aggregate_any(src, eid, from, to, aggval, &val))
-				sampler_add(dest, eid, val);
-		}
+            if (aggregate_any(src, eid, from, to, aggval, &val))
+                sampler_add(dest, eid, val);
+        }
 
-		sampler_commit(dest);
-	}
+        sampler_commit(dest);
+    }
 
-	return 1;
+    return 1;
 }
 
 #ifdef CHECK_SAMPLER
@@ -496,184 +496,183 @@ static int shutting_down;
 
 static void* writer(void* arg)
 {
-	size_t i;
-	time_t now;
+    size_t i;
+    time_t now;
 
-	(void)arg;
-	while (!shutting_down) {
-		now = time(NULL);
-		sampler_start_update(sampled_data, now);
-		for (i = 0; i < nentity; i++) {
-			long long val = rand();
-			sampler_add(sampled_data, i, val);
-		}
+    (void)arg;
+    while (!shutting_down) {
+        now = time(NULL);
+        sampler_start_update(sampled_data, now);
+        for (i = 0; i < nentity; i++) {
+            long long val = rand();
+            sampler_add(sampled_data, i, val);
+        }
 
-		sampler_commit(sampled_data);
-		sleep(1);
-	}
+        sampler_commit(sampled_data);
+        sleep(1);
+    }
 
-	return NULL;
+    return NULL;
 }
 
 static void* reader(void* arg)
 {
-	int* id = arg;
+    int* id = arg;
 
-	while (!shutting_down) {
-		size_t i, csamples;
+    while (!shutting_down) {
+        size_t i, csamples;
 
-		sampler_start_read(sampled_data);
-		csamples = sampler_samplecount(sampled_data);
-		for (i = 0; i < nentity; i++) {
-			long long val;
+        sampler_start_read(sampled_data);
+        csamples = sampler_samplecount(sampled_data);
+        for (i = 0; i < nentity; i++) {
+            long long val;
 
-			if (!sampler_avg(sampled_data, i, 0, csamples, &val)) {
-				fprintf(stderr, "reader(%d), entity %zu: No data\n", *id, i);
-			}
-			#if 0
-			else {
-				fprintf(stderr, "reader(%d), entity %zu: avg: %lld\n",
-					*id, i, val);
-			}
-			#else
-			(void)id;
-			#endif
-		}
+            if (!sampler_avg(sampled_data, i, 0, csamples, &val)) {
+                fprintf(stderr, "reader(%d), entity %zu: No data\n", *id, i);
+            }
+            #if 0
+            else {
+                fprintf(stderr, "reader(%d), entity %zu: avg: %lld\n",
+                    *id, i, val);
+            }
+            #else
+            (void)id;
+            #endif
+        }
 
-		sampler_stop_read(sampled_data);
-		sleep(1);
-	}
+        sampler_stop_read(sampled_data);
+        sleep(1);
+    }
 
-	return 0;
+    return 0;
 }
 #endif
 
 
 int main(void)
 {
-	size_t i;
+    size_t i;
 
-	#if 1
-	{
-		sampler s;
-		size_t niter = 10;
-		/* Test the new/free functions for performance and leaks */
-		for (i = 0; i < niter; i++) {
-			if ((s = sampler_new(nentity, nsamples)) == NULL)
-				abort();
+    #if 1
+    {
+        sampler s;
+        size_t niter = 10;
+        /* Test the new/free functions for performance and leaks */
+        for (i = 0; i < niter; i++) {
+            if ((s = sampler_new(nentity, nsamples)) == NULL)
+                abort();
 
-			sampler_free(s);
-		}
-	}
-	#endif
+            sampler_free(s);
+        }
+    }
+    #endif
 
 #define TEST_AGGREGATE
 #ifdef TEST_AGGREGATE
-	/* Test the aggregate functions. Here's how:
-	 * 1) Create 3600 samples, one for each second in an hour.
-	 * 2) Aggregate that up to 1 sampler with 60 minutes
-	 * 3) Aggregate that up to 1 sampler with 1 hour.
-	 * The data will be dummy data to speed things up.
-	 */
-	 {
-		sampler secs, minutes, hour;
-		time_t now;
-		size_t eid;
-		long long val;
+    /* Test the aggregate functions. Here's how:
+     * 1) Create 3600 samples, one for each second in an hour.
+     * 2) Aggregate that up to 1 sampler with 60 minutes
+     * 3) Aggregate that up to 1 sampler with 1 hour.
+     * The data will be dummy data to speed things up.
+     */
+     {
+        sampler secs, minutes, hour;
+        time_t now;
+        size_t eid;
+        long long val;
 
-		#if 0
-		now = time(NULL) - 3600;
-		#else
-		// We want more readable time values while testing.
-		now = 0;
-		#endif
-		secs = sampler_new(nentity, 3600);
-		minutes = sampler_new(nentity, 60);
-		hour = sampler_new(nentity, 24);
+        #if 0
+        now = time(NULL) - 3600;
+        #else
+        // We want more readable time values while testing.
+        now = 0;
+        #endif
+        secs = sampler_new(nentity, 3600);
+        minutes = sampler_new(nentity, 60);
+        hour = sampler_new(nentity, 24);
 
-		for (i = 0; i < 3600; i++) {
-			/* Add values for this second */
-			sampler_start_update(secs, now++);
+        for (i = 0; i < 3600; i++) {
+            /* Add values for this second */
+            sampler_start_update(secs, now++);
 
-			for (eid = 0; eid < nentity; eid++) {
-				val = i % 10;
-				sampler_add(secs, eid, val);
-			}
-			sampler_commit(secs);
-		}
+            for (eid = 0; eid < nentity; eid++) {
+                val = i % 10;
+                sampler_add(secs, eid, val);
+            }
+            sampler_commit(secs);
+        }
 
-		/* Verify that we have data for all 3600 seconds. */
-		#if 1
-		fprintf(stderr, "Secs: Sample count:%zu, nvalue %zu\n",
-			secs->samplecount, secs->nvalue);
-		for (i = 0; i < 3600; i++) {
-			if (secs->entities[0].data[i] == LLONG_MIN) {
-				fprintf(stderr, "WTF?\n");
-				abort();
-			}
-		}
+        /* Verify that we have data for all 3600 seconds. */
+        #if 1
+        fprintf(stderr, "Secs: Sample count:%zu, nvalue %zu\n",
+            secs->samplecount, secs->nvalue);
+        for (i = 0; i < 3600; i++) {
+            if (secs->entities[0].data[i] == LLONG_MIN) {
+                fprintf(stderr, "WTF?\n");
+                abort();
+            }
+        }
 
-		/* Now we know that we have values for each and every second */
-		#endif
+        /* Now we know that we have values for each and every second */
+        #endif
 
-		fprintf(stderr, "Aggregating secs->minutes\n");
-		sampler_aggregate(minutes, secs, 60, 60, SAMPLER_AGG_AVG);
+        fprintf(stderr, "Aggregating secs->minutes\n");
+        sampler_aggregate(minutes, secs, 60, 60, SAMPLER_AGG_AVG);
 
-		#if 1
-		fprintf(stderr, "Dumping minutes for eid 0\n");
-		fprintf(stderr, "Minutes: Sample count:%zu, nvalue %zu\n",
-			minutes->samplecount, minutes->nvalue);
-		for (i = sampler_samplecount(minutes) - 3; i < sampler_samplecount(minutes); i++) {
-			if (sampler_get(minutes, 0, i, &val))
-				fprintf(stderr, "Minute: %zu:  Value: %lld\n", i, val);
-			else
-				fprintf(stderr, "Minute: %zu: No value found\n", i);
-		}
-		#endif
+        #if 1
+        fprintf(stderr, "Dumping minutes for eid 0\n");
+        fprintf(stderr, "Minutes: Sample count:%zu, nvalue %zu\n",
+            minutes->samplecount, minutes->nvalue);
+        for (i = sampler_samplecount(minutes) - 3; i < sampler_samplecount(minutes); i++) {
+            if (sampler_get(minutes, 0, i, &val))
+                fprintf(stderr, "Minute: %zu:  Value: %lld\n", i, val);
+            else
+                fprintf(stderr, "Minute: %zu: No value found\n", i);
+        }
+        #endif
 
-		fprintf(stderr, "Aggregating minutes->hour\n");
-		sampler_aggregate(hour, minutes, 1, 60, SAMPLER_AGG_AVG);
+        fprintf(stderr, "Aggregating minutes->hour\n");
+        sampler_aggregate(hour, minutes, 1, 60, SAMPLER_AGG_AVG);
 
-		fprintf(stderr, "Dumping hour for eid 0\n");
-		sleep(1);
-		for (i = 0; i < sampler_samplecount(hour); i++) {
-			if (sampler_get(hour, 0, i, &val))
-				fprintf(stderr, "Hour: %zu:  Value: %lld\n", i, val);
-			else
-				fprintf(stderr, "Hour: %zu: No value found\n", i);
-		}
+        fprintf(stderr, "Dumping hour for eid 0\n");
+        sleep(1);
+        for (i = 0; i < sampler_samplecount(hour); i++) {
+            if (sampler_get(hour, 0, i, &val))
+                fprintf(stderr, "Hour: %zu:  Value: %lld\n", i, val);
+            else
+                fprintf(stderr, "Hour: %zu: No value found\n", i);
+        }
 
-		sampler sdup = sampler_dup(secs);
-		sampler_copy(sdup, secs);
-		sampler_free(sdup);
-	 	sampler_free(hour);
-	 	sampler_free(secs);
-	 	sampler_free(minutes);
+        sampler sdup = sampler_dup(secs);
+        sampler_copy(sdup, secs);
+        sampler_free(sdup);
+         sampler_free(hour);
+         sampler_free(secs);
+         sampler_free(minutes);
 
-	 }
+     }
 #endif
 
 
-	{
-		pthread_t writerthread, reader1, reader2;
-		int id1 = 1, id2 = 2;
-		sampled_data = sampler_new(nentity, nsamples);
+    {
+        pthread_t writerthread, reader1, reader2;
+        int id1 = 1, id2 = 2;
+        sampled_data = sampler_new(nentity, nsamples);
 
-		/* Start the writer thread */
-		pthread_create(&writerthread, NULL, writer, NULL);
-		pthread_create(&reader1, NULL, reader, &id1);
-		pthread_create(&reader2, NULL, reader, &id2);
+        /* Start the writer thread */
+        pthread_create(&writerthread, NULL, writer, NULL);
+        pthread_create(&reader1, NULL, reader, &id1);
+        pthread_create(&reader2, NULL, reader, &id2);
 
-		fprintf(stderr, "Main thread sleeping\n");
-		sleep(5);
-		fprintf(stderr, "Main thread shutting down\n");
-		shutting_down = 1;
+        fprintf(stderr, "Main thread sleeping\n");
+        sleep(5);
+        fprintf(stderr, "Main thread shutting down\n");
+        shutting_down = 1;
 
-		pthread_join(writerthread, NULL);
-		sampler_free(sampled_data);
-	}
+        pthread_join(writerthread, NULL);
+        sampler_free(sampled_data);
+    }
 
-	return 0;
+    return 0;
 }
 #endif
-

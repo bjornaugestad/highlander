@@ -94,4 +94,3 @@ void slotbuf_unlock(slotbuf p);
 #endif
 
 #endif /* guard */
-

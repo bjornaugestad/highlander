@@ -82,4 +82,3 @@ void* stack_get(stack s, size_t i);
 
 
 #endif
-

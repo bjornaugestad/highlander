@@ -417,4 +417,3 @@ unsigned long http_server_sum_denied_clients(http_server p);
 
 
 #endif /* guard */
-

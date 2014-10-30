@@ -34,9 +34,9 @@ typedef struct threadpool_tag* threadpool;
  */
 
 threadpool threadpool_new(
-	unsigned int num_worker_threads,
-	unsigned int max_queue_size,
-	int block_when_full);
+    unsigned int num_worker_threads,
+    unsigned int max_queue_size,
+    int block_when_full);
 
 /**
  * Adds work to the queue. The work will be performed by the work_func,
@@ -50,14 +50,14 @@ threadpool threadpool_new(
  * the pool is set to not block.
  */
 int threadpool_add_work(
-	threadpool tp,
-	void (*initialize)(void*, void*),
-	void *initialize_arg,
+    threadpool tp,
+    void (*initialize)(void*, void*),
+    void *initialize_arg,
 
-	void* (*work_func)(void*),
-	void* work_arg,
-	void (*cleanup_func)(void*, void*),
-	void* cleanup_arg);
+    void* (*work_func)(void*),
+    void* work_arg,
+    void (*cleanup_func)(void*, void*),
+    void* cleanup_arg);
 
 
 int threadpool_destroy(threadpool tp, unsigned int finish);
@@ -74,4 +74,3 @@ unsigned long threadpool_sum_added(threadpool p);
 #endif
 
 #endif
-

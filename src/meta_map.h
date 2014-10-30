@@ -36,7 +36,7 @@ typedef struct map_tag* map;
 
 /** The map iterator */
 typedef struct map_iterator_tag {
-	void *node;
+    void *node;
 } map_iterator;
 
 /**
@@ -101,4 +101,3 @@ int map_end(map_iterator mi);
 #endif
 
 #endif
-

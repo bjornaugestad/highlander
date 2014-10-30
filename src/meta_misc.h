@@ -86,10 +86,10 @@ const char* get_mime_type(const char* filename);
  * @param iWord			 zero-based index of word to copy
  */
 int get_word_from_string(
-	const char *string,
-	char word[],
-	size_t cchWordMax,
-	size_t iWord);
+    const char *string,
+    char word[],
+    size_t cchWordMax,
+    size_t iWord);
 
 /**
  * Copies one word from 'input' and places it in 'word'.
@@ -98,10 +98,10 @@ int get_word_from_string(
  * Returns -1 on buffer overflow and 0 on success.
  */
 int copy_word(
-	const char *input,
-	char word[],
-	int separator,
-	size_t cchWordMax);
+    const char *input,
+    char word[],
+    int separator,
+    size_t cchWordMax);
 
 /* Write a warning to the syslog */
 void warning(const char* fmt, ...);
@@ -138,4 +138,3 @@ void die_perror(const char *fmt, ...);
 const char* get_inet_addr(void* paddr, char* dst, size_t cnt);
 
 #endif /* guard */
-

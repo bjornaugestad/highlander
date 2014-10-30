@@ -225,10 +225,10 @@ int html_template_add_user_section(html_template t);
 int html_template_repository_add(const char* name, html_template t);
 html_buffer html_template_repository_use(const char* name);
 int html_template_send(
-	html_template t,
-	http_response response,
-	const char* headcode,
-	const char* usercode);
+    html_template t,
+    http_response response,
+    const char* headcode,
+    const char* usercode);
 
 /**
  * We don't want valgrind to report memleaks, so this function
@@ -248,4 +248,3 @@ void html_section_free(html_section p);
 #endif
 
 #endif /* guard */
-
