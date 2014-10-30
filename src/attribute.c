@@ -126,7 +126,6 @@ const char* attribute_get_encoding(page_attribute a)
 }
 
 #ifdef CHECK_ATTRIBUTE
-#include <stdio.h>
 #include <string.h>
 
 int main(void)

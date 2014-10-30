@@ -23,7 +23,6 @@
 #include <errno.h>
 #include <assert.h>
 #include <stdio.h>
-#include <string.h>
 
 #include <meta_common.h>
 #include <meta_wlock.h>

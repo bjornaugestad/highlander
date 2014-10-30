@@ -19,8 +19,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
-#include <assert.h>
 
 #include <meta_list.h>
 #include <meta_map.h>

@@ -20,7 +20,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <assert.h>
 #include <errno.h>
 #include <sys/socket.h>

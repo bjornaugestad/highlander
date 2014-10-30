@@ -18,7 +18,6 @@
  */
 
 #include <stdlib.h>
-#include <assert.h>
 
 #include <meta_html.h>
 

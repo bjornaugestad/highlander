@@ -20,7 +20,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <stdio.h>
 
 #include <meta_common.h>
 #include <meta_membuf.h>
@@ -123,7 +122,6 @@ size_t membuf_read(membuf mb, void* dest, size_t cb)
 }
 
 #ifdef CHECK_MEMBUF
-#include <stdio.h>
 
 int main(void)
 {

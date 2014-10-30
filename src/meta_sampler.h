@@ -21,7 +21,6 @@
 #define META_SAMPLER_H
 
 #include <stddef.h>
-#include <stdio.h>
 
 /**
  * @file meta_sampler.h - Implements a sampling storage ADT
