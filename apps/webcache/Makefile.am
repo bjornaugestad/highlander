@@ -26,14 +26,14 @@ webcached_CFLAGS=\
 
 
 webcached_LDADD=-lhighlander -lpthread
-webcached_LDFLAGS=-L.
+webcached_LDFLAGS=-L$(top_srcdir)/src
 
 # Convert the GIF logo to C source code
 %.c : %.gif
-	bin2c -bt image/gif -i httpcache.h -c $*.c $<
+	$(top_srcdir)/tools/bin2c -bt image/gif -i httpcache.h -c $*.c $<
 
 %.c : %.css
-	bin2c -bt text/css -i httpcache.h -c $*.c $<
+	$(top_srcdir)/tools/bin2c -bt text/css -i httpcache.h -c $*.c $<
 
 CLEANFILES=webcache_logo.c webcache_styles.c
 
@@ -41,5 +41,4 @@ BUILT_SOURCES=\
 	webcache_logo.c webcache_styles.c
 
 nodist_webcached_SOURCES=webcache_logo.c webcache_styles.c
-
 

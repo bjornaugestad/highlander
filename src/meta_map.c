@@ -96,7 +96,7 @@ map map_new(void(*freefunc)(void* arg))
     if ((m = calloc(1, sizeof *m)) == NULL)
         ;
     else if ((m->a = list_new()) == NULL) {
-        mem_free(m);
+        free(m);
         m = NULL;
     }
     else
@@ -113,14 +113,14 @@ void map_free(map m)
     if (m != NULL && m->a != NULL) {
         for (i = list_first(m->a); !list_end(i); i = list_next(i)) {
             p = list_get(i);
-            mem_free(p->key);
+            free(p->key);
             if (m->freefunc != NULL)
                 m->freefunc(p->value);
         }
     }
 
     list_free(m->a, NULL);
-    mem_free(m);
+    free(m);
 }
 
 static struct pair*
@@ -146,7 +146,7 @@ int map_set(map m, const char* key, void* value)
 
 
     if ((i = map_find(m, key)) != NULL) {
-        mem_free(i->value);
+        free(i->value);
         i->value = value;
 
         return 0;
@@ -154,7 +154,7 @@ int map_set(map m, const char* key, void* value)
     else if ((p = malloc(sizeof *p)) == NULL)
         return 0;
     else if ((p->key = malloc(strlen(key) + 1)) == NULL)  {
-        mem_free(p);
+        free(p);
         return 0;
     }
     else {

@@ -57,7 +57,7 @@ attribute_check_CFLAGS=-DCHECK_ATTRIBUTE $(AM_CFLAGS)
 cookie_check_SOURCES=../src/cookies.c ../src/cstring.c
 cookie_check_CFLAGS=-DCHECK_COOKIE $(AM_CFLAGS)
 cookie_check_LDADD=-lhighlander -lpthread
-cookie_check_LDFLAGS=-L.
+cookie_check_LDFLAGS=-L$(top_srcdir)/src
 
 
 list_check_SOURCES=../src/meta_list.c ../src/meta_common.c
@@ -106,7 +106,7 @@ tsb_check_SOURCES=../src/meta_tsb.c  ../src/meta_common.c
 tsb_check_CFLAGS=-DCHECK_TSB $(AM_CFLAGS)
 
 wlock_check_SOURCES=../src/meta_wlock.c ../src/meta_common.c
-wlock_check_CFLAGS=-DCHECK_WLOCK -O0 -ggdb -D_GNU_SOURCE -std=gnu99 -D_REENTRANT -I./src
+wlock_check_CFLAGS=-DCHECK_WLOCK -O0 -ggdb -D_GNU_SOURCE -std=gnu99 -D_REENTRANT $(AM_CFLAGS)
 #wlock_check_CFLAGS=-DCHECK_WLOCK -O0 -ggdb $(AM_CFLAGS)
 
 stack_check_SOURCES=../src/meta_stack.c ../src/meta_list.c ../src/meta_common.c

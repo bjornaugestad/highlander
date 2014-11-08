@@ -531,7 +531,7 @@ struct sockaddr_in* connection_get_addr(connection conn)
 void connection_free(connection conn)
 {
     if (conn != NULL) {
-        mem_free(conn);
+        free(conn);
     }
 }
 

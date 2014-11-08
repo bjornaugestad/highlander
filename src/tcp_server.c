@@ -165,7 +165,7 @@ void tcp_server_free(tcp_server srv)
         pool_free(srv->read_buffers, (dtor)membuf_free);
         pool_free(srv->write_buffers, (dtor)membuf_free);
 
-        mem_free(srv->host);
+        free(srv->host);
 
         /* Free the regex struct */
         if (srv->pattern_compiled) {
@@ -177,7 +177,7 @@ void tcp_server_free(tcp_server srv)
         atomic_ulong_destroy(&srv->sum_poll_again);
         atomic_ulong_destroy(&srv->sum_accept_failed);
         atomic_ulong_destroy(&srv->sum_denied_clients);
-        mem_free(srv);
+        free(srv);
     }
 }
 
@@ -638,7 +638,7 @@ void tcp_server_set_service_function(
 int tcp_server_set_hostname(tcp_server srv, const char* host)
 {
     if (srv->host != NULL)
-        mem_free(srv->host);
+        free(srv->host);
 
     if (host == NULL)
         srv->host = NULL;

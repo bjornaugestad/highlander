@@ -149,7 +149,7 @@ static void* threadpool_exec_thread(void* arg)
         if (wp->cleanup != NULL)
             wp->cleanup(wp->cleanup_arg, wp->work_arg);
 
-        mem_free(wp);
+        free(wp);
     }
 
     /* This function runs until pool->shutdown is true, but the HP-UX
@@ -174,7 +174,7 @@ threadpool threadpool_new(
     /* Allocate space for the pool */
     if ((tpool = malloc(sizeof(struct threadpool_tag))) == NULL
     || (tpool->threads = malloc(sizeof(pthread_t) * num_worker_threads)) == NULL) {
-        mem_free(tpool);
+        free(tpool);
         return NULL;
     }
 
@@ -192,8 +192,8 @@ threadpool threadpool_new(
     ||  (error = pthread_cond_init(&tpool->queue_not_empty, NULL))
     ||  (error = pthread_cond_init(&tpool->queue_not_full, NULL))
     ||  (error = pthread_cond_init(&tpool->queue_empty, NULL))) {
-        mem_free(tpool->threads);
-        mem_free(tpool);
+        free(tpool->threads);
+        free(tpool);
         errno = error;
         return NULL;
     }
@@ -208,8 +208,8 @@ threadpool threadpool_new(
 
         if (error) {
             /* NOTE: Should we destroy the threads as well? */
-            mem_free(tpool->threads);
-            mem_free(tpool);
+            free(tpool->threads);
+            free(tpool);
             errno = error;
             return NULL;
         }
@@ -369,7 +369,7 @@ int threadpool_destroy(threadpool pool, unsigned int finish)
         }
     }
 
-    mem_free(pool->threads);
+    free(pool->threads);
 
     /*
      * Free the queue. The queue should be empty since all the worker
@@ -379,14 +379,14 @@ int threadpool_destroy(threadpool pool, unsigned int finish)
     while (pool->queue_head != NULL) {
         struct threadpool_work* wp = pool->queue_head;
         pool->queue_head = pool->queue_head->next;
-        mem_free(wp);
+        free(wp);
     }
 
     pthread_mutex_destroy(&pool->queue_lock);
     atomic_ulong_destroy(&pool->sum_work_added);
     atomic_ulong_destroy(&pool->sum_blocked);
     atomic_ulong_destroy(&pool->sum_discarded);
-    mem_free(pool);
+    free(pool);
     return 1;
 }
 

@@ -51,7 +51,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <cstring.h>
 #include <assert.h>
 
 /* Line number in current file */

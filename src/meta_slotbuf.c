@@ -40,7 +40,7 @@ slotbuf slotbuf_new(size_t size, int can_overwrite, dtor pfn)
 
     if ((p = malloc(sizeof *p)) == NULL
     ||  (p->data = calloc(size, sizeof *p->data)) == NULL) {
-        mem_free(p);
+        free(p);
         p = NULL;
     }
     else {
@@ -62,9 +62,9 @@ void slotbuf_free(slotbuf p)
                 p->pfn(p->data[i]);
         }
 
-        mem_free(p->data);
+        free(p->data);
         pthread_mutex_destroy(&p->lock);
-        mem_free(p);
+        free(p);
     }
 }
 

@@ -57,7 +57,7 @@ meta_error meta_error_new(void)
 
 void meta_error_free(meta_error e)
 {
-    mem_free(e);
+    free(e);
 }
 
 int set_tcpip_error(meta_error e, int val)

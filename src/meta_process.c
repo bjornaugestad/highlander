@@ -92,7 +92,7 @@ process process_new(const char* appname)
         cstring_free(p->appname);
         cstring_free(p->username);
         cstring_free(p->rootdir);
-        mem_free(p);
+        free(p);
         p = NULL;
     }
     else {
@@ -109,7 +109,7 @@ void process_free(process p)
         cstring_free(p->appname);
         cstring_free(p->username);
         cstring_free(p->rootdir);
-        mem_free(p);
+        free(p);
     }
 }
 

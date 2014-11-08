@@ -52,7 +52,7 @@ ticker ticker_new(int usec)
 
     if ((t = malloc(sizeof *t)) == NULL
     ||  (t->actions = list_new()) == NULL) {
-        mem_free(t);
+        free(t);
         t = NULL;
     }
     else {
@@ -68,7 +68,7 @@ void ticker_free(ticker t)
 {
     ticker_stop(t);
     list_free(t->actions, NULL);
-    mem_free(t);
+    free(t);
 }
 
 int ticker_add_action(ticker t, void(*pfn)(void*), void* arg)
