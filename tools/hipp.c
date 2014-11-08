@@ -52,6 +52,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 /* Line number in current file */
 char* g_current_file = NULL;
@@ -170,21 +173,37 @@ static void show_help(void)
 	printf("\n");
 }
 
+// Create a legal C name, but do NOT add more than one consecutive underscore. 
 static const char* legal_name(const char* base)
 {
 	char *s;
 	static char name[1024];
+    int last_was_underscore = 0;
+
+    /* Skip all leading illegal chars. */
+    while (*base != '\0' && !isalnum(*base))
+        base++;
+
+    assert(*base != '\0');
 
 	/* Create legal name */
-	strcpy(name, base);
 	s = name;
-	while(*s != '\0') {
-		if(!isalnum(*s) && *s != '_')
-			*s = '_';
+	while(*base != '\0') {
+		if(!isalnum(*base)) {
+            if (!last_was_underscore) {
+                *s++ = '_';
+                last_was_underscore = 1;
+            }
+        }
+        else {
+            *s++ = *base;
+            last_was_underscore = 0;
+        }
 
-		s++;
+        base++;
 	}
 
+    *s = '\0';
 	return name;
 }
 
@@ -651,7 +670,8 @@ static void create_makefile_am(int argc, char *argv[])
 	for(i = 0; i < argc; i++) 
 		fprintf(f, "%s.c ", remove_ext(argv[i]));
 	fprintf(f, "\n");
-	fprintf(f, "foo_CFLAGS=-W -Wall -pedantic -Wshadow -Wmissing-prototypes -Winline -Wno-long-long -pthread\n");
+	fprintf(f, "foo_CFLAGS=-W -Wall -pedantic -Wextra -std=gnu99 -Wshadow -Wmissing-prototypes -pthread\n");
+	fprintf(f, "foo_LDADD=-lhighlander -lpthread\n");
 	fprintf(f, "\n");
 
 	/* Add all the translation rules for extensions? */
@@ -706,8 +726,22 @@ static void create_configure_ac(int argc, char *argv[])
 	fclose(f);
 }
 
+static void touch(const char *filename)
+{
+    int fd, flags = O_RDONLY | O_CREAT;
+
+    fd = open(filename, flags, 0644);
+    if (fd != -1)
+        close(fd);
+}
+
+
 static void create_autoxx_files(int argc, char *argv[])
 {
 	create_makefile_am(argc, argv);
 	create_configure_ac(argc, argv);
+    touch("README");
+    touch("AUTHORS");
+    touch("NEWS");
+    touch("ChangeLog");
 }
