@@ -4,7 +4,7 @@ metaftpd_SOURCES=metaftp.c about.html document.png folder.gif
 nodist_metaftpd_SOURCES=document.c about.c folder.c pagehandlers.h
 EXTRA_DIST=metaftp.conf
 
-AM_CPPFLAGS=-I$(top_srcdir)/src
+AM_CPPFLAGS=-I$(top_srcdir)/src/meta -I$(top_srcdir)/src/http
 AM_CFLAGS=-p -pg
 
 metaftpd_CFLAGS=\
@@ -12,22 +12,22 @@ metaftpd_CFLAGS=\
 	-Wshadow\
 	-Wall -pedantic -W -Werror -Wno-long-long -pthread -DNDEBUG -O3
 
-metaftpd_LDFLAGS=-L$(top_srcdir)/src
-metaftpd_LDADD=-lhighlander -lpthread
+metaftpd_LDFLAGS=-L../../src/meta -L../../src/http
+metaftpd_LDADD=-lhighlander -lmeta -lpthread
 
 # New version of bin2c, can now create a header in a separate run
 # I'm gonna eat my own dog food and change this project accordingly :-)
 pagehandlers.h: folder.gif document.png about.html
-	$(top_srcdir)/tools/bin2c -bh $@ $+
+	../../tools/bin2c -bh $@ $+
 
 %.c : %.gif
-	$(top_srcdir)/tools/bin2c -bt image/gif -i pagehandlers.h -c $*.c $<
+	../../tools/bin2c -bt image/gif -i pagehandlers.h -c $*.c $<
 
 %.c : %.png
-	$(top_srcdir)/tools/bin2c -bt image/png -i pagehandlers.h -c $*.c $<
+	../../tools/bin2c -bt image/png -i pagehandlers.h -c $*.c $<
 
 %.c : %.html
-	$(top_srcdir)/tools/bin2c -bt text/html -i pagehandlers.h -c $*.c $<
+	../../tools/bin2c -bt text/html -i pagehandlers.h -c $*.c $<
 
 CLEANFILES=\
 	about.c\

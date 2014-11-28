@@ -1,5 +1,5 @@
 AC_PREREQ(2.61)
-AC_INIT(highlander, 0.9.97, bjorn.augestad@gmail.com)
+AC_INIT(highlander, 0.9.98, bjorn.augestad@gmail.com)
 AC_CONFIG_AUX_DIR([extras])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE
@@ -9,7 +9,7 @@ LT_INIT([dlopen])
 LT_PREREQ([2.2])
 
 
-AC_CONFIG_SRCDIR([src/internals.h])
+AC_CONFIG_SRCDIR([src/http/internals.h])
 # AC_CONFIG_HEADER([config.h])
 
 # Checks for programs.
@@ -21,17 +21,11 @@ AM_PROG_CC_C_O
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h limits.h netdb.h netinet/in.h sys/socket.h syslog.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
-AC_C_CONST
-AC_C_INLINE
 AC_TYPE_MODE_T
 AC_TYPE_PID_T
-AC_TYPE_SIZE_T
-AC_STRUCT_TM
 
 # Checks for library functions.
-AC_FUNC_STAT
-AC_FUNC_STRFTIME
-AC_CHECK_FUNCS([strerror_r inet_ntop localtime_r socket strerror strtol sendfile])
+#AC_CHECK_FUNCS([strerror_r inet_ntop localtime_r socket strerror strtol sendfile])
 
 AC_ARG_ENABLE([valgrind], 
 	[--enable-valgrind Enable valgrind integration],
@@ -42,7 +36,12 @@ AC_ARG_ENABLE([valgrind],
 	esac],[valgrind=false])
 AM_CONDITIONAL([WITH_VALGRIND], [test x$valgrind = xtrue])
 
-AC_CONFIG_FILES([Makefile tools/Makefile src/Makefile apps/Makefile
+AC_CONFIG_FILES([Makefile
+	tools/Makefile
+	src/Makefile
+	src/meta/Makefile
+	src/http/Makefile
+	apps/Makefile
     apps/webcache/Makefile apps/ftp/Makefile apps/helloworld/Makefile
     tests/Makefile
     doc/Makefile
