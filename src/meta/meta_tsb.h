@@ -9,7 +9,7 @@
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
@@ -60,7 +60,7 @@
  * threads. Is that a bad thing???
  */
 
-#include <sys/time.h>   /* for struct timeval and tsb_get_epoch() */
+#include <sys/time.h>	/* for struct timeval and tsb_get_epoch() */
 
 #ifdef __cplusplus
 extern "C" {
@@ -125,11 +125,11 @@ void* tsb_get_buffer(tsb* p);
  * just return 0.
  */
 int tsb_set_threads(
-    tsb *p,
-    size_t iunit, /* Run thread(s) when iunit within frame starts */
-    size_t nthreads,
-    int (*callback)(void* buf, void* arg),
-    void* arg);
+	tsb *p,
+	size_t iunit, /* Run thread(s) when iunit within frame starts */
+	size_t nthreads,
+	int (*callback)(void* buf, void* arg),
+	void* arg);
 
 
 /*

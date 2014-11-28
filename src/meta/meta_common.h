@@ -9,7 +9,7 @@
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
@@ -25,7 +25,7 @@
 extern "C" {
 #endif
 
-/* stuff common to all modules.  */
+/* stuff common to all modules.	 */
 
 /*
  * A destructor (dtor) is a pointer to a function which frees
@@ -47,7 +47,7 @@ extern int meta_verbose_level;
 extern int meta_indent_level;
 
 void verbose(int level, const char *fmt, ...)
-    __attribute__((format(printf,2,3)));
+	__attribute__((format(printf,2,3)));
 
 
 #ifdef __cplusplus

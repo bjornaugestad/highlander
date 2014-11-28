@@ -9,7 +9,7 @@
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
@@ -28,17 +28,17 @@ int meta_indent_level = 0;
 
 static void indent(int levels)
 {
-    while (levels-- > 0)
-        putchar('\t');
+	while (levels-- > 0)
+		putchar('\t');
 }
 
 void verbose(int level, const char *fmt, ...)
 {
-    if (level <= meta_verbose_level) {
-        indent(meta_indent_level);
-        va_list ap;
-        va_start(ap, fmt);
-        vprintf(fmt, ap);
-        va_end(ap);
-    }
+	if (level <= meta_verbose_level) {
+		indent(meta_indent_level);
+		va_list ap;
+		va_start(ap, fmt);
+		vprintf(fmt, ap);
+		va_end(ap);
+	}
 }

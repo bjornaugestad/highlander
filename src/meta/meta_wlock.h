@@ -9,7 +9,7 @@
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
@@ -38,11 +38,11 @@ typedef struct wlock_tag* wlock;
 
 wlock wlock_new(void);		/* Create a new wlock */
 void  wlock_free(wlock p);	/* destroy a wlock (if refcount == 1) */
-int   wlock_lock(wlock p);	/* Lock it */
-int   wlock_unlock(wlock p);/* Unlock it */
-int   wlock_signal(wlock p);/* Signal it */
-int   wlock_wait(wlock p);	/* Wait for the wlock to be signalled */
-int   wlock_broadcast(wlock p);
+int	  wlock_lock(wlock p);	/* Lock it */
+int	  wlock_unlock(wlock p);/* Unlock it */
+int	  wlock_signal(wlock p);/* Signal it */
+int	  wlock_wait(wlock p);	/* Wait for the wlock to be signalled */
+int	  wlock_broadcast(wlock p);
 
 #ifdef __cplusplus
 }

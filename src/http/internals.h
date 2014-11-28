@@ -9,7 +9,7 @@
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
@@ -145,20 +145,20 @@ void cookie_free(cookie c);
 
 time_t parse_rfc822_date(const char *s);
 int send_status_code(
-    connection conn,
-    int status_code,
-    http_version version);
+	connection conn,
+	int status_code,
+	http_version version);
 
 int http_status_code(int error);
 
 
 int handle_dynamic(
-    connection conn,
-    http_server srv,
-    dynamic_page p,
-    http_request req,
-    http_response response,
-    meta_error e);
+	connection conn,
+	http_server srv,
+	dynamic_page p,
+	http_request req,
+	http_response response,
+	meta_error e);
 
 general_header general_header_new(void);
 void general_header_free(general_header p);
@@ -269,23 +269,23 @@ int entity_header_last_modified_isset(entity_header eh);
 
 void request_set_connection(http_request req, connection c);
 int parse_request_headerfield(
-    connection conn,
-    const char *fieldname,
-    const char *value,
-    http_request req,
-    meta_error e);
+	connection conn,
+	const char *fieldname,
+	const char *value,
+	http_request req,
+	meta_error e);
 
 int parse_response_headerfield(
-    const char* name,
-    const char* value,
-    http_response req,
-    meta_error e);
+	const char* name,
+	const char* value,
+	http_response req,
+	meta_error e);
 
 int parse_multivalued_fields(
-    void *dest,
-    const char* value,
-    int(*set_func)(void *dest, const char* value, meta_error e),
-    meta_error e);
+	void *dest,
+	const char* value,
+	int(*set_func)(void *dest, const char* value, meta_error e),
+	meta_error e);
 /* Return an index in the entity header array, or -1 if the field was not found. */
 int find_entity_header(const char* name);
 int parse_entity_header(int idx, entity_header gh, const char* value, meta_error e);

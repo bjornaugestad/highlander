@@ -9,7 +9,7 @@
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
@@ -20,7 +20,7 @@
 #ifndef META_MISC_H
 #define META_MISC_H
 
-#include <stddef.h> 	/* for size_t */
+#include <stddef.h>		/* for size_t */
 #include <stdarg.h> /* for va_list */
 
 #ifdef __cplusplus
@@ -44,7 +44,7 @@ int get_basename(const char* name, const char* suffix, char* dest, size_t destsi
  * Returns the # of words, separated by space, in the string.
  * "foo" is 1
  * "foo bar" is 2
- * " foo     bar        " is 2 as well
+ * " foo	 bar		" is 2 as well
  * Note that this function is for alnums and space only.
  * It counts e.g. \t and \n as words.
  */
@@ -54,11 +54,11 @@ int get_word_count(const char *s);
  * Returns an index to the first char in a word within the string.
  * returns -1 if index is invalid.
  * Example:
- * 	find_word("foo bar", 0)		returns 0
- * 	find_word(" foo bar", 0)	returns 1
- * 	find_word("foo bar", 1)		returns 4
- * 	find_word("foo bar", 2)		returns -1
- * 	find_word("foo bar fly", 2)	returns 8
+ *	find_word("foo bar", 0)		returns 0
+ *	find_word(" foo bar", 0)	returns 1
+ *	find_word("foo bar", 1)		returns 4
+ *	find_word("foo bar", 2)		returns -1
+ *	find_word("foo bar fly", 2)	returns 8
  */
 int find_word(const char* s, size_t iWord);
 
@@ -77,10 +77,10 @@ const char* get_mime_type(const char* filename);
  * @param iWord			 zero-based index of word to copy
  */
 int get_word_from_string(
-    const char *string,
-    char word[],
-    size_t cchWordMax,
-    size_t iWord);
+	const char *string,
+	char word[],
+	size_t cchWordMax,
+	size_t iWord);
 
 /*
  * Copies one word from 'input' and places it in 'word'.
@@ -89,25 +89,25 @@ int get_word_from_string(
  * Returns -1 on buffer overflow and 0 on success.
  */
 int copy_word(
-    const char *input,
-    char word[],
-    int separator,
-    size_t cchWordMax);
+	const char *input,
+	char word[],
+	int separator,
+	size_t cchWordMax);
 
 /* Write a warning to the syslog */
 void warning(const char* fmt, ...);
 void meta_vsyslog(int class, const char* fmt, va_list ap);
 
 void warning(const char *fmt, ...)
-    __attribute__((format(printf,1,2)));
+	__attribute__((format(printf,1,2)));
 
 void die(const char *fmt, ...)
-    __attribute__((format(printf,1,2)))
-    __attribute__ ((noreturn)) ;
+	__attribute__((format(printf,1,2)))
+	__attribute__ ((noreturn)) ;
 
 void die_perror(const char *fmt, ...)
-    __attribute__((format(printf,1,2)))
-    __attribute__ ((noreturn));
+	__attribute__((format(printf,1,2)))
+	__attribute__ ((noreturn));
 
 
 #if !defined(min) && !defined(max)

@@ -9,7 +9,7 @@
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
@@ -42,13 +42,13 @@ typedef struct list_tag* list;
  * to add new nodes.
  */
 struct list_tag {
-    struct list_tag *next, *prev;
-    void* data;
+	struct list_tag *next, *prev;
+	void* data;
 };
 
 /* Our list iterator.  */
 typedef struct list_iterator_tag {
-    void *node;
+	void *node;
 } list_iterator;
 
 /*
@@ -75,28 +75,28 @@ list_iterator list_find(list lst, const void *data, int(*compar)(const void*, co
 
 static inline list_iterator list_first(list lst)
 {
-    list_iterator i;
+	list_iterator i;
 
-    assert(lst != NULL);
-    i.node = lst->next;
-    return i;
+	assert(lst != NULL);
+	i.node = lst->next;
+	return i;
 }
 
 static inline int list_end(list_iterator li)
 {
-    return li.node == NULL;
+	return li.node == NULL;
 }
 
 static inline void* list_get(list_iterator i)
 {
-    assert(i.node != NULL);
-    return ((list)i.node)->data;
+	assert(i.node != NULL);
+	return ((list)i.node)->data;
 }
 
 static inline list_iterator list_next(list_iterator i)
 {
-    i.node = ((list)i.node)->next;
-    return i;
+	i.node = ((list)i.node)->next;
+	return i;
 }
 
 int list_last(list_iterator li);

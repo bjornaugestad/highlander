@@ -9,7 +9,7 @@
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
@@ -124,7 +124,7 @@ void http_server_trace(http_server s, int level);
 void http_server_set_defered_read(http_server s, int flag);
 int http_server_get_defered_read(http_server s);
 
-int    http_server_set_documentroot(http_server s, const char* docroot);
+int	   http_server_set_documentroot(http_server s, const char* docroot);
 void   http_server_set_post_limit(http_server s, size_t cb);
 size_t http_server_get_post_limit(http_server s);
 const char* http_server_get_documentroot(http_server s);
@@ -149,14 +149,14 @@ void http_server_set_worker_threads(http_server s, size_t n);
 void http_server_set_queue_size(http_server s, size_t n);
 void http_server_set_max_pages(http_server s, size_t n);
 void http_server_set_block_when_full(http_server s, int n);
-int  http_server_set_logfile(http_server s, const char *logfile);
+int	 http_server_set_logfile(http_server s, const char *logfile);
 void http_server_set_logrotate(http_server s, int logrotate);
 
 int http_server_get_port(http_server s);
 
 size_t http_server_get_worker_threads(http_server s);
 size_t http_server_get_queue_size(http_server s);
-int    http_server_get_block_when_full(http_server s);
+int	   http_server_get_block_when_full(http_server s);
 size_t http_server_get_max_pages(http_server s);
 
 const char* request_get_uri(http_request request);
@@ -176,9 +176,9 @@ const char* request_get_parameter_value(http_request request, const char* name);
 size_t request_get_field_count(http_request request);
 size_t request_get_field_namelen(http_request request, size_t i);
 size_t request_get_field_valuelen(http_request request, size_t i);
-int    request_get_field_name(http_request request, size_t i, char *s, size_t cb);
-int    request_get_field_value(http_request request, size_t i, char *s, size_t cb);
-int    request_get_field_value_by_name(http_request request, const char* name, char *value, size_t cb);
+int	   request_get_field_name(http_request request, size_t i, char *s, size_t cb);
+int	   request_get_field_value(http_request request, size_t i, char *s, size_t cb);
+int	   request_get_field_value_by_name(http_request request, const char* name, char *value, size_t cb);
 
 /* request cookies */
 size_t request_get_cookie_count(http_request request);
@@ -198,12 +198,12 @@ time_t request_get_if_modified_since(http_request r);
 /* Cookies */
 cookie cookie_new(void);
 
-int  cookie_set_name(cookie c, const char* s);
-int  cookie_set_value(cookie c, const char* s);
-int  cookie_set_comment(cookie c, const char* s);
-int  cookie_set_domain(cookie c, const char* s);
-int  cookie_set_path(cookie c, const char* s);
-int  cookie_set_max_age(cookie c, int value);
+int	 cookie_set_name(cookie c, const char* s);
+int	 cookie_set_value(cookie c, const char* s);
+int	 cookie_set_comment(cookie c, const char* s);
+int	 cookie_set_domain(cookie c, const char* s);
+int	 cookie_set_path(cookie c, const char* s);
+int	 cookie_set_max_age(cookie c, int value);
 void cookie_set_version(cookie c, int value);
 void cookie_set_secure(cookie c, int value);
 
@@ -336,7 +336,7 @@ int response_add(http_response response, const char* src);
 int response_add_char(http_response response, int c);
 int response_add_end(http_response response, const char* start, const char* end);
 int response_printf(http_response response, size_t size, const char* format, ...)
-    __attribute__ ((format(printf, 3, 4)));
+	__attribute__ ((format(printf, 3, 4)));
 int response_set_content_buffer(http_response response, void* src, size_t n);
 int response_set_allocated_content_buffer(http_response response, void* src, size_t n);
 

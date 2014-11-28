@@ -9,7 +9,7 @@
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
@@ -57,7 +57,7 @@ void connection_discard(connection conn);
 int connection_close(connection conn);
 
 void connection_set_persistent(connection conn, int val);
-int  connection_is_persistent(connection conn);
+int	 connection_is_persistent(connection conn);
 
 void connection_set_params(connection conn, meta_socket sock, struct sockaddr_in* paddr);
 struct sockaddr_in* connection_get_addr(connection conn);

@@ -9,7 +9,7 @@
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
@@ -34,9 +34,9 @@ typedef struct threadpool_tag* threadpool;
  */
 
 threadpool threadpool_new(
-    unsigned int num_worker_threads,
-    unsigned int max_queue_size,
-    int block_when_full);
+	unsigned int num_worker_threads,
+	unsigned int max_queue_size,
+	int block_when_full);
 
 /*
  * Adds work to the queue. The work will be performed by the work_func,
@@ -50,14 +50,14 @@ threadpool threadpool_new(
  * the pool is set to not block.
  */
 int threadpool_add_work(
-    threadpool tp,
-    void (*initialize)(void*, void*),
-    void *initialize_arg,
+	threadpool tp,
+	void (*initialize)(void*, void*),
+	void *initialize_arg,
 
-    void* (*work_func)(void*),
-    void* work_arg,
-    void (*cleanup_func)(void*, void*),
-    void* cleanup_arg);
+	void* (*work_func)(void*),
+	void* work_arg,
+	void (*cleanup_func)(void*, void*),
+	void* cleanup_arg);
 
 
 int threadpool_destroy(threadpool tp, unsigned int finish);

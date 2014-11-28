@@ -9,7 +9,7 @@
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
@@ -29,7 +29,7 @@
  * functions. The typical example is:
  * @code
  * if(!stringmap_exists(...))
- *    stringmap_add(...);
+ *	  stringmap_add(...);
  * @endcode
  * Such code is dangerous in MT programs unless you lock access to the stringmap,
  * since another thread may add the same value inbetween the call

@@ -9,7 +9,7 @@
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
@@ -40,7 +40,7 @@ extern "C" {
  * entries in the buffer with a steadily increasing index, e.g. time
  * or some counter without having to adjust for offsets.
  * The set/get functions will compute the correct index like this:
- * 		actual_index = index % bufsize;
+ *		actual_index = index % bufsize;
  *
  * The buffer comes in two flavors, one will allow you to overwrite
  * entries without warnings and the other will not.

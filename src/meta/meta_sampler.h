@@ -9,7 +9,7 @@
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
@@ -68,14 +68,14 @@
  * and call sampler_commit() to commit your changes. There is no
  * rollback. There are many reasons for this quite odd functionality
  *
- * 	- All samples get the same timestamp, which means that we can store
- *    just one time_t value per interval, instead of one time_t value
- *    per sample/interval. This reduces memory requirements
- *    and also makes it a lot easier to aggregate and compare data.
+ *	- All samples get the same timestamp, which means that we can store
+ *	  just one time_t value per interval, instead of one time_t value
+ *	  per sample/interval. This reduces memory requirements
+ *	  and also makes it a lot easier to aggregate and compare data.
  *
- *  - Number of calls to pthread_mutex_lock()/unlock() are drastically
- *    reduced. If you're sampling 1000 values per second, you don't want
- *    to lock and unlock 2000 times a second.
+ *	- Number of calls to pthread_mutex_lock()/unlock() are drastically
+ *	  reduced. If you're sampling 1000 values per second, you don't want
+ *	  to lock and unlock 2000 times a second.
  *
  * Reading and writing in a MT world:
  * ----------------------------------
@@ -110,7 +110,7 @@ typedef struct sampler_tag* sampler;
  * be zero-based and contigous.
  */
 sampler sampler_new(size_t entities, size_t values);
-void    sampler_free(sampler s);
+void	sampler_free(sampler s);
 
 /* Duplicate a sampler object. Remember to free it. */
 sampler sampler_dup(sampler src);
@@ -135,16 +135,16 @@ void sampler_commit(sampler s);
  * Use it when you want to iterate on the values, as in
  * @code
  *
- *    size_t i, nelem;
- *    sampler s;
- *    ...
- *    sampler_start_read(s);
- *    nelem = sampler_samplecount(s);
- *    for(i = 0; i < nelem; i++) {
- *       long long value;
- *       sampler_get(s, entity, i, &value);
- *    }
- *    sampler_stop_read(s);
+ *	  size_t i, nelem;
+ *	  sampler s;
+ *	  ...
+ *	  sampler_start_read(s);
+ *	  nelem = sampler_samplecount(s);
+ *	  for(i = 0; i < nelem; i++) {
+ *		 long long value;
+ *		 sampler_get(s, entity, i, &value);
+ *	  }
+ *	  sampler_stop_read(s);
  * @endcode
  */
 size_t sampler_samplecount(sampler s);
@@ -212,11 +212,11 @@ time_t sampler_time(sampler s, size_t i);
 #define SAMPLER_AGG_LAST  5
 
 int sampler_aggregate(
-    sampler dest,
-    sampler src,
-    size_t nsamples,
-    unsigned int resolution,
-    int aggval);
+	sampler dest,
+	sampler src,
+	size_t nsamples,
+	unsigned int resolution,
+	int aggval);
 
 
 #endif

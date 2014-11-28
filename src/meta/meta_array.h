@@ -9,7 +9,7 @@
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
@@ -33,8 +33,8 @@ void  array_free(array a, dtor cln);
 
 size_t array_nelem(array a);
 void*  array_get(array a, size_t ielem);
-int    array_add(array a, void* elem);
-int    array_extend(array a, size_t nmemb);
+int	   array_add(array a, void* elem);
+int	   array_extend(array a, size_t nmemb);
 
 #ifdef __cplusplus
 }

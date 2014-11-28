@@ -9,7 +9,7 @@
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
@@ -65,11 +65,11 @@ typedef struct filecache_tag* filecache;
 /* What we store about each file. */
 typedef struct fileinfo_tag* fileinfo;
 struct fileinfo_tag {
-    struct stat st;
-    char *mimetype;
-    char *name;
-    char *alias;
-    void *contents;
+	struct stat st;
+	char *mimetype;
+	char *name;
+	char *alias;
+	void *contents;
 };
 
 /*
@@ -79,38 +79,38 @@ struct fileinfo_tag {
  * key when we add other properties in the other caches.
  */
 struct filecache_tag {
-    stringmap filenames;
-    cache metacache; /* For struct stat entries */
-    pthread_rwlock_t lock;
-    size_t nelem;
-    size_t bytes;
+	stringmap filenames;
+	cache metacache; /* For struct stat entries */
+	pthread_rwlock_t lock;
+	size_t nelem;
+	size_t bytes;
 };
 
 fileinfo fileinfo_new(void);
-void     fileinfo_free(fileinfo p);
+void	 fileinfo_free(fileinfo p);
 
 static inline const struct stat* fileinfo_stat(fileinfo p)
 {
-    assert(p != NULL);
-    return &p->st;
+	assert(p != NULL);
+	return &p->st;
 }
 
 static inline const char* fileinfo_name(fileinfo p)
 {
-    assert(p != NULL);
-    return p->name;
+	assert(p != NULL);
+	return p->name;
 }
 
 static inline const char* fileinfo_alias(fileinfo p)
 {
-    assert(p != NULL);
-    return p->alias;
+	assert(p != NULL);
+	return p->alias;
 }
 
 static inline const char* fileinfo_mimetype(fileinfo p)
 {
-    assert(p != NULL);
-    return p->mimetype;
+	assert(p != NULL);
+	return p->mimetype;
 }
 
 int fileinfo_set_stat(fileinfo p, const struct stat* pst);
@@ -163,7 +163,7 @@ int filecache_add(filecache fc, fileinfo finfo, int pin, unsigned long* pid);
  */
 static inline stringmap filecache_filenames(filecache fc)
 {
-    return fc->filenames;
+	return fc->filenames;
 }
 
 
