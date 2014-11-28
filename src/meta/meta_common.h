@@ -46,7 +46,8 @@ typedef void(*dtor)(void*);
 extern int meta_verbose_level;
 extern int meta_indent_level;
 
-void verbose(int level, const char *fmt, ...);
+void verbose(int level, const char *fmt, ...)
+    __attribute__((format(printf,2,3)));
 
 
 #ifdef __cplusplus

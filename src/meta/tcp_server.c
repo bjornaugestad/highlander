@@ -328,8 +328,7 @@ tcp_server_recycle_connection(void* vse, void* vconn)
     pool_recycle(srv->connections, conn);
 }
 
-static void
-assign_rw_buffers(void* vse, void* vconn)
+static void assign_rw_buffers(void* vse, void* vconn)
 {
     membuf rb, wb;
 
@@ -670,11 +669,7 @@ int tcp_server_set_hostname(tcp_server srv, const char* host)
 static int client_can_connect(tcp_server srv, struct sockaddr_in* addr)
 {
     int vaddr;
-#ifdef HAVE_INET_NTOP
     char sz[INET_ADDRSTRLEN + 1];
-#else
-    char sz[2000 + 1];
-#endif
 
     assert(srv != NULL);
     assert(addr != NULL);
