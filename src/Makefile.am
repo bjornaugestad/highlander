@@ -1,5 +1,5 @@
 # The main target
-lib_LTLIBRARIES=libhighlander.la 
+lib_LTLIBRARIES=libhighlander.la libhighlanderd.la
 
 include_HEADERS=\
 	cstring.h\
@@ -38,6 +38,8 @@ noinst_HEADERS=\
 	internals.h
 
 libhighlander_la_LDFLAGS=-release $(PACKAGE_VERSION) -version-info 0:0:0
+libhighlanderd_la_LDFLAGS=-release $(PACKAGE_VERSION) -version-info 0:0:0
+
 libhighlander_la_SOURCES=\
 	meta_common.c\
 	meta_sampler.c\
@@ -85,9 +87,9 @@ libhighlander_la_SOURCES=\
 	entity_header.c\
 	send_status_code.c
 
+libhighlanderd_la_SOURCES=$(libhighlander_la_SOURCES)
+
 # Flags.
-# _XOPEN_SOURCE=600 is there to get rwlocks in pthread
-# __POSIX_C_SOURCE=199506L ->
 # -D_BSD_SOURCE is to get the prototype for strerror_r.
 # _SVID_SOURCE will do the same thing.
 
@@ -96,7 +98,15 @@ libhighlander_a_CFLAGS=\
 	-I$(srcdir)\
 	-I$(top_srcdir)/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\
-	-O2 -ggdb -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
+	-O2 -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
+    -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
+
+libhighlanderd_a_CFLAGS=\
+	-D_GNU_SOURCE -std=gnu99 -D_REENTRANT -pthread\
+	-I$(srcdir)\
+	-I$(top_srcdir)/src\
+	-Werror -Wshadow -W -Wmissing-prototypes\
+	-O0 -ggdb -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
     -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
 
 if WITH_VALGRIND

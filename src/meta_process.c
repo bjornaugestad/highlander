@@ -51,7 +51,7 @@ struct srv {
     pthread_t tid;
 
     /* Store the exit code from the run_func() function here. */
-    int exitcode;
+    intptr_t exitcode;
 };
 
 /*

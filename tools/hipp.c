@@ -52,6 +52,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <stdarg.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -78,106 +79,124 @@ static void write_html_buffer(FILE* fout, const char* html);
 static void create_mainfile(int argc, char *argv[], const char *filename);
 static void create_autoxx_files(int argc, char *argv[]);
 
+
+static void p(FILE *f, const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    vfprintf(f, fmt, ap);
+    va_end(ap);
+}
+
+/* Print array of strings, add newline. */
+static void parr(FILE *f, const char *arr[], size_t n)
+{
+    size_t i;
+
+    for (i = 0; i < n; i++) 
+        fprintf(f, "%s\n", arr[i]);
+}
+
 int main(int argc, char *argv[])
 {
-	int i, c; 
-	extern int optind;
-	extern char* optarg;
+    int i, c; 
+    extern int optind;
+    extern char* optarg;
 
-	while( (c = getopt(argc, argv, "Am:t:o:i:Eshp")) != EOF) {
-		switch(c) {
-			case 'A':
-				m_automake = 1;
-				break;
+    while( (c = getopt(argc, argv, "Am:t:o:i:Eshp")) != EOF) {
+        switch(c) {
+            case 'A':
+                m_automake = 1;
+                break;
 
-			case 't':
-				g_content_type = optarg;
-				break;
+            case 't':
+                g_content_type = optarg;
+                break;
 
-			case 'o':
-				g_outputfile = optarg;
-				break;
+            case 'o':
+                g_outputfile = optarg;
+                break;
 
-			case 'i':
-				g_headerfile = optarg;
-				break;
+            case 'i':
+                g_headerfile = optarg;
+                break;
 
-			case 'm':
-				g_mainfile = optarg;
-				break;
+            case 'm':
+                g_mainfile = optarg;
+                break;
 
-			case 'h':
-				show_help();
-				exit(EXIT_SUCCESS);
-				break;
+            case 'h':
+                show_help();
+                exit(EXIT_SUCCESS);
+                break;
 
-			case 'E':
-				m_skip_line_numbers = 1;
-				break;
+            case 'E':
+                m_skip_line_numbers = 1;
+                break;
 
-			case 's':
-				m_strip_blanks = 1;
-				break;
+            case 's':
+                m_strip_blanks = 1;
+                break;
 
-			case 'p':
-				prototype_mode = 1;
-				break;
+            case 'p':
+                prototype_mode = 1;
+                break;
 
-			default:
-				fprintf(stderr, "hipp: Unknown parameter\n");
-				exit(EXIT_FAILURE);
-		}
-	}
+            default:
+                fprintf(stderr, "hipp: Unknown parameter\n");
+                exit(EXIT_FAILURE);
+        }
+    }
 
-	if(g_headerfile == NULL) {
-		fprintf(stderr, "%s: Required argument -i is missing.\n", argv[0]);
-		exit(EXIT_FAILURE);
-	}
+    if(g_headerfile == NULL) {
+        fprintf(stderr, "%s: Required argument -i is missing.\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
 
-	if(optind == argc) {
-		fprintf(stderr, "hipp: No input files\n");
-		exit(EXIT_FAILURE);
-	}
-	else if(g_outputfile != NULL && optind + 1 < argc) {
-		fprintf(stderr, "-o option is only valid if input is one file\n");
-		exit(EXIT_FAILURE);
-	}
+    if(optind == argc) {
+        fprintf(stderr, "hipp: No input files\n");
+        exit(EXIT_FAILURE);
+    }
+    else if(g_outputfile != NULL && optind + 1 < argc) {
+        fprintf(stderr, "-o option is only valid if input is one file\n");
+        exit(EXIT_FAILURE);
+    }
 
-	if(prototype_mode) 
-		create_header(g_headerfile, argc, argv, optind);
-	else {
-		/* Generate C code for all the files */
-		for(i = optind; i < argc; i++) 
-			process_file(argv[i]);
-	}
-
-
-	/* 
-	 * New stuff 20070401:
-	 * -m can be used to generate a skeleton main function
-	 * which sets up a web server for us.
-	 */
-	if(g_mainfile != NULL) 
-		create_mainfile(argc-optind, &argv[optind], g_mainfile);
-
-	if(m_automake)
-		create_autoxx_files(argc-optind, &argv[optind]);
+    if(prototype_mode) 
+        create_header(g_headerfile, argc, argv, optind);
+    else {
+        /* Generate C code for all the files */
+        for(i = optind; i < argc; i++) 
+            process_file(argv[i]);
+    }
 
 
-	exit(EXIT_SUCCESS);
+    /* 
+     * New stuff 20070401:
+     * -m can be used to generate a skeleton main function
+     * which sets up a web server for us.
+     */
+    if(g_mainfile != NULL) 
+        create_mainfile(argc-optind, &argv[optind], g_mainfile);
+
+    if(m_automake)
+        create_autoxx_files(argc-optind, &argv[optind]);
+
+
+    exit(EXIT_SUCCESS);
 }
 
 static void show_help(void)
 {
-	printf("Please see the man page for detailed help\n");
-	printf("\n");
+    printf("Please see the man page for detailed help\n");
+    printf("\n");
 }
 
 // Create a legal C name, but do NOT add more than one consecutive underscore. 
 static const char* legal_name(const char* base)
 {
-	char *s;
-	static char name[1024];
+    char *s;
+    static char name[1024];
     int last_was_underscore = 0;
 
     /* Skip all leading illegal chars. */
@@ -186,10 +205,10 @@ static const char* legal_name(const char* base)
 
     assert(*base != '\0');
 
-	/* Create legal name */
-	s = name;
-	while(*base != '\0') {
-		if(!isalnum(*base)) {
+    /* Create legal name */
+    s = name;
+    while(*base != '\0') {
+        if(!isalnum(*base)) {
             if (!last_was_underscore) {
                 *s++ = '_';
                 last_was_underscore = 1;
@@ -201,10 +220,10 @@ static const char* legal_name(const char* base)
         }
 
         base++;
-	}
+    }
 
     *s = '\0';
-	return name;
+    return name;
 }
 
 /* call this function with full path.
@@ -212,13 +231,13 @@ static const char* legal_name(const char* base)
  */
 static const char* function_name(char* file)
 {
-	static char name[10240];
+    static char name[10240];
 
-	assert(file != NULL);
+    assert(file != NULL);
 
-	strcpy(name, "hipp_");
-	strcat(name, legal_name(file));
-	return name;
+    strcpy(name, "hipp_");
+    strcat(name, legal_name(file));
+    return name;
 }
 
 /**
@@ -231,115 +250,115 @@ static const char* function_name(char* file)
  */
 static void print_standard_stuff(FILE* f)
 {
-	static const char* headers =
-		"#include <stdio.h>\n"
-		"#include <stdlib.h>\n"
-		"#include <unistd.h>\n"
-		"#include <string.h>\n"
-		"#include <assert.h>\n"
-		"\n"
-		"#include <highlander.h>\n"
-		;
+    static const char* headers =
+        "#include <assert.h>\n"
+        "#include <stdio.h>\n"
+        "#include <stdlib.h>\n"
+        "#include <string.h>\n"
+        "#include <unistd.h>\n"
+        "\n"
+        "#include <highlander.h>\n"
+        ;
 
 
-	fprintf(f, "%s\n", headers);
-	fprintf(f, "#include \"%s\"\n", g_headerfile);
-	fprintf(f, "\n");
+    p(f, "%s\n", headers);
+    p(f, "#include \"%s\"\n", g_headerfile);
+    p(f, "\n");
 
 }
 
 static void print_fn(FILE*f, char* name)
 {
-	const char* fn = function_name(name);
+    const char* fn = function_name(name);
 
-	fprintf(f, "int %s(http_request request, http_response response)\n", fn);
-	fprintf(f, "{\n");
-	fprintf(f, "\tassert(request != NULL);\n");
-	fprintf(f, "\tassert(response != NULL);\n");
-	fprintf(f, "\n");
+    p(f, "int %s(http_request request, http_response response)\n", fn);
+    p(f, "{\n");
+    p(f, "\tassert(request != NULL);\n");
+    p(f, "\tassert(response != NULL);\n");
+    p(f, "\n");
 
-	if(g_content_type != NULL) {
-		fprintf(f, "\tresponse_set_content_type(response, \"%s\");\n", g_content_type);
-		fprintf(f, "\n");
-	}
+    if(g_content_type != NULL) {
+        p(f, "\tresponse_set_content_type(response, \"%s\");\n", g_content_type);
+        p(f, "\n");
+    }
 }
 
 static void write_html_buffer(FILE* f, const char* str)
 {
-	int printed = 0;
-	const char *s;
-	char last = '\0';
-	const char* wrappers = "> ";
+    int printed = 0;
+    const char *s;
+    char last = '\0';
+    const char* wrappers = "> ";
 
-	s = str;
-	fprintf(f, "\t{\n");
-	fprintf(f, "\t\tconst char* html = \n");
-	fprintf(f, "\t\t\"");
-	while(*s) {
-		if(isspace(*s) && m_strip_blanks && printed == 0) {
-			s++;
-			continue;
-		}
-		else if(*s == '\\') {
-			fprintf(f, "\\\\");
-		}
-		else if(*s == '\n') {
-			if(m_strip_blanks) {
-				fprintf(f, "\\n");
-			}
-		}
-		else if(*s == '"' && last != '\\')
-			fprintf(f, "\\%c", *s);
-		else
-			fputc(*s, f);
+    s = str;
+    p(f, "\t{\n");
+    p(f, "\t\tconst char* html = \n");
+    p(f, "\t\t\"");
+    while(*s) {
+        if(isspace(*s) && m_strip_blanks && printed == 0) {
+            s++;
+            continue;
+        }
+        else if(*s == '\\') {
+            p(f, "\\\\");
+        }
+        else if(*s == '\n') {
+            if(m_strip_blanks) {
+                p(f, "\\n");
+            }
+        }
+        else if(*s == '"' && last != '\\')
+            p(f, "\\%c", *s);
+        else
+            fputc(*s, f);
 
 
-		printed++;
-		if(*s == '\n'
-		|| (last != '\\' && strchr(wrappers, *s) && printed > 70)) {
-			printed = 0;
-			fprintf(f, "\\n\"\n\t\t\"");
-			last = '\0';
-		}
-		else 
-			last = *s;
+        printed++;
+        if(*s == '\n'
+        || (last != '\\' && strchr(wrappers, *s) && printed > 70)) {
+            printed = 0;
+            p(f, "\\n\"\n\t\t\"");
+            last = '\0';
+        }
+        else 
+            last = *s;
 
-		s++;
-	}
+        s++;
+    }
 
-	fprintf(f, "\";\n");
-	fprintf(f, "\t\tresponse_add(response, html);\n");
-	fprintf(f, "\t}\n");
+    p(f, "\";\n");
+    p(f, "\t\tresponse_add(response, html);\n");
+    p(f, "\t}\n");
 }
 
 static const char* remove_ext(char* name)
 {
-	static char buf[10000];
-	char *s;
+    static char buf[10000];
+    char *s;
 
-	strcpy(buf, name);
-	s = buf + strlen(buf) - 1;
-	while(s != buf) {
-		if(*s == '.') {
-			*s = '\0';
-			break;
-		}
-		s--;
-	}
+    strcpy(buf, name);
+    s = buf + strlen(buf) - 1;
+    while(s != buf) {
+        if(*s == '.') {
+            *s = '\0';
+            break;
+        }
+        s--;
+    }
 
-	if(s == buf) {
-		fprintf(stderr, "hipp: internal error\n");
-		exit(EXIT_FAILURE);
-	}
-	
-	return buf;
+    if(s == buf) {
+        fprintf(stderr, "hipp: internal error\n");
+        exit(EXIT_FAILURE);
+    }
+    
+    return buf;
 }
 
 static int peek(FILE* f)
 {
-	int c = fgetc(f);
-	ungetc(c, f);
-	return c;
+    int c = fgetc(f);
+    ungetc(c, f);
+    return c;
 }
 
 static void append(char *s, char c)
@@ -355,180 +374,180 @@ char buf[1024 * 1024];
 
 static void process_file(char* name)
 {
-	FILE *fin, *fout;
-	char fname[10240];
-	char *base;
-	int in_header = 0, in_hipp = 0;
-	int c;
-	int fn_written = 0;
+    FILE *fin, *fout;
+    char fname[10240];
+    char *base;
+    int in_header = 0, in_hipp = 0;
+    int c;
+    int fn_written = 0;
 
 
-	/* buffers html */
-	buf[0] = '\0';
+    /* buffers html */
+    buf[0] = '\0';
 
-	if ((base = basename(name)) == NULL) {
-		perror(name);
-		exit(EXIT_FAILURE);
-	}
+    if ((base = basename(name)) == NULL) {
+        perror(name);
+        exit(EXIT_FAILURE);
+    }
 
-	if (g_outputfile != NULL)
-		strcpy(fname, g_outputfile);
-	else {
-		strcpy(fname, remove_ext(base));
-		strcat(fname, ".c");
-	}
+    if (g_outputfile != NULL)
+        strcpy(fname, g_outputfile);
+    else {
+        strcpy(fname, remove_ext(base));
+        strcat(fname, ".c");
+    }
 
-	lineno = 1;
-	g_current_file = name;
-	if ((fin = fopen(name, "r")) == NULL) {
-		perror(name);
-		exit(EXIT_FAILURE);
-	}
-	else if( (fout = fopen(fname, "w")) == NULL) {
-		perror(fname);
-		exit(EXIT_FAILURE);
-	}
+    lineno = 1;
+    g_current_file = name;
+    if ((fin = fopen(name, "r")) == NULL) {
+        perror(name);
+        exit(EXIT_FAILURE);
+    }
+    else if( (fout = fopen(fname, "w")) == NULL) {
+        perror(fname);
+        exit(EXIT_FAILURE);
+    }
 
-	print_standard_stuff(fout);
-	print_line_directive(fout, g_current_file, lineno);
+    print_standard_stuff(fout);
+    print_line_directive(fout, g_current_file, lineno);
 
-	while( (c = fgetc(fin)) != EOF) {
-		switch(c) {
-			case '<':
-				if(peek(fin) == '%') {
-					if(in_hipp || in_header) {
-						fprintf(stderr, "hipp: Tags do not nest\n");
-						exit(EXIT_FAILURE);
-					}
+    while( (c = fgetc(fin)) != EOF) {
+        switch(c) {
+            case '<':
+                if(peek(fin) == '%') {
+                    if(in_hipp || in_header) {
+                        fprintf(stderr, "hipp: Tags do not nest\n");
+                        exit(EXIT_FAILURE);
+                    }
 
-					/* We're entering hipp mode, print buf */
-					in_hipp = 1;
-					if(!fn_written) {
-						print_fn(fout, name);
-						fn_written = 1;
-					}
+                    /* We're entering hipp mode, print buf */
+                    in_hipp = 1;
+                    if(!fn_written) {
+                        print_fn(fout, name);
+                        fn_written = 1;
+                    }
 
-					write_html_buffer(fout, buf);
+                    write_html_buffer(fout, buf);
                     buf[0] = '\0';
 
-					print_line_directive(fout, g_current_file, lineno);
-					fgetc(fin); /* Skip % */
-				}
-				else
-					append(buf, c);
+                    print_line_directive(fout, g_current_file, lineno);
+                    fgetc(fin); /* Skip % */
+                }
+                else
+                    append(buf, c);
 
-				break;
+                break;
 
-			case '%':
-				if(peek(fin) == '>') {
-					/* We're leaving hipp code. Print it */
-					in_hipp = 0;
-					fprintf(fout, "%s", buf);
+            case '%':
+                if(peek(fin) == '>') {
+                    /* We're leaving hipp code. Print it */
+                    in_hipp = 0;
+                    p(fout, "%s", buf);
                     buf[0] = '\0';
-					fgetc(fin); /* Skip > */
-				}
-				else if (peek(fin) == '{') {
-					if(in_hipp || in_header) {
-						fprintf(stderr, "hipp: Tags do not nest\n");
-						exit(EXIT_FAILURE);
-					}
+                    fgetc(fin); /* Skip > */
+                }
+                else if (peek(fin) == '{') {
+                    if(in_hipp || in_header) {
+                        fprintf(stderr, "hipp: Tags do not nest\n");
+                        exit(EXIT_FAILURE);
+                    }
 
-					/* We're entering header mode */
-					in_header = 1;
+                    /* We're entering header mode */
+                    in_header = 1;
                     buf[0] = '\0';
-					fgetc(fin); /* Skip { */
-				}
-				else if (peek(fin) == '}') {
-					/* We're leaving header mode */
-					in_header = 0;
-					fprintf(fout, "%s", buf);
+                    fgetc(fin); /* Skip { */
+                }
+                else if (peek(fin) == '}') {
+                    /* We're leaving header mode */
+                    in_header = 0;
+                    p(fout, "%s", buf);
                     buf[0] = '\0';
-					fgetc(fin); /* Skip } */
-				}
-				else {
-					append(buf, '%');
-				}
+                    fgetc(fin); /* Skip } */
+                }
+                else {
+                    append(buf, '%');
+                }
 
-				break;
+                break;
 
-			default:
-				if(c == '\n')
-					lineno++;
+            default:
+                if(c == '\n')
+                    lineno++;
 
-				/* Add character to buffer */
-				append(buf, c);
-				break;
-		}
-	}
+                /* Add character to buffer */
+                append(buf, c);
+                break;
+        }
+    }
 
-	if(!fn_written) 
-		print_fn(fout, name);
+    if(!fn_written) 
+        print_fn(fout, name);
 
-	if(strlen(buf) > 0) 
-		write_html_buffer(fout, buf);
+    if(strlen(buf) > 0) 
+        write_html_buffer(fout, buf);
 
-	fprintf(fout, "\treturn 0;\n");
-	fprintf(fout, "}\n");
+    p(fout, "\treturn 0;\n");
+    p(fout, "}\n");
 
 
-	fclose(fin);
-	fclose(fout);
+    fclose(fin);
+    fclose(fout);
 }
 
 static void print_line_directive(FILE *f, const char* file, int line)
 {
-	if(!m_skip_line_numbers) 
-		fprintf(f, "#line %d \"%s\"\n", line, file);
+    if(!m_skip_line_numbers) 
+        p(f, "#line %d \"%s\"\n", line, file);
 }
 
 static void create_header(char* filename, int argc, char *argv[], int opt_ind)
 {
-	int i;
-	FILE* f;
-	char *base, *s, guard[2048];
+    int i;
+    FILE* f;
+    char *base, *s, guard[2048];
 
-	if ((base = basename(filename)) == NULL) {
+    if ((base = basename(filename)) == NULL) {
         fprintf(stderr, "%s: Could not get basename\n", filename);
         exit(EXIT_FAILURE);
     }
 
-	strcpy(guard, remove_ext(base));
-	s = guard;
-	while(*s != '\0')  {
-		*s = toupper((unsigned char)*s);
-		s++;
-	}
+    strcpy(guard, remove_ext(base));
+    s = guard;
+    while(*s != '\0')  {
+        *s = toupper((unsigned char)*s);
+        s++;
+    }
 
-	if( (f = fopen(filename, "w")) == NULL) {
-		perror(filename);
-		exit(EXIT_FAILURE);
-	}
+    if( (f = fopen(filename, "w")) == NULL) {
+        perror(filename);
+        exit(EXIT_FAILURE);
+    }
 
-	fprintf(f, "#ifndef HIPP_%s_H\n", guard);
-	fprintf(f, "#define HIPP_%s_H\n", guard);
+    p(f, "#ifndef HIPP_%s_H\n", guard);
+    p(f, "#define HIPP_%s_H\n", guard);
 
-	fprintf(f, "\n");
-	fprintf(f, "#include <highlander.h>\n");
-	fprintf(f, "\n");
+    p(f, "\n");
+    p(f, "#include <highlander.h>\n");
+    p(f, "\n");
 
-	fprintf(f, "\n");
-	fprintf(f, "#ifdef __cplusplus\n");
-	fprintf(f, "extern \"C\" {\n");
-	fprintf(f, "#endif\n");
-	fprintf(f, "\n");
+    p(f, "\n");
+    p(f, "#ifdef __cplusplus\n");
+    p(f, "extern \"C\" {\n");
+    p(f, "#endif\n");
+    p(f, "\n");
 
 
-	for(i = opt_ind; i < argc; i++) 
-		fprintf(f, "int %s(http_request request, http_response response);\n", function_name(argv[i]));
+    for(i = opt_ind; i < argc; i++) 
+        p(f, "int %s(http_request request, http_response response);\n", function_name(argv[i]));
 
-	fprintf(f, "\n");
-	fprintf(f, "#ifdef __cplusplus\n");
-	fprintf(f, "}\n");
-	fprintf(f, "#endif\n");
-	fprintf(f, "\n");
-	fprintf(f, "#endif /* guard */\n");
+    p(f, "\n");
+    p(f, "#ifdef __cplusplus\n");
+    p(f, "}\n");
+    p(f, "#endif\n");
+    p(f, "\n");
+    p(f, "#endif /* guard */\n");
 
-	fclose(f);
+    fclose(f);
 }
 
 /*
@@ -541,189 +560,213 @@ static void create_header(char* filename, int argc, char *argv[], int opt_ind)
  */
 static void create_mainfile(int argc, char *argv[], const char *filename)
 {
-	int i;
-	FILE *f;
+    int i;
+    FILE *f;
 
-	if( (f = fopen(filename, "w")) == NULL) {
-		perror(filename);
+    if( (f = fopen(filename, "w")) == NULL) {
+        perror(filename);
         exit(EXIT_FAILURE);
     }
 
-	/* Include all the stock include files */
-	fprintf(f, "#include <stdlib.h>\n");
-	fprintf(f, "#include <highlander.h>\n");
-	fprintf(f, "\n");
+    p(f, "#include <stdlib.h>\n");
+    p(f, "#include <errno.h>\n");
+    p(f, "#include <highlander.h>\n");
+    p(f, "#include <meta_process.h>\n");
+    p(f, "\n");
+    p(f, "#include \"%s\"\n", g_headerfile);
+    p(f, "\n");
 
-	/* Include the header file which we use */
-	fprintf(f, "#include \"%s\"\n", g_headerfile);
-	fprintf(f, "\n");
+    static const char *mainfunc[] = {
+    "int main(int argc, char *argv[])",
+    "{",
+    "    // Name of running process",
+    "    const char *appname = \"foo\";",
+    "",
+    "    // application's root/working directory",
+    "    const char *rootdir = \"/tmp\";",
+    "",
+    "    // application runs with this user's privileges",
+    "    const char *user = \"nobody\";",
+    "",
+    "   http_server s;",
+    "   process proc;",
+    "   int fork_and_close = 0;",
+    "   int portnumber = 2000;",
+    "",
+    "   /* Silence the compiler */",
+    "   (void)argc;",
+    "   (void)argv;",
+    "",
+    "   /* First we create the web server and the process */",
+    "   if( (s = http_server_new()) == NULL)",
+    "       exit(EXIT_FAILURE);",
+    "",
+    "   if( (proc = process_new(appname)) == NULL)",
+    "       exit(EXIT_FAILURE);",
+    "",
+    "#if 1",
+    "    // Configure the process object.",
+    "    // See functions' man pages for details.",
+    "    process_set_rootdir(proc, rootdir);",
+    "    process_set_username(proc, user);",
+    "#endif",
+    "   /* Then configure the memory requirements */",
+    "   /* Here are some dummy statements to make it easier for the user */",
+    "#if 0",
+    "   http_server_set_worker_threads(s, 8);",
+    "   http_server_set_queue_size(s, 10);",
+    "   http_server_set_max_pages(s, 20);",
+    "#endif",
+    "",
+    "",
+    "   /* Allocate all buffers needed */",
+    "   if(!http_server_alloc(s)) {",
+    "       http_server_free(s);",
+    "       exit(EXIT_FAILURE);",
+    "   }",
+    "",
+    "   /* Add pages to the server */",
+    };
 
-	fprintf(f, "int main(int argc, char *argv[])\n");
-	fprintf(f, "{\n");
-	fprintf(f, "	http_server s;\n");
-	fprintf(f, "\n");
-	fprintf(f, "	/* Silence the compiler */\n");
-	fprintf(f, "	(void)argc;\n");
-	fprintf(f, "	(void)argv;\n");
-	fprintf(f, "\n");
-	fprintf(f, "	/* First we create the web server */\n");
-	fprintf(f, "	if( (s = http_server_new()) == NULL)\n");
-	fprintf(f, "		exit(EXIT_FAILURE);\n");
-	fprintf(f, "\n");
-	fprintf(f, "	/* Then configure the memory requirements */\n");
-	fprintf(f, "	/* Here are some dummy statements to make it easier for the user */\n");
+    parr(f, mainfunc, sizeof mainfunc / sizeof *mainfunc);
 
-	fprintf(f, "#if 1\n");
-	fprintf(f, "	http_server_set_worker_threads(s, 8);\n");
-	fprintf(f, "	http_server_set_queue_size(s, 10);\n");
-	fprintf(f, "	http_server_set_max_pages(s, 20);\n");
-	fprintf(f, "#endif\n");
-	fprintf(f, "\n");
-	fprintf(f, "\n");
-	fprintf(f, "	/* Allocate all buffers needed */\n");
-	fprintf(f, "	if(!http_server_alloc(s)) {\n");
-	fprintf(f, "		http_server_free(s);\n");
-	fprintf(f, "		exit(EXIT_FAILURE);\n");
-	fprintf(f, "	}\n");
-	fprintf(f, "\n");
-	fprintf(f, "	/* Add pages to the server */\n");
+    for(i = 0; i < argc; i++) {
+        p(f, "    http_server_add_page(s, \"/%s\", %s, NULL);\n", argv[i], function_name(argv[i]));
+    }
 
-	for(i = 0; i < argc; i++) {
-		fprintf(f, "	http_server_add_page(s, \"/%s\", %s, NULL);\n", argv[i], function_name(argv[i]));
-	}
+    p(f, "  /* More configuration settings */\n");
+    p(f, "#if 0\n");
+    p(f, "    http_server_set_timeout_read(s, 5);\n");
+    p(f, "    http_server_set_timeout_write(s, 5);\n");
+    p(f, "    http_server_set_timeout_accept(s, 5);\n");
+    p(f, "    http_server_set_retries_read(s, 0);\n");
+    p(f, "    http_server_set_retries_write(s, 2);\n");
+    p(f, "#endif\n");
+    p(f, "\n");
+    p(f, "\n");
+    p(f, "#if 1\n");
+    p(f, "    http_server_set_block_when_full(s, 0);\n");
+    p(f, "    http_server_set_logfile(s, \"my_logfile\");\n");
+    p(f, "    http_server_set_logrotate(s, 100000);\n");
+    p(f, "\n");
+    p(f, "#endif\n");
+    p(f, "\n");
+    p(f, "#if 1\n");
+    p(f, "    http_server_set_host(s, \"localhost\");\n");
+    p(f, "    http_server_set_port(s, portnumber);\n");
+    p(f, "#endif\n");
+    p(f, "\n");
+    p(f, "#if 0\n");
+    p(f, "    http_server_set_documentroot(s, \"/path/to/my/root\");\n");
+    p(f, "    http_server_set_can_read_files(s, 0);\n");
+    p(f, "    http_server_set_post_limit(s, 1024 * 1024);\n");
+    p(f, "#endif\n");
+    p(f, "\n");
 
-	fprintf(f, "	/* More configuration settings */\n");
-	fprintf(f, "#if 1\n");
-	fprintf(f, "	http_server_set_timeout_read(s, 5);\n");
-	fprintf(f, "	http_server_set_timeout_write(s, 5);\n");
-	fprintf(f, "	http_server_set_timeout_accept(s, 5);\n");
-	fprintf(f, "	http_server_set_retries_read(s, 0);\n");
-	fprintf(f, "	http_server_set_retries_write(s, 2);\n");
-	fprintf(f, "#endif\n");
-	fprintf(f, "\n");
-	fprintf(f, "\n");
-	fprintf(f, "#if 1\n");
-	fprintf(f, "	http_server_set_block_when_full(s, 0);\n");
-	fprintf(f, "	http_server_set_logfile(s, \"my_logfile\");\n");
-	fprintf(f, "	http_server_set_logrotate(s, 100000);\n");
-	fprintf(f, "\n");
-	fprintf(f, "#endif\n");
-	fprintf(f, "\n");
-	fprintf(f, "#if 1\n");
-	fprintf(f, "	http_server_set_host(s, \"localhost\");\n");
-	fprintf(f, "	http_server_set_port(s, 2000); /* Good while testing */\n");
-	fprintf(f, "#endif\n");
-	fprintf(f, "\n");
-	fprintf(f, "#if 1\n");
-	fprintf(f, "	http_server_set_documentroot(s, \"/path/to/my/root\");\n");
-	fprintf(f, "	http_server_set_can_read_files(s, 0);\n");
-	fprintf(f, "	http_server_set_post_limit(s, 1024*1024);\n");
-	fprintf(f, "#endif\n");
-	fprintf(f, "\n");
+    p(f, "    /* Start the server from the proces object. */\n");
+    p(f, "    http_server_start_via_process(proc, s);\n");
+    p(f, "\n");
 
-	fprintf(f, "	/* Allocate root resources (ie bind to the port) */\n");
-	fprintf(f, "	if(!http_server_get_root_resources(s)) {\n");
-	fprintf(f, "		http_server_free(s);\n");
-	fprintf(f, "		exit(EXIT_FAILURE);\n");
-	fprintf(f, "	}\n");
-	fprintf(f, "\n");
-	fprintf(f, "	/* Start the server */\n");
-	fprintf(f, "	http_server_start(s);\n");
-	fprintf(f, "\n");
-	fprintf(f, "	/* Do general cleanup */\n");
-	fprintf(f, "	http_server_free(s);\n");
-	fprintf(f, "	return 0;\n");
-	fprintf(f, "}\n");
-	fprintf(f, "\n");
+    p(f, "    if (!process_start(proc, fork_and_close))\n");
+    p(f, "        die(\"process_start failed: %%s\\n\", strerror(errno));\n");
+    p(f, "\n");
+    p(f, "    process_wait_for_shutdown(proc);\n");
+    p(f, "\n");
+
+    p(f, "    /* Do general cleanup */\n");
+    p(f, "    http_server_free(s);\n");
+    p(f, "    return 0;\n");
+    p(f, "}\n");
+    p(f, "\n");
 
 
-	fclose(f);
+    fclose(f);
 }
 
 static void create_makefile_am(int argc, char *argv[])
 {
-	FILE *f;
-	int i;
+    FILE *f;
+    int i;
 
-	(void)argc;
-	(void)argv;
+    (void)argc;
+    (void)argv;
 
-	if( (f = fopen("Makefile.am", "w")) == NULL) {
-		perror("Makefile.am");
+    if( (f = fopen("Makefile.am", "w")) == NULL) {
+        perror("Makefile.am");
         exit(EXIT_FAILURE);
     }
 
-	fprintf(f, "bin_PROGRAMS=foo\n");
-	fprintf(f, "foo_SOURCES=");
-	if(g_mainfile != NULL)
-		fprintf(f, "%s ", g_mainfile);
+    p(f, "bin_PROGRAMS=foo\n");
+    p(f, "foo_SOURCES=");
+    if(g_mainfile != NULL)
+        p(f, "%s ", g_mainfile);
 
-	for(i = 0; i < argc; i++) 
-		fprintf(f, "%s ", argv[i]);
-	
-	fprintf(f, "\n");
-	fprintf(f, "\n");
-
-
-	/* No dist files */
-	fprintf(f, "nodist_foo_SOURCES=%s ", g_headerfile);
-	for(i = 0; i < argc; i++) 
-		fprintf(f, "%s.c ", remove_ext(argv[i]));
-	fprintf(f, "\n");
-	fprintf(f, "foo_CFLAGS=-W -Wall -pedantic -Wextra -std=gnu99 -Wshadow -Wmissing-prototypes -pthread\n");
-	fprintf(f, "foo_LDADD=-lhighlander -lpthread\n");
-	fprintf(f, "\n");
-
-	/* Add all the translation rules for extensions? */
-	fprintf(f, "%%.c : %%.html\n");
-	fprintf(f, "	hipp -i %s -o $*.c $<\n", g_headerfile);
-	fprintf(f, "\n");
-
-	/* Create the header file with the function prototypes */
-	fprintf(f, "%s: ", g_headerfile);
-	for(i = 0; i < argc; i++)
-		fprintf(f, "%s ", argv[i]);
-	fprintf(f, "\n");
-	fprintf(f, "	hipp -pi $@ $+\n");
-	fprintf(f, "\n");
+    for(i = 0; i < argc; i++) 
+        p(f, "%s ", argv[i]);
+    
+    p(f, "\n");
+    p(f, "\n");
 
 
-	fprintf(f, "BUILT_SOURCES=$(nodist_foo_SOURCES)\n");
-	fprintf(f, "CLEANFILES=$(nodist_foo_SOURCES)\n");
-	fprintf(f, "\n");
+    /* No dist files */
+    p(f, "nodist_foo_SOURCES=%s ", g_headerfile);
+    for(i = 0; i < argc; i++) 
+        p(f, "%s.c ", remove_ext(argv[i]));
+    p(f, "\n");
+    p(f, "foo_CFLAGS=-W -Wall -pedantic -Wextra -std=gnu99 -Wshadow -Wmissing-prototypes -pthread\n");
+    p(f, "foo_LDADD=-lhighlander -lpthread\n");
+    p(f, "\n");
 
-	fclose(f);
+    /* Add all the translation rules for extensions? */
+    p(f, "%%.c : %%.html\n");
+    p(f, "\thipp -i %s -o $*.c $<\n", g_headerfile);
+    p(f, "\n");
+
+    /* Create the header file with the function prototypes */
+    p(f, "%s: ", g_headerfile);
+    for(i = 0; i < argc; i++)
+        p(f, "%s ", argv[i]);
+    p(f, "\n");
+    p(f, "\thipp -pi $@ $+\n");
+    p(f, "\n");
+
+
+    p(f, "BUILT_SOURCES=$(nodist_foo_SOURCES)\n");
+    p(f, "CLEANFILES=$(nodist_foo_SOURCES)\n");
+    p(f, "\n");
+
+    fclose(f);
 }
 
 static void create_configure_ac(int argc, char *argv[])
 {
-	FILE *f;
-	(void)argc;
-	(void)argv;
+    FILE *f;
+    (void)argc;
+    (void)argv;
 
-	if( (f = fopen("configure.ac", "w")) == NULL) {
-		perror("configure.ac");
+    if( (f = fopen("configure.ac", "w")) == NULL) {
+        perror("configure.ac");
         exit(EXIT_FAILURE);
     }
 
-	fprintf(f, "# Simple skeleton file, generated by hipp\n");
-	fprintf(f, "AC_PREREQ(2.57)\n");
-	fprintf(f, "AC_INIT(foo, 0.0.1, root@localhost)\n");
-	fprintf(f, "AM_INIT_AUTOMAKE\n");
-	fprintf(f, "AC_CONFIG_SRCDIR([%s])\n", g_mainfile ? g_mainfile : "foo.c");
-	fprintf(f, "\n");
-	fprintf(f, "# Checks for programs.\n");
-	fprintf(f, "AC_PROG_CC\n");
-	fprintf(f, "\n");
-	fprintf(f, "# Checks for libraries.\n");
-	fprintf(f, "AC_CHECK_LIB([highlander], [cstring_new])\n");
-	fprintf(f, "AC_CHECK_LIB([pthread], [pthread_create])\n");
-	fprintf(f, "\n");
-	fprintf(f, "AC_CONFIG_FILES([Makefile])\n");
-	fprintf(f, "AC_OUTPUT\n");
-	fprintf(f, "\n");
+    p(f, "# Simple skeleton file, generated by hipp\n");
+    p(f, "AC_PREREQ(2.57)\n");
+    p(f, "AC_INIT(foo, 0.0.1, root@localhost)\n");
+    p(f, "AM_INIT_AUTOMAKE\n");
+    p(f, "AC_CONFIG_SRCDIR([%s])\n", g_mainfile ? g_mainfile : "foo.c");
+    p(f, "\n");
+    p(f, "# Checks for programs.\n");
+    p(f, "AC_PROG_CC\n");
+    p(f, "\n");
+    p(f, "# Checks for libraries.\n");
+    p(f, "AC_CHECK_LIB([highlander], [cstring_new])\n");
+    p(f, "AC_CHECK_LIB([pthread], [pthread_create])\n");
+    p(f, "\n");
+    p(f, "AC_CONFIG_FILES([Makefile])\n");
+    p(f, "AC_OUTPUT\n");
+    p(f, "\n");
 
-	fclose(f);
+    fclose(f);
 }
 
 static void touch(const char *filename)
@@ -738,8 +781,8 @@ static void touch(const char *filename)
 
 static void create_autoxx_files(int argc, char *argv[])
 {
-	create_makefile_am(argc, argv);
-	create_configure_ac(argc, argv);
+    create_makefile_am(argc, argv);
+    create_configure_ac(argc, argv);
     touch("README");
     touch("AUTHORS");
     touch("NEWS");
