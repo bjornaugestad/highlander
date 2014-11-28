@@ -851,11 +851,7 @@ void http_server_add_logentry(
         return;
     }
 
-#ifndef HAVE_INET_NTOP
-    get_inet_addr(&connection_get_addr(conn)->sin_addr, ip, sizeof ip);
-#else
     inet_ntop(AF_INET, &connection_get_addr(conn)->sin_addr, ip, sizeof ip),
-#endif
 
     cc = fprintf(srv->logfile, "%s - - [%s] \"%s %s\" %d %lu\n",
         ip,

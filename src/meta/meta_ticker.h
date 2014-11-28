@@ -39,4 +39,4 @@ int ticker_add_action(ticker t, void(*pfn)(void*), void* arg);
 int ticker_start(ticker t);
 void ticker_stop(ticker t);
 
-#endif /* guard */
+#endif

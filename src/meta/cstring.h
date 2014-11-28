@@ -46,9 +46,9 @@ typedef struct cstring_tag* cstring;
 
 
 cstring cstring_new(void);
-cstring cstring_dup(const char* src); /* NEW: Create cstring and copy src in one operation */
-int     cstring_multinew(cstring *pstr, size_t nelem);
-int     cstring_extend(cstring s, size_t size);
+cstring cstring_dup(const char* src);
+int cstring_multinew(cstring *pstr, size_t nelem);
+int cstring_extend(cstring s, size_t size);
 
 
 int cstring_copy(cstring dest, const char* src);
@@ -113,7 +113,6 @@ static inline void cstring_recycle(cstring s)
     s->cbUsed = 1;
 }
 
-/* NEW STUFF: 2005-12-06*/
 /* Create an array of cstrings from a const char*, return the number
  * of items in the array. Each item must be freed separately.
  * delim can contain any number of characters, see strcspn()
@@ -135,4 +134,4 @@ void cstring_upper(cstring s);
 }
 #endif
 
-#endif  /* guard */
+#endif

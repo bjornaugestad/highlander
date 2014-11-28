@@ -50,29 +50,6 @@ void meta_vsyslog(int class, const char* fmt, va_list ap)
     syslog(class, "%s", err);
 }
 
-int casecompstr(const char* s1, const char* s2)
-{
-    assert(s1 != NULL);
-    assert(s2 != NULL);
-
-    while (*s1 != '\0') {
-        if (*s2 == '\0')
-            return 1;	/* s1 is greater as it is longer */
-        else if(*s1 != *s2)
-            return *s1 - *s2;
-        else {
-            s1++;
-            s2++;
-        }
-    }
-
-    /* We reached the end of s1, but s2 may still have data.
-     * s2 may also be exausted, so the normal *s1 - *s2 will
-     * work perfectly.
-     */
-    return *s1 - *s2;
-}
-
 void fs_lower(char* s)
 {
     assert(NULL != s);
@@ -94,24 +71,6 @@ void fs_upper(char* s)
 
         s++;
     }
-}
-
-/* Returns -1 on error, else the number */
-long fs_atol(const char* s)
-{
-    long val = 0;
-    assert(s != NULL);
-
-    while (*s) {
-        if (isdigit((int)*s))
-            val = (val * 10) + (*s - '0');
-        else
-            return -1;
-
-        s++;
-    }
-
-    return val;
 }
 
 int string2size_t(const char *s, size_t *val)
@@ -184,43 +143,43 @@ int get_word_count(const char *s)
 }
 
 int get_word_from_string(
-    const char* string,
+    const char* src,
     char word[],
     size_t cchWordMax,	/* Max # of chars excl. '\0' in word */
     size_t iWord)		/* zero-based index of word to copy */
 {
     int i;
 
-    assert(string != NULL);
+    assert(src != NULL);
     assert(word != NULL);
     assert(cchWordMax > 1);
 
-    i = find_word(string, iWord);
+    i = find_word(src, iWord);
 
     /* if index out of range */
     if (i == -1)
         return 0;
 
     /* copy the word */
-    string += i;
-    return copy_word(string, word, ' ', cchWordMax);
+    src += i;
+    return copy_word(src, word, ' ', cchWordMax);
 }
 
 int copy_word(
-    const char* input,
+    const char* src,
     char word[],
     int separator,
     size_t cchWordMax)
 {
     size_t i = 0;
 
-    assert(input != NULL);
+    assert(src != NULL);
     assert(word != NULL);
     assert(separator != '\0');
     assert(cchWordMax > 0);
 
-    while (*input != '\0' && *input != separator && i < cchWordMax)
-        word[i++] = *input++;
+    while (*src != '\0' && *src != separator && i < cchWordMax)
+        word[i++] = *src++;
 
     if (i == cchWordMax)
         return 0;
@@ -273,30 +232,15 @@ void warning(const char* fmt, ...)
     va_end(ap);
 }
 
-int tprintf(FILE *f, int tabs, const char *format, ...)
-{
-    va_list ap;
-    int rc;
-
-    while (tabs--)
-        fputc('\t', f);
-
-    va_start(ap, format);
-    rc = vfprintf(f, format, ap);
-    va_end(ap);
-
-    return rc;
-}
-
-int get_extension(const char* src, char* dest, size_t cb)
+int get_extension(const char* src, char* dest, size_t destsize)
 {
     const char* end;
-    size_t i = cb - 1;
+    size_t i = destsize - 1;
     int found = 0;
 
     assert(src != NULL);
     assert(dest != NULL);
-    assert(cb > 1);
+    assert(destsize > 1);
 
     end = src + strlen(src);
     dest[i] = '\0';
@@ -315,7 +259,7 @@ int get_extension(const char* src, char* dest, size_t cb)
         return 0;
     }
     else if(found) {
-        memmove(dest, &dest[i + 1], cb - i);
+        memmove(dest, &dest[i + 1], destsize - i);
     }
     else
         *dest = '\0';
@@ -323,14 +267,14 @@ int get_extension(const char* src, char* dest, size_t cb)
     return 1;
 }
 
-int get_basename(const char* name, const char* suffix, char* dest, size_t cb)
+int get_basename(const char* name, const char* suffix, char* dest, size_t destsize)
 {
     char* s;
     size_t i;
 
     assert(name != NULL);
     assert(dest != NULL);
-    assert(cb > 1);
+    assert(destsize > 1);
 
     /* Locate the rightmost / to remove the directory part */
     if ((s = strrchr(name, '/')) != NULL)
@@ -339,8 +283,8 @@ int get_basename(const char* name, const char* suffix, char* dest, size_t cb)
         s = (char*)name; /* The cast is OK. :-) */
 
     /* Now copy the filename part. */
-    strncpy(dest, s, cb);
-    dest[cb - 1] = '\0';
+    strncpy(dest, s, destsize);
+    dest[destsize - 1] = '\0';
 
     /* Locate the suffix, if any */
     if (suffix == NULL || (s = strstr(dest, suffix)) == NULL)
@@ -358,27 +302,6 @@ int get_basename(const char* name, const char* suffix, char* dest, size_t cb)
     return 1;
 }
 
-
-const char* get_inet_addr(void* paddr, char* dst, size_t cnt)
-{
-    char* pa;
-    struct in_addr* pinaddr = paddr;
-
-    static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-
-    if (pthread_mutex_lock(&lock))
-        return NULL;
-
-    if ((pa = inet_ntoa(*pinaddr)) == NULL || strlen(pa) >= cnt) {
-        pthread_mutex_unlock(&lock);
-        return NULL;
-    }
-
-    strcpy(dst, pa);
-
-    pthread_mutex_unlock(&lock);
-    return dst;
-}
 
 /*
  * This is probably bad, but the need for speed forces us to

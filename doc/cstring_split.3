@@ -1,0 +1,22 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt CSTRING
+.Th cstring_split 3
+.Sh NAME
+.Nm cstring_split()
+.Nd Strip leading and trailing white space from a string.
+
+Create an array of cstrings from a const char*, return the number
+of items in the array. Each item must be freed separately.
+delim can contain any number of characters, see strcspn()
+
+.Sh SYNOPSIS
+.Fd #include <cstring.h>
+.Fo "void cstring_split"
+.Fa "cstring s"
+.Fc
+.Sh DESCRIPTION
+.Nm
+split a string.
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

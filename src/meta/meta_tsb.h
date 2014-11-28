@@ -146,4 +146,4 @@ int tsb_stop(tsb* p);
 }
 #endif
 
-#endif /* guard */
+#endif

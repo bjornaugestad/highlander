@@ -51,4 +51,4 @@ int process_get_exitcode(process p, void* object);
 }
 #endif
 
-#endif /* guard */
+#endif

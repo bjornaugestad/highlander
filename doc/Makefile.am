@@ -133,6 +133,7 @@ man_MANS=\
 	cstring_reverse.3\
 	cstring_right.3\
 	cstring_strip.3\
+	cstring_split.3\
 	cstring_substring.3\
 	cstring_upper.3\
 	cstring_vprintf.3\
@@ -217,8 +218,50 @@ man_MANS=\
 	configfile_get_uint.3\
 	configfile_get_ulong.3\
 	configfile_read.3\
-	\
- #
+	connection.3\
+	connection_arg2.3\
+	connection_assign_read_buffer.3\
+	connection_close.3\
+	connection_discard.3\
+	connection_flush.3\
+	connection_free.3\
+	connection_get_addr.3\
+	connection_get_fd.3\
+	connection_getc.3\
+	connection_gets.3\
+	connection_new.3\
+	connection_putc.3\
+	connection_read.3\
+	connection_readbuf_size.3\
+	connection_recycle.3\
+	connection_set_fd.3\
+	connection_set_params.3\
+	connection_set_persistent.3\
+	connection_ungetc.3\
+	connection_write.3\
+	connection_write_big_buffer.3\
+	connection_writebuf_size.3\
+	tcp_server.3\
+	tcp_server_allow_clients.3\
+	tcp_server_clear_client_filter.3\
+	tcp_server_free_root_resources.3\
+	tcp_server_get_root_resources.3\
+	tcp_server_init.3\
+	tcp_server_new.3\
+	tcp_server_set_block_when_full.3\
+	tcp_server_set_hostname.3\
+	tcp_server_set_port.3\
+	tcp_server_set_queue_size.3\
+	tcp_server_set_readbuf_size.3\
+	tcp_server_set_retries.3\
+	tcp_server_set_service_function.3\
+	tcp_server_set_timeout.3\
+	tcp_server_set_worker_threads.3\
+	tcp_server_set_writebuf_size.3\
+	tcp_server_shutdown.3\
+	tcp_server_shutting_down.3\
+	tcp_server_start.3\
+	tcp_server_start_via_process.3
 
 
 

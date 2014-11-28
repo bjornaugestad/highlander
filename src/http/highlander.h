@@ -386,19 +386,6 @@ const char*	attribute_get_charset(page_attribute a);
 const char*	attribute_get_encoding(page_attribute a);
 const char*	attribute_get_media_type(page_attribute a);
 
-void warning(const char *fmt, ...)
-    __attribute__((format(printf,1,2)));
-
-void die(const char *fmt, ...)
-    __attribute__((format(printf,1,2)))
-    __attribute__ ((noreturn)) ;
-
-void die_perror(const char *fmt, ...)
-    __attribute__((format(printf,1,2)))
-    __attribute__ ((noreturn));
-
-
-int get_basename(const char* name, const char* suffix, char* dest, size_t cb);
 
 /* performance counters */
 /* These seven functions are wrapper functions for the tcp_server

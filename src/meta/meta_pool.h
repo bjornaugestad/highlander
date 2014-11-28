@@ -42,4 +42,4 @@ void  pool_recycle(pool p, void* resource);
 }
 #endif
 
-#endif /* guard */
+#endif

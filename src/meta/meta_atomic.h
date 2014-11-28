@@ -109,4 +109,4 @@ ATOMIC_TYPE(uint32_t, u32)
 ATOMIC_TYPE(int, int)
 
 
-#endif // guard
+#endif

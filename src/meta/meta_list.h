@@ -124,4 +124,4 @@ void sublist_free(list lst);
 }
 #endif
 
-#endif  /* guard */
+#endif

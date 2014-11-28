@@ -20,7 +20,6 @@
 #ifndef TCP_SERVER_H
 #define TCP_SERVER_H
 
-/* for size_t */
 #include <stddef.h>
 
 #include <meta_process.h>
@@ -88,4 +87,4 @@ unsigned long tcp_server_sum_denied_clients(tcp_server p);
 }
 #endif
 
-#endif /* guard */
+#endif

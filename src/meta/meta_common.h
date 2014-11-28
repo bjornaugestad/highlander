@@ -53,4 +53,4 @@ void verbose(int level, const char *fmt, ...);
 }
 #endif
 
-#endif /* guard */
+#endif

@@ -17,12 +17,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef MISCFUNC_H__
-#define MISCFUNC_H__
+#ifndef META_MISC_H
+#define META_MISC_H
 
 #include <stddef.h> 	/* for size_t */
 #include <stdarg.h> /* for va_list */
-#include <stdio.h> 	/* for FILE* */
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,9 +29,7 @@ extern "C" {
 
 void fs_lower(char* s);
 void fs_upper(char* s);
-long fs_atol(const char* s);
 
-int tprintf(FILE *f, int tabs, const char *format, ...);
 /*
  * Converts a string of digits only to size_t.
  * returns 0 on error, 1 on success.
@@ -41,13 +38,7 @@ int string2size_t(const char *s, size_t *val);
 
 void remove_trailing_newline(char *s);
 
-/*
- * Replaces strcasecomp(), must be identical in use
- * Probably a bit slow, as it is plain C.
- * Ignores LOCALE
- */
-int casecompstr(const char* s1, const char* s2);
-int get_basename(const char* name, const char* suffix, char* dest, size_t cb);
+int get_basename(const char* name, const char* suffix, char* dest, size_t destsize);
 
 /*
  * Returns the # of words, separated by space, in the string.
@@ -76,7 +67,7 @@ int find_word(const char* s, size_t iWord);
  * 1 if successful. Note that 1 will be returned even if
  * no extension exists as it is legal not to have an extension.
  */
-int get_extension(const char* src, char* dest, size_t cb);
+int get_extension(const char* src, char* dest, size_t destsize);
 const char* get_mime_type(const char* filename);
 
 /*
@@ -107,15 +98,17 @@ int copy_word(
 void warning(const char* fmt, ...);
 void meta_vsyslog(int class, const char* fmt, va_list ap);
 
-/* Assert for doubles. Double values tend to be almost equal, this macro
- * and function tests for that, allowing some slack.
- */
-#ifndef NDEBUG
-#define dassert(a, b) dassert_impl(__FILE__, __LINE__, #a, a, b)
-void dassert_impl(const char* file, int line, const char* expr, double a, double b);
-#else
-#define dassert(a, b) (void)0
-#endif
+void warning(const char *fmt, ...)
+    __attribute__((format(printf,1,2)));
+
+void die(const char *fmt, ...)
+    __attribute__((format(printf,1,2)))
+    __attribute__ ((noreturn)) ;
+
+void die_perror(const char *fmt, ...)
+    __attribute__((format(printf,1,2)))
+    __attribute__ ((noreturn));
+
 
 #if !defined(min) && !defined(max)
 #define min(a, b) ((a) < (b) ? (a) : (b))
@@ -126,15 +119,4 @@ void dassert_impl(const char* file, int line, const char* expr, double a, double
 }
 #endif
 
-void die(const char *fmt, ...) __attribute__ ((noreturn));
-void die_perror(const char *fmt, ...);
-
-/*
- * Some platforms do not support inet_ntop. The normal replacement function
- * is inet_ntoa, but that function is not thread safe. We therefore provide
- * our own thread safe version of inet_ntop on platforms without that function.
- * The paddr argument must point to a struct in_addr.
- */
-const char* get_inet_addr(void* paddr, char* dst, size_t cnt);
-
-#endif /* guard */
+#endif

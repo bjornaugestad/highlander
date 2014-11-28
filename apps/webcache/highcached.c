@@ -7,6 +7,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include <meta_misc.h>
 #include <meta_configfile.h>
 #include <meta_filecache.h>
 #include <meta_list.h>
