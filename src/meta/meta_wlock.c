@@ -226,7 +226,8 @@ static void* signaler(void *parg)
  * What about broadcasting? All we need is one signaler and multiple waiters.
  * We can do that, no sweat.
  *
- * The *real* question is: For how long will we keep all the DEBUG_ME code here?
+ * The *real* question is: For how long will we keep all the DEBUG_ME 
+ * code here?
  * It is quite ugly.
  */
 

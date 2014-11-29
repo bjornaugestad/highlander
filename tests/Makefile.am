@@ -23,7 +23,7 @@ TESTS=\
 
 LDADD=-lpthread
 AM_CFLAGS=\
-	-D_GNU_SOURCE -std=gnu99 -D_REENTRANT\
+	-p -pg -D_GNU_SOURCE -std=gnu99 -D_REENTRANT\
 	-I$(srcdir)\
 	-I$(top_srcdir)/src/meta\
 	-I$(top_srcdir)/src/http\

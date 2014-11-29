@@ -12,11 +12,38 @@ delim can contain any number of characters, see strcspn()
 
 .Sh SYNOPSIS
 .Fd #include <cstring.h>
-.Fo "void cstring_split"
-.Fa "cstring s"
+.Fo "size_t cstring_split"
+.Fa "cstring **dest"
+.Fa "const char *src"
+.Fa "const char *delim"
 .Fc
 .Sh DESCRIPTION
 .Nm
-split a string.
+splits a string literal into multiple cstring strings. After successful
+completion, the dest pointer will point to several cstring strings. The
+exact number is returned as a return value.
+.Pp
+Note that delim can be one or more characters, e.g. " \t\n" to split a
+source string on either space, tab or newline characters.
+.Sh SEE ALSO
+.Xr cstring_multifree 3
+.Sh EXAMPLE
+.Bd -literal
+#include <stdio.h>
+#include <cstring.h>
+
+int main(void)
+{
+	cstring *s;
+	size_t i, n;
+
+	n = cstring_split(&s, "Hello world", " ");
+	for (i = 0; i < n; i++)
+		printf("%s\n", c_str(s[i]));
+
+	cstring_multifree(s, n);
+	return 0;
+}
+.Ed
 .Sh AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

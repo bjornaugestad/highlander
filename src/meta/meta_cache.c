@@ -1,23 +1,4 @@
 /*
- * libhighlander - A HTTP and TCP server-side library
- * Copyright (C) 2013 B. Augestad, bjorn.augestad@gmail.com
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- */
-
-/*
 	libcoremeta - A library of useful C functions and ADT's
 	Copyright (C) 2000-2006 B. Augestad, bjorn.augestad@gmail.com
 
@@ -124,9 +105,10 @@ static void cache_entry_free(struct cache_entry* p)
 	}
 }
 
-/* We need to free whatever is in the cache, for which we use the cleanup argument.
- * We also need to free the cache_entry node itself. That node contains a pointer
- * to the data we (optionally) freed with the cleanup function. Hmm... :-(
+/* We need to free whatever is in the cache, for which we use the cleanup 
+ * argument. We also need to free the cache_entry node itself. That node
+ * contains a pointer to the data we (optionally) freed with the 
+ * cleanup function. Hmm... :-(
  *
  * We therefore free like this:
  * if cleanup != NULL, call cleanup for each entry and set p->data to NULL
@@ -145,14 +127,17 @@ void cache_free(cache c, dtor cleanup)
 			if (lst != NULL) {
 				if (cleanup != NULL) {
 					list_iterator li;
+
 					for (li = list_first(lst); !list_end(li); li = list_next(li)) {
 						struct cache_entry* p = list_get(li);
 						assert(p != NULL);
 						assert(p->data != NULL);
+
 						cleanup(p->data);
 						p->data = NULL;
 					}
 				}
+
 				list_free(lst, (dtor)cache_entry_free);
 			}
 		}
@@ -178,6 +163,7 @@ void cache_invalidate(cache c, dtor cleanup)
 	}
 }
 #endif
+
 static int on_hotlist(cache c, size_t id)
 {
 	size_t i;
