@@ -1,0 +1,19 @@
+.Dd Nov 29, 2014
+.Os POSIX
+.Dt SOCK
+.Th sock_set_nonblock 3
+.Sh NAME
+.Nm sock_set_nonblock
+.Nd Make the socket non-blocking
+.Sh SYNOPSIS
+.Fd #include <meta_sock.h>
+.Fo "int sock_set_nonblock"
+.Fa "meta_socket p"
+.Fc
+.Sh DESCRIPTION
+.Nm
+makes the socket non-blocking.
+.Sh SEE ALSO
+.Xr sock_clear_nonblock 3
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

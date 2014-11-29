@@ -26,16 +26,13 @@
 
 /*
  * The action to be performed when a tick occurs. We store a function pointer
- * and a void *to the argument of the function.
+ * and a void* to the argument of the function.
  */
 struct action {
 	void (*pfn)(void *arg);
 	void *arg;
 };
 
-/*
- * Implementation of the ticker ADT
- */
 struct ticker_tag {
 	int usec;
 	pthread_t id;
@@ -80,7 +77,12 @@ int ticker_add_action(ticker t, void(*pfn)(void*), void *arg)
 
 	pa->pfn = pfn;
 	pa->arg = arg;
-	return list_add(t->actions, pa) ? 1 : 0;
+
+	if (list_add(t->actions, pa))
+		return 1;
+		
+	free(pa);
+	return 0;
 }
 
 int ticker_start(ticker t)
@@ -91,8 +93,8 @@ int ticker_start(ticker t)
 		t->running = 0;
 		return 0;
 	}
-	else
-		return 1;
+
+	return 1;
 }
 
 void ticker_stop(ticker t)
@@ -116,6 +118,7 @@ static void *tickerfn(void *arg)
 		if (!t->stop) {
 			/* Perform the actions in the list */
 			list_iterator i;
+
 			for (i = list_first(t->actions); !list_end(i); i = list_next(i)) {
 				struct action* pa = list_get(i);
 				pa->pfn(pa->arg);

@@ -266,8 +266,20 @@ man_MANS=\
 	threadpool.3\
 	\
 	filecache.3\
-	filecache_new.3
-
-
-
+	filecache_new.3\
+	\
+	meta_socket.3\
+	sock_accept.3\
+	sock_bind.3\
+	sock_clear_nonblock.3\
+	sock_close.3\
+	sock_listen.3\
+	sock_read.3\
+	sock_set_nonblock.3\
+	sock_socket.3\
+	sock_write.3\
+	wait_for_data.3\
+	wait_for_writability.3\
+	create_client_socket.3\
+	create_server_socket.3
 

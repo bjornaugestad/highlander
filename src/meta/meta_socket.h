@@ -68,10 +68,6 @@ int wait_for_writability(meta_socket p, int timeout);
  */
 int sock_write(meta_socket p, const char *s, size_t count, int timeout, int retries);
 
-/*
- * Binds the socket to an address/port.
- * @return 1 on success, else 0.
- */
 int sock_bind(meta_socket p, const char *hostname, int port);
 
 /*

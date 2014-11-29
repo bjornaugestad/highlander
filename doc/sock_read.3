@@ -1,0 +1,28 @@
+.Dd Nov 29, 2014
+.Os POSIX
+.Dt SOCK
+.Th sock_read 3
+.Sh NAME
+.Nm sock_read
+.Nd Read data off a socket.
+.Sh SYNOPSIS
+.Fd #include <meta_sock.h>
+.Fo "int sock_read"
+.Fa "meta_socket p"
+.Fa "char *buf"
+.Fa "size_t cbMax"
+.Fa "int timeout"
+.Fa "int retries"
+.Fa "size_t* cbReadSum"
+.Fc
+.Sh DESCRIPTION
+.Nm
+reads up to and including cbMax bytes off the socket, if that
+count is available.
+.Nm
+will retry the operation nretries times and call wait_for_data()
+to wait for data to arrive on the socket. If no data is available
+within the number of retries times the timeout period, then
+the function will return 0.
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

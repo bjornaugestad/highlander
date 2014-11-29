@@ -1,0 +1,72 @@
+.Dd Nov 29, 2014
+.Os POSIX
+.Dt CSTRING
+.Th meta_socket 3
+.Sh NAME
+.Nm meta_socket
+.Nd A socket ADT
+.Sh SYNOPSIS
+.Fd #include <meta_socket.h>
+.Fo "meta_socket sock_socket"
+.Fa "int unix_socket"
+.Fc
+.Fo "int sock_listen"
+.Fa "meta_socket p"
+.Fa "int backlog"
+.Fc
+.Fo "meta_socket sock_accept"
+.Fa "meta_socket p"
+.Fa "struct sockaddr *addr"
+.Fa "socklen_t *addrsize"
+.Fc
+.Fo "int sock_read"
+.Fa "meta_socket p"
+.Fa "char *buf"
+.Fa "size_t cbMax"
+.Fa "int timeout"
+.Fa "int retries"
+.Fa "size_t* cbReadSum"
+.Fc
+.Fo "int wait_for_data"
+.Fa "meta_socket p"
+.Fa "int timeout"
+.Fc
+.Fo "int wait_for_writability"
+.Fa "meta_socket p"
+.Fa "int timeout"
+.Fc
+.Fo "int sock_write"
+.Fa "meta_socket p"
+.Fa "const char *s"
+.Fa "size_t count"
+.Fa "int timeout"
+.Fa "int retries"
+.Fc
+.Fo "int sock_bind"
+.Fa "meta_socket p"
+.Fa "const char *hostname"
+.Fa "int port"
+.Fc
+.Fo "int sock_set_nonblock"
+.Fa "meta_socket p"
+.Fc
+.Fo "int sock_clear_nonblock"
+.Fa "meta_socket p"
+.Fc
+.Fo "meta_socket create_server_socket"
+.Fa "int unix_socket"
+.Fa "const char *host"
+.Fa "int port"
+.Fc
+.Fo "meta_socket create_client_socket"
+.Fa "const char *host"
+.Fa "int port"
+.Fc
+.Fo "int sock_close"
+.Fa "meta_socket p"
+.Fc
+.Sh DESCRIPTION
+The meta_socket ADT is a thin layer over an ordinary socket.
+.Pp
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com
