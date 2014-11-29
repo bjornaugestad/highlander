@@ -46,13 +46,12 @@ stack stack_new(void)
 	return s;
 }
 
+/*
+ * We use sublist_free to free the list. This way
+ * we don't free items in the list.
+ */
 void stack_free(stack s)
 {
-	/*
-	 * We use sublist_free to free the list. This way
-	 * we don't free items in the list.
-	 */
-
 	if (s != NULL) {
 		if (s->lst != NULL)
 			sublist_free(s->lst);

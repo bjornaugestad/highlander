@@ -27,27 +27,8 @@
 extern "C" {
 #endif
 
-/*
- * @file meta_socket.h
- * @brief Uitility functions for sockets
- *
- * NOTE: This file is just a collection of utility functions manipulating
- * sockets. It's not a proper adt. Even a bug or two exist, and the
- * return codes are very inconsistent. All of this means that sock.[ch]
- * is up for a redesign/rewrite.
- * (BTW: the known bug is gethostname() instead of gethostname_r() in
- * reentrant programs).
- */
-
-
 typedef struct meta_socket_tag *meta_socket;
 
-/*
- * Creates a new socket.
- * This is a wrapper function for a call to socket().
- * If unix_socket is !0, then a UNIX socket is created, eles
- * an INET socket is created.
- */
 meta_socket sock_socket(int unix_socket);
 
 /* Calls listen() */

@@ -1,0 +1,52 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th threadpool 3
+.Sh NAME
+.Nm threadpool
+.Nd General purpose threadpool ADT
+.Sh SYNOPSIS
+.Fd #include <threadpool.h>
+.Fo "threadpool threadpool_new"
+.Fa "size_t num_worker_threads"
+.Fa "size_t max_queue_size"
+.Fa "int block_when_full"
+.Fc
+.Fo "int threadpool_add_work"
+.Fa "threadpool tp"
+.Fa "void (*initialize)(void*, void*)"
+.Fa "void *initialize_arg"
+.Fa "void* (*work_func)(void*)"
+.Fa "void* work_arg"
+.Fa "void (*cleanup_func)(void*, void*)"
+.Fa "void* cleanup_arg"
+.Fc
+.Fo "int threadpool_destroy"
+.Fa "threadpool tp"
+.Fa "unsigned int finish"
+.Fc
+.Fo "unsigned long threadpool_sum_blocked"
+.Fa "threadpool p"
+.Fc
+.Fo "unsigned long threadpool_sum_discarded"
+.Fa "threadpool p"
+.Fc
+.Fo "unsigned long threadpool_sum_added"
+.Fa "threadpool p"
+.Fc
+.Sh DESCRIPTION
+The threadpool ADT is a 
+.Pp
+.Nm threadpool_add_work()
+adds work to the queue. The work will be performed by the work_func,
+After the work_func has been executed, the cleanup function will
+be executed. This way you can pass e.g. allocated memory to work_func
+and cleanup_func can free it.
+Note that initialize function and the cleanup function takes 2 parameters,
+cleanup_arg and work_arg, in that order.
+This function sets errno to ENOSPC if the work queue is full and
+the pool is set to not block.
+ 
+All
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

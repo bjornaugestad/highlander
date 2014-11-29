@@ -34,8 +34,8 @@ typedef struct threadpool_tag* threadpool;
  */
 
 threadpool threadpool_new(
-	unsigned int num_worker_threads,
-	unsigned int max_queue_size,
+	size_t num_worker_threads,
+	size_t max_queue_size,
 	int block_when_full);
 
 /*

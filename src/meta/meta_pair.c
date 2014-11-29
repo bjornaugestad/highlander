@@ -174,7 +174,7 @@ int pair_add(pair p, const char* name, const char* value)
 	if ((new->name = malloc(strlen(name) + 1)) == NULL)
 		return 0;
 
-	if((new->value = malloc(strlen(value) + 1)) == NULL) {
+	if ((new->value = malloc(strlen(value) + 1)) == NULL) {
 		free(new->name);
 		return 0;
 	}
@@ -252,4 +252,3 @@ int main(void)
 	return 0;
 }
 #endif
-

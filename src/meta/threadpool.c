@@ -57,7 +57,7 @@ struct threadpool_work {
  * Implementation of the threadpool ADT.
  */
 struct threadpool_tag {
-	size_t num_threads;
+	size_t nthreads;
 	size_t max_queue_size;
 	int block_when_full;
 
@@ -160,8 +160,8 @@ static void* threadpool_exec_thread(void* arg)
 }
 
 threadpool threadpool_new(
-	unsigned int num_worker_threads,
-	unsigned int max_queue_size,
+	size_t num_worker_threads,
+	size_t max_queue_size,
 	int block_when_full)
 {
 	int error;
@@ -178,7 +178,7 @@ threadpool threadpool_new(
 		return NULL;
 	}
 
-	tpool->num_threads = num_worker_threads;
+	tpool->nthreads = num_worker_threads;
 	tpool->max_queue_size = max_queue_size;
 	tpool->block_when_full = block_when_full;
 
@@ -362,7 +362,7 @@ int threadpool_destroy(threadpool pool, unsigned int finish)
 	}
 
 	/* Now wait for each thread to finish */
-	for (i = 0; i < pool->num_threads; i++) {
+	for (i = 0; i < pool->nthreads; i++) {
 		if ((error = pthread_join(pool->threads[i], NULL))) {
 			errno = error;
 			return 0;

@@ -48,7 +48,7 @@ int connection_write(connection conn, const void* buf, size_t count);
 int connection_write_big_buffer(connection conn, const void* buf, size_t count, int timeout, int retries);
 int connection_flush(connection conn);
 
-int connection_read(connection conn, void* buf, size_t cb);
+int connection_read(connection conn, void* buf, size_t bufsize);
 int connection_getc(connection conn, int* pchar);
 int connection_gets(connection conn, char *buf, size_t bufsize);
 int connection_ungetc(connection conn, int c);

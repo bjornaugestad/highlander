@@ -261,7 +261,13 @@ man_MANS=\
 	tcp_server_shutdown.3\
 	tcp_server_shutting_down.3\
 	tcp_server_start.3\
-	tcp_server_start_via_process.3
+	tcp_server_start_via_process.3\
+	\
+	threadpool.3\
+	\
+	filecache.3\
+	filecache_new.3
+
 
 
 
