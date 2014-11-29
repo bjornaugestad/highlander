@@ -132,7 +132,7 @@ int wlock_wait(wlock p)
 
 #ifdef CHECK_WLOCK
 
-static void* waiter(void *parg)
+static void *waiter(void *parg)
 {
 	wlock w = parg;
 	wlock_lock(w);
@@ -141,7 +141,7 @@ static void* waiter(void *parg)
 	return NULL;
 }
 
-static void* signaler(void *parg)
+static void *signaler(void *parg)
 {
 	wlock w = parg;
 

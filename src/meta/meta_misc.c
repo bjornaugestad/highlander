@@ -42,7 +42,7 @@
  * We limit the output to 1000 characters. That should be
  * sufficient for most error messages.
  */
-void meta_vsyslog(int class, const char* fmt, va_list ap)
+void meta_vsyslog(int class, const char *fmt, va_list ap)
 {
 	char err[1000];
 
@@ -50,7 +50,7 @@ void meta_vsyslog(int class, const char* fmt, va_list ap)
 	syslog(class, "%s", err);
 }
 
-void fs_lower(char* s)
+void fs_lower(char *s)
 {
 	assert(NULL != s);
 
@@ -61,7 +61,7 @@ void fs_lower(char* s)
 		s++;
 	}
 }
-void fs_upper(char* s)
+void fs_upper(char *s)
 {
 	assert(NULL != s);
 
@@ -90,9 +90,9 @@ int string2size_t(const char *s, size_t *val)
 	return 1;
 }
 
-int find_word(const char* s, size_t iWord)
+int find_word(const char *s, size_t iWord)
 {
-	const char* string = s;
+	const char *string = s;
 
 	/* Loop 0..n times to skip words */
 	assert(s != NULL);
@@ -143,7 +143,7 @@ int get_word_count(const char *s)
 }
 
 int get_word_from_string(
-	const char* src,
+	const char *src,
 	char word[],
 	size_t cchWordMax,	/* Max # of chars excl. '\0' in word */
 	size_t iWord)		/* zero-based index of word to copy */
@@ -166,7 +166,7 @@ int get_word_from_string(
 }
 
 int copy_word(
-	const char* src,
+	const char *src,
 	char word[],
 	int separator,
 	size_t cchWordMax)
@@ -224,7 +224,7 @@ void die_perror(const char *fmt, ...)
 	exit(EXIT_FAILURE);
 }
 
-void warning(const char* fmt, ...)
+void warning(const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
@@ -232,9 +232,9 @@ void warning(const char* fmt, ...)
 	va_end(ap);
 }
 
-int get_extension(const char* src, char* dest, size_t destsize)
+int get_extension(const char *src, char *dest, size_t destsize)
 {
-	const char* end;
+	const char *end;
 	size_t i = destsize - 1;
 	int found = 0;
 
@@ -267,9 +267,9 @@ int get_extension(const char* src, char* dest, size_t destsize)
 	return 1;
 }
 
-int get_basename(const char* name, const char* suffix, char* dest, size_t destsize)
+int get_basename(const char *name, const char *suffix, char *dest, size_t destsize)
 {
-	char* s;
+	char *s;
 	size_t i;
 
 	assert(name != NULL);
@@ -310,11 +310,11 @@ int get_basename(const char* name, const char* suffix, char* dest, size_t destsi
  * Decide the mime type for a file, based on extension.
  */
 
-const char* get_mime_type(const char* filename)
+const char *get_mime_type(const char *filename)
 {
 	static struct {
-		const char* ext;
-		const char* mime;
+		const char *ext;
+		const char *mime;
 	} map[] = {
 		{ "css",	"text/css" },
 		{ "html",	"text/html" },

@@ -30,7 +30,7 @@
  */
 struct cache_entry {
 	size_t id;
-	void* data;
+	void *data;
 	size_t size;
 	size_t used;
 	int pinned;	/* Keep in ram, yes/no */
@@ -222,7 +222,7 @@ static int make_space(cache c, size_t cb)
 }
 
 
-int cache_add(cache c, size_t id, void* data, size_t cb, int pin)
+int cache_add(cache c, size_t id, void *data, size_t cb, int pin)
 {
 	struct cache_entry *p;
 	size_t hid = id % c->nelem;
@@ -399,7 +399,7 @@ int cache_remove(cache c, size_t id)
 int main(void)
 {
 	size_t i, nelem = 10 * 1;
-	char* data;
+	char *data;
 	cache c;
 	clock_t start, stop;
 	double diff;
@@ -428,7 +428,7 @@ int main(void)
 
 	start = clock();
 	for (i = 0; i < nelem; i++) {
-		void* xdata;
+		void *xdata;
 		size_t cb;
 
 		rc = cache_get(c, i, (void*)&xdata, &cb);
@@ -446,7 +446,7 @@ int main(void)
 	start = clock();
 	srand(time(NULL));
 	for (i = 0; i < nelem; i++) {
-		void* xdata;
+		void *xdata;
 		size_t cb;
 
 		rc = cache_get(c, rand() % nelem, (void*)&xdata, &cb);

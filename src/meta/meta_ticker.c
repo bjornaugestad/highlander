@@ -26,11 +26,11 @@
 
 /*
  * The action to be performed when a tick occurs. We store a function pointer
- * and a void* to the argument of the function.
+ * and a void *to the argument of the function.
  */
 struct action {
-	void (*pfn)(void* arg);
-	void* arg;
+	void (*pfn)(void *arg);
+	void *arg;
 };
 
 /*
@@ -44,7 +44,7 @@ struct ticker_tag {
 	int running;
 };
 
-static void* tickerfn(void* arg);
+static void *tickerfn(void *arg);
 
 ticker ticker_new(int usec)
 {
@@ -71,7 +71,7 @@ void ticker_free(ticker t)
 	free(t);
 }
 
-int ticker_add_action(ticker t, void(*pfn)(void*), void* arg)
+int ticker_add_action(ticker t, void(*pfn)(void*), void *arg)
 {
 	struct action *pa;
 
@@ -103,7 +103,7 @@ void ticker_stop(ticker t)
 		nanosleep(&ts, NULL);
 }
 
-static void* tickerfn(void* arg)
+static void *tickerfn(void *arg)
 {
 	ticker t = arg;
 	struct timespec ts;

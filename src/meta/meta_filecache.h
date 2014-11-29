@@ -95,28 +95,28 @@ static inline const struct stat* fileinfo_stat(fileinfo p)
 	return &p->st;
 }
 
-static inline const char* fileinfo_name(fileinfo p)
+static inline const char *fileinfo_name(fileinfo p)
 {
 	assert(p != NULL);
 	return p->name;
 }
 
-static inline const char* fileinfo_alias(fileinfo p)
+static inline const char *fileinfo_alias(fileinfo p)
 {
 	assert(p != NULL);
 	return p->alias;
 }
 
-static inline const char* fileinfo_mimetype(fileinfo p)
+static inline const char *fileinfo_mimetype(fileinfo p)
 {
 	assert(p != NULL);
 	return p->mimetype;
 }
 
 int fileinfo_set_stat(fileinfo p, const struct stat* pst);
-int fileinfo_set_name(fileinfo p, const char* s);
-int fileinfo_set_alias(fileinfo p, const char* s);
-int fileinfo_set_mimetype(fileinfo p, const char* s);
+int fileinfo_set_name(fileinfo p, const char *s);
+int fileinfo_set_alias(fileinfo p, const char *s);
+int fileinfo_set_mimetype(fileinfo p, const char *s);
 
 
 /*
@@ -186,31 +186,31 @@ double filecache_hitratio(filecache fc);
 /*
  * Gets a file from the cache.
  */
-int filecache_get(filecache fc, const char* filename, void** pdata, size_t* pcb);
-int filecache_get_mime_type(filecache fc, const char* filename, char mime[], size_t cb);
+int filecache_get(filecache fc, const char *filename, void** pdata, size_t* pcb);
+int filecache_get_mime_type(filecache fc, const char *filename, char mime[], size_t cb);
 
 
 /* Returns 1 if a file exists, 0 if not */
-int filecache_exists(filecache fc, const char* filename);
+int filecache_exists(filecache fc, const char *filename);
 
 /*
  * Return a pointer to a struct stat object from the time we added
  * the file to the filecache, or NULL if the file isn't found.
  */
-int filecache_stat(filecache fc, const char* filename, struct stat* p);
+int filecache_stat(filecache fc, const char *filename, struct stat* p);
 
 
 /* Call fn once for each element in the filecache, providing name of file
  * as argument s.
  * Function locks the filecache, so beware of deadlocks.
  */
-int filecache_foreach(filecache fc, int(*fn)(const char*s, void* arg), void* arg);
+int filecache_foreach(filecache fc, int(*fn)(const char*s, void *arg), void *arg);
 
 /*
  * Return a pointer to the fileinfo metadata struct for a file, or NULL
  * if the file doesn't exist.
  */
-fileinfo filecache_fileinfo(filecache fc, const char* alias);
+fileinfo filecache_fileinfo(filecache fc, const char *alias);
 
 
 #endif

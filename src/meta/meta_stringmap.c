@@ -42,12 +42,12 @@ static inline unsigned long hash(const unsigned char *str)
  * and id is the unique id of the entry.
  */
 struct entry {
-	char* s;
+	char *s;
 	unsigned long hashval;
 	unsigned long id;
 };
 
-static void entry_free(void* pe)
+static void entry_free(void *pe)
 {
 	struct entry* p = pe;
 	assert(p != NULL);
@@ -65,7 +65,7 @@ struct stringmap_tag {
 	unsigned long last_id;
 };
 
-int stringmap_foreach(stringmap sm, int(*fn)(const char*s, void* arg), void* arg)
+int stringmap_foreach(stringmap sm, int(*fn)(const char*s, void *arg), void *arg)
 {
 	int rc;
 	size_t i;
@@ -142,7 +142,7 @@ int stringmap_invalidate(stringmap sm)
 
 /* Locate an existing entry and return a list and iterator to it */
 static inline int
-sm_locate(stringmap sm, const char* s, list* plist, list_iterator* pi)
+sm_locate(stringmap sm, const char *s, list* plist, list_iterator* pi)
 {
 	unsigned long hashval;
 	size_t hid;
@@ -166,7 +166,7 @@ sm_locate(stringmap sm, const char* s, list* plist, list_iterator* pi)
 	return 0;
 }
 
-int stringmap_add(stringmap sm, const char* s, unsigned long* pid)
+int stringmap_add(stringmap sm, const char *s, unsigned long* pid)
 {
 	struct entry *e = NULL;
 	size_t hid;
@@ -220,7 +220,7 @@ err:
 }
 
 
-int stringmap_exists(stringmap sm, const char* s)
+int stringmap_exists(stringmap sm, const char *s)
 {
 	int rc;
 	list lst;
@@ -234,7 +234,7 @@ int stringmap_exists(stringmap sm, const char* s)
 	return rc;
 }
 
-int stringmap_get_id(stringmap sm, const char* s, unsigned long* pid)
+int stringmap_get_id(stringmap sm, const char *s, unsigned long* pid)
 {
 	int rc = 0;
 	list lst;
@@ -324,7 +324,7 @@ err:
 #ifdef CHECK_STRINGMAP
 int main(void)
 {
-static const char* data[] = {
+static const char *data[] = {
 	"CVS", "Doxyfile", "Doxyfile.bak", "Makefile", "Makefile.am",
 	"Makefile.in", "array.c", "array.h", "array.o", "bitset.c",
 	"bitset.h", "bitset.o", "blacksholes.c", "cache.c", "cache.h",

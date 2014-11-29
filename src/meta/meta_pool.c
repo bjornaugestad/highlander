@@ -34,7 +34,7 @@
 
 /*
  * The implementation of the pool adt. We allocate room for
- * a set of void* pointers, where each pointer points to one
+ * a set of void *pointers, where each pointer points to one
  * element in the pool. We use a mutex to control access to the pool.
  * The in_use member is 1 if the resource is used by someone, else 0.
  * We allocate one char for each pool member.
@@ -45,7 +45,7 @@
  * a returned resource in the first free slot.
  */
 struct pool_tag {
-	void** pdata;			/* Array of void* pointers */
+	void** pdata;			/* Array of void *pointers */
 	size_t size;			/* Size of the pool */
 	size_t nelem;			/* Number of elements added to the pool */
 	pthread_mutex_t mutex;	/* access control */
@@ -94,7 +94,7 @@ void pool_free(pool p, dtor free_fn)
 	}
 }
 
-void pool_add(pool p, void* resource)
+void pool_add(pool p, void *resource)
 {
 	assert(NULL != p);
 	assert(NULL != resource);
@@ -105,10 +105,10 @@ void pool_add(pool p, void* resource)
 	pthread_mutex_unlock(&p->mutex);
 }
 
-void* pool_get(pool p)
+void *pool_get(pool p)
 {
 	size_t i;
-	void* resource = NULL;
+	void *resource = NULL;
 	int error = 0;
 
 	assert(NULL != p);
@@ -142,7 +142,7 @@ void* pool_get(pool p)
 	return resource;
 }
 
-void pool_recycle(pool p, void* resource)
+void pool_recycle(pool p, void *resource)
 {
 	size_t i;
 	int error = 0;
@@ -179,11 +179,11 @@ void pool_recycle(pool p, void* resource)
 #define NELEM 10000
 #define NITER 1000
 
-static void* tfn(void* arg)
+static void *tfn(void *arg)
 {
 	pool p;
 	size_t i, niter = NITER;
-	void* dummy;
+	void *dummy;
 
 	p = arg;
 
@@ -210,7 +210,7 @@ int main(void)
 
 	/* Add some items to the pool */
 	for (i = 0; i < NELEM; i++) {
-		void* dummy = (void*)(i + 1);
+		void *dummy = (void*)(i + 1);
 		pool_add(p, dummy);
 	}
 

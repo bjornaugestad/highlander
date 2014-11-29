@@ -26,36 +26,36 @@
 
 membuf membuf_new(size_t size)
 {
-	membuf mb;
+	membuf p;
 
 	assert(size > 0);
 
-	if ((mb = malloc(sizeof *mb)) == NULL
-	|| (mb->data = malloc(size)) == NULL) {
-		free(mb);
-		mb = NULL;
+	if ((p = malloc(sizeof *p)) == NULL
+	|| (p->data = malloc(size)) == NULL) {
+		free(p);
+		p = NULL;
 	}
 	else {
-		mb->size = size;
-		mb->written = mb->read = 0;
+		p->size = size;
+		p->written = p->read = 0;
 	}
 
-	return mb;
+	return p;
 }
 
-void membuf_free(membuf mb)
+void membuf_free(membuf p)
 {
-	if (mb != NULL) {
-		free(mb->data);
-		free(mb);
+	if (p != NULL) {
+		free(p->data);
+		free(p);
 	}
 }
 
-size_t membuf_write(membuf mb, const void* src, size_t cb)
+size_t membuf_write(membuf p, const void *src, size_t cb)
 {
 	size_t cbToAdd;
 
-	assert(mb != NULL);
+	assert(p != NULL);
 	assert(src != NULL);
 
 	/* Don't bother to write empty buffers */
@@ -65,42 +65,42 @@ size_t membuf_write(membuf mb, const void* src, size_t cb)
 	 * Decide how much we can write and reset the
 	 * buffer if needed (and possible).
 	 */
-	if (cb > (mb->size - mb->written)) {
+	if (cb > (p->size - p->written)) {
 		/*
 		 * Has all written bytes also been read?
 		 * If so, reset the buffer.
 		 */
-		if (mb->written == mb->read)
-			mb->written = mb->read = 0;
+		if (p->written == p->read)
+			p->written = p->read = 0;
 
 		/* Is there space available after reset ? */
-		if (cb <= (mb->size - mb->written))
+		if (cb <= (p->size - p->written))
 			cbToAdd = cb;
 		else
-			cbToAdd = mb->size - mb->written;
+			cbToAdd = p->size - p->written;
 	}
 	else
 		cbToAdd = cb;
 
 	/* Check that we didn't screw up above */
-	assert(cbToAdd <= membuf_canwrite(mb));
+	assert(cbToAdd <= membuf_canwrite(p));
 
-	memcpy(&mb->data[mb->written], src, cbToAdd);
-	mb->written += cbToAdd;
+	memcpy(&p->data[p->written], src, cbToAdd);
+	p->written += cbToAdd;
 
 	return cbToAdd;
 }
 
-size_t membuf_read(membuf mb, void* dest, size_t cb)
+size_t membuf_read(membuf p, void *dest, size_t cb)
 {
 	size_t cbAvail, cbToRead;
 
-	assert(mb != NULL);
+	assert(p != NULL);
 	assert(dest != NULL);
 	assert(cb != 0);
-	assert(mb->written >= mb->read);
+	assert(p->written >= p->read);
 
-	cbAvail = membuf_canread(mb);
+	cbAvail = membuf_canread(p);
 	if (cbAvail >= cb)
 		cbToRead = cb;
 	else
@@ -109,14 +109,14 @@ size_t membuf_read(membuf mb, void* dest, size_t cb)
 	if (cbToRead == 0)
 		return 0;
 
-	memcpy(dest, &mb->data[mb->read], cbToRead);
-	mb->read += cbToRead;
+	memcpy(dest, &p->data[p->read], cbToRead);
+	p->read += cbToRead;
 
-	assert(mb->read <= mb->written);
+	assert(p->read <= p->written);
 
 	/* Reset offset counters if all bytes written also have been read */
-	if (mb->written == mb->read)
-		mb->written = mb->read = 0;
+	if (p->written == p->read)
+		p->written = p->read = 0;
 
 	return cbToRead;
 }

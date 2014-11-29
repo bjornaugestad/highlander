@@ -54,10 +54,10 @@ int threadpool_add_work(
 	void (*initialize)(void*, void*),
 	void *initialize_arg,
 
-	void* (*work_func)(void*),
-	void* work_arg,
+	void *(*work_func)(void*),
+	void *work_arg,
 	void (*cleanup_func)(void*, void*),
-	void* cleanup_arg);
+	void *cleanup_arg);
 
 
 int threadpool_destroy(threadpool tp, unsigned int finish);

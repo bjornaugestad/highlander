@@ -37,7 +37,7 @@ int tcp_server_init(tcp_server srv);
 void tcp_server_free(tcp_server srv);
 
 /* Basic access control */
-int	 tcp_server_allow_clients(tcp_server srv, const char* filter);
+int	 tcp_server_allow_clients(tcp_server srv, const char *filter);
 void tcp_server_clear_client_filter(tcp_server srv);
 
 /* resource management */
@@ -45,7 +45,7 @@ int tcp_server_get_root_resources(tcp_server srv);
 int tcp_server_free_root_resources(tcp_server s);
 
 /* Configuration */
-int	 tcp_server_set_hostname(tcp_server srv, const char* host);
+int	 tcp_server_set_hostname(tcp_server srv, const char *host);
 void tcp_server_set_unix_socket(tcp_server s);
 void tcp_server_set_port(tcp_server srv, int port);
 void tcp_server_set_queue_size(tcp_server srv, size_t size);
@@ -53,7 +53,7 @@ void tcp_server_set_readbuf_size(tcp_server s, size_t size);
 void tcp_server_set_writebuf_size(tcp_server s, size_t size);
 void tcp_server_set_block_when_full(tcp_server srv, int block);
 void tcp_server_set_worker_threads(tcp_server srv, size_t count);
-void tcp_server_set_service_function(tcp_server srv, void* (*func)(void*), void* arg);
+void tcp_server_set_service_function(tcp_server srv, void *(*func)(void*), void *arg);
 void tcp_server_set_timeout(tcp_server srv, int reads, int writes, int accepts);
 void tcp_server_set_retries(tcp_server srv, int reads, int writes);
 

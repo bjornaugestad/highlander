@@ -62,7 +62,7 @@ struct membuf_tag {
 	 */
 	size_t written;
 	size_t read;
-	char* data;
+	char *data;
 };
 
 
@@ -78,13 +78,13 @@ void membuf_free(membuf m);
  * than the count parameter, it means that the buffer was too small to
  * store the data.
  */
-size_t membuf_write(membuf mb, const void* src, size_t count);
+size_t membuf_write(membuf mb, const void *src, size_t count);
 
 /*
  * Read up to count bytes from the buffer and place them in dest.
  * Returns the number of bytes read, or 0 if no data was available to read.
  */
-size_t membuf_read(membuf, void* dest, size_t count);
+size_t membuf_read(membuf, void *dest, size_t count);
 
 /*
  * Return the number of bytes available for reading from the membuf buffer.
@@ -148,7 +148,7 @@ static inline int membuf_unget(membuf mb)
  * if you e.g. want to pass the contents of the buffer as an argument to
  * a different function like write(2). The buffer must contain some data.
  */
-static inline void* membuf_data(membuf mb)
+static inline void *membuf_data(membuf mb)
 {
 	assert(mb != NULL);
 	return mb->data;

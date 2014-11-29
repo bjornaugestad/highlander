@@ -72,7 +72,7 @@ typedef struct tsb_tag tsb;
 /*
  * Creates a new tsb.
  */
-tsb* tsb_new(size_t unit_duration, size_t units_per_frame, void* buffer);
+tsb* tsb_new(size_t unit_duration, size_t units_per_frame, void *buffer);
 
 /*
  * Deletes a tsb and frees all memory allocated by the tsb. The shared buffer
@@ -113,7 +113,7 @@ size_t tsb_get_current_frame(tsb* p);
 /*
  * Returns a pointer to the shared buffer assigned to the tsb in tsb_new().
  */
-void* tsb_get_buffer(tsb* p);
+void *tsb_get_buffer(tsb* p);
 
 /*
  * Assign a callback function and number of threads to one or more
@@ -128,8 +128,8 @@ int tsb_set_threads(
 	tsb *p,
 	size_t iunit, /* Run thread(s) when iunit within frame starts */
 	size_t nthreads,
-	int (*callback)(void* buf, void* arg),
-	void* arg);
+	int (*callback)(void *buf, void *arg),
+	void *arg);
 
 
 /*

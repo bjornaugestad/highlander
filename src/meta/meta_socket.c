@@ -61,7 +61,7 @@ int wait_for_data(meta_socket p, int timeout)
 	return sock_poll_for(p, timeout, POLLIN);
 }
 
-int sock_write(meta_socket p, const char* buf, size_t count, int timeout, int nretries)
+int sock_write(meta_socket p, const char *buf, size_t count, int timeout, int nretries)
 {
 	ssize_t nwritten = 0;
 
@@ -212,7 +212,7 @@ int sock_read(
  * created a socket with a specific protocol family,
  * and here we bind it to the PF specified in the services...
  */
-static int sock_bind_inet(meta_socket p, const char* hostname, int port)
+static int sock_bind_inet(meta_socket p, const char *hostname, int port)
 {
 	struct hostent* host = NULL;
 	struct sockaddr_in my_addr;
@@ -248,7 +248,7 @@ static int sock_bind_inet(meta_socket p, const char* hostname, int port)
 	return 1;
 }
 
-static int sock_bind_unix(meta_socket p, const char* path)
+static int sock_bind_unix(meta_socket p, const char *path)
 {
 	struct sockaddr_un my_addr;
 	socklen_t cb = (socklen_t)sizeof(my_addr);
@@ -276,7 +276,7 @@ static int sock_bind_unix(meta_socket p, const char* path)
 	return 1;
 }
 
-int sock_bind(meta_socket p, const char* hostname, int port)
+int sock_bind(meta_socket p, const char *hostname, int port)
 {
 	assert(p != NULL);
 
@@ -315,7 +315,7 @@ int sock_listen(meta_socket p, int backlog)
 		return 1;
 }
 
-meta_socket create_server_socket(int unix_socket, const char* host, int port)
+meta_socket create_server_socket(int unix_socket, const char *host, int port)
 {
 	meta_socket p;
 
@@ -332,7 +332,7 @@ meta_socket create_server_socket(int unix_socket, const char* host, int port)
 		return p;
 }
 
-meta_socket create_client_socket(const char* host, int port)
+meta_socket create_client_socket(const char *host, int port)
 {
 	struct hostent *phost;
 	struct sockaddr_in sa;

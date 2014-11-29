@@ -37,8 +37,8 @@ struct pair {
  * Wrap the list to provide type safety
  */
 struct map_tag {
-	list a;
-	void(*freefunc)(void* arg);
+	list lst;
+	void(*freefunc)(void *arg);
 };
 
 map_iterator map_first(map m)
@@ -46,7 +46,7 @@ map_iterator map_first(map m)
 	map_iterator mi;
 	list_iterator li;
 
-	li = list_first(m->a);
+	li = list_first(m->lst);
 	mi.node = li.node;
 	return mi;
 }
@@ -69,7 +69,7 @@ int map_end(map_iterator mi)
 	return list_end(li);
 }
 
-char* map_key(map_iterator mi)
+char *map_key(map_iterator mi)
 {
 	struct pair *p;
 	list_iterator li;
@@ -79,7 +79,7 @@ char* map_key(map_iterator mi)
 	return p->key;
 }
 
-void* map_value(map_iterator mi)
+void *map_value(map_iterator mi)
 {
 	struct pair *p;
 	list_iterator li;
@@ -89,13 +89,13 @@ void* map_value(map_iterator mi)
 	return p->value;
 }
 
-map map_new(void(*freefunc)(void* arg))
+map map_new(void(*freefunc)(void *arg))
 {
 	map m;
 
 	if ((m = calloc(1, sizeof *m)) == NULL)
 		;
-	else if ((m->a = list_new()) == NULL) {
+	else if ((m->lst = list_new()) == NULL) {
 		free(m);
 		m = NULL;
 	}
@@ -110,8 +110,8 @@ void map_free(map m)
 	list_iterator i;
 	struct pair *p;
 
-	if (m != NULL && m->a != NULL) {
-		for (i = list_first(m->a); !list_end(i); i = list_next(i)) {
+	if (m != NULL && m->lst != NULL) {
+		for (i = list_first(m->lst); !list_end(i); i = list_next(i)) {
 			p = list_get(i);
 			free(p->key);
 			if (m->freefunc != NULL)
@@ -119,16 +119,16 @@ void map_free(map m)
 		}
 	}
 
-	list_free(m->a, NULL);
+	list_free(m->lst, NULL);
 	free(m);
 }
 
 static struct pair*
-map_find(map m, const char* key)
+map_find(map m, const char *key)
 {
 	list_iterator i;
 
-	for (i = list_first(m->a); !list_end(i); i = list_next(i)) {
+	for (i = list_first(m->lst); !list_end(i); i = list_next(i)) {
 		struct pair *p;
 
 		p = list_get(i);
@@ -140,7 +140,7 @@ map_find(map m, const char* key)
 	return NULL;
 }
 
-int map_set(map m, const char* key, void* value)
+int map_set(map m, const char *key, void *value)
 {
 	struct pair *p, *i;
 
@@ -160,11 +160,11 @@ int map_set(map m, const char* key, void* value)
 	else {
 		strcpy(p->key, key);
 		p->value = value;
-		return list_add(m->a, p) != NULL;
+		return list_add(m->lst, p) != NULL;
 	}
 }
 
-int map_exists(map m, const char* key)
+int map_exists(map m, const char *key)
 {
 	if (map_find(m, key))
 		return 1;
@@ -172,7 +172,7 @@ int map_exists(map m, const char* key)
 		return 0;
 }
 
-void* map_get(map m, const char* key)
+void *map_get(map m, const char *key)
 {
 	struct pair *p;
 
@@ -182,11 +182,11 @@ void* map_get(map m, const char* key)
 		return NULL;
 }
 
-int map_foreach(map m, void* args, int(*f)(void* args, char* key, void* data))
+int map_foreach(map m, void *args, int(*f)(void *args, char *key, void *data))
 {
 	list_iterator i;
 
-	for (i = list_first(m->a); !list_end(i); i = list_next(i)) {
+	for (i = list_first(m->lst); !list_end(i); i = list_next(i)) {
 		struct pair *p;
 
 		p = list_get(i);

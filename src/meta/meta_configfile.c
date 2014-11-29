@@ -32,8 +32,8 @@
  * Local helper struct storing name and value for a directive.
  */
 struct nameval {
-	char* name;
-	char* value;
+	char *name;
+	char *value;
 };
 
 #define MAX_DIRECTIVES 2000
@@ -111,7 +111,7 @@ static int get_name_and_value(char *line, char *name, char *value)
 	return 1;
 }
 
-static int add(configfile cf, const char* name, const char* value)
+static int add(configfile cf, const char *name, const char *value)
 {
 	char *n = NULL, *v = NULL;
 
@@ -177,7 +177,7 @@ configfile configfile_read(const char *path)
 	return p;
 }
 
-static struct nameval* find(configfile cf, const char* name)
+static struct nameval* find(configfile cf, const char *name)
 {
 	size_t i;
 
@@ -192,7 +192,7 @@ static struct nameval* find(configfile cf, const char* name)
 	return NULL;
 }
 
-int configfile_exists(configfile cf, const char* name)
+int configfile_exists(configfile cf, const char *name)
 {
 	assert(cf != NULL);
 	assert(name != NULL);
@@ -328,10 +328,10 @@ void configfile_free(configfile cf)
 #ifdef CHECK_CONFIGFILE
 int main(void)
 {
-	const char* filename = "./configfile.conf";
+	const char *filename = "./configfile.conf";
 	char string[1024];
 	int nint; long nlong;
-	const char* quotedstring = "this is a quoted string";
+	const char *quotedstring = "this is a quoted string";
 
 	configfile cf;
 

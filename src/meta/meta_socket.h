@@ -66,13 +66,13 @@ int wait_for_writability(meta_socket p, int timeout);
  * NOTE: sock_write() returns EAGAIN if it was unable to write \e count
  * bytes, even if it was able to write up to \e count - 1 bytes.
  */
-int sock_write(meta_socket p, const char* s, size_t count, int timeout, int retries);
+int sock_write(meta_socket p, const char *s, size_t count, int timeout, int retries);
 
 /*
  * Binds the socket to an address/port.
  * @return 1 on success, else 0.
  */
-int sock_bind(meta_socket p, const char* hostname, int port);
+int sock_bind(meta_socket p, const char *hostname, int port);
 
 /*
  * Sets the socket to be nonblocking.
@@ -96,7 +96,7 @@ int sock_clear_nonblock(meta_socket p);
  * A server socket is ready to accept connections.
  * @return 1 on success, else 0.
  */
-meta_socket create_server_socket(int unix_socket, const char* host, int port);
+meta_socket create_server_socket(int unix_socket, const char *host, int port);
 
 /*
  * Connects to a host on a port.

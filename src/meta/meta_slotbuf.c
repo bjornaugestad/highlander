@@ -68,7 +68,7 @@ void slotbuf_free(slotbuf p)
 	}
 }
 
-int slotbuf_set(slotbuf p, size_t i, void* value)
+int slotbuf_set(slotbuf p, size_t i, void *value)
 {
 	size_t idx;
 	assert(p != NULL);
@@ -86,7 +86,7 @@ int slotbuf_set(slotbuf p, size_t i, void* value)
 	return 1;
 }
 
-void* slotbuf_get(slotbuf p, size_t i)
+void *slotbuf_get(slotbuf p, size_t i)
 {
 	size_t idx;
 	void *data;
@@ -111,7 +111,7 @@ size_t slotbuf_nelem(slotbuf p)
 	return n;
 }
 
-void* slotbuf_peek(slotbuf p, size_t i)
+void *slotbuf_peek(slotbuf p, size_t i)
 {
 	size_t idx;
 	assert(p != NULL);

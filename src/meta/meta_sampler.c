@@ -494,7 +494,7 @@ static const size_t nentity = 1, nsamples = 3600;
 static sampler sampled_data;
 static int shutting_down;
 
-static void* writer(void* arg)
+static void *writer(void *arg)
 {
 	size_t i;
 	time_t now;
@@ -515,7 +515,7 @@ static void* writer(void* arg)
 	return NULL;
 }
 
-static void* reader(void* arg)
+static void *reader(void *arg)
 {
 	int* id = arg;
 

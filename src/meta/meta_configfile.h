@@ -30,7 +30,7 @@ typedef struct configfile_tag* configfile;
 
 configfile configfile_read(const char *path);
 
-int configfile_exists(configfile cf, const char* name);
+int configfile_exists(configfile cf, const char *name);
 int configfile_get_string(configfile cf, const char *name, char *value, size_t cb);
 int configfile_get_long(configfile cf, const char *name, long *value);
 int configfile_get_ulong(configfile cf, const char *name, unsigned long *value);

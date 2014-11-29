@@ -33,7 +33,7 @@
 int cstring_extend(cstring s, size_t size)
 {
 	size_t bytes_needed, newsize;
-	char* data;
+	char *data;
 
 	assert(s != NULL);
 	assert(s->data != NULL);
@@ -65,7 +65,7 @@ int cstring_extend(cstring s, size_t size)
 int cstring_vprintf(
 	cstring dest,
 	size_t needs_max,
-	const char* fmt,
+	const char *fmt,
 	va_list ap)
 {
 	int i;
@@ -94,7 +94,7 @@ int cstring_vprintf(
 	return 1;
 }
 
-int cstring_printf(cstring dest, size_t needs_max, const char* fmt, ...)
+int cstring_printf(cstring dest, size_t needs_max, const char *fmt, ...)
 {
 	int success;
 	va_list ap;
@@ -130,7 +130,7 @@ int cstring_pcat(cstring dest, const char *start, const char *end)
 	return 1;
 }
 
-int cstring_concat(cstring dest, const char* src)
+int cstring_concat(cstring dest, const char *src)
 {
 	size_t cb;
 
@@ -199,7 +199,7 @@ cstring cstring_new(void)
 	return p;
 }
 
-cstring cstring_dup(const char* src)
+cstring cstring_dup(const char *src)
 {
 	cstring dest = NULL;
 
@@ -214,7 +214,7 @@ cstring cstring_dup(const char* src)
 	return dest;
 }
 
-int cstring_copy(cstring dest, const char* src)
+int cstring_copy(cstring dest, const char *src)
 {
 	size_t c;
 
@@ -234,7 +234,7 @@ int cstring_copy(cstring dest, const char* src)
 	return 1;
 }
 
-int cstring_ncopy(cstring dest, const char* src, const size_t cch)
+int cstring_ncopy(cstring dest, const char *src, const size_t cch)
 {
 	size_t c;
 
@@ -258,7 +258,7 @@ int cstring_ncopy(cstring dest, const char* src, const size_t cch)
 	return 1;
 }
 
-int cstring_concat2(cstring dest, const char* s1, const char* s2)
+int cstring_concat2(cstring dest, const char *s1, const char *s2)
 {
 	assert(NULL != dest);
 	assert(NULL != s1);
@@ -272,9 +272,9 @@ int cstring_concat2(cstring dest, const char* s1, const char* s2)
 
 int cstring_concat3(
 	cstring dest,
-	const char* s1,
-	const char* s2,
-	const char* s3)
+	const char *s1,
+	const char *s2,
+	const char *s3)
 {
 	assert(NULL != dest);
 	assert(NULL != s1);
@@ -345,7 +345,7 @@ cstring cstring_right(cstring src, size_t n)
 		dest = NULL;
 	}
 	else {
-		const char* s = src->data;
+		const char *s = src->data;
 		size_t cb = strlen(s);
 
 		/* Copy string */
@@ -400,9 +400,9 @@ void cstring_reverse(cstring s)
  * 3. Allocate each cstring.
  * 4. Copy each word
  */
-size_t cstring_split(cstring** dest, const char* src, const char* delim)
+size_t cstring_split(cstring** dest, const char *src, const char *delim)
 {
-	const char* s;
+	const char *s;
 	size_t end, i, len, nelem;
 
 	assert(dest != NULL);
@@ -504,8 +504,8 @@ int main(void)
 {
 	cstring s, dest, *pstr;
 	int rc;
-	const char* start = "This is a string";
-	const char* end = start + strlen(start);
+	const char *start = "This is a string";
+	const char *end = start + strlen(start);
 
 	char longstring[10000];
 

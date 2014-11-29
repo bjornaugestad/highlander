@@ -41,10 +41,10 @@ int bitset_is_set(bitset b, size_t i);
 
 size_t bitset_size(bitset b);
 
-bitset bitset_map(void* mem, size_t cb);
-void bitset_remap(bitset b, void* mem, size_t cb);
+bitset bitset_map(void *mem, size_t cb);
+void bitset_remap(bitset b, void *mem, size_t cb);
 void bitset_unmap(bitset b);
-void* bitset_data(bitset b);
+void *bitset_data(bitset b);
 
 #ifdef __cplusplus
 }

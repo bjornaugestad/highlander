@@ -106,7 +106,7 @@ size_t stack_nelem(stack s)
 	return list_size(s->lst);
 }
 
-void* stack_get(stack s, size_t i)
+void *stack_get(stack s, size_t i)
 {
 	assert(s != NULL);
 

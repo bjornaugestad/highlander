@@ -40,7 +40,7 @@
  */
 struct tcp_server_tag {
 	/* Hostname, for gethostbyaddr */
-	char* host;
+	char *host;
 
 	/* Port to listen to */
 	int port;
@@ -59,8 +59,8 @@ struct tcp_server_tag {
 	size_t readbuf_size, writebuf_size;
 
 	/* Function to call when a new connection is accepted */
-	void* (*service_func)(void* arg);
-	void* service_arg;
+	void *(*service_func)(void *arg);
+	void *service_arg;
 
 	/* The file descriptor we accept connections from.	*/
 	meta_socket sock;
@@ -275,7 +275,7 @@ void tcp_server_set_writebuf_size(tcp_server s, size_t size)
 	s->writebuf_size = size;
 }
 
-int tcp_server_allow_clients(tcp_server srv, const char* filter)
+int tcp_server_allow_clients(tcp_server srv, const char *filter)
 {
 	int err, flags = REG_NOSUB;
 
@@ -306,7 +306,7 @@ void tcp_server_clear_client_filter(tcp_server srv)
 }
 
 static void
-tcp_server_recycle_connection(void* vse, void* vconn)
+tcp_server_recycle_connection(void *vse, void *vconn)
 {
 	membuf rb, wb;
 
@@ -328,7 +328,7 @@ tcp_server_recycle_connection(void* vse, void* vconn)
 	pool_recycle(srv->connections, conn);
 }
 
-static void assign_rw_buffers(void* vse, void* vconn)
+static void assign_rw_buffers(void *vse, void *vconn)
 {
 	membuf rb, wb;
 
@@ -611,7 +611,7 @@ instead.
 void tcp_server_set_shutdown_function(
 	tcp_server srv,
 	int(*func)(void*),
-	void* arg)
+	void *arg)
 {
 	assert(NULL != srv);
 	assert(NULL != func);
@@ -623,8 +623,8 @@ void tcp_server_set_shutdown_function(
 
 void tcp_server_set_service_function(
 	tcp_server srv,
-	void* (*func)(void*),
-	void* arg)
+	void *(*func)(void*),
+	void *arg)
 {
 	assert(NULL != srv);
 	assert(NULL != func);
@@ -633,7 +633,7 @@ void tcp_server_set_service_function(
 	srv->service_arg = arg;
 }
 
-int tcp_server_set_hostname(tcp_server srv, const char* host)
+int tcp_server_set_hostname(tcp_server srv, const char *host)
 {
 	if (srv->host != NULL)
 		free(srv->host);

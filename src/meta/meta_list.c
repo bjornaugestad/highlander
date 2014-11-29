@@ -64,7 +64,6 @@ void list_free(list lst, void(*cleanup)(void*))
 list list_add(list lst, void *data)
 {
 	list node;
-	int err = 0;
 	int we_allocated_list = 0;
 
 	/* Allocate new list if first param is NULL */
@@ -98,7 +97,7 @@ list list_add(list lst, void *data)
 		lst->data = node;
 	}
 
-	return err ? NULL : lst;
+	return lst;
 }
 
 /*
@@ -167,7 +166,7 @@ list_iterator list_find(
 	return i;
 }
 
-int list_foreach(list lst, void* args, int(*f)(void* args, void* data))
+int list_foreach(list lst, void *args, int(*f)(void *args, void *data))
 {
 	list node;
 
@@ -186,7 +185,7 @@ int list_dual_foreach(
 	list lst,
 	void *arg1,
 	void *arg2,
-	int(*dual)(void* a1, void *a2, void *data))
+	int(*dual)(void *a1, void *a2, void *data))
 {
 	list node;
 	if (lst->next != NULL) {
@@ -201,8 +200,8 @@ int list_dual_foreach(
 
 int list_foreach_reversed(
 	list lst,
-	void* args,
-	int(*f)(void* args, void* data))
+	void *args,
+	int(*f)(void *args, void *data))
 {
 	list node;
 
@@ -285,7 +284,7 @@ void sublist_free(list lst)
 list list_merge(list dest, list src)
 {
 	list_iterator i;
-	void* data;
+	void *data;
 
 	assert(src != NULL);
 
@@ -302,8 +301,8 @@ list list_merge(list dest, list src)
 
 int list_foreach_sep(
 	list lst,
-	void* args,
-	int(*f)(void* arg, void* data),
+	void *args,
+	int(*f)(void *arg, void *data),
 	int(*sep)(void*arg))
 {
 	list node;
@@ -322,7 +321,7 @@ int list_foreach_sep(
 	return 1;
 }
 
-list sublist_adaptor(list src, void* (*adaptor)(void*))
+list sublist_adaptor(list src, void *(*adaptor)(void*))
 {
 	list dest = list_new();
 	if (dest != NULL) {
@@ -511,7 +510,7 @@ list list_copy(list lst, void*(*copier)(const void*), dtor dtor_fn)
 	return new;
 }
 
-void* list_get_item(list lst, size_t index)
+void *list_get_item(list lst, size_t index)
 {
 	list node;
 
@@ -538,14 +537,14 @@ static void item_dtor(void *p)
 	free(p);
 }
 
-static int item_cmp(const void* p1, const void* p2)
+static int item_cmp(const void *p1, const void *p2)
 {
 	const struct item *i1 = p1, *i2 = p2;
 
 	return i1->value - i2->value;
 }
 
-static void* item_dup(const void* arg)
+static void *item_dup(const void *arg)
 {
 	const struct item* src = arg;
 	struct item* p;
@@ -556,19 +555,19 @@ static void* item_dup(const void* arg)
 	return p;
 }
 
-static int item_bottom_half(void* arg)
+static int item_bottom_half(void *arg)
 {
 	struct item* p = arg;
 	return p->value < 500;
 }
 
-static void* item_adapt_value(struct item* p)
+static void *item_adapt_value(struct item* p)
 {
 	assert(p != NULL);
 	return &p->value;
 }
 
-static int item_foreach(void* arg, void* item)
+static int item_foreach(void *arg, void *item)
 {
 	assert(arg == NULL);
 	assert(item != NULL);
@@ -578,7 +577,7 @@ static int item_foreach(void* arg, void* item)
 	return 1;
 }
 
-static int item_foreach2(void* arg1, void* arg2, void* item)
+static int item_foreach2(void *arg1, void *arg2, void *item)
 {
 	assert(arg1 == NULL);
 	assert(arg2 == NULL);
@@ -591,7 +590,7 @@ static int item_foreach2(void* arg1, void* arg2, void* item)
 	return 1;
 }
 
-static int item_sep(void* arg)
+static int item_sep(void *arg)
 {
 	assert(arg == NULL);
 	(void)arg;
@@ -599,7 +598,7 @@ static int item_sep(void* arg)
 	return 1;
 }
 
-static void return77(const char* fmt, ...)
+static void return77(const char *fmt, ...)
 {
 	va_list ap;
 

@@ -50,7 +50,7 @@ int stack_push(stack s, void *p);
  * stack was empty. The debug version will abort() if the stack
  * was empty.
  */
-void* stack_top(stack s);
+void *stack_top(stack s);
 
 /*
  * Removes the top item from the stack. This API
@@ -70,7 +70,7 @@ size_t stack_nelem(stack s);
  * element on the stack.
  * This function returns NULL if there are no item matching the index
  */
-void* stack_get(stack s, size_t i);
+void *stack_get(stack s, size_t i);
 
 #ifdef __cplusplus
 }

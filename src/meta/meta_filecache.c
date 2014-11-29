@@ -48,30 +48,6 @@ fileinfo fileinfo_new(void)
 	return p;
 }
 
-#if 0
-fileinfo fileinfo_dup(const fileinfo src)
-{
-	fileinfo p;
-
-	if ((p = fileinfo_new()) != NULL) {
-		if ((p->mimetype = mem_malloc(strlen(src->mimetype) + 1)) == NULL
-		||	(p->name = mem_malloc(strlen(src->name) + 1)) == NULL
-		||	(p->alias = mem_malloc(strlen(src->alias) + 1)) == NULL) {
-			fileinfo_free(p);
-			p = NULL;
-		}
-
-		strcpy(p->mimetype, src->mimetype);
-		strcpy(p->name, src->name);
-		strcpy(p->alias, src->alias);
-		p->st = src->st;
-	}
-
-	return p;
-}
-#endif
-
-
 void fileinfo_free(fileinfo p)
 {
 	if (p != NULL) {
@@ -91,7 +67,7 @@ int fileinfo_set_stat(fileinfo p, const struct stat* pst)
 	return 1;
 }
 
-int fileinfo_set_name(fileinfo p, const char* s)
+int fileinfo_set_name(fileinfo p, const char *s)
 {
 	assert(p != NULL);
 	assert(s != NULL);
@@ -106,7 +82,7 @@ int fileinfo_set_name(fileinfo p, const char* s)
 	return 1;
 }
 
-int fileinfo_set_alias(fileinfo p, const char* s)
+int fileinfo_set_alias(fileinfo p, const char *s)
 {
 	assert(p != NULL);
 	assert(s != NULL);
@@ -121,7 +97,7 @@ int fileinfo_set_alias(fileinfo p, const char* s)
 	return 1;
 }
 
-int fileinfo_set_mimetype(fileinfo p, const char* s)
+int fileinfo_set_mimetype(fileinfo p, const char *s)
 {
 	assert(p != NULL);
 	assert(s != NULL);
@@ -176,7 +152,7 @@ int filecache_add(filecache fc, fileinfo finfo, int pin, unsigned long* pid)
 {
 	int rc, fd = -1;
 
-	char* contents = NULL;
+	char *contents = NULL;
 
 	assert(fc != NULL);
 	assert(finfo != NULL);
@@ -234,7 +210,7 @@ double filecache_hitratio(filecache fc)
 	return 1.0;
 }
 
-int filecache_exists(filecache fc, const char* filename)
+int filecache_exists(filecache fc, const char *filename)
 {
 	unsigned long id;
 	int rc = 0;
@@ -248,11 +224,11 @@ int filecache_exists(filecache fc, const char* filename)
 	return rc;
 }
 
-int filecache_get(filecache fc, const char* filename, void** pdata, size_t* pcb)
+int filecache_get(filecache fc, const char *filename, void** pdata, size_t* pcb)
 {
 	unsigned long id;
 	int rc = 0;
-	void* p;
+	void *p;
 
 	pthread_rwlock_rdlock(&fc->lock);
 
@@ -269,7 +245,7 @@ int filecache_get(filecache fc, const char* filename, void** pdata, size_t* pcb)
 	return rc;
 }
 
-int filecache_foreach(filecache fc, int(*fn)(const char*s, void* arg), void* arg)
+int filecache_foreach(filecache fc, int(*fn)(const char*s, void *arg), void *arg)
 {
 	int rc;
 
@@ -284,10 +260,10 @@ int filecache_foreach(filecache fc, int(*fn)(const char*s, void* arg), void* arg
 
 }
 
-int filecache_stat(filecache fc, const char* filename, struct stat* p)
+int filecache_stat(filecache fc, const char *filename, struct stat* p)
 {
 	unsigned long id;
-	void* pst = NULL;
+	void *pst = NULL;
 	size_t cb;
 	int rc = 0;
 
@@ -307,7 +283,7 @@ int filecache_stat(filecache fc, const char* filename, struct stat* p)
 	return rc;
 }
 
-int filecache_get_mime_type(filecache fc, const char* filename, char mime[], size_t cb)
+int filecache_get_mime_type(filecache fc, const char *filename, char mime[], size_t cb)
 {
 	unsigned long id;
 	void *p;
@@ -328,10 +304,10 @@ int filecache_get_mime_type(filecache fc, const char* filename, char mime[], siz
 	return rc;
 }
 
-fileinfo filecache_fileinfo(filecache fc, const char* filename)
+fileinfo filecache_fileinfo(filecache fc, const char *filename)
 {
 	unsigned long id;
-	void* pst = NULL;
+	void *pst = NULL;
 	size_t cb;
 	int found = 0;
 
@@ -363,7 +339,7 @@ int main(void)
 	struct stat st;
 	filecache fc;
 	unsigned long id;
-	void* pdata;
+	void *pdata;
 	size_t cb;
 	FILE* f;
 	char mime[128];

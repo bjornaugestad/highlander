@@ -42,14 +42,14 @@
  * functions.
  */
 struct threadpool_work {
-	void* (*work_func)(void*);
-	void* work_arg;
+	void *(*work_func)(void*);
+	void *work_arg;
 
 	void (*initialize)(void*, void*);
-	void* initialize_arg;
+	void *initialize_arg;
 
 	void (*cleanup)(void*, void*);
-	void* cleanup_arg;
+	void *cleanup_arg;
 	struct threadpool_work* next;
 };
 
@@ -93,7 +93,7 @@ static int queue_full(threadpool tp)
 	return tp->cur_queue_size == tp->max_queue_size;
 }
 
-static void* threadpool_exec_thread(void* arg)
+static void *threadpool_exec_thread(void *arg)
 {
 	struct threadpool_work* wp;
 	threadpool pool = (threadpool)arg;
@@ -227,10 +227,10 @@ int threadpool_add_work(
 	void (*initialize)(void*, void*),
 	void *initialize_arg,
 
-	void* (*work_func)(void*),
-	void* work_arg,
+	void *(*work_func)(void*),
+	void *work_arg,
 	void (*cleanup)(void*, void*),
-	void* cleanup_arg)
+	void *cleanup_arg)
 {
 	struct threadpool_work* wp;
 	int error;

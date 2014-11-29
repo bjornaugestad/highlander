@@ -39,30 +39,30 @@ extern "C" {
 struct cstring_tag {
 	size_t size; /* Size of allocated buffer */
 	size_t len;  /* Length of string, excluding \0 */
-	char* data;
+	char *data;
 };
 typedef struct cstring_tag* cstring;
 
 cstring cstring_new(void);
-cstring cstring_dup(const char* src);
+cstring cstring_dup(const char *src);
 int cstring_multinew(cstring *pstr, size_t nelem);
 int cstring_extend(cstring s, size_t size);
 
 
-int cstring_copy(cstring dest, const char* src);
-int cstring_ncopy(cstring dest, const char* src, size_t n);
+int cstring_copy(cstring dest, const char *src);
+int cstring_ncopy(cstring dest, const char *src, size_t n);
 int cstring_charcat(cstring dest, int c);
 
-int cstring_concat(cstring dest, const char* src);
-int cstring_concat2(cstring dest, const char* src1, const char* src2);
-int cstring_concat3(cstring dest, const char* src1, const char* src2, const char* src3);
+int cstring_concat(cstring dest, const char *src);
+int cstring_concat2(cstring dest, const char *src1, const char *src2);
+int cstring_concat3(cstring dest, const char *src1, const char *src2, const char *src3);
 
 int cstring_pcat(cstring dest, const char *start, const char *end);
 
-int cstring_printf(cstring dest, size_t needs_max, const char* fmt, ...)
+int cstring_printf(cstring dest, size_t needs_max, const char *fmt, ...)
 	__attribute__((format(printf, 3, 4)));
 
-int cstring_vprintf(cstring dest, size_t needs_max, const char* fmt, va_list ap);
+int cstring_vprintf(cstring dest, size_t needs_max, const char *fmt, va_list ap);
 
 cstring cstring_left(cstring src, size_t n);
 cstring cstring_right(cstring src, size_t n);
@@ -70,7 +70,7 @@ cstring cstring_substring(cstring src, size_t from, size_t to);
 
 void cstring_reverse(cstring s);
 
-static inline const char* c_str(cstring s)
+static inline const char *c_str(cstring s)
 {
 	assert(NULL != s);
 	assert(NULL != s->data);
@@ -95,7 +95,7 @@ static inline void cstring_free(cstring s)
 	}
 }
 
-static inline int cstring_compare(cstring dest, const char* src)
+static inline int cstring_compare(cstring dest, const char *src)
 {
 	assert(NULL != dest);
 	assert(NULL != src);
@@ -117,7 +117,7 @@ static inline void cstring_recycle(cstring s)
  * of items in the array. Each item must be freed separately.
  * delim can contain any number of characters, see strcspn()
  */
-size_t cstring_split(cstring** dest, const char* src, const char* delim);
+size_t cstring_split(cstring** dest, const char *src, const char *delim);
 
 /* Free multiple cstrings with one call. Note that pstr itself will
  * not be freed. */

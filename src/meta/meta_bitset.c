@@ -59,7 +59,7 @@ void bitset_free(bitset b)
 	free(b);
 }
 
-bitset bitset_map(void* data, size_t elemcount)
+bitset bitset_map(void *data, size_t elemcount)
 {
 	bitset b;
 
@@ -112,7 +112,7 @@ size_t bitset_size(bitset b)
 	return b->size;
 }
 
-void* bitset_data(bitset b)
+void *bitset_data(bitset b)
 {
 	assert(b != NULL);
 	return b->data;
@@ -126,7 +126,7 @@ void bitset_clear(bitset b, size_t i)
 	b->data[i / CHAR_BIT] &= ~(1 << (i % CHAR_BIT));
 }
 
-void bitset_remap(bitset b, void* mem, size_t cb)
+void bitset_remap(bitset b, void *mem, size_t cb)
 {
 	assert(b != NULL);
 	assert(mem != NULL);

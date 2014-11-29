@@ -59,14 +59,14 @@ void map_free(map m);
  * If an existing entry exists, the memory pointed to by the prev.
  * value will be freed.
  */
-int map_set(map m, const char* key, void* value);
+int map_set(map m, const char *key, void *value);
 
 /*
  * Returns 1 if key exists in map, 0 if not.
  */
-int map_exists(map m, const char* key);
+int map_exists(map m, const char *key);
 
-void* map_get(map m, const char* key);
+void *map_get(map m, const char *key);
 
 /*
  * Deletes an entry from the map. Any data will also be deleted.
@@ -83,12 +83,12 @@ int map_delete(map m, const char *key);
  *
  * map_foreach returns 0 if the iteration was aborted and 1 if it wasn't.
  */
-int map_foreach(map m, void* args, int(*f)(void* args, char* key, void* data));
+int map_foreach(map m, void *args, int(*f)(void *args, char *key, void *data));
 
 map_iterator map_first(map m);
 map_iterator map_next(map_iterator mi);
-char* map_key(map_iterator mi);
-void* map_value(map_iterator mi);
+char *map_key(map_iterator mi);
+void *map_value(map_iterator mi);
 
 /*
  * returns 1 if no more entries exist. map_next(mi) would then return NULL.

@@ -75,7 +75,7 @@ struct connection_tag {
 	int retries_reads, retries_writes;
 	int persistent;
 	meta_socket sock;
-	void* arg2;
+	void *arg2;
 
 	/* Client we're connected with */
 	struct sockaddr_in addr;
@@ -141,7 +141,7 @@ static inline void reset_counters(connection conn)
 }
 
 static inline void
-AddDataToWriteBuffer(connection conn, const void* buf, size_t cb)
+AddDataToWriteBuffer(connection conn, const void *buf, size_t cb)
 {
 	size_t cbWritten;
 	/* There must be space in the write buffer */
@@ -153,7 +153,7 @@ AddDataToWriteBuffer(connection conn, const void* buf, size_t cb)
 }
 
 static inline size_t
-cbCopyFromReadBuffer(connection conn, void* buf, size_t cb)
+cbCopyFromReadBuffer(connection conn, void *buf, size_t cb)
 {
 	return membuf_read(conn->readbuf, buf, cb);
 }
@@ -203,7 +203,7 @@ connection connection_new(
 	int timeout_writes,
 	int retries_reads,
 	int retries_writes,
-	void* arg2)
+	void *arg2)
 {
 	connection p;
 
@@ -229,7 +229,7 @@ connection connection_new(
 	return p;
 }
 
-int connection_connect(connection c, const char* host, int port)
+int connection_connect(connection c, const char *host, int port)
 {
 	assert(c != NULL);
 	if ((c->sock = create_client_socket(host, port)) == NULL)
@@ -346,7 +346,7 @@ int connection_getc(connection conn, int* pchar)
 }
 
 static inline int
-WriteToSocket(connection conn, const char* buf, size_t cb)
+WriteToSocket(connection conn, const char *buf, size_t cb)
 {
 	return sock_write(
 		conn->sock,
@@ -363,7 +363,7 @@ WriteToSocket(connection conn, const char* buf, size_t cb)
  * data, we write the data directly to the socket.
  * We return 0 for errors and 1 for success.
  */
-int connection_write(connection conn, const void* buf, size_t cb)
+int connection_write(connection conn, const void *buf, size_t cb)
 {
 	int success = 1;
 
@@ -440,11 +440,11 @@ static int nReadFromSocket(connection conn, void *pbuf, size_t cb)
 	return success;
 }
 
-int connection_read(connection conn, void* buf, size_t cb)
+int connection_read(connection conn, void *buf, size_t cb)
 {
 	int success = 1;
 	size_t cbCopied;
-	char* cbuf;
+	char *cbuf;
 
 	assert(conn != NULL);
 	assert(buf != NULL);
@@ -485,7 +485,7 @@ int connection_read(connection conn, void* buf, size_t cb)
 	return success;
 }
 
-void* connection_arg2(connection conn)
+void *connection_arg2(connection conn)
 {
 	assert(conn != NULL);
 	return conn->arg2;
@@ -605,7 +605,7 @@ int connection_gets(connection conn, char *buf, size_t size)
 
 int connection_write_big_buffer(
 	connection conn,
-	const void* buf,
+	const void *buf,
 	size_t cb,
 	int timeout,
 	int retries)

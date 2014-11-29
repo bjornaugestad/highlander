@@ -28,8 +28,8 @@
  * Local helper structure.
  */
 struct element {
-	char* name;
-	char* value;
+	char *name;
+	char *value;
 };
 
 /*
@@ -42,7 +42,7 @@ struct pair_tag {
 };
 
 /* Small helper returning the index to an element or 0 if not found */
-static int pair_find(pair p, const char* name, size_t* pi)
+static int pair_find(pair p, const char *name, size_t* pi)
 {
 	assert(p != NULL);
 
@@ -112,7 +112,7 @@ size_t pair_size(pair p)
 	return p->used;
 }
 
-const char* pair_get_value_by_index(pair p, size_t i)
+const char *pair_get_value_by_index(pair p, size_t i)
 {
 	assert(p != NULL);
 	assert(i < p->nelem);
@@ -121,7 +121,7 @@ const char* pair_get_value_by_index(pair p, size_t i)
 }
 
 /* Returns pointer to value if name exists, else NULL */
-const char* pair_get(pair p, const char* name)
+const char *pair_get(pair p, const char *name)
 {
 	size_t i;
 
@@ -137,7 +137,7 @@ const char* pair_get(pair p, const char* name)
  *	1	OK
  *	0	Memory problems
  */
-int pair_set(pair p, const char* name, const char* value)
+int pair_set(pair p, const char *name, const char *value)
 {
 	size_t i, oldlen, newlen;
 
@@ -148,7 +148,7 @@ int pair_set(pair p, const char* name, const char* value)
 	oldlen = strlen(p->element[i].value);
 	newlen = strlen(value);
 	if (oldlen < newlen) {
-		char* s = realloc(p->element[i].value, newlen + 1);
+		char *s = realloc(p->element[i].value, newlen + 1);
 		if (NULL == s)
 			return 0;
 
@@ -159,7 +159,7 @@ int pair_set(pair p, const char* name, const char* value)
 	return 1;
 }
 
-int pair_add(pair p, const char* name, const char* value)
+int pair_add(pair p, const char *name, const char *value)
 {
 	struct element* new; /* Just a helper to beautify the code */
 
@@ -185,7 +185,7 @@ int pair_add(pair p, const char* name, const char* value)
 	return 1;
 }
 
-const char* pair_get_name(pair p, size_t idx)
+const char *pair_get_name(pair p, size_t idx)
 {
 	return p->element[idx].name;
 }
@@ -198,7 +198,7 @@ int main(void)
 	pair p;
 	size_t i, j, niter = 100, nelem = 10;
 	char name[1024], value[1024];
-	const char* pval;
+	const char *pval;
 
 	for (i = 0; i < niter; i++) {
 		if ((p = pair_new(nelem)) == NULL)

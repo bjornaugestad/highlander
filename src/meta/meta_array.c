@@ -72,7 +72,7 @@ size_t array_nelem(array a)
 	return a->nused;
 }
 
-void* array_get(array a, size_t ielem)
+void *array_get(array a, size_t ielem)
 {
 	assert(NULL != a);
 	assert(ielem < array_nelem(a));
@@ -85,7 +85,7 @@ void* array_get(array a, size_t ielem)
 
 int array_extend(array a, size_t nmemb)
 {
-	void* tmp;
+	void *tmp;
 	size_t n, size;
 
 	assert(NULL != a);
@@ -102,7 +102,7 @@ int array_extend(array a, size_t nmemb)
 	return 1;
 }
 
-int array_add(array a, void* elem)
+int array_add(array a, void *elem)
 {
 	assert(NULL != a);
 	assert(NULL != elem);
@@ -123,7 +123,7 @@ int main(void)
 {
 	array a;
 	size_t i, nelem = 10000;
-	void* dummy;
+	void *dummy;
 
 	/* First a growable array */
 	if ((a = array_new(nelem / 10, 1)) == NULL) {

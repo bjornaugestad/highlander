@@ -32,8 +32,8 @@ array array_new(size_t nmemb, int can_grow);
 void  array_free(array a, dtor cln);
 
 size_t array_nelem(array a);
-void*  array_get(array a, size_t ielem);
-int	   array_add(array a, void* elem);
+void * array_get(array a, size_t ielem);
+int	   array_add(array a, void *elem);
 int	   array_extend(array a, size_t nmemb);
 
 #ifdef __cplusplus

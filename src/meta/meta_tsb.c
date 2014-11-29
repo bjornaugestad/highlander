@@ -35,10 +35,10 @@ struct handler {
 	size_t nthreads;
 
 	/* Callback function pointer */
-	int (*callback)(void* buffer, void* arg);
+	int (*callback)(void *buffer, void *arg);
 
 	/* Extra argument to callback */
-	void* arg;
+	void *arg;
 
 	/* Our own pthread_t, one for each thread within time unit */
 	pthread_t* threads;
@@ -55,7 +55,7 @@ struct tsb_tag {
 	size_t units_per_frame;
 
 	/* Generic pointer to the time shared buffer */
-	void* buffer;
+	void *buffer;
 
 	struct timeval epoch;
 
@@ -71,7 +71,7 @@ struct tsb_tag {
 };
 
 
-tsb* tsb_new(size_t unit_duration, size_t units_per_frame, void* buffer)
+tsb* tsb_new(size_t unit_duration, size_t units_per_frame, void *buffer)
 {
 	tsb* p;
 
@@ -127,7 +127,7 @@ size_t tsb_get_units_per_frame(tsb* p)
 	return p->units_per_frame;
 }
 
-void* tsb_get_buffer(tsb* p)
+void *tsb_get_buffer(tsb* p)
 {
 	assert(p != NULL);
 	return p->buffer;
@@ -137,8 +137,8 @@ int tsb_set_threads(
 	tsb *p,
 	size_t iunit,
 	size_t nthreads,
-	int (*callback)(void* buf, void* arg),
-	void* arg)
+	int (*callback)(void *buf, void *arg),
+	void *arg)
 {
 	assert(p != NULL);
 	assert(p->handlers != NULL);
@@ -258,7 +258,7 @@ struct args {
 	tsb* ptsb;
 };
 
-static void* threadfunc(void* arg)
+static void *threadfunc(void *arg)
 {
 	struct args* parg = arg;
 	struct timeval now, next;
@@ -372,7 +372,7 @@ struct t {
 };
 
 /* Will just enhance output by printing start of frame message: */
-static int firstslot(void* buf, void* arg)
+static int firstslot(void *buf, void *arg)
 {
 	(void)buf;
 	(void)arg;
@@ -380,7 +380,7 @@ static int firstslot(void* buf, void* arg)
 	return 1;
 }
 
-static int mywriter(void* buf, void* arg)
+static int mywriter(void *buf, void *arg)
 {
 	struct timeval tv;
 	double t;
@@ -394,7 +394,7 @@ static int mywriter(void* buf, void* arg)
 	return 1;
 }
 
-static int myreader(void* buf, void* arg)
+static int myreader(void *buf, void *arg)
 {
 	struct timeval tv;
 	double t;

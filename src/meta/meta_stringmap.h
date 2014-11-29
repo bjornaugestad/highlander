@@ -42,10 +42,10 @@ stringmap stringmap_new(size_t nelem);
 void stringmap_free(stringmap sm);
 
 /* Adds a new item to the stringmap */
-int stringmap_add(stringmap sm, const char* s, unsigned long* pid);
+int stringmap_add(stringmap sm, const char *s, unsigned long* pid);
 
 /* Returns 1 if the string exists, else 0 */
-int stringmap_exists(stringmap sm, const char* s);
+int stringmap_exists(stringmap sm, const char *s);
 
 /*
  * Remove all entries from the stringmap, the stringmap itself is reusable.
@@ -54,7 +54,7 @@ int stringmap_exists(stringmap sm, const char* s);
 int stringmap_invalidate(stringmap sm);
 
 /* Get id for a given string. Returns 1 if the string exists, else 0 */
-int stringmap_get_id(stringmap sm, const char* s, unsigned long* pid);
+int stringmap_get_id(stringmap sm, const char *s, unsigned long* pid);
 
 /*
  * Walk the stringmap, calling the callback function once for
@@ -63,7 +63,7 @@ int stringmap_get_id(stringmap sm, const char* s, unsigned long* pid);
  * The callback function will be called with the mapped value s and the user
  * proviced argument arg, which can be NULL.
  */
-int stringmap_foreach(stringmap sm, int(*fn)(const char*s, void* arg), void* arg);
+int stringmap_foreach(stringmap sm, int(*fn)(const char*s, void *arg), void *arg);
 
 /*
  * Return a stringmap containing elements present in sm1 only.

@@ -79,7 +79,7 @@ struct process_tag {
 	pthread_t sdt;
 };
 
-process process_new(const char* appname)
+process process_new(const char *appname)
 {
 	process p;
 
@@ -113,7 +113,7 @@ void process_free(process p)
 	}
 }
 
-int process_set_rootdir(process p, const char* path)
+int process_set_rootdir(process p, const char *path)
 {
 	assert(p != NULL);
 	assert(path != NULL);
@@ -121,7 +121,7 @@ int process_set_rootdir(process p, const char* path)
 	return cstring_copy(p->rootdir, path);
 }
 
-int process_set_username(process p, const char* username)
+int process_set_username(process p, const char *username)
 {
 	assert(p != NULL);
 	assert(username != NULL);
@@ -222,7 +222,7 @@ static int write_pid(process p, pid_t pid)
 		return 1;
 }
 
-static void* shutdown_thread(void* arg)
+static void *shutdown_thread(void *arg)
 {
 	sigset_t catch;
 	int caught;
@@ -274,7 +274,7 @@ static int handle_shutdown(process p)
 	return 1;
 }
 
-static void* launcher(void* args)
+static void *launcher(void *args)
 {
 	int exitcode;
 	struct srv* s = args;
@@ -488,7 +488,7 @@ int process_wait_for_shutdown(process p)
 	return 1;
 }
 
-int process_get_exitcode(process p, void* object)
+int process_get_exitcode(process p, void *object)
 {
 	size_t i;
 

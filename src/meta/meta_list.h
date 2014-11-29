@@ -43,7 +43,7 @@ typedef struct list_tag* list;
  */
 struct list_tag {
 	struct list_tag *next, *prev;
-	void* data;
+	void *data;
 };
 
 /* Our list iterator.  */
@@ -56,7 +56,7 @@ typedef struct list_iterator_tag {
  * list_foreach, list_foreach_reversed and
  * list_foreach_sep.
  */
-typedef int (*listfunc)(void* arg, void*data);
+typedef int (*listfunc)(void *arg, void*data);
 
 list list_new(void);
 void list_free(list lst, dtor free_fn);
@@ -87,7 +87,7 @@ static inline int list_end(list_iterator li)
 	return li.node == NULL;
 }
 
-static inline void* list_get(list_iterator i)
+static inline void *list_get(list_iterator i)
 {
 	assert(i.node != NULL);
 	return ((list)i.node)->data;
@@ -101,12 +101,12 @@ static inline list_iterator list_next(list_iterator i)
 
 int list_last(list_iterator li);
 
-void* list_get_item(list lst, size_t idx);
+void *list_get_item(list lst, size_t idx);
 
-int list_foreach(list lst, void* args, listfunc f);
-int list_foreach_reversed(list lst, void* arg, listfunc f);
-int list_foreach_sep(list lst, void* arg, listfunc f, int(*sep)(void*arg));
-int list_dual_foreach(list lst, void *arg1, void *arg2, int(*dual)(void* a1, void *a2, void *data));
+int list_foreach(list lst, void *args, listfunc f);
+int list_foreach_reversed(list lst, void *arg, listfunc f);
+int list_foreach_sep(list lst, void *arg, listfunc f, int(*sep)(void*arg));
+int list_dual_foreach(list lst, void *arg1, void *arg2, int(*dual)(void *a1, void *a2, void *data));
 
 list list_merge(list dest, list src);
 void list_sort(list lst, int(*func)(const void *p1, const void *p2));
@@ -114,7 +114,7 @@ size_t list_count(list lst, int (*include_node)(void*));
 
 /* Sublists */
 list sublist_copy(list lst);
-list sublist_adaptor(list lst, void* (*adaptor)(void*));
+list sublist_adaptor(list lst, void *(*adaptor)(void*));
 list sublist_create(list lst, int (*include_node)(void*));
 list sublist_create_neg(list lst, int (*include_node)(void*));
 

@@ -27,8 +27,8 @@
 extern "C" {
 #endif
 
-void fs_lower(char* s);
-void fs_upper(char* s);
+void fs_lower(char *s);
+void fs_upper(char *s);
 
 /*
  * Converts a string of digits only to size_t.
@@ -38,7 +38,7 @@ int string2size_t(const char *s, size_t *val);
 
 void remove_trailing_newline(char *s);
 
-int get_basename(const char* name, const char* suffix, char* dest, size_t destsize);
+int get_basename(const char *name, const char *suffix, char *dest, size_t destsize);
 
 /*
  * Returns the # of words, separated by space, in the string.
@@ -60,15 +60,15 @@ int get_word_count(const char *s);
  *	find_word("foo bar", 2)		returns -1
  *	find_word("foo bar fly", 2)	returns 8
  */
-int find_word(const char* s, size_t iWord);
+int find_word(const char *s, size_t iWord);
 
 /*
  * Extract the extension from a filename. Returns
  * 1 if successful. Note that 1 will be returned even if
  * no extension exists as it is legal not to have an extension.
  */
-int get_extension(const char* src, char* dest, size_t destsize);
-const char* get_mime_type(const char* filename);
+int get_extension(const char *src, char *dest, size_t destsize);
+const char *get_mime_type(const char *filename);
 
 /*
  * Copies one space-separated word from string.
@@ -95,8 +95,8 @@ int copy_word(
 	size_t cchWordMax);
 
 /* Write a warning to the syslog */
-void warning(const char* fmt, ...);
-void meta_vsyslog(int class, const char* fmt, va_list ap);
+void warning(const char *fmt, ...);
+void meta_vsyslog(int class, const char *fmt, va_list ap);
 
 void warning(const char *fmt, ...)
 	__attribute__((format(printf,1,2)));
