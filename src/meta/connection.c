@@ -316,7 +316,7 @@ int connection_close(connection conn)
 
 	if (!flush_success)
 		rc = 0;
-	else if(!close_success)
+	else if (!close_success)
 		rc = 0;
 	else
 		rc = 1;
@@ -375,9 +375,9 @@ int connection_write(connection conn, const void* buf, size_t cb)
 
 	if (!success)
 		;
-	else if(fWriteBufferHasRoomFor(conn, cb))
+	else if (fWriteBufferHasRoomFor(conn, cb))
 		AddDataToWriteBuffer(conn, buf, cb);
-	else if((success = WriteToSocket(conn, buf, cb)))
+	else if ((success = WriteToSocket(conn, buf, cb)))
 		conn->outgoing_bytes += cb;
 
 	return success;
@@ -622,14 +622,3 @@ int connection_write_big_buffer(
 
 	return success;
 }
-
-#if 0
-// Disabled due to ssl support.
-// We want to encapsulate the fd completely.
-int connection_get_fd(connection conn)
-{
-	assert(conn != NULL);
-	assert(conn->sock != NULL);
-	return conn->sock->fd;
-}
-#endif

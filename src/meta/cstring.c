@@ -37,28 +37,28 @@ int cstring_extend(cstring s, size_t size)
 
 	assert(s != NULL);
 	assert(s->data != NULL);
-	assert(s->cbAllocated >= CSTRING_INITIAL_SIZE);
-	assert(s->cbUsed > 0 && s->cbUsed <= s->cbAllocated);
+	assert(s->size >= CSTRING_INITIAL_SIZE);
+	assert(s->len < s->size);
 
 	/* Check for available space and reallocate if necessary */
-	bytes_needed = s->cbUsed + size;
-	if (bytes_needed > s->cbAllocated) {
+	bytes_needed = s->len + size + 1;
+	if (bytes_needed > s->size) {
 		/* Double the size of the buffer */
-		newsize = s->cbAllocated * 2;
+		newsize = s->size * 2;
 		if (newsize < bytes_needed) {
 			/* Doubling wasn't sufficient */
-			newsize = s->cbAllocated + size;
+			newsize = s->size + size;
 		}
 
 		if ((data = realloc(s->data, newsize)) == NULL)
 			return 0;
 		else {
 			s->data = data;
-			s->cbAllocated = newsize;
+			s->size = newsize;
 		}
 	}
 
-	assert(s->cbUsed == strlen(s->data) + 1);
+	assert(s->len == strlen(s->data));
 	return 1;
 }
 
@@ -77,20 +77,20 @@ int cstring_vprintf(
 
 	assert(NULL != dest);
 	assert(NULL != dest->data);
-	assert(dest->cbUsed == strlen(dest->data) + 1);
+	assert(dest->len == strlen(dest->data));
 
 	if (!cstring_extend(dest, needs_max))
 		return 0;
 
 	/* We append the new data, therefore the & */
-	i = vsnprintf(&dest->data[dest->cbUsed - 1], needs_max, fmt, ap);
+	i = vsnprintf(&dest->data[dest->len], needs_max, fmt, ap);
 
 	/* We do not know the length of the data after vsnprintf()
-	 * We therefore recompute the cbUsed member.
+	 * We therefore recompute the len member.
 	 */
-	dest->cbUsed += i;
+	dest->len += i;
 
-	assert(dest->cbUsed == strlen(dest->data) + 1);
+	assert(dest->len == strlen(dest->data));
 	return 1;
 }
 
@@ -122,11 +122,11 @@ int cstring_pcat(cstring dest, const char *start, const char *end)
 	if (!cstring_extend(dest, cb))
 		return 0;
 
-	memcpy(&dest->data[dest->cbUsed - 1], start, cb);
-	dest->cbUsed += cb;
-	dest->data[dest->cbUsed - 1] = '\0';
+	memcpy(&dest->data[dest->len], start, cb);
+	dest->len += cb;
+	dest->data[dest->len] = '\0';
 
-	assert(dest->cbUsed == strlen(dest->data) + 1);
+	assert(dest->len == strlen(dest->data));
 	return 1;
 }
 
@@ -142,10 +142,10 @@ int cstring_concat(cstring dest, const char* src)
 		return 0;
 
 	/* Now add the string to the dest */
-	strcat(&dest->data[dest->cbUsed - 1], src);
-	dest->cbUsed += cb;
+	strcat(&dest->data[dest->len], src);
+	dest->len += cb;
 
-	assert(dest->cbUsed == strlen(dest->data) + 1);
+	assert(dest->len == strlen(dest->data));
 	return 1;
 }
 
@@ -158,15 +158,15 @@ int cstring_charcat(cstring dest, int c)
 	 * therefore added a small extra test here to avoid
 	 * millions of function calls.
 	 */
-	if (dest->cbUsed + 1 >= dest->cbAllocated) {
+	if (dest->len >= dest->size) {
 		if (!cstring_extend(dest, 1))
 			return 0;
 	}
 
-	dest->data[dest->cbUsed - 1] = c;
-	dest->data[dest->cbUsed++] = '\0';
+	dest->data[dest->len++] = c;
+	dest->data[dest->len] = '\0';
 
-	assert(dest->cbUsed == strlen(dest->data) + 1);
+	assert(dest->len == strlen(dest->data));
 	return 1;
 }
 
@@ -191,8 +191,8 @@ cstring cstring_new(void)
 		p = NULL;
 	}
 	else {
-		p->cbUsed = 1;
-		p->cbAllocated = CSTRING_INITIAL_SIZE;
+		p->len = 0;
+		p->size = CSTRING_INITIAL_SIZE;
 		*p->data = '\0';
 	}
 
@@ -228,9 +228,9 @@ int cstring_copy(cstring dest, const char* src)
 		return 0;
 
 	strcpy(dest->data, src);
-	dest->cbUsed += c;
+	dest->len += c;
 
-	assert(dest->cbUsed == strlen(dest->data) + 1);
+	assert(dest->len == strlen(dest->data));
 	return 1;
 }
 
@@ -252,9 +252,9 @@ int cstring_ncopy(cstring dest, const char* src, const size_t cch)
 
 	strncpy(dest->data, src, c);
 	dest->data[c] = '\0';
-	dest->cbUsed = c + 1;
+	dest->len = c;
 
-	assert(dest->cbUsed == strlen(dest->data) + 1);
+	assert(dest->len == strlen(dest->data));
 	return 1;
 }
 
@@ -364,10 +364,10 @@ cstring cstring_substring(cstring src, size_t from, size_t to)
 
 	assert(src != NULL);
 	assert(from <= to);
-	assert(to < src->cbUsed);
+	assert(to <= src->len);
 
-	if (to > src->cbUsed)
-		to = src->cbUsed;
+	if (to > src->len)
+		to = src->len;
 
 	cb = to - from + 1;
 	if ((dest = cstring_new()) == NULL || !cstring_extend(dest, cb)) {
@@ -382,9 +382,9 @@ cstring cstring_substring(cstring src, size_t from, size_t to)
 
 void cstring_reverse(cstring s)
 {
-	if (s->cbUsed > 1) {
+	if (s->len > 0) {
 		char *beg = s->data;
-		char *end = s->data + s->cbUsed - 2;
+		char *end = s->data + s->len - 1;
 		while (beg < end) {
 			char tmp = *end;
 			*end-- = *beg;
@@ -454,22 +454,22 @@ void cstring_strip(cstring s)
 	assert(s != NULL);
 
 	/* strip trailing ws first */
-	i = s->cbUsed - 1;
+	i = s->len;
 	while (i-- > 0 && isspace((unsigned char)s->data[i])) {
 		s->data[i] = '\0';
-		s->cbUsed--;
+		s->len--;
 	}
 
 	/* Now leading ws */
-	for (i = 0; i < s->cbUsed; i++) {
+	for (i = 0; i < s->len; i++) {
 		if (!isspace((unsigned char)s->data[i]))
 			break;
 	}
 
 	if (i > 0) {
-		s->cbUsed -= i;
-		memmove(&s->data[0], &s->data[i], s->cbUsed);
-		s->data[s->cbUsed] = '\0';
+		s->len -= i;
+		memmove(&s->data[0], &s->data[i], s->len);
+		s->data[s->len] = '\0';
 	}
 
 }
@@ -480,7 +480,7 @@ void cstring_lower(cstring s)
 
 	assert(s != NULL);
 
-	for (i = 0; i < s->cbUsed; i++) {
+	for (i = 0; i < s->len; i++) {
 		if (isupper((unsigned char)s->data[i]))
 			s->data[i] = tolower((unsigned char)s->data[i]);
 	}
@@ -492,7 +492,7 @@ void cstring_upper(cstring s)
 
 	assert(s != NULL);
 
-	for (i = 0; i < s->cbUsed; i++) {
+	for (i = 0; i < s->len; i++) {
 		if (islower((unsigned char)s->data[i]))
 			s->data[i] = toupper((unsigned char)s->data[i]);
 	}

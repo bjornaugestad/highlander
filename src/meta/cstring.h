@@ -36,14 +36,12 @@ extern "C" {
  * reallocate. We also store the number of bytes used to avoid calling
  * strlen() all the time.
  */
-struct cstring_tag
-{
-	size_t cbAllocated;
-	size_t cbUsed;
+struct cstring_tag {
+	size_t size; /* Size of allocated buffer */
+	size_t len;  /* Length of string, excluding \0 */
 	char* data;
 };
 typedef struct cstring_tag* cstring;
-
 
 cstring cstring_new(void);
 cstring cstring_dup(const char* src);
@@ -61,7 +59,9 @@ int cstring_concat3(cstring dest, const char* src1, const char* src2, const char
 
 int cstring_pcat(cstring dest, const char *start, const char *end);
 
-int cstring_printf(cstring dest, size_t needs_max, const char* fmt, ...);
+int cstring_printf(cstring dest, size_t needs_max, const char* fmt, ...)
+	__attribute__((format(printf, 3, 4)));
+
 int cstring_vprintf(cstring dest, size_t needs_max, const char* fmt, va_list ap);
 
 cstring cstring_left(cstring src, size_t n);
@@ -82,9 +82,9 @@ static inline size_t cstring_length(cstring s)
 {
 	assert(NULL != s);
 	assert(NULL != s->data);
-	assert((strlen(s->data) + 1) == s->cbUsed);
+	assert(strlen(s->data) == s->len);
 
-	return s->cbUsed - 1;
+	return s->len;
 }
 
 static inline void cstring_free(cstring s)
@@ -110,7 +110,7 @@ static inline void cstring_recycle(cstring s)
 	assert(NULL != s->data);
 
 	*s->data = '\0';
-	s->cbUsed = 1;
+	s->len = 0;
 }
 
 /* Create an array of cstrings from a const char*, return the number
