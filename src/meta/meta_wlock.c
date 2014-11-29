@@ -27,10 +27,6 @@
 #include <meta_common.h>
 #include <meta_wlock.h>
 
-#ifdef CHECK_WLOCK
-#define DEBUG_ME
-#endif
-
 /*
  * Implementation of the meta_wlock ADT.
  */
@@ -38,14 +34,6 @@ struct wlock_tag {
 	pthread_mutexattr_t ma;
 	pthread_mutex_t lock;
 	pthread_cond_t condvar;
-
-#ifdef DEBUG_ME
-	/* Double check that we don't lock ourselves */
-	pthread_mutex_t debuglock; /* To avoid having helgrind report errors */
-	long locked_by;
-	int locked;
-#endif
-
 };
 
 wlock wlock_new(void)
@@ -57,12 +45,6 @@ wlock wlock_new(void)
 		pthread_mutexattr_settype(&p->ma, PTHREAD_MUTEX_ERRORCHECK);
 		pthread_mutex_init(&p->lock, &p->ma);
 		pthread_cond_init(&p->condvar, NULL);
-#ifdef DEBUG_ME
-		p->locked_by = -1;
-		p->locked = 0;
-		pthread_mutex_init(&p->debuglock, NULL);
-#endif
-
 	}
 
 	return p;
@@ -83,26 +65,11 @@ int wlock_lock(wlock p)
 	int err;
 
 	assert(p != NULL);
-#ifdef DEBUG_ME
-	pthread_mutex_lock(&p->debuglock);
-	if (p->locked && pthread_equal(pthread_self(), p->locked_by)) {
-		fprintf(stderr, "Recursive lock detected, tid==%ld\n",
-			(long)pthread_self());
-	}
-	pthread_mutex_unlock(&p->debuglock);
-#endif
 
 	if ((err = pthread_mutex_lock(&p->lock))) {
 		errno = err;
 		return 0;
 	}
-
-#ifdef DEBUG_ME
-	pthread_mutex_lock(&p->debuglock);
-	p->locked = 1;
-	p->locked_by = pthread_self();
-	pthread_mutex_unlock(&p->debuglock);
-#endif
 
 	return 1;
 }
@@ -112,32 +79,11 @@ int wlock_unlock(wlock p)
 	int err;
 
 	assert(p != NULL);
-#ifdef DEBUG_ME
-	pthread_mutex_lock(&p->debuglock);
-	fprintf(stderr, "Unlocking\n");
-	if (!p->locked) {
-		fprintf(stderr, "Thread %lu tried to unlock an unlocked lock\n",
-			pthread_self());
-	}
-	else if(!pthread_equal(pthread_self(), p->locked_by)) {
-		fprintf(stderr, "Mutex locked by someone else(%ld), we're %ld\n",
-			(long)p->locked_by, (long)pthread_self());
-	}
-	pthread_mutex_unlock(&p->debuglock);
-#endif
 
 	if ((err = pthread_mutex_unlock(&p->lock))) {
 		errno = err;
 		return 0;
 	}
-
-
-#ifdef DEBUG_ME
-	pthread_mutex_lock(&p->debuglock);
-	p->locked = 0;
-	p->locked_by = -2;
-	pthread_mutex_unlock(&p->debuglock);
-#endif
 
 	return 1;
 }
@@ -174,13 +120,6 @@ int wlock_wait(wlock p)
 	int err;
 
 	assert(p != NULL);
-#ifdef DEBUG_ME
-	pthread_mutex_lock(&p->debuglock);
-	fprintf(stderr, "Waiting\n");
-	assert(p->locked && "Crap, mutex is not locked");
-	assert(pthread_equal(pthread_self(), p->locked_by) && "Not locked by this thread");
-	pthread_mutex_unlock(&p->debuglock);
-#endif
 
 	/* wait for someone to signal us */
 	if ((err = pthread_cond_wait(&p->condvar, &p->lock))) {
@@ -188,16 +127,10 @@ int wlock_wait(wlock p)
 		return 0;
 	}
 
-#ifdef DEBUG_ME
-	p->locked = 1;
-	p->locked_by = pthread_self();
-#endif
 	return 1;
 }
 
 #ifdef CHECK_WLOCK
-
-#define DEBUG_ME
 
 static void* waiter(void *parg)
 {
@@ -225,10 +158,6 @@ static void* signaler(void *parg)
  *
  * What about broadcasting? All we need is one signaler and multiple waiters.
  * We can do that, no sweat.
- *
- * The *real* question is: For how long will we keep all the DEBUG_ME 
- * code here?
- * It is quite ugly.
  */
 
 int main(void)
