@@ -100,7 +100,7 @@ struct connection_tag {
 };
 
 /* Local helpers */
-static inline int nFillReadBuffer(connection conn)
+static inline int fill_read_buffer(connection conn)
 {
 	int success;
 	size_t cbRead;
@@ -333,7 +333,7 @@ int connection_getc(connection conn, int* pchar)
 
 	/* Fill buffer if empty */
 	if (readbuf_empty(conn))
-		success = nFillReadBuffer(conn);
+		success = fill_read_buffer(conn);
 
 	/* Get one character from buffer */
 	if (success) {
@@ -466,7 +466,7 @@ int connection_read(connection conn, void* buf, size_t cb)
 			/* Fill the read buffer by reading data from the socket.
 			 * Then copy data from the read buffer to buf.
 			 */
-			success = nFillReadBuffer(conn);
+			success = fill_read_buffer(conn);
 			if (success) {
 				if (fReadBufferContainsAtLeast(conn, cb)) {
 					if (cbCopyFromReadBuffer(conn, cbuf, cb) != cb) {

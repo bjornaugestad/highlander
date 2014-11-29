@@ -20,7 +20,7 @@
 #ifndef META_POOL_H
 #define META_POOL_H
 
-#include <stddef.h> /* for size_t */
+#include <stddef.h>
 
 #include <meta_common.h>
 

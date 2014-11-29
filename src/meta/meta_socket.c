@@ -61,15 +61,15 @@ int wait_for_data(meta_socket p, int timeout)
 	return sock_poll_for(p, timeout, POLLIN);
 }
 
-int sock_write(meta_socket p, const char* s, size_t cbToWrite, int timeout, int cRetries)
+int sock_write(meta_socket p, const char* buf, size_t count, int timeout, int nretries)
 {
-	ssize_t cbWritten = 0;
+	ssize_t nwritten = 0;
 
 	assert(p != NULL);
 	assert(p->fd >= 0);
-	assert(s != NULL);
+	assert(buf != NULL);
 	assert(timeout >= 0);
-	assert(cRetries >= 0);
+	assert(nretries >= 0);
 
 
 	do {
@@ -77,19 +77,19 @@ int sock_write(meta_socket p, const char* s, size_t cbToWrite, int timeout, int 
 			if (errno != EAGAIN)
 				return 0;
 		}
-		else if((cbWritten = write(p->fd, s, cbToWrite)) == -1) {
+		else if((nwritten = write(p->fd, buf, count)) == -1) {
 			perror("write");
 			return 0;
 		}
-		else if(cbWritten != (ssize_t)cbToWrite) {
-			s += cbWritten;
-			cbToWrite -= cbWritten;
+		else if(nwritten != (ssize_t)count) {
+			buf += nwritten;
+			count -= nwritten;
 		}
 
-	} while((ssize_t)cbToWrite != cbWritten && cRetries--);
+	} while((ssize_t)count != nwritten && nretries--);
 
 	/* If not able to write and no errors detected, we have a timeout */
-	if ((ssize_t)cbToWrite != cbWritten) {
+	if ((ssize_t)count != nwritten) {
 		errno = EAGAIN;
 		return 0;
 	}
@@ -136,54 +136,54 @@ static int sock_poll_for(meta_socket p, int timeout, int poll_for)
 
 	return status;
 }
-/* read UP TO AND INCLUDING cb bytes off the socket.
+/*
+ * read UP TO AND INCLUDING cbMax bytes off the socket.
  *	The rules are:
  *	1. We poll with a timeout of timeout
- *	2. We retry for cRetries times.
+ *	2. We retry for nretries times.
  *	The reason for this is:
  *	If the # of bytes requested are > one packet and poll()
  *	returns when the first packet returns, we must retry to
  *	get the second packet.
- */
-
-/* NOTE that sock_read() will return 1 even if zero bytes were read.
+ *
+ * NOTE that sock_read() will return 1 even if zero bytes were read.
  */
 int sock_read(
 	meta_socket p,
-	char *buf,
+	char *dest,
 	size_t cbMax,
 	int timeout,
-	int cRetries,
-	size_t* cbReadSum)
+	int nretries,
+	size_t* nreadsum)
 {
-	ssize_t cbRead = 0;
+	ssize_t nread = 0;
 	size_t cbToRead;
 
 	assert(p != NULL);
 	assert(p->fd >= 0);
 	assert(timeout >= 0);
-	assert(cRetries >= 0);
-	assert(buf != NULL);
-	assert(cbReadSum != NULL);
+	assert(nretries >= 0);
+	assert(dest != NULL);
+	assert(nreadsum != NULL);
 
-	*cbReadSum = 0;
+	*nreadsum = 0;
 	do {
-		cbToRead = cbMax - *cbReadSum;
+		cbToRead = cbMax - *nreadsum;
 
 		if (!wait_for_data(p, timeout)) {
 			if (errno != EAGAIN)
 				return 0;
 		}
-		else if((cbRead = read(p->fd, &buf[*cbReadSum], cbToRead)) == -1) {
+		else if((nread = read(p->fd, &dest[*nreadsum], cbToRead)) == -1) {
 			/*
 			 * We were unable to read data from the socket.
 			 * Inform the caller by returning 0.
 			 */
 			return 0;
 		}
-		else if(cbRead > 0) {
+		else if(nread > 0) {
 			/* We read at least one byte off the socket. */
-			*cbReadSum += cbRead;
+			*nreadsum += nread;
 
 			/* NOTE: This does not quite cut it, as servers will
 			 * block even when there's no more data to read. That
@@ -191,17 +191,17 @@ int sock_read(
 			 * to read(). So what to do?
 			 * 1. We can call poll() with a tiny timeout just to
 			 * see if there's more data available. If it is, increase
-			 * cRetries.
+			 * nretries.
 			 * 2. We can retrieve the MTU from the OS and check if
-			 * MTU == cbRead. That will not support fragmentation, though.
+			 * MTU == nread. That will not support fragmentation, though.
 			 * 3. We can specify separate values for retry for servers
 			 * and clients. That's what we do now, but huge downloads
 			 * to clients requires lots of retries.
 			 */
-			//cRetries++;
+			//nretries++;
 		}
 
-	} while(*cbReadSum < cbMax && cRetries--);
+	} while(*nreadsum < cbMax && nretries--);
 
 	return 1;
 }
@@ -216,7 +216,7 @@ static int sock_bind_inet(meta_socket p, const char* hostname, int port)
 {
 	struct hostent* host = NULL;
 	struct sockaddr_in my_addr;
-	socklen_t cb = (socklen_t)sizeof(my_addr);
+	socklen_t cb = (socklen_t)sizeof my_addr;
 
 	assert(p != NULL);
 	assert(!p->unix_socket);
@@ -230,7 +230,7 @@ static int sock_bind_inet(meta_socket p, const char* hostname, int port)
 		}
 	}
 
-	memset(&my_addr, '\0', sizeof(my_addr));
+	memset(&my_addr, '\0', sizeof my_addr);
 	my_addr.sin_port = htons(port);
 
 	if (hostname == NULL) {

@@ -91,13 +91,13 @@ void pair_free(pair p)
 
 static int pair_extend(pair p, size_t cElementsToAdd)
 {
-	struct element* pnew;
+	struct element* new;
 
 	assert(p != NULL);
 
-	pnew = realloc(p->element, sizeof *p->element * (p->nelem + cElementsToAdd));
-	if (pnew != NULL) {
-		p->element = pnew;
+	new = realloc(p->element, sizeof *p->element * (p->nelem + cElementsToAdd));
+	if (new != NULL) {
+		p->element = new;
 		p->nelem += cElementsToAdd;
 		return 1;
 	}
@@ -139,16 +139,16 @@ const char* pair_get(pair p, const char* name)
  */
 int pair_set(pair p, const char* name, const char* value)
 {
-	size_t i, cbAvailable, cbRequired;
+	size_t i, oldlen, newlen;
 
 	if (!pair_find(p, name, &i))
 		return pair_add(p, name, value);
 
 	/* Modify existing value */
-	cbAvailable = strlen(p->element[i].value) + 1;
-	cbRequired = strlen(value) + 1;
-	if (cbAvailable < cbRequired) {
-		char* s = realloc(p->element[i].value, cbRequired);
+	oldlen = strlen(p->element[i].value);
+	newlen = strlen(value);
+	if (oldlen < newlen) {
+		char* s = realloc(p->element[i].value, newlen + 1);
 		if (NULL == s)
 			return 0;
 
@@ -161,7 +161,7 @@ int pair_set(pair p, const char* name, const char* value)
 
 int pair_add(pair p, const char* name, const char* value)
 {
-	struct element* pnew; /* Just a helper to beautify the code */
+	struct element* new; /* Just a helper to beautify the code */
 
 	/* Resize when needed */
 	if (p->used == p->nelem) {
@@ -170,19 +170,19 @@ int pair_add(pair p, const char* name, const char* value)
 	}
 
 	/* Assign the helper */
-	pnew = &p->element[p->used];
-	if ((pnew->name = malloc(strlen(name) + 1)) == NULL)
+	new = &p->element[p->used];
+	if ((new->name = malloc(strlen(name) + 1)) == NULL)
 		return 0;
-	else if((pnew->value = malloc(strlen(value) + 1)) == NULL) {
-		free(pnew->name);
+
+	if((new->value = malloc(strlen(value) + 1)) == NULL) {
+		free(new->name);
 		return 0;
 	}
-	else {
-		strcpy(pnew->name, name);
-		strcpy(pnew->value, value);
-		p->used++;
-		return 1;
-	}
+
+	strcpy(new->name, name);
+	strcpy(new->value, value);
+	p->used++;
+	return 1;
 }
 
 const char* pair_get_name(pair p, size_t idx)

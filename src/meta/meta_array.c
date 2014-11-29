@@ -27,8 +27,8 @@
  */
 struct array_tag {
 	int can_grow;		/* Can the array grow automatically? */
-	size_t cUsed;		/* How many that currently is in use */
-	size_t cAllocated;	/* How many that currently is allocated */
+	size_t nused;		/* How many that currently is in use */
+	size_t nallocated;	/* How many that currently is allocated */
 	void** elements;	/* Pointer to data */
 };
 
@@ -46,8 +46,8 @@ array array_new(size_t nmemb, int can_grow)
 	}
 	else {
 		p->can_grow = can_grow;
-		p->cUsed = 0;
-		p->cAllocated = nmemb;
+		p->nused = 0;
+		p->nallocated = nmemb;
 	}
 
 	return p;
@@ -57,8 +57,8 @@ void array_free(array a, dtor free_fn)
 {
 	if (a != NULL) {
 		if (free_fn) {
-			while (a->cUsed--)
-				(*free_fn)(a->elements[a->cUsed]);
+			while (a->nused--)
+				(*free_fn)(a->elements[a->nused]);
 		}
 
 		free(a->elements);
@@ -69,7 +69,7 @@ void array_free(array a, dtor free_fn)
 size_t array_nelem(array a)
 {
 	assert(NULL != a);
-	return a->cUsed;
+	return a->nused;
 }
 
 void* array_get(array a, size_t ielem)
@@ -77,7 +77,7 @@ void* array_get(array a, size_t ielem)
 	assert(NULL != a);
 	assert(ielem < array_nelem(a));
 
-	if (ielem >= a->cUsed)
+	if (ielem >= a->nused)
 		return NULL;
 	else
 		return a->elements[ielem];
@@ -85,20 +85,20 @@ void* array_get(array a, size_t ielem)
 
 int array_extend(array a, size_t nmemb)
 {
-	void* pnew;
-	size_t n, cb;
+	void* tmp;
+	size_t n, size;
 
 	assert(NULL != a);
 	assert(nmemb > 0);
 
-	n = a->cAllocated + nmemb;
-	cb = sizeof(*a->elements) * n;
+	n = a->nallocated + nmemb;
+	size = sizeof *a->elements * n;
 
-	if ((pnew = realloc(a->elements, cb)) == NULL)
+	if ((tmp = realloc(a->elements, size)) == NULL)
 		return 0;
 
-	a->elements = pnew;
-	a->cAllocated = n;
+	a->elements = tmp;
+	a->nallocated = n;
 	return 1;
 }
 
@@ -107,12 +107,12 @@ int array_add(array a, void* elem)
 	assert(NULL != a);
 	assert(NULL != elem);
 
-	if (a->cUsed == a->cAllocated) {
-		if (!a->can_grow || !array_extend(a, a->cUsed))
+	if (a->nused == a->nallocated) {
+		if (!a->can_grow || !array_extend(a, a->nused))
 			return 0;
 	}
 
-	a->elements[a->cUsed++] = elem;
+	a->elements[a->nused++] = elem;
 	return 1;
 }
 

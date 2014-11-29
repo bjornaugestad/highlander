@@ -20,7 +20,7 @@
 #ifndef META_SLOTBUF_H
 #define META_SLOTBUF_H
 
-#include <stddef.h> /* for size_t */
+#include <stddef.h>
 
 #include <meta_common.h>
 

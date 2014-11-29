@@ -18,8 +18,8 @@
  */
 
 #include <string.h>
-#include <stdarg.h> /* for vsnprintf */
-#include <stdio.h> /* for vsnprintf */
+#include <stdarg.h>
+#include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
 #include <stddef.h>

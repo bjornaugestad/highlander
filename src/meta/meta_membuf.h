@@ -143,7 +143,6 @@ static inline int membuf_unget(membuf mb)
 	return 0;
 }
 
-
 /*
  * Returns a pointer to the data in the buffer. Nice to have
  * if you e.g. want to pass the contents of the buffer as an argument to

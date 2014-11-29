@@ -28,10 +28,9 @@ extern "C" {
  * pair is used as a thread-safe way of storing multiple name/value pairs.
  * COMMENT: This is a map, not a "pair". The adt really needs to be renamed some day.
  */
-struct pair_;
 typedef struct pair_tag* pair;
-pair	pair_new(size_t nelem);
-void	pair_free(pair p);
+pair pair_new(size_t nelem);
+void pair_free(pair p);
 
 int	pair_add(pair p, const char* name, const char* value);
 int	pair_set(pair p, const char* name, const char* value);
@@ -43,7 +42,7 @@ const char* pair_get(pair p, const char* name);
  * We avoid a lot of strcmps() this way.
  */
 const char* pair_get_value_by_index(pair p, size_t i);
-size_t	pair_size(pair p);
+size_t pair_size(pair p);
 
 #ifdef __cplusplus
 }

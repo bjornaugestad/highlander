@@ -349,8 +349,7 @@ static void assign_rw_buffers(void* vse, void* vconn)
 	connection_assign_write_buffer(conn, wb);
 }
 
-static connection
-tcp_server_get_connection(tcp_server srv)
+static connection tcp_server_get_connection(tcp_server srv)
 {
 	connection conn;
 
