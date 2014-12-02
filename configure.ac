@@ -9,7 +9,7 @@ LT_INIT([dlopen])
 LT_PREREQ([2.2])
 
 
-AC_CONFIG_SRCDIR([src/http/internals.h])
+AC_CONFIG_SRCDIR([http/src/internals.h])
 # AC_CONFIG_HEADER([config.h])
 
 # Checks for programs.
@@ -18,7 +18,7 @@ AC_PROG_CC_C_O
 AM_PROG_CC_C_O
 
 # Checks for header files.
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h limits.h netdb.h netinet/in.h sys/socket.h syslog.h unistd.h])
+#AC_CHECK_HEADERS([arpa/inet.h fcntl.h limits.h netdb.h netinet/in.h sys/socket.h syslog.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_MODE_T
@@ -36,14 +36,17 @@ AC_ARG_ENABLE([valgrind],
 	esac],[valgrind=false])
 AM_CONDITIONAL([WITH_VALGRIND], [test x$valgrind = xtrue])
 
-AC_CONFIG_FILES([Makefile
+AC_CONFIG_FILES([
+	Makefile
 	tools/Makefile
-	src/Makefile
-	src/meta/Makefile
-	src/http/Makefile
+	meta/Makefile
+	meta/src/Makefile
+	meta/doc/Makefile
+	http/Makefile
+	http/src/Makefile
+	http/doc/Makefile
 	apps/Makefile
     apps/webcache/Makefile apps/ftp/Makefile apps/helloworld/Makefile
-    doc/Makefile
     ])
 AC_OUTPUT
 

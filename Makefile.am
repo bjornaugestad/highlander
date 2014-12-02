@@ -1,4 +1,4 @@
-SUBDIRS=tools src apps doc
+SUBDIRS=tools meta http apps 
 LDADD=-lpthread -L.
 AUTOMAKE_OPTIONS=subdir-objects
 
