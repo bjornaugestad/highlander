@@ -44,7 +44,6 @@ libhighlander_la_CFLAGS=\
 	-D_GNU_SOURCE -std=gnu99 -D_REENTRANT -pthread\
 	-I$(srcdir)\
 	-I$(top_srcdir)/meta/src\
-	-I$(top_srcdir)/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\
 	-O2 -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
     -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
@@ -53,7 +52,6 @@ libhighlanderd_la_CFLAGS=\
 	-D_GNU_SOURCE -std=gnu99 -D_REENTRANT -pthread\
 	-I$(srcdir)\
 	-I$(top_srcdir)/meta/src\
-	-I$(top_srcdir)/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\
 	-O0 -ggdb -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
     -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
@@ -75,12 +73,12 @@ check_PROGRAMS=\
 attribute_check_SOURCES=attribute.c
 attribute_check_CFLAGS=-DCHECK_ATTRIBUTE $(AM_CFLAGS)
 attribute_check_LDADD=-lmeta -lpthread
-attribute_check_LDFLAGS=-L$(top_srcdir)/meta/src
+attribute_check_LDFLAGS=-L$(top_distdir)/meta/src
 
 cookie_check_SOURCES=cookies.c
 cookie_check_CFLAGS=-DCHECK_COOKIE $(AM_CFLAGS)
 cookie_check_LDADD=-lhighlander -lmeta -lpthread
-cookie_check_LDFLAGS=-L$(top_srcdir)/meta/src
+cookie_check_LDFLAGS=-L$(top_distdir)/meta/src
 
 rfc1738_check_SOURCES=rfc1738.c
 rfc1738_check_CFLAGS=-DCHECK_RFC1738 $(AM_CFLAGS)

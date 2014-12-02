@@ -2,7 +2,7 @@ bin_PROGRAMS=helloworld
 
 helloworld_SOURCES=main.c
 
-AM_CPPFLAGS=-I$(top_srcdir)/src/http -I$(top_srcdir)/src/meta
+AM_CPPFLAGS=-I$(top_distdir)/http/src -I$(top_distdir)/meta/src
 AM_CFLAGS=-p -pg
 
 helloworld_CFLAGS=\
@@ -10,6 +10,6 @@ helloworld_CFLAGS=\
 	-Wshadow\
 	-Wall -pedantic -W -Werror -Wno-long-long -pthread -DNDEBUG -O3
 
-helloworld_LDFLAGS=-L../../src/meta -L../../src/http
+helloworld_LDFLAGS=-L$(top_distdir)/meta/src -L$(top_distdir)/http/src
 helloworld_LDADD=-lhighlander -lmeta -lpthread
 
