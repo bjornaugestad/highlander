@@ -1,1 +1,1 @@
-SUBDIRS = helloworld webcache ftp
+SUBDIRS = helloworld webcache ftp echoserver
