@@ -1,3 +1,5 @@
+AUTOMAKE_OPTIONS=subdir-objects
+
 # The main target
 lib_LTLIBRARIES=libmeta.la libmetad.la
 
@@ -88,3 +90,98 @@ if WITH_VALGRIND
 libmeta_a_CFLAGS+=-DWITH_VALGRIND=1 
 endif
 
+TESTS=\
+	sampler_check\
+	bitset_check\
+	fifo_check\
+	list_check\
+	wlock_check\
+	stack_check\
+	configfile_check\
+	cstring_check\
+	membuf_check\
+	pool_check\
+	array_check\
+	cache_check\
+	filecache_check\
+	stringmap_check\
+	miscfunc_check\
+	tsb_check\
+	pair_check
+
+check_PROGRAMS=\
+	sampler_check\
+	list_check\
+	bitset_check\
+	fifo_check\
+	wlock_check\
+	stack_check\
+	configfile_check\
+	cstring_check\
+	membuf_check\
+	pool_check\
+	array_check\
+	cache_check\
+	filecache_check\
+	stringmap_check\
+	miscfunc_check\
+	tsb_check\
+	pair_check
+
+
+list_check_SOURCES=meta_list.c meta_common.c
+list_check_CFLAGS=-DLIST_CHECK $(AM_CFLAGS) 
+
+bitset_check_SOURCES=meta_bitset.c meta_common.c
+bitset_check_CFLAGS=-DBITSET_CHECK $(AM_CFLAGS) 
+
+configfile_check_SOURCES=meta_configfile.c meta_common.c
+configfile_check_CFLAGS=-DCHECK_CONFIGFILE $(AM_CFLAGS) 
+
+cstring_check_SOURCES=cstring.c meta_common.c
+cstring_check_CFLAGS=-DCHECK_CSTRING $(AM_CFLAGS)
+
+membuf_check_SOURCES=meta_membuf.c meta_common.c
+membuf_check_CFLAGS=-DCHECK_MEMBUF $(AM_CFLAGS)
+
+pool_check_SOURCES=meta_pool.c meta_array.c meta_common.c
+pool_check_CFLAGS=-DCHECK_POOL $(AM_CFLAGS)
+
+array_check_SOURCES=meta_array.c meta_common.c
+array_check_CFLAGS=-DCHECK_ARRAY $(AM_CFLAGS)
+
+cache_check_SOURCES=meta_cache.c meta_list.c meta_common.c
+cache_check_CFLAGS=-DCHECK_CACHE $(AM_CFLAGS)
+
+filecache_check_SOURCES=meta_filecache.c meta_stringmap.c meta_cache.c meta_list.c meta_common.c
+filecache_check_CFLAGS=-DCHECK_FILECACHE $(AM_CFLAGS)
+
+stringmap_check_SOURCES=meta_stringmap.c meta_list.c meta_common.c
+stringmap_check_CFLAGS=-DCHECK_STRINGMAP $(AM_CFLAGS)
+
+miscfunc_check_SOURCES=meta_misc.c meta_common.c
+miscfunc_check_CFLAGS=-DCHECK_MISCFUNC $(AM_CFLAGS)
+
+pair_check_SOURCES=meta_pair.c meta_common.c
+pair_check_CFLAGS=-DCHECK_PAIR $(AM_CFLAGS)
+
+fifo_check_SOURCES=meta_fifo.c meta_wlock.c meta_common.c
+fifo_check_CFLAGS=-DCHECK_FIFO $(AM_CFLAGS)
+
+tsb_check_SOURCES=meta_tsb.c  meta_common.c
+tsb_check_CFLAGS=-DCHECK_TSB $(AM_CFLAGS)
+
+wlock_check_SOURCES=meta_wlock.c meta_common.c
+wlock_check_CFLAGS=-DCHECK_WLOCK -O0 -ggdb -D_GNU_SOURCE -std=gnu99 -D_REENTRANT $(AM_CFLAGS)
+#wlock_check_CFLAGS=-DCHECK_WLOCK -O0 -ggdb $(AM_CFLAGS)
+
+stack_check_SOURCES=meta_stack.c meta_list.c meta_common.c
+stack_check_CFLAGS=-DCHECK_STACK -O0 -ggdb $(AM_CFLAGS)
+
+sampler_check_SOURCES=meta_sampler.c meta_common.c
+sampler_check_CFLAGS=-DCHECK_SAMPLER $(AM_CFLAGS)
+sampler_check_LDADD=-lpthread
+sampler_check_LDFLAGS=-ggdb -O0
+
+
+LDADD=-lpthread

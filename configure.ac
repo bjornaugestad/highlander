@@ -43,7 +43,6 @@ AC_CONFIG_FILES([Makefile
 	src/http/Makefile
 	apps/Makefile
     apps/webcache/Makefile apps/ftp/Makefile apps/helloworld/Makefile
-    tests/Makefile
     doc/Makefile
     ])
 AC_OUTPUT
