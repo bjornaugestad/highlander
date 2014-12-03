@@ -1604,8 +1604,8 @@ read_response_header_fields(connection conn, http_response response, meta_error 
 			return 1;
 		}
 
-		if (!get_field_name(buf, name, CCH_FIELDNAME_MAX)
-		|| !get_field_value(buf, value, CCH_FIELDVALUE_MAX)) {
+		if (!get_field_name(buf, name, sizeof name)
+		|| !get_field_value(buf, value, sizeof value)) {
 			return set_http_error(e, HTTP_400_BAD_REQUEST);
 		}
 

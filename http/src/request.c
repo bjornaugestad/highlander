@@ -1601,45 +1601,47 @@ int read_line(connection conn, char* buf, size_t cchMax, meta_error e)
 	return 0;
 }
 
-int get_field_name(const char* buf, char* name, size_t cchNameMax)
+int get_field_name(const char* src, char* dest, size_t destsize)
 {
 	char *s;
 	size_t span;
 
-	if ((s = strchr(buf, ':')) == NULL)
+	if ((s = strchr(src, ':')) == NULL)
 		return 0;
-	else if ((span = (size_t)(s - buf)) >= cchNameMax)
+
+	span = (size_t)(s - src);
+	if (span + 1 >= destsize)
 		return 0;
-	else {
-		memcpy(name, buf, (size_t)span);
-		name[span] = '\0';
-		return 1;
-	}
+
+	memcpy(dest, src, span);
+	dest[span] = '\0';
+	return 1;
 }
 
 /*
  * See get_field_name() for more info.
  * returns 0 on error, !0 on success
  */
-int get_field_value(const char* buf, char* value, size_t cchValueMax)
+int get_field_value(const char* src, char* dest, size_t destsize)
 {
 	/* Locate separator as in name: value */
-	const char *s = strchr(buf, ':');
-	if (s) {
-		/* Skip : and any spaces after separator */
-		s++;
-		while (isspace((int)*s))
-			s++;
+	const char *s = strchr(src, ':');
+	size_t len;
 
-		if (strlen(s) > cchValueMax)
-			return 0;
-		else {
-			strcpy(value, s);
-			return 1;
-		}
-	}
-	else
+	if (s == NULL)
 		return 0;
+
+	/* Skip : and any spaces after separator */
+	s++;
+	while (isspace((int)*s))
+		s++;
+
+	len = strlen(s);
+	if (len >= destsize)
+		return 0;
+
+	memcpy(dest, s, len + 1);
+	return 1;
 }
 
 /*
@@ -1655,8 +1657,8 @@ static int parse_one_field(
 	char name[CCH_FIELDNAME_MAX + 1];
 	char value[CCH_FIELDVALUE_MAX + 1];
 
-	if (!get_field_name(buf, name, CCH_FIELDNAME_MAX)
-	|| !get_field_value(buf, value, CCH_FIELDVALUE_MAX))
+	if (!get_field_name(buf, name, sizeof name)
+	|| !get_field_value(buf, value, sizeof value))
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
 	fs_lower(name);
@@ -1676,8 +1678,8 @@ read_request_header_fields(connection conn, http_request request, meta_error e)
 		else if (strlen(buf) == 0) {
 			/*
 			 * An empty buffer means that we have read the \r\n sequence
-			 * separating header fields from entities or terminating the message.
-			 * This means that there is no more header fields to read.
+			 * separating header fields from entities or terminating the
+			 * message. This means that there is no more header fields to read.
 			 */
 			return 1;
 		}
