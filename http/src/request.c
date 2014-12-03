@@ -674,7 +674,7 @@ int request_accepts_language(http_request r, const char *val)
 		return 1;
 
 	for (i = 0;; i++) {
-		if (!get_word_from_string(s, buf, sizeof(buf) - 1, i))
+		if (!get_word_from_string(s, buf, sizeof buf, i))
 			return 0; /* No more words in string. */
 
 		if (0 == strcmp(buf, val))
@@ -1703,7 +1703,7 @@ parse_request_method(const char* line, http_request request, meta_error e)
 	char strMethod[CCH_METHOD_MAX + 1];
 	http_method method;
 
-	if (!get_word_from_string(line, strMethod, CCH_METHOD_MAX, 0))
+	if (!get_word_from_string(line, strMethod, sizeof strMethod, 0))
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
 	if ((method = get_method(strMethod)) == METHOD_UNKNOWN)
@@ -1721,27 +1721,27 @@ static inline int more_uri_params_available(const char *s)
 	return strchr(s, '=') != NULL;
 }
 
-static int get_uri_param_name(const char* src, char name[], size_t cchMax)
+static int get_uri_param_name(const char* src, char dest[], size_t destsize)
 {
 
 	/* '=' is required */
 	if (strchr(src, '=') == NULL)
 		return HTTP_400_BAD_REQUEST;
-	else if(!copy_word(src, name, '=', cchMax))
+	else if (!copy_word(src, dest, '=', destsize))
 		return HTTP_414_REQUEST_URI_TOO_LARGE;
 	else
 		return 0;
 }
 
 /* Locate '=' and skip it, then copy value */
-static int get_uri_param_value(const char* src, char value[], size_t cchMax)
+static int get_uri_param_value(const char* src, char dest[], size_t destsize)
 {
 	char *p;
 
 	p = strchr(src, '=');
 	if (NULL == p)
 		return HTTP_400_BAD_REQUEST;
-	else if(!copy_word(++p, value, '&', cchMax))
+	else if(!copy_word(++p, dest, '&', destsize))
 		return HTTP_414_REQUEST_URI_TOO_LARGE;
 	else
 		return 0;
@@ -1776,10 +1776,10 @@ static int set_one_uri_param(http_request request, char *s, meta_error e)
 
 	int error;
 
-	if ((error = get_uri_param_name(s, name, sizeof(name) - 1))) {
+	if ((error = get_uri_param_name(s, name, sizeof name))) {
 		return set_http_error(e, error);
 	}
-	else if((error = get_uri_param_value(s, value, sizeof(value) - 1))) {
+	else if ((error = get_uri_param_value(s, value, sizeof value))) {
 		return set_http_error(e, error);
 	}
 	else if((error = decode_uri_param_value(decoded, value, sizeof(decoded)))) {
@@ -1850,7 +1850,7 @@ parse_request_uri(const char* line, http_request request, meta_error e)
 
 	if (strlen(line) >= CCH_URI_MAX)
 		return set_http_error(e, HTTP_414_REQUEST_URI_TOO_LARGE);
-	else if(!get_word_from_string(line, uri, CCH_URI_MAX, 1))
+	else if(!get_word_from_string(line, uri, sizeof uri, 1))
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 	else if(fUriHasParams(uri))
 		return set_uri_and_params(request, uri, e);
@@ -1880,7 +1880,7 @@ parse_request_version(const char* line, http_request request, meta_error e)
 	if (strlen(&line[iword]) > CCH_VERSION_MAX)
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
-	if (!get_word_from_string(line, strVersion, CCH_VERSION_MAX, 2))
+	if (!get_word_from_string(line, strVersion, sizeof strVersion, 2))
 		return set_app_error(e, EFS_INTERNAL);
 
 	if ((version = get_version(strVersion)) == VERSION_UNKNOWN)
@@ -1942,7 +1942,8 @@ static const struct request_mapper {
 };
 
 
-/* Return an index in the request header array, or -1 if the field was not found. */
+/* Return an index in the request header array, or -1 if
+ * the field was not found. */
 int find_request_header(const char* name)
 {
 	int i, nelem = sizeof request_header_fields / sizeof *request_header_fields;

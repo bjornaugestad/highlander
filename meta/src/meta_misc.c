@@ -133,15 +133,15 @@ int get_word_count(const char *s)
 
 int get_word_from_string(
 	const char *src,
-	char word[],
-	size_t cchWordMax,	/* Max # of chars excl. '\0' in word */
-	size_t iWord)		/* zero-based index of word to copy */
+	char dest[],
+	size_t destsize,
+	size_t iWord)		/* zero-based index of dest to copy */
 {
 	int i;
 
 	assert(src != NULL);
-	assert(word != NULL);
-	assert(cchWordMax > 1);
+	assert(dest != NULL);
+	assert(destsize > 1);
 
 	i = find_word(src, iWord);
 
@@ -151,29 +151,29 @@ int get_word_from_string(
 
 	/* copy the word */
 	src += i;
-	return copy_word(src, word, ' ', cchWordMax);
+	return copy_word(src, dest, ' ', destsize);
 }
 
 int copy_word(
 	const char *src,
-	char word[],
+	char dest[],
 	int separator,
-	size_t cchWordMax)
+	size_t destsize)
 {
 	size_t i = 0;
 
 	assert(src != NULL);
-	assert(word != NULL);
+	assert(dest != NULL);
 	assert(separator != '\0');
-	assert(cchWordMax > 0);
+	assert(destsize > 0);
 
-	while (*src != '\0' && *src != separator && i < cchWordMax)
-		word[i++] = *src++;
+	while (*src != '\0' && *src != separator && i < destsize)
+		dest[i++] = *src++;
 
-	if (i == cchWordMax)
+	if (i == destsize)
 		return 0;
 
-	word[i] = '\0';
+	dest[i] = '\0';
 	return 1;
 }
 
