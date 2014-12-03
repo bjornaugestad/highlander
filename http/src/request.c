@@ -125,7 +125,7 @@ struct http_request_tag {
 	 * keep it as a byte buffer instead of a cstring
 	 * We alloc and free this buffer.
 	 */
-	char* entity_buf;
+	char *entity_buf;
 };
 
 
@@ -210,7 +210,7 @@ void request_set_method(http_request p, http_method method)
 	p->method = method;
 }
 
-int request_set_uri(http_request p, const char* value)
+int request_set_uri(http_request p, const char *value)
 {
 	assert(NULL != p);
 	assert(NULL != value);
@@ -257,7 +257,7 @@ http_version request_get_version(http_request p)
 	return p->version;
 }
 
-int request_add_param(http_request p, const char* name, const char* value)
+int request_add_param(http_request p, const char *name, const char *value)
 {
 	assert(NULL != p);
 	assert(NULL != name);
@@ -301,7 +301,7 @@ const char* request_get_parameter_name(http_request p, size_t i)
  * Returns NULL if no params set, else the value of the parameter
  * associated with the name. NULL if name not found in p->params.
  */
-const char* request_get_parameter_value(const http_request p, const char* pname)
+const char* request_get_parameter_value(const http_request p, const char *pname)
 {
 	assert(p != NULL);
 
@@ -340,7 +340,7 @@ cookie request_get_cookie(const http_request p, size_t i)
 	return list_get_item(p->cookies, i);
 }
 
-int request_set_accept(http_request r, const char* value)
+int request_set_accept(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
@@ -352,7 +352,7 @@ int request_set_accept(http_request r, const char* value)
 	return 1;
 }
 
-int request_set_accept_charset(http_request r, const char* value)
+int request_set_accept_charset(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
@@ -364,7 +364,7 @@ int request_set_accept_charset(http_request r, const char* value)
 	return 1;
 }
 
-int request_set_accept_encoding(http_request r, const char* value)
+int request_set_accept_encoding(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
@@ -376,7 +376,7 @@ int request_set_accept_encoding(http_request r, const char* value)
 	return 1;
 }
 
-int request_set_accept_language(http_request r, const char* value)
+int request_set_accept_language(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
@@ -388,7 +388,7 @@ int request_set_accept_language(http_request r, const char* value)
 	return 1;
 }
 
-int request_set_authorization(http_request r, const char* value)
+int request_set_authorization(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
@@ -400,7 +400,7 @@ int request_set_authorization(http_request r, const char* value)
 	return 1;
 }
 
-int request_set_from(http_request r, const char* value)
+int request_set_from(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
@@ -421,7 +421,7 @@ void request_set_if_modified_since(http_request r, time_t value)
 	request_set_flag(r, REQUEST_IF_MODIFIED_SINCE_SET);
 }
 
-int request_set_referer(http_request r, const char* value)
+int request_set_referer(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
@@ -433,7 +433,7 @@ int request_set_referer(http_request r, const char* value)
 	return 1;
 }
 
-int request_set_user_agent(http_request r, const char* value)
+int request_set_user_agent(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
@@ -449,7 +449,7 @@ int request_set_user_agent(http_request r, const char* value)
 Tue Feb 12 18:20:04 CET 2002
 Not in use?
 
-int request_set_link(http_request r, const char* value)
+int request_set_link(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
@@ -461,7 +461,7 @@ int request_set_link(http_request r, const char* value)
 	return 1;
 }
 
-int request_set_title(http_request r, const char* value)
+int request_set_title(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
@@ -492,7 +492,7 @@ int request_set_mime_version(http_request r, int major, int minor, meta_error e)
 	}
 }
 
-int request_set_range(http_request r, const char* value)
+int request_set_range(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
@@ -504,7 +504,7 @@ int request_set_range(http_request r, const char* value)
 	return 1;
 }
 
-int request_set_te(http_request r, const char* value)
+int request_set_te(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
@@ -516,7 +516,7 @@ int request_set_te(http_request r, const char* value)
 	return 1;
 }
 
-int request_set_expect(http_request r, const char* value)
+int request_set_expect(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
@@ -528,7 +528,7 @@ int request_set_expect(http_request r, const char* value)
 	return 1;
 }
 
-int request_set_host(http_request r, const char* value)
+int request_set_host(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
@@ -541,7 +541,7 @@ int request_set_host(http_request r, const char* value)
 	return 1;
 }
 
-int request_set_if_match(http_request r, const char* value)
+int request_set_if_match(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
@@ -553,7 +553,7 @@ int request_set_if_match(http_request r, const char* value)
 	return 1;
 }
 
-int request_set_if_none_match(http_request r, const char* value)
+int request_set_if_none_match(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
@@ -565,7 +565,7 @@ int request_set_if_none_match(http_request r, const char* value)
 	return 1;
 }
 
-int request_set_if_range(http_request r, const char* value)
+int request_set_if_range(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
@@ -652,7 +652,7 @@ http_request request_new(void)
 	return p;
 }
 
-int request_accepts_media_type(http_request r, const char* val)
+int request_accepts_media_type(http_request r, const char *val)
 {
 	/* We accept if request has no opinion */
 	if (!request_flag_is_set(r, REQUEST_ACCEPT_SET))
@@ -662,11 +662,11 @@ int request_accepts_media_type(http_request r, const char* val)
 		return strstr(c_str(r->accept), val) == NULL ? 0 : 1;
 }
 
-int request_accepts_language(http_request r, const char* val)
+int request_accepts_language(http_request r, const char *val)
 {
 	/* We do not want to mix e.g. "en" and "den" so check every one */
 	char buf[CCH_LANGUAGE_MAX + 1];
-	const char* s = c_str(r->accept_language);
+	const char *s = c_str(r->accept_language);
 	size_t i = 0;
 
 	/* We accept the language if request has no opinion */
@@ -745,7 +745,7 @@ size_t request_get_field_count(http_request request)
 }
 
 /* Return a pointer to the start of field n, where & is field separator */
-static const char* get_field_start(const char* content, size_t cb, size_t idx)
+static const char* get_field_start(const char *content, size_t cb, size_t idx)
 {
 	const char *start, *stop;
 
@@ -851,7 +851,7 @@ int request_get_field_name(http_request request, size_t i, char *s, size_t cb)
 
 int request_get_field_value(http_request request, size_t i, char *s, size_t cb)
 {
-	const char* start;
+	const char *start;
 	size_t namelen, valuelen;
 
 	assert(request != NULL);
@@ -884,7 +884,7 @@ int request_get_field_value(http_request request, size_t i, char *s, size_t cb)
 /* Just iterate on fieldcount and look for the correct name. Then
  * copy the value and return.
  */
-int request_get_field_value_by_name(http_request request, const char* name, char *value, size_t cb)
+int request_get_field_value_by_name(http_request request, const char *name, char *value, size_t cb)
 {
 	size_t i, fieldcount;
 
@@ -938,80 +938,6 @@ size_t request_get_content_length(http_request request)
 }
 
 /* http request handlers */
-static int parse_authorization(http_request r, const char* s, meta_error e);
-static int parse_expect(http_request r, const char* s, meta_error e);
-static int parse_if_match(http_request r, const char* s, meta_error e);
-static int parse_if_modified_since(http_request r, const char* s, meta_error e);
-static int parse_if_none_match(http_request r, const char* s, meta_error e);
-static int parse_if_range(http_request r, const char* s, meta_error e);
-static int parse_if_unmodified_since(http_request r, const char* s, meta_error e);
-static int parse_max_forwards(http_request r, const char* s, meta_error e);
-static int parse_proxy_authorization(http_request r, const char* s, meta_error e);
-static int parse_range(http_request r, const char* s, meta_error e);
-static int parse_referer(http_request r, const char* s, meta_error e);
-static int parse_te(http_request r, const char* s, meta_error e);
-static int parse_mime_version(http_request r, const char* s, meta_error e);
-static int parse_from(http_request req, const char* value, meta_error e);
-static int parse_host(http_request req, const char* value, meta_error e);
-static int parse_user_agent(http_request req, const char* value, meta_error e);
-static int parse_accept(http_request req, const char* value, meta_error e);
-static int parse_accept_charset(http_request req, const char* value, meta_error e);
-static int parse_accept_encoding(http_request req, const char* value, meta_error e);
-static int parse_accept_language(http_request req, const char* value, meta_error e);
-
-static const struct request_mapper {
-	const char* name;
-	int (*handler)(http_request req, const char* value, meta_error e);
-} request_header_fields[] = {
-	{ "user-agent",			parse_user_agent },
-	{ "cookie",				parse_cookie },
-	{ "host",				parse_host },
-
-	{ "from",				parse_from },
-	{ "accept",				parse_accept },
-	{ "accept-charset",		parse_accept_charset },
-	{ "accept-encoding",	parse_accept_encoding },
-	{ "accept-language",	parse_accept_language },
-
-
-	{ "mime-version",		parse_mime_version },
-
-	/* request-header */
-	{ "authorization",		parse_authorization },
-	{ "expect",				parse_expect },
-	{ "if-match",			parse_if_match },
-	{ "if-modified-since",	parse_if_modified_since },
-	{ "if-none-match",		parse_if_none_match },
-	{ "if-range",			parse_if_range },
-	{ "if-unmodified-since",parse_if_unmodified_since },
-	{ "max-forwards",		parse_max_forwards },
-	{ "proxy-authorization",parse_proxy_authorization },
-	{ "range",				parse_range },
-	{ "referer",			parse_referer },
-	{ "te",					parse_te },
-};
-
-
-/* Return an index in the request header array, or -1 if the field was not found. */
-int find_request_header(const char* name)
-{
-	int i, nelem = sizeof request_header_fields / sizeof *request_header_fields;
-	for (i = 0; i < nelem; i++) {
-		if (strcmp(request_header_fields[i].name, name) == 0)
-			return i;
-	}
-
-	return -1;
-}
-
-int parse_request_header(int idx, http_request req, const char* value, meta_error e)
-{
-	assert(idx >= 0);
-	assert((size_t)idx < sizeof request_header_fields / sizeof *request_header_fields);
-
-	return request_header_fields[idx].handler(req, value, e);
-}
-
 static int parse_authorization(http_request req, const char* value, meta_error e)
 {
 	assert(NULL != req);
@@ -1981,6 +1907,59 @@ parse_request_line(const char* line, http_request request, meta_error e)
 		return 1;
 	else
 		return 0;
+}
+
+static const struct request_mapper {
+	const char* name;
+	int (*handler)(http_request req, const char* value, meta_error e);
+} request_header_fields[] = {
+	{ "user-agent",			parse_user_agent },
+	{ "cookie",				parse_cookie },
+	{ "host",				parse_host },
+
+	{ "from",				parse_from },
+	{ "accept",				parse_accept },
+	{ "accept-charset",		parse_accept_charset },
+	{ "accept-encoding",	parse_accept_encoding },
+	{ "accept-language",	parse_accept_language },
+
+
+	{ "mime-version",		parse_mime_version },
+
+	/* request-header */
+	{ "authorization",		parse_authorization },
+	{ "expect",				parse_expect },
+	{ "if-match",			parse_if_match },
+	{ "if-modified-since",	parse_if_modified_since },
+	{ "if-none-match",		parse_if_none_match },
+	{ "if-range",			parse_if_range },
+	{ "if-unmodified-since",parse_if_unmodified_since },
+	{ "max-forwards",		parse_max_forwards },
+	{ "proxy-authorization",parse_proxy_authorization },
+	{ "range",				parse_range },
+	{ "referer",			parse_referer },
+	{ "te",					parse_te },
+};
+
+
+/* Return an index in the request header array, or -1 if the field was not found. */
+int find_request_header(const char* name)
+{
+	int i, nelem = sizeof request_header_fields / sizeof *request_header_fields;
+	for (i = 0; i < nelem; i++) {
+		if (strcmp(request_header_fields[i].name, name) == 0)
+			return i;
+	}
+
+	return -1;
+}
+
+int parse_request_header(int idx, http_request req, const char* value, meta_error e)
+{
+	assert(idx >= 0);
+	assert((size_t)idx < sizeof request_header_fields / sizeof *request_header_fields);
+
+	return request_header_fields[idx].handler(req, value, e);
 }
 
 static int

@@ -27,9 +27,7 @@
 #include <internals.h>
 
 typedef unsigned long flagtype;
-static int entity_header_flag_is_set(entity_header gh, flagtype flag);
-static void entity_header_set_flag(entity_header gh, flagtype flag);
-static void entity_header_clear_flags(entity_header gh);
+
 #define ENTITY_HEADER_ALLOW_SET				(0x01)
 #define ENTITY_HEADER_CONTENT_ENCODING_SET	(0x02)
 #define ENTITY_HEADER_CONTENT_LANGUAGE_SET	(0x04)
@@ -55,6 +53,28 @@ struct entity_header_tag {
 	time_t expires;
 	time_t last_modified;
 };
+
+static int entity_header_flag_is_set(entity_header eh, flagtype flag)
+{
+	assert(NULL != eh);
+	assert(flag > 0);
+
+	return eh->flags & flag ? 1 : 0;
+}
+
+static void entity_header_set_flag(entity_header eh, flagtype flag)
+{
+	assert(NULL != eh);
+	assert(flag > 0);
+
+	eh->flags |= flag;
+}
+
+static void entity_header_clear_flags(entity_header eh)
+{
+	assert(NULL != eh);
+	eh->flags = 0;
+}
 
 entity_header entity_header_new(void)
 {
@@ -269,28 +289,6 @@ int entity_header_last_modified_isset(entity_header eh)
 	return entity_header_flag_is_set(eh, ENTITY_HEADER_LAST_MODIFIED_SET);
 }
 
-static int entity_header_flag_is_set(entity_header eh, flagtype flag)
-{
-	assert(NULL != eh);
-	assert(flag > 0);
-
-	return eh->flags & flag ? 1 : 0;
-}
-
-static void entity_header_set_flag(entity_header eh, flagtype flag)
-{
-	assert(NULL != eh);
-	assert(flag > 0);
-
-	eh->flags |= flag;
-}
-
-static void entity_header_clear_flags(entity_header eh)
-{
-	assert(NULL != eh);
-	eh->flags = 0;
-}
-
 const char* entity_header_get_allow(entity_header eh)
 {
 	assert(eh != NULL);
@@ -451,53 +449,6 @@ int entity_header_send_fields(entity_header eh, connection c)
 
 /* Parsing functions */
 /* Entity header handlers */
-static int parse_allow(entity_header eh, const char* s, meta_error e);
-static int parse_content_encoding(entity_header eh, const char* s, meta_error e);
-static int parse_content_language(entity_header eh, const char* s, meta_error e);
-static int parse_content_length(entity_header eh, const char* s, meta_error e);
-static int parse_content_location(entity_header eh, const char* s, meta_error e);
-static int parse_content_md5(entity_header eh, const char* s, meta_error e);
-static int parse_content_range(entity_header eh, const char* s, meta_error e);
-static int parse_content_type(entity_header, const char* value, meta_error e);
-static int parse_expires(entity_header, const char* value, meta_error e);
-static int parse_last_modified(entity_header, const char* value, meta_error e);
-
-static const struct {
-	const char* name;
-	int (*handler)(entity_header eh, const char* value, meta_error e);
-} entity_header_fields[] = {
-	{ "allow",				parse_allow },
-	{ "content-encoding",	parse_content_encoding },
-	{ "content-language",	parse_content_language },
-	{ "content-length",		parse_content_length },
-	{ "content-location",	parse_content_location },
-	{ "content-md5",		parse_content_md5 },
-	{ "content-range",		parse_content_range },
-	{ "content-type",		parse_content_type },
-	{ "expires",			parse_expires },
-	{ "last-modified",		parse_last_modified },
-};
-
-
-int find_entity_header(const char* name)
-{
-	int i, nelem = sizeof entity_header_fields / sizeof *entity_header_fields;
-	for (i = 0; i < nelem; i++) {
-		if (strcmp(entity_header_fields[i].name, name) == 0) {
-			return i;
-		}
-	}
-
-	return -1;
-}
-int parse_entity_header(int idx, entity_header gh, const char* value, meta_error e)
-{
-	assert(idx >= 0);
-	assert((size_t)idx < sizeof entity_header_fields / sizeof *entity_header_fields);
-
-	return entity_header_fields[idx].handler(gh, value, e);
-}
-
 
 static int parse_content_encoding(entity_header eh, const char* value, meta_error e)
 {
@@ -556,7 +507,8 @@ static int parse_content_md5(entity_header eh, const char* value, meta_error e)
 }
 
 /*
- * Notes: The language tags are defined in RFC1766, and there are too many to check.
+ * Notes: The language tags are defined in RFC1766, and there are 
+ * too many to check.
  * Anything goes, IOW.
  */
 static int parse_content_language(entity_header eh, const char* value, meta_error e)
@@ -638,6 +590,43 @@ static int parse_last_modified(entity_header eh, const char* value, meta_error e
 
 	entity_header_set_last_modified(eh, t);
 	return 1;
+}
+
+static const struct {
+	const char* name;
+	int (*handler)(entity_header eh, const char* value, meta_error e);
+} entity_header_fields[] = {
+	{ "allow",				parse_allow },
+	{ "content-encoding",	parse_content_encoding },
+	{ "content-language",	parse_content_language },
+	{ "content-length",		parse_content_length },
+	{ "content-location",	parse_content_location },
+	{ "content-md5",		parse_content_md5 },
+	{ "content-range",		parse_content_range },
+	{ "content-type",		parse_content_type },
+	{ "expires",			parse_expires },
+	{ "last-modified",		parse_last_modified },
+};
+
+int parse_entity_header(int idx, entity_header gh, const char* value, meta_error e)
+{
+	assert(idx >= 0);
+	assert((size_t)idx < sizeof entity_header_fields / sizeof *entity_header_fields);
+
+	return entity_header_fields[idx].handler(gh, value, e);
+}
+
+
+int find_entity_header(const char* name)
+{
+	int i, nelem = sizeof entity_header_fields / sizeof *entity_header_fields;
+	for (i = 0; i < nelem; i++) {
+		if (strcmp(entity_header_fields[i].name, name) == 0) {
+			return i;
+		}
+	}
+
+	return -1;
 }
 
 int entity_header_dump(entity_header eh, FILE* f)

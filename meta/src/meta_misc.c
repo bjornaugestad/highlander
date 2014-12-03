@@ -61,17 +61,6 @@ void fs_lower(char *s)
 		s++;
 	}
 }
-void fs_upper(char *s)
-{
-	assert(NULL != s);
-
-	while (*s != '\0') {
-		if (islower((int)*s))
-			*s = toupper((int)*s);
-
-		s++;
-	}
-}
 
 int string2size_t(const char *s, size_t *val)
 {

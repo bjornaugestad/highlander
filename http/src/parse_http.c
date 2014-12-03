@@ -87,9 +87,6 @@ int parse_request_headerfield(
 		return parse_request_header(idx, req, value, e);
 
 	/* We have an unknown fieldname if we reach this point */
-	#if 0
-	fprintf(stderr, "Ignoring unknown request header field:%s, value %s\n", name, value);
-	#endif
 	return 1; /* Silently ignore the unknown field */
 }
 
@@ -117,9 +114,6 @@ int parse_response_headerfield(
 		return parse_response_header(idx, req, value, e);
 
 	/* We have an unknown fieldname if we reach this point */
-	#if 0
-	fprintf(stderr, "Ignoring unknown response header field:%s\n", name);
-	#endif
 	return 1; /* Silently ignore the unknown field */
 }
 

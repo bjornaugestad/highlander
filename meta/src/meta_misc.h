@@ -28,7 +28,6 @@ extern "C" {
 #endif
 
 void fs_lower(char *s);
-void fs_upper(char *s);
 
 /*
  * Converts a string of digits only to size_t.
