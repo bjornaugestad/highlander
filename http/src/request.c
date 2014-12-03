@@ -131,7 +131,8 @@ struct http_request_tag {
 
 void request_free(http_request p)
 {
-	assert(NULL != p);
+	if (p == NULL)
+		return;
 
 	if (p->params != NULL) {
 		pair_free(p->params);
@@ -622,34 +623,77 @@ http_request request_new(void)
 	if ((p = calloc(1, sizeof(*p))) != NULL) {
 		request_clear_flags(p);
 
-		p->general_header = general_header_new();
-		p->entity_header = entity_header_new();
+		if ((p->general_header = general_header_new()) == NULL)
+			goto err;
+
+		if ((p->entity_header = entity_header_new()) == NULL)
+			goto err;
+
 		p->version = VERSION_UNKNOWN;
 		p->method = METHOD_UNKNOWN;
 		p->entity_buf = NULL;
 
-		/* NOTE: If one of these fails, the others must be freed :-( */
-		p->uri = cstring_new();
-		p->accept = cstring_new();
-		p->accept_charset = cstring_new();
-		p->accept_encoding = cstring_new();
-		p->accept_language = cstring_new();
-		p->authorization = cstring_new();
-		p->from = cstring_new();
-		p->referer = cstring_new();
-		p->user_agent = cstring_new();
-		p->link = cstring_new();
-		p->range = cstring_new();
-		p->te = cstring_new();
-		p->title = cstring_new();
-		p->expect = cstring_new();
-		p->host = cstring_new();
-		p->if_match = cstring_new();
-		p->if_none_match = cstring_new();
-		p->if_range = cstring_new();
+		if ((p->uri = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->accept = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->accept_charset = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->accept_encoding = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->accept_language = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->authorization = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->from = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->referer = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->user_agent = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->link = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->range = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->te = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->title = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->expect = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->host = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->if_match = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->if_none_match = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->if_range = cstring_new()) == NULL)
+			goto err;
+
 	}
 
 	return p;
+
+err:
+	request_free(p);
+	return NULL;
 }
 
 int request_accepts_media_type(http_request r, const char *val)

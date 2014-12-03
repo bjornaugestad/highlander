@@ -207,18 +207,35 @@ general_header general_header_new(void)
 {
 	general_header p;
 
-	if ((p = malloc(sizeof *p)) != NULL) {
+	if ((p = calloc(1, sizeof *p)) != NULL) {
 		general_header_clear_flags(p);
-		p->connection = cstring_new();
-		p->pragma = cstring_new();
-		p->trailer = cstring_new();
-		p->transfer_encoding = cstring_new();
-		p->upgrade = cstring_new();
-		p->via = cstring_new();
-		p->warning = cstring_new();
+		if ((p->connection = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->pragma = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->trailer = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->transfer_encoding = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->upgrade = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->via = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->warning = cstring_new()) == NULL)
+			goto err;
 	}
 
 	return p;
+
+err:
+	general_header_free(p);
+	return NULL;
 }
 
 void general_header_recycle(general_header p)

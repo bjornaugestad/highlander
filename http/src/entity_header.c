@@ -80,18 +80,36 @@ entity_header entity_header_new(void)
 {
 	entity_header p;
 
-	if ((p = malloc(sizeof *p)) != NULL) {
+	if ((p = calloc(1, sizeof *p)) != NULL) {
 		entity_header_clear_flags(p);
-		p->allow = cstring_new();
-		p->content_encoding = cstring_new();
-		p->content_language = cstring_new();
-		p->content_location = cstring_new();
-		p->content_md5 = cstring_new();
-		p->content_type = cstring_new();
-		p->content_range = cstring_new();
+		if ((p->allow = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->content_encoding = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->content_language = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->content_location = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->content_md5 = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->content_type = cstring_new()) == NULL)
+			goto err;
+
+		if ((p->content_range = cstring_new()) == NULL)
+			goto err;
+
 	}
 
 	return p;
+
+err:
+	entity_header_free(p);
+	return NULL;
 }
 
 void entity_header_free(entity_header p)
