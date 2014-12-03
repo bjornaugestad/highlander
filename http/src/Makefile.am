@@ -71,14 +71,17 @@ check_PROGRAMS=\
 	rfc1738_check
 
 attribute_check_SOURCES=attribute.c
-attribute_check_CFLAGS=-DCHECK_ATTRIBUTE $(AM_CFLAGS)
+attribute_check_CFLAGS=-DCHECK_ATTRIBUTE $(AM_CFLAGS)\
+	-I$(top_srcdir)/meta/src
 attribute_check_LDADD=-lmeta -lpthread
-attribute_check_LDFLAGS=-L$(top_distdir)/meta/src
+attribute_check_LDFLAGS=-L$(top_srcdir)/meta/src
 
 cookie_check_SOURCES=cookies.c
-cookie_check_CFLAGS=-DCHECK_COOKIE $(AM_CFLAGS)
+cookie_check_CFLAGS=-DCHECK_COOKIE $(AM_CFLAGS)\
+	-I$(top_srcdir)/meta/src
+
 cookie_check_LDADD=-lhighlander -lmeta -lpthread
-cookie_check_LDFLAGS=-L$(top_distdir)/meta/src
+cookie_check_LDFLAGS=-L$(top_srcdir)/meta/src
 
 rfc1738_check_SOURCES=rfc1738.c
 rfc1738_check_CFLAGS=-DCHECK_RFC1738 $(AM_CFLAGS)

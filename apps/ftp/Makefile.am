@@ -4,7 +4,7 @@ metaftpd_SOURCES=metaftp.c about.html document.png folder.gif
 nodist_metaftpd_SOURCES=document.c about.c folder.c pagehandlers.h
 EXTRA_DIST=metaftp.conf
 
-AM_CPPFLAGS=-I$(top_srcdir)/src/meta -I$(top_srcdir)/src/http
+AM_CPPFLAGS=-I$(top_srcdir)/meta/src -I$(top_srcdir)/http/src
 AM_CFLAGS=-p -pg
 
 metaftpd_CFLAGS=\
@@ -12,7 +12,7 @@ metaftpd_CFLAGS=\
 	-Wshadow\
 	-Wall -pedantic -W -Werror -Wno-long-long -pthread -DNDEBUG -O3
 
-metaftpd_LDFLAGS=-L$(top_distdir)/http/src -L$(top_distdir)/meta/src
+metaftpd_LDFLAGS=-L$(top_srcdir)/http/src -L$(top_srcdir)/meta/src
 metaftpd_LDADD=-lhighlander -lmeta -lpthread
 
 # New version of bin2c, can now create a header in a separate run

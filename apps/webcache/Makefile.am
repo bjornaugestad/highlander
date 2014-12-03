@@ -19,15 +19,15 @@ webcached_CFLAGS=\
 	-D_GNU_SOURCE -std=gnu99 -D_REENTRANT -pthread\
 	-I$(srcdir)\
 	-I$(srcdir)/webcache\
-	-I$(top_distdir)/meta/src\
-	-I$(top_distdir)/http/src\
+	-I$(top_srcdir)/meta/src\
+	-I$(top_srcdir)/http/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\
 	-O2 -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
     -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
 
 
 webcached_LDADD=-lhighlander -lmeta -lpthread
-webcached_LDFLAGS=-L$(top_distdir)/meta/src -L$(top_distdir)/http/src
+webcached_LDFLAGS=-L$(top_srcdir)/meta/src -L$(top_srcdir)/http/src
 
 # Convert the GIF logo to C source code
 %.c : %.gif

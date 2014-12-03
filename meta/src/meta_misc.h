@@ -37,8 +37,6 @@ int string2size_t(const char *s, size_t *val);
 
 void remove_trailing_newline(char *s);
 
-int get_basename(const char *name, const char *suffix, char *dest, size_t destsize);
-
 /*
  * Returns the # of words, separated by space, in the string.
  * "foo" is 1

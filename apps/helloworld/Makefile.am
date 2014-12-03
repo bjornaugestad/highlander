@@ -8,8 +8,10 @@ AM_CFLAGS=-p -pg
 helloworld_CFLAGS=\
 	-Winline -Wshadow -std=gnu99 -D_GNU_SOURCE\
 	-Wshadow\
+	-I$(top_srcdir)/http/src\
+	-I$(top_srcdir)/meta/src\
 	-Wall -pedantic -W -Werror -Wno-long-long -pthread -DNDEBUG -O3
 
-helloworld_LDFLAGS=-L$(top_distdir)/meta/src -L$(top_distdir)/http/src
+helloworld_LDFLAGS=-L$(top_srcdir)/meta/src -L$(top_srcdir)/http/src
 helloworld_LDADD=-lhighlander -lmeta -lpthread
 

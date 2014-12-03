@@ -256,41 +256,6 @@ int get_extension(const char *src, char *dest, size_t destsize)
 	return 1;
 }
 
-int get_basename(const char *name, const char *suffix, char *dest, size_t destsize)
-{
-	char *s;
-	size_t i;
-
-	assert(name != NULL);
-	assert(dest != NULL);
-	assert(destsize > 1);
-
-	/* Locate the rightmost / to remove the directory part */
-	if ((s = strrchr(name, '/')) != NULL)
-		s++;	/* Skip the slash */
-	else
-		s = (char*)name; /* The cast is OK. :-) */
-
-	/* Now copy the filename part. */
-	strncpy(dest, s, destsize);
-	dest[destsize - 1] = '\0';
-
-	/* Locate the suffix, if any */
-	if (suffix == NULL || (s = strstr(dest, suffix)) == NULL)
-		return 1;
-
-	/* Be sure that the suffix actually is a suffix.
-	 * We do not want to remove .tar.gz from foo.tar.gz
-	 * if the suffix is .tar, so the suffix must be
-	 * at the end of the string.
-	 */
-	i = strlen(suffix);
-	if (s[i] == '\0')
-		*s = '\0';
-
-	return 1;
-}
-
 
 /*
  * This is probably bad, but the need for speed forces us to
@@ -343,28 +308,6 @@ const char *get_mime_type(const char *filename)
 #ifdef CHECK_MISCFUNC
 int main(void)
 {
-	{ /* Check get_basename */
-		char sz[1024] = { '\0' };
-		if (!get_basename("foo.bar", ".bar", sz, sizeof sz)
-		|| strcmp(sz, "foo") != 0) {
-			fprintf(stderr, "get_basename failed: %s\n", sz);
-			return EXIT_FAILURE;
-		}
-
-		if (!get_basename("/foo.bar", NULL, sz, sizeof sz)
-		|| strcmp(sz, "foo.bar") != 0) {
-			fprintf(stderr, "get_basename failed(2)\n");
-			return EXIT_FAILURE;
-		}
-		memset(sz, '\0', sizeof sz);
-		if (!get_basename("/a/b/z/d/e/foo.bar", "bar", sz, sizeof sz)
-		|| strcmp(sz, "foo.") != 0) {
-			fprintf(stderr, "get_basename failed(3): %s\n", sz);
-			return EXIT_FAILURE;
-		}
-	}
-
-
 	return 0;
 }
 #endif

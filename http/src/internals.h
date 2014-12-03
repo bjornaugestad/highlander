@@ -140,7 +140,6 @@ const char*	dynamic_get_uri(dynamic_page p);
 
 page_attribute attribute_dup(page_attribute a);
 
-int send_if_not_empty(connection conn, const char *name, cstring *value);
 void cookie_free(cookie c);
 
 time_t parse_rfc822_date(const char *s);

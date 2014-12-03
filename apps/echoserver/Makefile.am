@@ -2,7 +2,7 @@ bin_PROGRAMS=echoserver
 
 echoserver_SOURCES=main.c
 
-AM_CPPFLAGS=-I$(top_distdir)/http/src -I$(top_distdir)/meta/src
+AM_CPPFLAGS=-I$(top_srcdir)/http/src -I$(top_srcdir)/meta/src
 AM_CFLAGS=-p -pg
 
 echoserver_CFLAGS=\
@@ -10,6 +10,6 @@ echoserver_CFLAGS=\
 	-Wshadow\
 	-Wall -pedantic -W -Werror -Wno-long-long -pthread -DNDEBUG -O3
 
-echoserver_LDFLAGS=-L$(top_distdir)/meta/src -L$(top_distdir)/http/src
+echoserver_LDFLAGS=-L$(top_srcdir)/meta/src -L$(top_srcdir)/http/src
 echoserver_LDADD=-lhighlander -lmeta -lpthread
 
