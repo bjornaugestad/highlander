@@ -141,14 +141,14 @@ static int send_disk_file(
 	/* Does the file exist? */
 	if (stat(filename, &st))
 		return set_http_error(e, HTTP_404_NOT_FOUND);
-	else if(S_ISREG(st.st_mode))
+	else if (S_ISREG(st.st_mode))
 		;
-	else if(S_ISDIR(st.st_mode)) {
+	else if (S_ISDIR(st.st_mode)) {
 		/* BUG? If docroot+uri+index.html > sizeof(filename) we have issues */
 		strcat(filename, "/index.html");
 		if (stat(filename, &st))
 			return set_http_error(e, HTTP_404_NOT_FOUND);
-		else if(!S_ISREG(st.st_mode))
+		else if (!S_ISREG(st.st_mode))
 			return set_http_error(e, HTTP_400_BAD_REQUEST);
 	}
 	else
@@ -330,17 +330,17 @@ static int serviceConnection2(
 		 */
 		if (error)
 			;
-		else if((dp = http_server_lookup(srv, request)) != NULL) {
+		else if ((dp = http_server_lookup(srv, request)) != NULL) {
 			if (!handle_dynamic(conn, srv, dp, request, response, e)) {
 				error = 1;
 			}
 		}
-		else if(http_server_can_read_files(srv)) {
+		else if (http_server_can_read_files(srv)) {
 			if (!send_disk_file(srv, conn, request, response, e)) {
 				error = 1;
 			}
 		}
-		else if(http_server_has_default_page_handler(srv)) {
+		else if (http_server_has_default_page_handler(srv)) {
 			if (!http_server_run_default_page_handler(conn, srv, request, response, e)) {
 				error = 1;
 			}

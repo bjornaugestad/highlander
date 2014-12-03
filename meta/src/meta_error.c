@@ -193,20 +193,20 @@ void die_with_error(meta_error e, const char *fmt, ...)
 
 	if (is_tcpip_error(e))
 		syslog(LOG_ERR, "A tcp/ip error has occured");
-	else if(is_protocol_error(e))
+	else if (is_protocol_error(e))
 		syslog(LOG_ERR, "A protocol error has occured");
-	else if(is_app_error(e))
+	else if (is_app_error(e))
 		syslog(LOG_ERR, "A application error has occured");
-	else if(is_os_error(e))
+	else if (is_os_error(e))
 		syslog(LOG_ERR, "A os error has occured");
-	else if(is_db_error(e))
+	else if (is_db_error(e))
 		syslog(LOG_ERR, "A database error has occured");
-	else if(is_other_error(e))
+	else if (is_other_error(e))
 		syslog(LOG_ERR, "An unknown error has occured");
 
 	if (has_error_message(e))
 		syslog(LOG_ERR, "Error message: %s", get_error_message(e));
-	else if((rc = get_error_code(e)) != 0)
+	else if ((rc = get_error_code(e)) != 0)
 		syslog(LOG_ERR, "Possible error: %d %s\n", rc, strerror(rc));
 
 	meta_vsyslog(LOG_ERR, fmt, ap);

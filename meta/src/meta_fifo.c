@@ -58,7 +58,7 @@ fifo fifo_new(size_t size)
 
 	if ((p = malloc(sizeof *p)) == NULL)
 		;
-	else if((p->lock = wlock_new()) == NULL
+	else if ((p->lock = wlock_new()) == NULL
 	||	(p->pelem = calloc(size, sizeof *p->pelem)) == NULL) {
 		wlock_free(p->lock);
 		free(p);

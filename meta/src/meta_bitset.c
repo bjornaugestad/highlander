@@ -41,7 +41,7 @@ bitset bitset_new(size_t bitcount)
 
 	if ((b = calloc(1, sizeof *b)) == NULL)
 		;
-	else if((b->data = malloc(size)) == NULL) {
+	else if ((b->data = malloc(size)) == NULL) {
 		free(b);
 		b = NULL;
 	}

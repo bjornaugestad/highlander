@@ -712,7 +712,7 @@ static inline int send_cachecontrol(general_header gh, connection conn)
 	if (general_header_flag_is_set(gh, GENERAL_HEADER_NO_CACHE_SET)) {
 		if (!http_send_string(conn, "no-cache"))
 			return 0;
-		else if(nfields && !http_send_string(conn, ", "))
+		else if (nfields && !http_send_string(conn, ", "))
 			return 0;
 
 		nfields--;
@@ -721,7 +721,7 @@ static inline int send_cachecontrol(general_header gh, connection conn)
 	if (general_header_flag_is_set(gh, GENERAL_HEADER_NO_STORE_SET)) {
 		if (!http_send_string(conn, "no-store"))
 			return 0;
-		else if(nfields && !http_send_string(conn, ", "))
+		else if (nfields && !http_send_string(conn, ", "))
 			return 0;
 		nfields--;
 	}
@@ -729,7 +729,7 @@ static inline int send_cachecontrol(general_header gh, connection conn)
 	if (general_header_flag_is_set(gh, GENERAL_HEADER_MAX_AGE_SET)) {
 		if (!http_send_ulong(conn, "max-age=", gh->max_age))
 			return 0;
-		else if(nfields && !http_send_string(conn, ", "))
+		else if (nfields && !http_send_string(conn, ", "))
 			return 0;
 		nfields--;
 	}
@@ -737,7 +737,7 @@ static inline int send_cachecontrol(general_header gh, connection conn)
 	if (general_header_flag_is_set(gh, GENERAL_HEADER_MAX_STALE_SET)) {
 		if (!http_send_ulong(conn, "max-stale=", gh->max_stale))
 			return 0;
-		else if(nfields && !http_send_string(conn, ", "))
+		else if (nfields && !http_send_string(conn, ", "))
 			return 0;
 		nfields--;
 	}
@@ -745,7 +745,7 @@ static inline int send_cachecontrol(general_header gh, connection conn)
 	if (general_header_flag_is_set(gh, GENERAL_HEADER_MIN_FRESH_SET)) {
 		if (!http_send_ulong(conn, "min-fresh=", gh->min_fresh))
 			return 0;
-		else if(nfields && !http_send_string(conn, ", "))
+		else if (nfields && !http_send_string(conn, ", "))
 			return 0;
 		nfields--;
 	}
@@ -753,7 +753,7 @@ static inline int send_cachecontrol(general_header gh, connection conn)
 	if (general_header_flag_is_set(gh, GENERAL_HEADER_NO_TRANSFORM_SET)) {
 		if (!http_send_string(conn, "no-transform"))
 			return 0;
-		else if(nfields && !http_send_string(conn, ", "))
+		else if (nfields && !http_send_string(conn, ", "))
 			return 0;
 		nfields--;
 	}
@@ -761,7 +761,7 @@ static inline int send_cachecontrol(general_header gh, connection conn)
 	if (general_header_flag_is_set(gh, GENERAL_HEADER_PUBLIC_SET)) {
 		if (!http_send_string(conn, "public"))
 			return 0;
-		else if(nfields && !http_send_string(conn, ", "))
+		else if (nfields && !http_send_string(conn, ", "))
 			return 0;
 		nfields--;
 	}
@@ -769,7 +769,7 @@ static inline int send_cachecontrol(general_header gh, connection conn)
 	if (general_header_flag_is_set(gh, GENERAL_HEADER_PRIVATE_SET)) {
 		if (!http_send_string(conn, "private"))
 			return 0;
-		else if(nfields && !http_send_string(conn, ", "))
+		else if (nfields && !http_send_string(conn, ", "))
 			return 0;
 		nfields--;
 	}
@@ -777,7 +777,7 @@ static inline int send_cachecontrol(general_header gh, connection conn)
 	if (general_header_flag_is_set(gh, GENERAL_HEADER_MUST_REVALIDATE_SET)) {
 		if (!http_send_string(conn, "must-revalidate"))
 			return 0;
-		else if(nfields && !http_send_string(conn, ", "))
+		else if (nfields && !http_send_string(conn, ", "))
 			return 0;
 		nfields--;
 	}
@@ -785,7 +785,7 @@ static inline int send_cachecontrol(general_header gh, connection conn)
 	if (general_header_flag_is_set(gh, GENERAL_HEADER_PROXY_REVALIDATE_SET)) {
 		if (!http_send_string(conn, "proxy-revalidate"))
 			return 0;
-		else if(nfields && !http_send_string(conn, ", "))
+		else if (nfields && !http_send_string(conn, ", "))
 			return 0;
 		nfields--;
 	}
@@ -793,7 +793,7 @@ static inline int send_cachecontrol(general_header gh, connection conn)
 	if (general_header_flag_is_set(gh, GENERAL_HEADER_S_MAXAGE_SET)) {
 		if (!http_send_ulong(conn, "s-maxage=", gh->s_maxage))
 			return 0;
-		else if(nfields && !http_send_string(conn, ", "))
+		else if (nfields && !http_send_string(conn, ", "))
 			return 0;
 		nfields--;
 	}

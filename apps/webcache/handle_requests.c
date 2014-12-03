@@ -65,31 +65,31 @@ int handle_requests(const http_request req, http_response page)
     if (request_get_method(req) != METHOD_GET) {
         rc = HTTP_400_BAD_REQUEST;
     }
-    else if(request_get_parameter_count(req) > 0) {
+    else if (request_get_parameter_count(req) > 0) {
         rc = HTTP_400_BAD_REQUEST;
     }
-    else if( (uri = request_get_uri(req)) == NULL || strlen(uri) <= 1)  {
+    else if ((uri = request_get_uri(req)) == NULL || strlen(uri) <= 1)  {
         rc = HTTP_400_BAD_REQUEST;
     }
-    else if(*uri++ != '/') { /* We intentionally skip the '/' in the URI */
+    else if (*uri++ != '/') { /* We intentionally skip the '/' in the URI */
         rc = HTTP_400_BAD_REQUEST;
     }
-    else if(strstr(uri, "..") != NULL) {
+    else if (strstr(uri, "..") != NULL) {
         rc = HTTP_400_BAD_REQUEST;
     }
-    else if(!filecache_get(g_filecache, uri, &file, &size)) {
+    else if (!filecache_get(g_filecache, uri, &file, &size)) {
         rc = HTTP_404_NOT_FOUND;
     }
-    else if(!filecache_get_mime_type(g_filecache, uri, mimetype, sizeof mimetype)) {
+    else if (!filecache_get_mime_type(g_filecache, uri, mimetype, sizeof mimetype)) {
         rc = HTTP_500_INTERNAL_SERVER_ERROR;
     }
-    else if(!response_set_content_type(page, mimetype)) {
+    else if (!response_set_content_type(page, mimetype)) {
         rc = HTTP_500_INTERNAL_SERVER_ERROR;
     }
     else  if(!filecache_stat(g_filecache, uri, &st)) {
         rc = HTTP_500_INTERNAL_SERVER_ERROR;
     }
-    else if( (if_modified_since = request_get_if_modified_since(req)) == (time_t)-1) {
+    else if ((if_modified_since = request_get_if_modified_since(req)) == (time_t)-1) {
         /* Just send it */
         response_set_last_modified(page, st.st_mtime);
         if (!response_set_content_buffer(page, file, size)) {
@@ -99,10 +99,10 @@ int handle_requests(const http_request req, http_response page)
             rc = HTTP_200_OK;
         }
     }
-    else if(if_modified_since >= st.st_mtime) {
+    else if (if_modified_since >= st.st_mtime) {
         rc = HTTP_304_NOT_MODIFIED;
     }
-    else if(!response_set_content_buffer(page, file, size))  {
+    else if (!response_set_content_buffer(page, file, size))  {
         rc = HTTP_500_INTERNAL_SERVER_ERROR;
     }
     else {

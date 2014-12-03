@@ -247,7 +247,7 @@ int get_extension(const char *src, char *dest, size_t destsize)
 		errno = ENOSPC;
 		return 0;
 	}
-	else if(found) {
+	else if (found) {
 		memmove(dest, &dest[i + 1], destsize - i);
 	}
 	else

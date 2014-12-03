@@ -68,7 +68,7 @@ list find_new_files(const char* directories, cstring* patterns, size_t npatterns
 
     if ( (lst = list_new()) == NULL)
         goto err;
-    else if(!walk_all_directories(directories, patterns, npatterns, lst, 1))
+    else if (!walk_all_directories(directories, patterns, npatterns, lst, 1))
         goto err;
     else {
         /* Now see if all files are int the cache */
@@ -100,7 +100,7 @@ list find_modified_files(const char* directories, cstring* patterns, size_t npat
 
     if ( (lst = list_new()) == NULL)
         goto err;
-    else if(!walk_all_directories(directories, patterns, npatterns, lst, 1))
+    else if (!walk_all_directories(directories, patterns, npatterns, lst, 1))
         goto err;
     else {
         /* Now see if all files are int the cache */
@@ -149,9 +149,9 @@ list find_deleted_files(const char* directories, cstring* patterns, size_t npatt
 
     if ( (diskfiles = list_new()) == NULL)
         goto err;
-    else if(!walk_all_directories(directories, patterns, npatterns, diskfiles, 0))
+    else if (!walk_all_directories(directories, patterns, npatterns, diskfiles, 0))
         goto err;
-    else if( (nfiles = list_size(diskfiles)) == 0) {
+    else if ((nfiles = list_size(diskfiles)) == 0) {
         /* Found no files at all. Not exactly an internal server error,
          * so we return an empty list. 
          */
@@ -159,7 +159,7 @@ list find_deleted_files(const char* directories, cstring* patterns, size_t npatt
         return list_new();
 
     }
-    else if( (sm = stringmap_new(nfiles)) == NULL)
+    else if ((sm = stringmap_new(nfiles)) == NULL)
         goto err;
 
     /* Convert fileinfo to a stringmap */
@@ -393,7 +393,7 @@ int find_files(
             if (find_files(rootdir, path,  patterns, npatterns, lst, get_mimetype) == 0) 
                 goto err;
         }
-        else if(S_ISREG(st.st_mode)) {
+        else if (S_ISREG(st.st_mode)) {
             if (!handle_one_file(rootdir, path, patterns, npatterns, lst, &st, get_mimetype))
                 goto err;
         }

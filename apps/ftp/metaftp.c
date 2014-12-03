@@ -74,36 +74,36 @@ static int handle_requests(const http_request req, http_response page)
     || request_get_parameter_count(req) > 0) {
         rc = HTTP_400_BAD_REQUEST;
     }
-    else if( (s = request_get_uri(req)) == NULL || strlen(s) == 0) {
+    else if ( (s = request_get_uri(req)) == NULL || strlen(s) == 0) {
         rc = HTTP_400_BAD_REQUEST;
     }
-    else if(!rfc1738_decode_string(uri, sizeof uri, s)) {
+    else if (!rfc1738_decode_string(uri, sizeof uri, s)) {
         rc = HTTP_400_BAD_REQUEST;
     }
-    else if(uri[0] != '/') {
+    else if (uri[0] != '/') {
         rc = HTTP_400_BAD_REQUEST;
     }
-    else if(strstr(uri, "..") != NULL) {
+    else if (strstr(uri, "..") != NULL) {
         rc = HTTP_400_BAD_REQUEST;
     }
-    else if(!makepath(abspath, uri)) {
+    else if (!makepath(abspath, uri)) {
         rc = HTTP_500_INTERNAL_SERVER_ERROR;
     }
-    else if(stat(abspath, &st)) {
+    else if (stat(abspath, &st)) {
         size_t cb = strlen(uri) + strlen(abspath) + 100;
         response_printf(page, cb, "%s(%s): Not found", uri, abspath);
         rc = HTTP_404_NOT_FOUND;
     }
-    else if(S_ISDIR(st.st_mode)) {
+    else if (S_ISDIR(st.st_mode)) {
         if (show_directory(page, abspath, &uri[1]))  /* Remove leading / */
             rc = HTTP_200_OK;
         else
             rc = HTTP_500_INTERNAL_SERVER_ERROR;
     }
-    else if(!S_ISREG(st.st_mode)) {
+    else if (!S_ISREG(st.st_mode)) {
         rc = HTTP_500_INTERNAL_SERVER_ERROR;
     }
-    else if(!response_send_file(page, abspath, get_mime_type(abspath), NULL)) {
+    else if (!response_send_file(page, abspath, get_mime_type(abspath), NULL)) {
         rc = HTTP_500_INTERNAL_SERVER_ERROR;
     }
     else  
@@ -190,7 +190,7 @@ static int sort_directory(const void *p1, const void *p2)
     /* We always sort directories first */
     if (S_ISDIR(s1->st.st_mode) && !S_ISDIR(s2->st.st_mode))
         return -1;
-    else if(!S_ISDIR(s1->st.st_mode) && S_ISDIR(s2->st.st_mode))
+    else if (!S_ISDIR(s1->st.st_mode) && S_ISDIR(s2->st.st_mode))
         return 1;
 
     /* Both are directories or neither are, sort by filename */
@@ -398,7 +398,7 @@ list read_directory(const path_t abspath)
             if (strcmp(de->d_name, ".") == 0
             || strcmp(de->d_name, "..") == 0) 
                 ; /* Skip these */
-            else if(!add_entry(lst, abspath, de->d_name)) {
+            else if (!add_entry(lst, abspath, de->d_name)) {
                 err = 1;
                 break;
             }

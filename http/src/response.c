@@ -350,9 +350,9 @@ static int create_cookie_string(cookie c, cstring str)
 
 	if ((s = cookie_get_name(c)) == NULL)
 		return 0;
-	else if(!cstring_copy(str, "Set-Cookie: "))
+	else if (!cstring_copy(str, "Set-Cookie: "))
 		return 0;
-	else if(!cstring_concat(str, s))
+	else if (!cstring_concat(str, s))
 		return 0;
 
 	/* Now get value and append. Remember to quote value if needed
@@ -363,9 +363,9 @@ static int create_cookie_string(cookie c, cstring str)
 	if (s) {
 		if (!cstring_charcat(str, '='))
 			return 0;
-		else if(need_quote(c_str(str)) && !strcat_quoted(str, s))
+		else if (need_quote(c_str(str)) && !strcat_quoted(str, s))
 			return 0;
-		else if(!cstring_concat(str, s))
+		else if (!cstring_concat(str, s))
 			return 0;
 	}
 
@@ -410,10 +410,10 @@ static int send_cookie(cookie c, connection conn, meta_error e)
 	if ((s = cookie_get_name(c)) == NULL) {
 		return set_app_error(e, EFS_INTERNAL);
 	}
-	else if((str = cstring_new()) == NULL) {
+	else if ((str = cstring_new()) == NULL) {
 		return set_os_error(e, ENOMEM);
 	}
-	else if(!create_cookie_string(c, str)) {
+	else if (!create_cookie_string(c, str)) {
 		cstring_free(str);
 		return set_os_error(e, ENOMEM);
 	}
@@ -1086,7 +1086,7 @@ fallback:
 		*pcb += (size_t)cbRead;
 		if (!connection_write(conn, buf, (size_t)cbRead))
 			success = 0;
-		else if(!connection_flush(conn))
+		else if (!connection_flush(conn))
 			success = 0;
 
 		if (!success)
@@ -1127,7 +1127,7 @@ response_send_entity(http_response r, connection conn, size_t *pcb)
 		if (!success)
 			return 0;
 	}
-	else if(r->send_file) {
+	else if (r->send_file) {
 		if (!send_entire_file(conn, c_str(r->path), pcb))
 			return 0;
 	}
@@ -1205,7 +1205,7 @@ size_t response_send(http_response r, connection c, meta_error e)
 
 	if (!send_status_code(c, r->status, r->version))
 		set_tcpip_error(e, errno);
-	else if(r->status != HTTP_200_OK && r->status != HTTP_404_NOT_FOUND) {
+	else if (r->status != HTTP_200_OK && r->status != HTTP_404_NOT_FOUND) {
 		/* NOTE: Fix this later. Other statuses than 200 should also return
 		 * headers and content. It's done this way now since I'm in the
 		 * middle of a rather big rewrite...
@@ -1223,9 +1223,9 @@ size_t response_send(http_response r, connection c, meta_error e)
 		 */
 		response_send_header(r, c, e);
 	}
-	else if(!response_send_header(r, c, e))
+	else if (!response_send_header(r, c, e))
 		;
-	else if(!response_send_entity(r, c, &cb))
+	else if (!response_send_entity(r, c, &cb))
 		set_tcpip_error(e, errno);
 	else
 		success = 1;
@@ -1457,7 +1457,7 @@ static int parse_accept_ranges(http_response r, const char* value, meta_error e)
 
 	if (strcmp(value, "bytes") == 0)
 		response_set_accept_ranges(r, 1);
-	else if(strcmp(value, "none") == 0)
+	else if (strcmp(value, "none") == 0)
 		response_set_accept_ranges(r, 0);
 
 
@@ -1490,7 +1490,7 @@ static int parse_retry_after(http_response r, const char* value, meta_error e)
 
 	if ((t = parse_rfc822_date(value)) != (time_t)-1)
 		response_set_retry_after(r, t);
-	else if((delta = atol(value)) <= 0)
+	else if ((delta = atol(value)) <= 0)
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 	else
 		response_set_retry_after(r, delta);
@@ -1546,7 +1546,7 @@ static int read_response_status_line(http_response response, connection conn, me
 	if (strstr(buf, "HTTP/1.0 ") == buf) {
 		version = VERSION_10;
 	}
-	else if(strstr(buf, "HTTP/1.1 ") == buf) {
+	else if (strstr(buf, "HTTP/1.1 ") == buf) {
 		version = VERSION_11;
 	}
 	else {
@@ -1594,7 +1594,7 @@ read_response_header_fields(connection conn, http_response response, meta_error 
 		if ((!read_line(conn, buf, sizeof buf, e))) {
 			return 0;
 		}
-		else if(strlen(buf) == 0) {
+		else if (strlen(buf) == 0) {
 			/*
 			 * An empty buffer means that we have read the \r\n sequence
 			 * separating header fields from entities or terminating the message.
@@ -1640,12 +1640,12 @@ int response_receive(http_response response, connection conn, size_t max_content
 		content_length = max_content;
 		if ((content = malloc(content_length)) == NULL)
 			return set_os_error(e, errno);
-		else if(!connection_read(conn, content, max_content)) {
+		else if (!connection_read(conn, content, max_content)) {
 			set_os_error(e, errno);
 			free(content);
 			return 0;
 		}
-		else if(!response_set_allocated_content_buffer(response, content, content_length)) {
+		else if (!response_set_allocated_content_buffer(response, content, content_length)) {
 			set_os_error(e, errno);
 			free(content);
 			return 0;
@@ -1658,16 +1658,16 @@ int response_receive(http_response response, connection conn, size_t max_content
 		content_length = entity_header_get_content_length(eh);
 		if (content_length == 0)
 			return 1;
-		else if(content_length > max_content)
+		else if (content_length > max_content)
 			return set_app_error(e, ENOSPC);
-		else if((content = malloc(content_length)) == NULL)
+		else if ((content = malloc(content_length)) == NULL)
 			return set_os_error(e, errno);
-		else if(!connection_read(conn, content, content_length)) {
+		else if (!connection_read(conn, content, content_length)) {
 			set_os_error(e, errno);
 			free(content);
 			return 0;
 		}
-		else if(!response_set_allocated_content_buffer(response, content, content_length)) {
+		else if (!response_set_allocated_content_buffer(response, content, content_length)) {
 			set_os_error(e, errno);
 			free(content);
 			return 0;

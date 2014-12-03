@@ -376,7 +376,7 @@ void start_header(FILE *f, const char *filename)
 	while(*s) {
 		if(islower(*s))
 			*s = toupper(*s);
-		else if(!isalnum(*s))
+		else if (!isalnum(*s))
 			*s = '_';
 		
 		s++;

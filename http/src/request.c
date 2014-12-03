@@ -944,7 +944,7 @@ int request_get_field_value_by_name(http_request request, const char *name, char
 		char sz[10240];
 		if (!request_get_field_name(request, i, sz, sizeof(sz) - 1))
 			return 0;
-		else if(strcmp(sz, name) == 0)
+		else if (strcmp(sz, name) == 0)
 			return request_get_field_value(request, i, value, cb);
 	}
 
@@ -1226,7 +1226,7 @@ static int send_request_line(http_request r, connection c, meta_error e)
 		cstring_free(s);
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 	}
-	else if(!cstring_concat(s, p)) {
+	else if (!cstring_concat(s, p)) {
 		cstring_free(s);
 		return set_os_error(e, errno);
 	}
@@ -1587,7 +1587,7 @@ int read_line(connection conn, char* buf, size_t cchMax, meta_error e)
 			buf[i] = '\0';
 			if (!connection_getc(conn, &c))
 				return set_tcpip_error(e, errno);
-			else if(c != '\n')
+			else if (c != '\n')
 				return set_http_error(e, HTTP_400_BAD_REQUEST);
 			else
 				return 1;
@@ -1608,7 +1608,7 @@ int get_field_name(const char* buf, char* name, size_t cchNameMax)
 
 	if ((s = strchr(buf, ':')) == NULL)
 		return 0;
-	else if((span = (size_t)(s - buf)) >= cchNameMax)
+	else if ((span = (size_t)(s - buf)) >= cchNameMax)
 		return 0;
 	else {
 		memcpy(name, buf, (size_t)span);
@@ -1673,7 +1673,7 @@ read_request_header_fields(connection conn, http_request request, meta_error e)
 
 		if ((!read_line(conn, buf, sizeof buf, e)))
 			return 0;
-		else if(strlen(buf) == 0) {
+		else if (strlen(buf) == 0) {
 			/*
 			 * An empty buffer means that we have read the \r\n sequence
 			 * separating header fields from entities or terminating the message.
@@ -1785,7 +1785,7 @@ static int get_uri_param_value(const char* src, char dest[], size_t destsize)
 	p = strchr(src, '=');
 	if (NULL == p)
 		return HTTP_400_BAD_REQUEST;
-	else if(!copy_word(++p, dest, '&', destsize))
+	else if (!copy_word(++p, dest, '&', destsize))
 		return HTTP_414_REQUEST_URI_TOO_LARGE;
 	else
 		return 0;
@@ -1826,10 +1826,10 @@ static int set_one_uri_param(http_request request, char *s, meta_error e)
 	else if ((error = get_uri_param_value(s, value, sizeof value))) {
 		return set_http_error(e, error);
 	}
-	else if((error = decode_uri_param_value(decoded, value, sizeof(decoded)))) {
+	else if ((error = decode_uri_param_value(decoded, value, sizeof(decoded)))) {
 		return set_http_error(e, error);
 	}
-	else if(!request_add_param(request, name, decoded))
+	else if (!request_add_param(request, name, decoded))
 		return set_os_error(e, errno);
 	else
 		return 1;
@@ -1894,11 +1894,11 @@ parse_request_uri(const char* line, http_request request, meta_error e)
 
 	if (strlen(line) >= CCH_URI_MAX)
 		return set_http_error(e, HTTP_414_REQUEST_URI_TOO_LARGE);
-	else if(!get_word_from_string(line, uri, sizeof uri, 1))
+	else if (!get_word_from_string(line, uri, sizeof uri, 1))
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
-	else if(fUriHasParams(uri))
+	else if (fUriHasParams(uri))
 		return set_uri_and_params(request, uri, e);
-	else if(!request_set_uri(request, uri))
+	else if (!request_set_uri(request, uri))
 		return set_os_error(e, errno);
 	else
 		return 1;

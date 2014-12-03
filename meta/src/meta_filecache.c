@@ -160,11 +160,11 @@ int filecache_add(filecache fc, fileinfo finfo, int pin, unsigned long* pid)
 
 	if ((fd = open(fileinfo_name(finfo), O_RDONLY)) == -1)
 		goto err;
-	else if((finfo->contents = malloc(finfo->st.st_size)) == NULL)
+	else if ((finfo->contents = malloc(finfo->st.st_size)) == NULL)
 		goto err;
-	else if(read(fd, finfo->contents, (size_t)finfo->st.st_size) != (ssize_t)finfo->st.st_size)
+	else if (read(fd, finfo->contents, (size_t)finfo->st.st_size) != (ssize_t)finfo->st.st_size)
 		goto err;
-	else if(close(fd) == -1)
+	else if (close(fd) == -1)
 		goto err;
 
 	fd = -1;
@@ -385,15 +385,15 @@ int main(void)
 
 			if (st.st_size == 0)
 				; /* Do not add empty files */
-			else if(!filecache_add(fc, fi, 0, &id)) {
+			else if (!filecache_add(fc, fi, 0, &id)) {
 				perror(de->d_name);
 				exit(EXIT_FAILURE);
 			}
-			else if(!filecache_get(fc, de->d_name, &pdata, &cb)) {
+			else if (!filecache_get(fc, de->d_name, &pdata, &cb)) {
 				perror(de->d_name);
 				exit(EXIT_FAILURE);
 			}
-			else if(!filecache_get_mime_type(fc, de->d_name, mime, sizeof mime)){
+			else if (!filecache_get_mime_type(fc, de->d_name, mime, sizeof mime)){
 				perror(de->d_name);
 				exit(EXIT_FAILURE);
 			}

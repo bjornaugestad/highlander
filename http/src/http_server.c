@@ -300,11 +300,11 @@ int http_server_alloc(http_server s)
 {
 	if (!http_server_alloc_page_structs(s))
 		return 0;
-	else if(!http_server_alloc_request_pool(s)) {
+	else if (!http_server_alloc_request_pool(s)) {
 		http_server_free_page_structs(s);
 		return 0;
 	}
-	else if(!http_server_alloc_response_pool(s)) {
+	else if (!http_server_alloc_response_pool(s)) {
 		http_server_free_request_pool(s);
 		http_server_free_page_structs(s);
 		return 0;

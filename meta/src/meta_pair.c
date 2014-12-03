@@ -62,7 +62,7 @@ pair pair_new(size_t nelem)
 
 	if ((p = malloc(sizeof *p)) == NULL)
 		;
-	else if((p->element = calloc(nelem, sizeof *p->element)) == NULL) {
+	else if ((p->element = calloc(nelem, sizeof *p->element)) == NULL) {
 		free(p);
 		p = NULL;
 	}
@@ -218,7 +218,7 @@ int main(void)
 			sprintf(value, "value %lu", (unsigned long)j);
 			if ((pval = pair_get(p, name)) == NULL)
 				return 1;
-			else if(strcmp(pval, value) != 0)
+			else if (strcmp(pval, value) != 0)
 				return 1;
 		}
 
@@ -240,7 +240,7 @@ int main(void)
 			sprintf(value, "value %lu", (unsigned long)j);
 			if ((pval = pair_get(p, name)) == NULL)
 				return 1;
-			else if(strcmp(pval, value) != 0)
+			else if (strcmp(pval, value) != 0)
 				return 1;
 		}
 

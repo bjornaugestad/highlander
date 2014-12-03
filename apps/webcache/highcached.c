@@ -160,19 +160,19 @@ static void create_cache(void)
     if ( (cf = configfile_read(g_configfile)) == NULL) {
         die_perror("%s", g_configfile);
     }
-    else if(!configfile_get_ulong(cf, "size", &size)) {
+    else if (!configfile_get_ulong(cf, "size", &size)) {
         die("The size configuration parameter is required\n");
     }
-    else if(!configfile_get_ulong(cf, "buckets", &buckets)) {
+    else if (!configfile_get_ulong(cf, "buckets", &buckets)) {
         die("The buckets configuration parameter is required\n");
     }
-    else if(!configfile_get_string(cf, "files", g_files, sizeof g_files)) {
+    else if (!configfile_get_string(cf, "files", g_files, sizeof g_files)) {
         die("The files configuration parameter is required\n");
     }
-    else if(!configfile_get_string(cf, "dirs", g_dirs, sizeof g_dirs)) {
+    else if (!configfile_get_string(cf, "dirs", g_dirs, sizeof g_dirs)) {
         die("The dirs configuration parameter is required\n");
     }
-    else if( (g_filecache = filecache_new(size, buckets * 1024 * 1024)) == NULL) {
+    else if ((g_filecache = filecache_new(size, buckets * 1024 * 1024)) == NULL) {
         die_perror("filecache_new");
     }
 
@@ -213,9 +213,9 @@ static void configure_admin_server(http_server s, const char* configfilename)
 
     if ( (cf = configfile_read(configfilename)) == NULL) 
         die_perror("%s", configfilename);
-    else if(!configfile_get_int(cf, "admin_port", &port))
+    else if (!configfile_get_int(cf, "admin_port", &port))
         die_perror("admin_port");
-    else if(!configfile_get_string(cf, "admin_host", host, sizeof host))
+    else if (!configfile_get_string(cf, "admin_host", host, sizeof host))
         die("admin_host is missing from the configuration file %s", configfilename);
 
     http_server_set_port(s, port);

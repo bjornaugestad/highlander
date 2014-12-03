@@ -62,9 +62,9 @@ static int hexchar2int(int c)
 {
 	if (c >= '0' && c <= '9')
 		return c - '0';
-	else if(c >= 'a' && c <= 'f')
+	else if (c >= 'a' && c <= 'f')
 		return 10 + c - 'a';
-	else if(c >= 'A' && c <= 'F')
+	else if (c >= 'A' && c <= 'F')
 		return 10 + c - 'A';
 	else /* Illegal input. */
 		return -1;
@@ -113,7 +113,7 @@ size_t rfc1738_encode(char* dest, size_t cbdest, const char* src, size_t cbsrc)
 			cbsrc--;
 			cbdest--;
 		}
-		else if(cbdest > 2) {
+		else if (cbdest > 2) {
 			if (!encode((unsigned char)*src, dest)) {
 				errno = EINVAL;
 				return 0;
@@ -183,7 +183,7 @@ size_t rfc1738_encode_string(char* dest, size_t cbdest, const char* src)
 
 	if ((size = rfc1738_encode(dest, cbdest, src, strlen(src))) == 0)
 		return 0;
-	else if(size == cbdest)
+	else if (size == cbdest)
 		return 0; /* No room for null character */
 	else {
 		dest[size] = '\0';
@@ -197,7 +197,7 @@ size_t rfc1738_decode_string(char* dest, size_t cbdest, const char* src)
 
 	if ((size = rfc1738_decode(dest, cbdest, src, strlen(src))) == 0)
 		return 0;
-	else if(size == cbdest)
+	else if (size == cbdest)
 		return 0; /* No room for null character */
 	else {
 		dest[size] = '\0';
@@ -235,10 +235,10 @@ int main(void)
 		if ((cb = rfc1738_encode(buf1, sizeof buf1, tests[i], strlen(tests[i]))) == 0) {
 			fprintf(stderr, "1.Could not encode %s\n", tests[i]);
 		}
-		else if((cb = rfc1738_decode(buf2, sizeof buf2, buf1, cb)) == 0) {
+		else if ((cb = rfc1738_decode(buf2, sizeof buf2, buf1, cb)) == 0) {
 			fprintf(stderr, "2.Could not decode %s\n", buf1);
 		}
-		else if(memcmp(buf2, tests[i], cb) != 0) {
+		else if (memcmp(buf2, tests[i], cb) != 0) {
 			fprintf(stderr,
 				"enc/dec operation yielded different result: %s != %s\n"
 				"Enc == %s\n",
@@ -254,7 +254,7 @@ int main(void)
 		perror("encode");
 		exit(1);
 	}
-	else if(!rfc1738_decode(buf1, sizeof buf1, buf2, strlen(buf2)) ) {
+	else if (!rfc1738_decode(buf1, sizeof buf1, buf2, strlen(buf2)) ) {
 		perror("decode");
 		exit(1);
 	}

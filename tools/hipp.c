@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "hipp: No input files\n");
         exit(EXIT_FAILURE);
     }
-    else if(g_outputfile != NULL && optind + 1 < argc) {
+    else if (g_outputfile != NULL && optind + 1 < argc) {
         fprintf(stderr, "-o option is only valid if input is one file\n");
         exit(EXIT_FAILURE);
     }
@@ -299,15 +299,15 @@ static void write_html_buffer(FILE* f, const char* str)
             s++;
             continue;
         }
-        else if(*s == '\\') {
+        else if (*s == '\\') {
             p(f, "\\\\");
         }
-        else if(*s == '\n') {
+        else if (*s == '\n') {
             if(m_strip_blanks) {
                 p(f, "\\n");
             }
         }
-        else if(*s == '"' && last != '\\')
+        else if (*s == '"' && last != '\\')
             p(f, "\\%c", *s);
         else
             fputc(*s, f);
@@ -403,7 +403,7 @@ static void process_file(char* name)
         perror(name);
         exit(EXIT_FAILURE);
     }
-    else if( (fout = fopen(fname, "w")) == NULL) {
+    else if ((fout = fopen(fname, "w")) == NULL) {
         perror(fname);
         exit(EXIT_FAILURE);
     }

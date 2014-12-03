@@ -59,7 +59,7 @@ pool pool_new(size_t size)
 
 	if ((p = calloc(1, sizeof *p)) == NULL)
 		;
-	else if((p->pdata = calloc(size, sizeof *p->pdata)) == NULL) {
+	else if ((p->pdata = calloc(size, sizeof *p->pdata)) == NULL) {
 		free(p);
 		p = NULL;
 	}

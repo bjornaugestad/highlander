@@ -85,7 +85,7 @@ process process_new(const char *appname)
 
 	if ((p = calloc(1, sizeof *p)) == NULL)
 		;
-	else if((p->rootdir = cstring_new()) == NULL
+	else if ((p->rootdir = cstring_new()) == NULL
 	|| (p->appname = cstring_new()) == NULL
 	|| (p->username = cstring_new()) == NULL
 	|| !cstring_copy(p->appname, appname)) {
@@ -174,11 +174,11 @@ static int set_signals_to_block(void)
 	errno = 0;
 	if (SIG_ERR == signal(SIGPIPE, SIG_IGN))
 		;
-	else if(-1 == sigemptyset(&block))
+	else if (-1 == sigemptyset(&block))
 		;
-	else if(-1 == sigaddset(&block, SIGTERM))
+	else if (-1 == sigaddset(&block, SIGTERM))
 		;
-	else if(pthread_sigmask(SIG_BLOCK, &block, NULL))
+	else if (pthread_sigmask(SIG_BLOCK, &block, NULL))
 		;
 	else
 		success = 1;
@@ -212,11 +212,11 @@ static int write_pid(process p, pid_t pid)
 
 	if ((f = fopen(filename, "w")) == NULL)
 		return 0;
-	else if(fprintf(f, "%lu", (unsigned long)pid) <= 0) {
+	else if (fprintf(f, "%lu", (unsigned long)pid) <= 0) {
 		fclose(f);
 		return 0;
 	}
-	else if(fclose(f))
+	else if (fclose(f))
 		return 0;
 	else
 		return 1;
@@ -354,7 +354,7 @@ int process_start(process p, int fork_and_close)
 
 		if ((pid = fork()) == -1)
 			return 0;
-		else if(pid != 0)
+		else if (pid != 0)
 			exit(EXIT_SUCCESS);
 
 		fclose(stdin);

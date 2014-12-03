@@ -42,7 +42,7 @@ dynamic_page dynamic_new(const char* uri, PAGE_FUNCTION handler, page_attribute 
 			free(p);
 			p = NULL;
 		}
-		else if(a != NULL && (p->attr = attribute_dup(a)) == NULL) {
+		else if (a != NULL && (p->attr = attribute_dup(a)) == NULL) {
 			cstring_free(p->uri);
 			free(p);
 			p = NULL;

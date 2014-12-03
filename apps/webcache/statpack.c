@@ -178,7 +178,7 @@ int statpack_start(void)
     if ( (m_sampler = sampler_new(SUM_ENTITIES, 24*60)) == NULL) {
         return 0;
     }
-    else if(pthread_create(&m_thread_id, NULL, sampler_thread, m_sampler)) {
+    else if (pthread_create(&m_thread_id, NULL, sampler_thread, m_sampler)) {
         sampler_free(m_sampler);
         return 0;
     }

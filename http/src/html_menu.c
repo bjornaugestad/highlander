@@ -41,7 +41,7 @@ html_menu html_menu_new(void)
 
 	if ((m = malloc(sizeof *m)) == NULL)
 		;
-	else if((m->items = list_new()) == NULL
+	else if ((m->items = list_new()) == NULL
 	|| !cstring_multinew(arr, 4)) {
 		list_free(m->items, NULL);
 		free(m);
@@ -154,7 +154,7 @@ int html_menu_render(html_menu m, cstring buffer)
 			if (!cstring_printf(buffer, cb, "<a href='%s'>%s</a><br>\n", link, text))
 				return 0;
 		}
-		else if(!cstring_concat(buffer, text))
+		else if (!cstring_concat(buffer, text))
 			return 0;
 	}
 

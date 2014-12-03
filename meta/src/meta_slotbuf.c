@@ -78,7 +78,7 @@ int slotbuf_set(slotbuf p, size_t i, void *value)
 	if (p->data[idx] != NULL) {
 		if (!p->can_overwrite)
 			return 0;
-		else if(p->pfn != NULL)
+		else if (p->pfn != NULL)
 			p->pfn(p->data[idx]);
 	}
 

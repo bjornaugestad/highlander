@@ -42,7 +42,7 @@ cookie cookie_new(void)
 
 	if ((p = malloc(sizeof *p)) == NULL)
 		;
-	else if(!cstring_multinew(arr, 5)) {
+	else if (!cstring_multinew(arr, 5)) {
 		free(p);
 		p = NULL;
 	}
@@ -285,7 +285,7 @@ static int parse_cookie_attr(
 
 	if ((str = cstring_new()) == NULL)
 		return set_os_error(e, ENOMEM);
-	else if(!get_cookie_attribute(input, look_for, str, e)) {
+	else if (!get_cookie_attribute(input, look_for, str, e)) {
 		cstring_free(str);
 		return 0;
 	}

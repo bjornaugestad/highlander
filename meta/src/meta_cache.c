@@ -233,7 +233,7 @@ int cache_add(cache c, size_t id, void *data, size_t cb, int pin)
 
 	if (!make_space(c, cb))
 		;
-	else if((p = malloc(sizeof *p)) == NULL)
+	else if ((p = malloc(sizeof *p)) == NULL)
 		;
 	else {
 		p->id = id;
@@ -246,11 +246,11 @@ int cache_add(cache c, size_t id, void *data, size_t cb, int pin)
 			free(p);
 			assert(0);
 		}
-		else if(c->hashtable[hid] == NULL
+		else if (c->hashtable[hid] == NULL
 		&& (c->hashtable[hid] = list_new()) == NULL) {
 			free(p);
 		}
-		else if(list_add(c->hashtable[hid], p) == NULL) {
+		else if (list_add(c->hashtable[hid], p) == NULL) {
 			free(p);
 		}
 		else

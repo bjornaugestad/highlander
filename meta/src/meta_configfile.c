@@ -164,7 +164,7 @@ configfile configfile_read(const char *path)
 			errno = EINVAL;
 			return NULL;
 		}
-		else if(i == 1) {
+		else if (i == 1) {
 			if (!add(p, name, value)) {
 				fclose(f);
 				configfile_free(p);
@@ -216,7 +216,7 @@ int configfile_get_string(configfile cf, const char *name, char *value, size_t c
 		errno = ENOENT;
 		return 0;
 	}
-	else if(strlen(pnv->value) + 1 > cb) {
+	else if (strlen(pnv->value) + 1 > cb) {
 		errno = ENOSPC;
 		return 0;
 	}
@@ -241,7 +241,7 @@ int configfile_get_long(configfile cf, const char *name, long *value)
 	*value = strtol(sz, NULL, 10);
 	if (*value == LONG_MIN || *value == LONG_MAX)
 		return 0;
-	else if(*value == 0 && errno == EINVAL)
+	else if (*value == 0 && errno == EINVAL)
 		return 0;
 	else
 		return 1;
@@ -262,7 +262,7 @@ int configfile_get_ulong(configfile cf, const char *name, unsigned long *value)
 	*value = strtol(sz, NULL, 10);
 	if (*value == ULONG_MAX)
 		return 0;
-	else if(*value == 0 && errno == EINVAL)
+	else if (*value == 0 && errno == EINVAL)
 		return 0;
 	else
 		return 1;

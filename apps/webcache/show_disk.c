@@ -36,16 +36,16 @@ int show_disk(http_request req, http_response page)
         /* No action */
         add_page_end(page, NULL);
     }
-    else if(strcmp(action, "deleted") == 0) {
+    else if (strcmp(action, "deleted") == 0) {
         rc = show_deleted_files(req, page);
     }
-    else if(strcmp(action, "new") == 0) {
+    else if (strcmp(action, "new") == 0) {
         rc = show_new_files(req, page);
     }
-    else if(strcmp(action, "modified") == 0) {
+    else if (strcmp(action, "modified") == 0) {
         rc = show_modified_files(req, page);
     }
-    else if(strcmp(action, "summary") == 0) {
+    else if (strcmp(action, "summary") == 0) {
         rc = show_file_summary(req, page);
     }
     else {
@@ -75,7 +75,7 @@ static int show_deleted_files(http_request req, http_response page)
     (void)req;
     if ( (deleted = find_deleted_files(g_dirs, g_patterns, g_npatterns)) == NULL)
         goto cleanup;
-    else if( (filist = list_new()) == NULL)
+    else if ((filist = list_new()) == NULL)
         goto cleanup;
     else {
         for (li = list_first(deleted); !list_end(li); li = list_next(li)) {
@@ -85,7 +85,7 @@ static int show_deleted_files(http_request req, http_response page)
 
             if ( (fi = filecache_fileinfo(g_filecache, s)) == NULL)
                 goto cleanup;
-            else if(list_add(filist, fi) == NULL)
+            else if (list_add(filist, fi) == NULL)
                 goto cleanup;
         }
 
@@ -124,7 +124,7 @@ static int show_new_files(http_request req, http_response page)
     else {
         if (list_size(files) == 0) 
             msg = no_files;
-        else if(!show_file_list(page, desc, files))
+        else if (!show_file_list(page, desc, files))
             goto cleanup;
 
         add_page_end(page, msg);
@@ -181,9 +181,9 @@ static int show_file_summary(http_request req, http_response page)
 
     if ( (mod = find_modified_files(g_dirs, g_patterns, g_npatterns)) == NULL)
         goto cleanup;
-    else if( (new = find_new_files(g_dirs, g_patterns, g_npatterns)) == NULL)
+    else if ((new = find_new_files(g_dirs, g_patterns, g_npatterns)) == NULL)
         goto cleanup;
-    else if( (del = find_deleted_files(g_dirs, g_patterns, g_npatterns)) == NULL)
+    else if ((del = find_deleted_files(g_dirs, g_patterns, g_npatterns)) == NULL)
         goto cleanup;
 
     ndel = list_size(del);

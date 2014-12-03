@@ -66,7 +66,7 @@ html_buffer html_buffer_new(void)
 
 	if ((b = malloc(sizeof *b)) == NULL)
 		;
-	else if((b->buffer = cstring_new()) == NULL) {
+	else if ((b->buffer = cstring_new()) == NULL) {
 		free(b);
 		b = NULL;
 	}

@@ -26,7 +26,7 @@ else it returns 0.
 .Bd -literal
 if(request_accepts_language(request, "fr"))
     create_response_in_french(response);
-else if(request_accepts_language(request, "no"))
+else if (request_accepts_language(request, "no"))
     create_norwegian_response(response);
 else
     create_default_response(response);

@@ -396,7 +396,7 @@ static int accept_new_connections(tcp_server srv, meta_socket sock)
 				atomic_ulong_inc(&srv->sum_poll_intr);
 				continue;
 			}
-			else if(errno == EAGAIN)  {
+			else if (errno == EAGAIN)  {
 				atomic_ulong_inc(&srv->sum_poll_again);
 				continue;
 			}
@@ -557,7 +557,7 @@ int tcp_server_start(tcp_server srv)
 		sock_close(srv->sock);
 		rc = 0;
 	}
-	else if(sock_close(srv->sock))
+	else if (sock_close(srv->sock))
 		rc = 0;
 	else
 		rc = 1;
@@ -640,7 +640,7 @@ int tcp_server_set_hostname(tcp_server srv, const char *host)
 
 	if (host == NULL)
 		srv->host = NULL;
-	else if((srv->host = malloc(strlen(host) + 1)) == NULL)
+	else if ((srv->host = malloc(strlen(host) + 1)) == NULL)
 		return 0;
 	else
 		strcpy(srv->host, host);
@@ -678,11 +678,11 @@ static int client_can_connect(tcp_server srv, struct sockaddr_in* addr)
 		/* No permissions set. Allow all */
 		return 1;
 	}
-	else if(inet_ntop(AF_INET, &vaddr, sz, sizeof(sz)) == NULL) {
+	else if (inet_ntop(AF_INET, &vaddr, sz, sizeof(sz)) == NULL) {
 		/* Crappy addr or internal error. Deny */
 		return 0;
 	}
-	else if(regexec(&srv->allowed_clients, sz, 0, NULL, 0) == REG_NOMATCH){
+	else if (regexec(&srv->allowed_clients, sz, 0, NULL, 0) == REG_NOMATCH){
 		/* Not found in pattern */
 		return 0;
 	}

@@ -186,10 +186,10 @@ int stringmap_add(stringmap sm, const char *s, unsigned long* pid)
 		/* HMM, Should we not return pid too? */
 		;
 	}
-	else if((e = malloc(sizeof *e)) == NULL) {
+	else if ((e = malloc(sizeof *e)) == NULL) {
 		goto err;
 	}
-	else if((e->s = malloc(strlen(s) + 1)) == NULL) {
+	else if ((e->s = malloc(strlen(s) + 1)) == NULL) {
 		goto err;
 	}
 	else {
@@ -203,7 +203,7 @@ int stringmap_add(stringmap sm, const char *s, unsigned long* pid)
 		if (sm->hashtable[hid] == NULL
 		&& (sm->hashtable[hid] = list_new()) == NULL)
 			goto err;
-		else if(list_add(sm->hashtable[hid], e) == NULL) {
+		else if (list_add(sm->hashtable[hid], e) == NULL) {
 			goto err;
 		}
 

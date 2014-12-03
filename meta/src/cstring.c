@@ -186,7 +186,7 @@ cstring cstring_new(void)
 	 */
 	if ((p = calloc(1, sizeof *p)) == NULL)
 		;
-	else if((p->data = calloc(1, CSTRING_INITIAL_SIZE)) == NULL) {
+	else if ((p->data = calloc(1, CSTRING_INITIAL_SIZE)) == NULL) {
 		free(p);
 		p = NULL;
 	}
@@ -426,7 +426,7 @@ size_t cstring_split(cstring** dest, const char *src, const char *delim)
 	/* allocate space */
 	if ((*dest = malloc(sizeof *dest * nelem)) == NULL)
 		return 0;
-	else if(cstring_multinew(*dest, nelem) == 0) {
+	else if (cstring_multinew(*dest, nelem) == 0) {
 		free(*dest);
 		return 0;
 	}

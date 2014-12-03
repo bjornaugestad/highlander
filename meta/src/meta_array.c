@@ -40,7 +40,7 @@ array array_new(size_t nmemb, int can_grow)
 
 	if ((p = calloc(1, sizeof *p)) == NULL)
 		;
-	else if((p->elements = calloc(nmemb, sizeof *p->elements)) == NULL) {
+	else if ((p->elements = calloc(nmemb, sizeof *p->elements)) == NULL) {
 		free(p);
 		p = NULL;
 	}

@@ -19,9 +19,9 @@ static size_t reload_cache(void)
 
     if ( (lst = list_new()) == NULL)
         goto err;
-    else if(!walk_all_directories(g_dirs, g_patterns, g_npatterns, lst, 1)) 
+    else if (!walk_all_directories(g_dirs, g_patterns, g_npatterns, lst, 1)) 
         goto err;
-    else if(!filecache_invalidate(g_filecache)) 
+    else if (!filecache_invalidate(g_filecache)) 
         goto err;
     else {
         list_iterator li;
@@ -55,7 +55,7 @@ int show_cache(http_request req, http_response page)
     if ( (action = request_get_parameter_value(req, "a")) == NULL) {
         /* No action */
     }
-    else if(strcmp(action, "reload") == 0) {
+    else if (strcmp(action, "reload") == 0) {
         size_t files;
         if ( (files = reload_cache()) == 0) 
             strcpy(msgbuf, "No files were added to the cache, an error probably occured");

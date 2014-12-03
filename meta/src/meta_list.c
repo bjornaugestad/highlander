@@ -500,7 +500,7 @@ list list_copy(list lst, void*(*copier)(const void*), dtor dtor_fn)
 				list_free(new, dtor_fn);
 				return NULL;
 			}
-			else if(list_add(new, new_data) == NULL) {
+			else if (list_add(new, new_data) == NULL) {
 				list_free(new, dtor_fn);
 				return NULL;
 			}
@@ -672,7 +672,7 @@ int main(void)
 	for (li = list_first(b); !list_end(li); li = list_next(li)) {
 		if ((node = list_get(li)) == NULL)
 			return77("Could not get node from list");
-		else if(node->value >= 500)
+		else if (node->value >= 500)
 			return77("Incorrect value for node");
 	}
 	sublist_free(b);
@@ -685,7 +685,7 @@ int main(void)
 	for (li = list_first(b); !list_end(li); li = list_next(li)) {
 		if ((node = list_get(li)) == NULL)
 			return77("Could not get node from list");
-		else if(node->value < 500)
+		else if (node->value < 500)
 			return77("Incorrect value, should be >= 500");
 	}
 	sublist_free(b);
@@ -701,7 +701,7 @@ int main(void)
 		size_t* pi;
 		if ((pi = list_get(li)) == NULL)
 			return77("Could not get node from list");
-		else if(*pi != i)
+		else if (*pi != i)
 			return77("Incorrect value for adapted list");
 		i++;
 	}
@@ -726,7 +726,7 @@ int main(void)
 	for (i = 0; i < nelem; i++) {
 		if ((node = list_get_item(a, i)) == NULL)
 			return77("Could not get node by index");
-		else if(node->value != i)
+		else if (node->value != i)
 			return77("Incorrect value for indexed node");
 	}
 
@@ -758,9 +758,9 @@ int main(void)
 	/* Now copy a to b, then merge a and b. */
 	if ((b = list_copy(a, item_dup, item_dtor)) == NULL)
 		return77("list_copy failed");
-	else if((b = list_merge(b, a)) == NULL)
+	else if ((b = list_merge(b, a)) == NULL)
 		return77("list_merge failed");
-	else if(list_size(b) != nelem * 2)
+	else if (list_size(b) != nelem * 2)
 		return77("Incorrect number of items in list");
 	else {
 		/* Remember that list_merge() freed list a */

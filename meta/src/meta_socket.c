@@ -77,11 +77,11 @@ int sock_write(meta_socket p, const char *buf, size_t count, int timeout, int nr
 			if (errno != EAGAIN)
 				return 0;
 		}
-		else if((nwritten = write(p->fd, buf, count)) == -1) {
+		else if ((nwritten = write(p->fd, buf, count)) == -1) {
 			perror("write");
 			return 0;
 		}
-		else if(nwritten != (ssize_t)count) {
+		else if (nwritten != (ssize_t)count) {
 			buf += nwritten;
 			count -= nwritten;
 		}
@@ -124,11 +124,11 @@ static int sock_poll_for(meta_socket p, int timeout, int poll_for)
 		/* We have info in pfd */
 		if (pfd.revents & POLLHUP)
 			errno = EPIPE;
-		else if(pfd.revents & POLLERR)
+		else if (pfd.revents & POLLERR)
 			errno = EPIPE;
-		else if(pfd.revents & POLLNVAL)
+		else if (pfd.revents & POLLNVAL)
 			errno = EINVAL;
-		else if((pfd.revents & poll_for)  == poll_for)
+		else if ((pfd.revents & poll_for)  == poll_for)
 			status = 1;
 	}
 	else if (rc == 0)
@@ -174,14 +174,14 @@ int sock_read(
 			if (errno != EAGAIN)
 				return 0;
 		}
-		else if((nread = read(p->fd, &dest[*nreadsum], cbToRead)) == -1) {
+		else if ((nread = read(p->fd, &dest[*nreadsum], cbToRead)) == -1) {
 			/*
 			 * We were unable to read data from the socket.
 			 * Inform the caller by returning 0.
 			 */
 			return 0;
 		}
-		else if(nread > 0) {
+		else if (nread > 0) {
 			/* We read at least one byte off the socket. */
 			*nreadsum += nread;
 
@@ -294,7 +294,7 @@ meta_socket sock_socket(int unix_socket)
 	if ((p = malloc(sizeof *p)) == NULL) {
 		return NULL;
 	}
-	else if((p->fd = socket(af, SOCK_STREAM, 0)) == -1) {
+	else if ((p->fd = socket(af, SOCK_STREAM, 0)) == -1) {
 		free(p);
 		return NULL;
 	}
@@ -322,7 +322,7 @@ meta_socket create_server_socket(int unix_socket, const char *host, int port)
 	if ((p = sock_socket(unix_socket)) == NULL) {
 		return NULL;
 	}
-	else if(!sock_set_reuseaddr(p)
+	else if (!sock_set_reuseaddr(p)
 	|| !sock_bind(p, host, port)
 	|| !sock_listen(p, 100)) {
 		sock_close(p);
