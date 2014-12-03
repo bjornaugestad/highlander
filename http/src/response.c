@@ -77,15 +77,6 @@
 #define VARY				(0x1000000)
 #define WWW_AUTHENTICATE	(0x2000000)
 
-/* Local helper functions */
-static int response_send_header_fields(http_response p, connection conn);
-static int response_send_cookies(http_response p, connection conn, meta_error e);
-static int response_flag_isset(http_response p, unsigned long flag);
-static void response_set_flag(http_response p, unsigned long flag);
-static void response_clear_flags(http_response p);
-static int strcat_quoted(cstring dest, const char* s);
-static int send_entire_file(connection conn, const char *path, size_t *pcb);
-
 /* Here is the response we are creating */
 struct http_response_tag {
 	http_version version;
@@ -136,6 +127,21 @@ struct http_response_tag {
 	int send_file;
 	cstring path;
 };
+
+static void response_set_flag(http_response p, unsigned long flag)
+{
+	p->flags |= flag;
+}
+
+static int response_flag_isset(http_response p, unsigned long flag)
+{
+	return (p->flags & flag) ? 1 : 0;
+}
+
+static void response_clear_flags(http_response p)
+{
+	p->flags = 0;
+}
 
 general_header response_get_general_header(http_response r)
 {
@@ -237,89 +243,106 @@ int response_get_status(http_response r)
 	return r->status;
 }
 
-static int response_send_header(
-	http_response response,
-	connection conn,
-	meta_error e)
+static int send_age(connection c, http_response p)
 {
-	if (response->version == VERSION_09)
-		/* No headers for http 0.9 */
-		return 0;
+	return http_send_ulong(c, "Age: ", p->age);
+}
 
-	/* Special stuff to support pers. conns in HTTP 1.0 */
-	if (connection_is_persistent(conn) && response->version == VERSION_10) {
-		if (!response_set_connection(response, "Keep-Alive")) {
-			return set_os_error(e, errno);
+static int send_etag(connection conn, http_response p)
+{
+	return http_send_field(conn, "ETag: ", p->etag);
+}
+
+static int send_location(connection conn, http_response p)
+{
+	return http_send_field(conn, "Location: ", p->location);
+}
+
+static int send_proxy_authenticate(connection conn, http_response p)
+{
+	return http_send_field(conn, "Proxy-Authenticate: ", p->proxy_authenticate);
+}
+
+static int send_server(connection conn, http_response p)
+{
+	return http_send_field(conn, "Server: ", p->server);
+}
+
+static int send_vary(connection conn, http_response p)
+{
+	return http_send_field(conn, "Vary: ", p->vary);
+}
+
+static int send_www_authenticate(connection conn, http_response p)
+{
+	return http_send_field(conn, "WWW-Authenticate: ", p->www_authenticate);
+}
+
+
+static int send_retry_after(connection conn, http_response p)
+{
+	return http_send_date(conn, "Retry-After: ", p->retry_after);
+}
+
+static int send_accept_ranges(connection conn, http_response p)
+{
+	size_t cch;
+	const char* s;
+
+	if (p->accept_ranges == 1)
+		s = "Accept-Ranges: bytes\r\n";
+	else
+		s = "Accept-Ranges: none\r\n";
+
+	cch = strlen(s);
+	return connection_write(conn, s, cch);
+}
+
+
+static int response_send_header_fields(http_response p, connection conn)
+{
+	int success = 1;
+	size_t i, cFields;
+
+	static const struct {
+		size_t flag;
+		int (*func)(connection, http_response);
+	} fields[] = {
+		{ AGE,					send_age },
+		{ ETAG,					send_etag },
+		{ LOCATION,				send_location },
+		{ PROXY_AUTHENTICATE,	send_proxy_authenticate },
+		{ SERVER,				send_server },
+		{ VARY,					send_vary },
+		{ WWW_AUTHENTICATE,		send_www_authenticate },
+		{ ACCEPT_RANGES,		send_accept_ranges },
+		{ RETRY_AFTER,			send_retry_after },
+	};
+
+	assert(NULL != p);
+	assert(NULL != conn);
+
+	/*
+	 * Some fields are required by http. We add them if the
+	 * user hasn't added them manually.
+	 */
+	if (!general_header_date_isset(p->general_header))
+		general_header_set_date(p->general_header, time(NULL));
+
+	general_header_send_fields(p->general_header, conn);
+	entity_header_send_fields(p->entity_header, conn);
+
+
+	if (success) {
+		cFields = sizeof(fields) / sizeof(fields[0]);
+		for (i = 0; i < cFields; i++) {
+			if (response_flag_isset(p, fields[i].flag)) {
+				success = (*fields[i].func)(conn, p);
+				if (!success)
+					break;
+			}
 		}
 	}
-
-	if (!response_send_header_fields(response, conn))
-		return set_tcpip_error(e, errno);
-
-	/* Send cookies, if any */
-	if (response->cookies != NULL) {
-		if (!response_send_cookies(response, conn, e))
-			return 0;
-	}
-
-	/* Send the \r\n separating all headers from an optional entity */
-	if (!connection_write(conn, "\r\n", 2))
-		return set_tcpip_error(e, errno);
-
-	return 1;
-}
-
-int response_add(const http_response p, const char* value)
-{
-	assert(NULL != p);
-	assert(NULL != value);
-
-	return cstring_concat(p->entity, value);
-}
-
-int response_add_char(http_response p, int c)
-{
-	assert(NULL != p);
-	return cstring_charcat(p->entity, c);
-}
-
-int response_add_end(http_response response, const char* start, const char* end)
-{
-	return cstring_pcat(response->entity, start, end);
-}
-
-void response_free(http_response p)
-{
-	if (p != NULL) {
-		/* Free cookies */
-		list_free(p->cookies, (void(*)(void*))cookie_free);
-
-		general_header_free(p->general_header);
-		entity_header_free(p->entity_header);
-		cstring_free(p->etag);
-		cstring_free(p->location);
-		cstring_free(p->proxy_authenticate);
-		cstring_free(p->server);
-		cstring_free(p->vary);
-		cstring_free(p->www_authenticate);
-		cstring_free(p->entity);
-		cstring_free(p->path);
-
-		free(p);
-	}
-}
-
-int response_printf(http_response page, const size_t needs_max, const char* fmt, ...)
-{
-	int success;
-	va_list ap;
-
-	assert(NULL != page);
-	assert(NULL != fmt);
-
-	va_start (ap, fmt);
-	success = cstring_vprintf(page->entity, needs_max, fmt, ap);
-	va_end(ap);
 
 	return success;
 }
@@ -337,6 +360,36 @@ static int need_quote(const char* s)
 	return 0;
 }
 
+/*
+ * How do we quote? We use ' in version 1.
+ * How about ' in the value. Do we escape them or do
+ * we double-quote them? (\' or '' ) I have to guess here,
+ * since rfc2109 is VERY silent on this issue. We go for \'
+ * since most browsers/servers are written in C and
+ * C programmers tend to escape stuff.
+ */
+static int strcat_quoted(cstring dest, const char* s)
+{
+	assert(NULL != s);
+	assert(NULL != dest);
+
+	if (!cstring_charcat(dest, '\''))
+		return 0;
+
+	while (*s) {
+		if (*s == '\'') {
+			if (!cstring_charcat(dest, '\\'))
+				return 0;
+		}
+
+		if (!cstring_charcat(dest, *s))
+			return 0;
+
+		s++;
+	}
+
+	return cstring_charcat(dest, '\'');
+}
 
 /*
  * Creates a string consisting of the misc elements in a cookie.
@@ -448,6 +501,95 @@ static int response_send_cookies(http_response p, connection conn, meta_error e)
 	return 1;
 }
 
+
+static int response_send_header(
+	http_response response,
+	connection conn,
+	meta_error e)
+{
+	if (response->version == VERSION_09)
+		/* No headers for http 0.9 */
+		return 0;
+
+	/* Special stuff to support pers. conns in HTTP 1.0 */
+	if (connection_is_persistent(conn) && response->version == VERSION_10) {
+		if (!response_set_connection(response, "Keep-Alive")) {
+			return set_os_error(e, errno);
+		}
+	}
+
+	if (!response_send_header_fields(response, conn))
+		return set_tcpip_error(e, errno);
+
+	/* Send cookies, if any */
+	if (response->cookies != NULL) {
+		if (!response_send_cookies(response, conn, e))
+			return 0;
+	}
+
+	/* Send the \r\n separating all headers from an optional entity */
+	if (!connection_write(conn, "\r\n", 2))
+		return set_tcpip_error(e, errno);
+
+	return 1;
+}
+
+int response_add(const http_response p, const char* value)
+{
+	assert(NULL != p);
+	assert(NULL != value);
+
+	return cstring_concat(p->entity, value);
+}
+
+int response_add_char(http_response p, int c)
+{
+	assert(NULL != p);
+	return cstring_charcat(p->entity, c);
+}
+
+int response_add_end(http_response response, const char* start, const char* end)
+{
+	return cstring_pcat(response->entity, start, end);
+}
+
+void response_free(http_response p)
+{
+	if (p != NULL) {
+		/* Free cookies */
+		list_free(p->cookies, (void(*)(void*))cookie_free);
+
+		general_header_free(p->general_header);
+		entity_header_free(p->entity_header);
+		cstring_free(p->etag);
+		cstring_free(p->location);
+		cstring_free(p->proxy_authenticate);
+		cstring_free(p->server);
+		cstring_free(p->vary);
+		cstring_free(p->www_authenticate);
+		cstring_free(p->entity);
+		cstring_free(p->path);
+
+		free(p);
+	}
+}
+
+int response_printf(http_response page, const size_t needs_max, const char* fmt, ...)
+{
+	int success;
+	va_list ap;
+
+	assert(NULL != page);
+	assert(NULL != fmt);
+
+	va_start (ap, fmt);
+	success = cstring_vprintf(page->entity, needs_max, fmt, ap);
+	va_end(ap);
+
+	return success;
+}
+
+
 int response_set_cookie(http_response response, cookie new_cookie)
 {
 	list_iterator i;
@@ -550,109 +692,6 @@ size_t response_get_content_length(http_response p)
 	return content_length;
 }
 
-
-static inline int send_age(connection c, http_response p)
-{
-	return http_send_ulong(c, "Age: ", p->age);
-}
-
-static inline int send_etag(connection conn, http_response p)
-{
-	return http_send_field(conn, "ETag: ", p->etag);
-}
-
-static inline int send_location(connection conn, http_response p)
-{
-	return http_send_field(conn, "Location: ", p->location);
-}
-
-static inline int send_proxy_authenticate(connection conn, http_response p)
-{
-	return http_send_field(conn, "Proxy-Authenticate: ", p->proxy_authenticate);
-}
-
-static inline int send_server(connection conn, http_response p)
-{
-	return http_send_field(conn, "Server: ", p->server);
-}
-
-static inline int send_vary(connection conn, http_response p)
-{
-	return http_send_field(conn, "Vary: ", p->vary);
-}
-
-static inline int send_www_authenticate(connection conn, http_response p)
-{
-	return http_send_field(conn, "WWW-Authenticate: ", p->www_authenticate);
-}
-
-
-static inline int send_retry_after(connection conn, http_response p)
-{
-	return http_send_date(conn, "Retry-After: ", p->retry_after);
-}
-
-static inline int send_accept_ranges(connection conn, http_response p)
-{
-	size_t cch;
-	const char* s;
-
-	if (p->accept_ranges == 1)
-		s = "Accept-Ranges: bytes\r\n";
-	else
-		s = "Accept-Ranges: none\r\n";
-
-	cch = strlen(s);
-	return connection_write(conn, s, cch);
-}
-
-static int response_send_header_fields(http_response p, connection conn)
-{
-	int success = 1;
-	size_t i, cFields;
-
-	static const struct {
-		size_t flag;
-		int (*func)(connection, http_response);
-	} fields[] = {
-		{ AGE,					send_age },
-		{ ETAG,					send_etag },
-		{ LOCATION,				send_location },
-		{ PROXY_AUTHENTICATE,	send_proxy_authenticate },
-		{ SERVER,				send_server },
-		{ VARY,					send_vary },
-		{ WWW_AUTHENTICATE,		send_www_authenticate },
-		{ ACCEPT_RANGES,		send_accept_ranges },
-		{ RETRY_AFTER,			send_retry_after },
-	};
-
-	assert(NULL != p);
-	assert(NULL != conn);
-
-	/*
-	 * Some fields are required by http. We add them if the
-	 * user hasn't added them manually.
-	 */
-	if (!general_header_date_isset(p->general_header))
-		general_header_set_date(p->general_header, time(NULL));
-
-	general_header_send_fields(p->general_header, conn);
-	entity_header_send_fields(p->entity_header, conn);
-
-
-	if (success) {
-		cFields = sizeof(fields) / sizeof(fields[0]);
-		for (i = 0; i < cFields; i++) {
-			if (response_flag_isset(p, fields[i].flag)) {
-				success = (*fields[i].func)(conn, p);
-				if (!success)
-					break;
-			}
-		}
-	}
-
-	return success;
-}
 
 int response_set_connection(http_response response, const char* value)
 {
@@ -943,21 +982,6 @@ void response_recycle(http_response p)
 	cstring_recycle(p->www_authenticate);
 }
 
-static void response_set_flag(http_response p, unsigned long flag)
-{
-	p->flags |= flag;
-}
-
-static int response_flag_isset(http_response p, unsigned long flag)
-{
-	return (p->flags & flag) ? 1 : 0;
-}
-
-static void response_clear_flags(http_response p)
-{
-	p->flags = 0;
-}
-
 int response_set_content_buffer(http_response p, void* data, size_t cb)
 {
 	response_set_flag(p, CONTENT_LENGTH);
@@ -980,37 +1004,6 @@ int response_set_allocated_content_buffer(
 	return 1;
 }
 
-
-/*
- * How do we quote? We use ' in version 1.
- * How about ' in the value. Do we escape them or do
- * we double-quote them? (\' or '' ) I have to guess here,
- * since rfc2109 is VERY silent on this issue. We go for \'
- * since most browsers/servers are written in C and
- * C programmers tend to escape stuff.
- */
-static int strcat_quoted(cstring dest, const char* s)
-{
-	assert(NULL != s);
-	assert(NULL != dest);
-
-	if (!cstring_charcat(dest, '\''))
-		return 0;
-
-	while (*s) {
-		if (*s == '\'') {
-			if (!cstring_charcat(dest, '\\'))
-				return 0;
-		}
-
-		if (!cstring_charcat(dest, *s))
-			return 0;
-
-		s++;
-	}
-
-	return cstring_charcat(dest, '\'');
-}
 
 int response_send_file(http_response p, const char *path, const char* ctype, meta_error e)
 {
@@ -1175,7 +1168,8 @@ static int http_send_content(int status)
 }
 #endif
 
-/* Returns 0 and sets e to the proper HTTP error code if a http error was sent
+/*
+ * Returns 0 and sets e to the proper HTTP error code if a http error was sent
  * back to the user. Returns a tcpip_error in e if a tcp/ip error occurs, even
  * if the response originally was a http error. This is done so that we can
  * detect and handle disconnects or other tcp/ip issues when sending responses
@@ -1192,10 +1186,11 @@ size_t response_send(http_response r, connection c, meta_error e)
 	size_t cb = 0;
 
 	/* NOTE: 20060103
-	 * I have rewritten lots of stuff today and added general_header and entity_header
-	 * members. Due to that change, we need to double check a few things here, before
-	 * we start sending data to the client. First of all we must set the correct
-	 * content_length in the entity_header.
+	 * I have rewritten lots of stuff today and added general_header
+	 * and entity_header members. Due to that change, we need to double
+	 * check a few things here, before we start sending data to the client.
+	 * First of all we must set the correct content_length in the
+	 * entity_header.
 	 */
 	if (!entity_header_content_length_isset(r->entity_header)) {
 		/* Shot in the dark, will not work for static pages */
@@ -1366,50 +1361,6 @@ int response_js_messagebox(http_response response, const char* text)
 }
 
 /* response field functions */
-static int parse_accept_ranges(http_response r, const char* value, meta_error e);
-static int parse_age(http_response r, const char* value, meta_error e);
-static int parse_etag(http_response r, const char* value, meta_error e);
-static int parse_location(http_response r, const char* value, meta_error e);
-static int parse_proxy_authenticate(http_response r, const char* value, meta_error e);
-static int parse_retry_after(http_response r, const char* value, meta_error e);
-static int parse_server(http_response r, const char* value, meta_error e);
-static int parse_vary(http_response r, const char* value, meta_error e);
-static int parse_www_authenticate(http_response r, const char* value, meta_error e);
-
-static const struct response_mapper {
-	const char* name;
-	int (*handler)(http_response req, const char* value, meta_error e);
-} response_header_fields[] = {
-	{ "accept-ranges", parse_accept_ranges },
-	{ "age", parse_age },
-	{ "etag", parse_etag },
-	{ "location", parse_location },
-	{ "proxy-authenticate", parse_proxy_authenticate },
-	{ "retry-after", parse_retry_after },
-	{ "server", parse_server },
-	{ "vary", parse_vary },
-	{ "www-authenticate", parse_www_authenticate }
-};
-
-int find_response_header(const char* name)
-{
-	int i, nelem = sizeof response_header_fields / sizeof *response_header_fields;
-	for (i = 0; i < nelem; i++) {
-		if (strcmp(response_header_fields[i].name, name) == 0)
-			return i;
-	}
-
-	return -1;
-}
-
-int parse_response_header(int idx, http_response req, const char* value, meta_error e)
-{
-	assert(idx >= 0);
-	assert((size_t)idx < sizeof response_header_fields / sizeof *response_header_fields);
-
-	return response_header_fields[idx].handler(req, value, e);
-}
-
 static int parse_age(http_response r, const char* value, meta_error e)
 {
 	unsigned long v;
@@ -1445,8 +1396,32 @@ static int parse_location(http_response r, const char* value, meta_error e)
 	return 1;
 }
 
-/* §14.5: Accept-Ranges is either "bytes", "none", or range-units(section 3.12)
- * The only range unit defined by HTTP 1.1 is "bytes", and we MAY ignore all others.
+static int parse_www_authenticate(http_response r, const char* value, meta_error e)
+{
+	assert(r != NULL);
+	assert(value != NULL);
+
+	if (!response_set_www_authenticate(r, value))
+		return set_os_error(e, errno);
+
+	return 1;
+}
+
+static int parse_server(http_response r, const char* value, meta_error e)
+{
+	assert(r != NULL);
+	assert(value != NULL);
+
+	if (!response_set_server(r, value))
+		return set_os_error(e, errno);
+
+	return 1;
+}
+
+/*
+ * §14.5: Accept-Ranges is either "bytes", "none", or range-units(section 3.12)
+ * The only range unit defined by HTTP 1.1 is "bytes", and we MAY ignore 
+ * all others.
  */
 static int parse_accept_ranges(http_response r, const char* value, meta_error e)
 {
@@ -1505,28 +1480,41 @@ static int parse_vary(http_response r, const char* value, meta_error e)
 
 	if (!response_set_vary(r, value))
 		return set_os_error(e, errno);
+
 	return 1;
 }
+static const struct response_mapper {
+	const char* name;
+	int (*handler)(http_response req, const char* value, meta_error e);
+} response_header_fields[] = {
+	{ "accept-ranges", parse_accept_ranges },
+	{ "age", parse_age },
+	{ "etag", parse_etag },
+	{ "location", parse_location },
+	{ "proxy-authenticate", parse_proxy_authenticate },
+	{ "retry-after", parse_retry_after },
+	{ "server", parse_server },
+	{ "vary", parse_vary },
+	{ "www-authenticate", parse_www_authenticate }
+};
 
-static int parse_www_authenticate(http_response r, const char* value, meta_error e)
+int find_response_header(const char* name)
 {
-	assert(r != NULL);
-	assert(value != NULL);
+	int i, nelem = sizeof response_header_fields / sizeof *response_header_fields;
+	for (i = 0; i < nelem; i++) {
+		if (strcmp(response_header_fields[i].name, name) == 0)
+			return i;
+	}
 
-	if (!response_set_www_authenticate(r, value))
-		return set_os_error(e, errno);
-	return 1;
+	return -1;
 }
 
-static int parse_server(http_response r, const char* value, meta_error e)
+int parse_response_header(int idx, http_response req, const char* value, meta_error e)
 {
-	assert(r != NULL);
-	assert(value != NULL);
+	assert(idx >= 0);
+	assert((size_t)idx < sizeof response_header_fields / sizeof *response_header_fields);
 
-	if (!response_set_server(r, value))
-		return set_os_error(e, errno);
-
-	return 1;
+	return response_header_fields[idx].handler(req, value, e);
 }
 
 /* The response status line(§6.1) is
@@ -1543,15 +1531,12 @@ static int read_response_status_line(http_response response, connection conn, me
 		return 0;
 
 	/* The string must start with either HTTP/1.0 or HTTP/1.1 SP */
-	if (strstr(buf, "HTTP/1.0 ") == buf) {
+	if (strstr(buf, "HTTP/1.0 ") == buf)
 		version = VERSION_10;
-	}
-	else if (strstr(buf, "HTTP/1.1 ") == buf) {
+	else if (strstr(buf, "HTTP/1.1 ") == buf)
 		version = VERSION_11;
-	}
-	else {
+	else
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
-	}
 
 	/* Skip version and first SP */
 	s = buf + 9;
@@ -1591,23 +1576,22 @@ read_response_header_fields(connection conn, http_response response, meta_error 
 		char name[CCH_FIELDNAME_MAX + 1];
 		char value[CCH_FIELDVALUE_MAX + 1];
 
-		if ((!read_line(conn, buf, sizeof buf, e))) {
+		if (!read_line(conn, buf, sizeof buf, e))
 			return 0;
-		}
-		else if (strlen(buf) == 0) {
+
+		if (strlen(buf) == 0) {
 			/*
 			 * An empty buffer means that we have read the \r\n sequence
-			 * separating header fields from entities or terminating the message.
-			 * This means that there is no more header fields to read.
+			 * separating header fields from entities or terminating the
+			 * message. This means that there is no more header
+			 * fields to read.
 			 */
-			fprintf(stderr, "No more header fields!\n");
 			return 1;
 		}
 
 		if (!get_field_name(buf, name, sizeof name)
-		|| !get_field_value(buf, value, sizeof value)) {
+		|| !get_field_value(buf, value, sizeof value))
 			return set_http_error(e, HTTP_400_BAD_REQUEST);
-		}
 
 		fs_lower(name);
 		if (!parse_response_headerfield(name, value, response, e))
@@ -1621,14 +1605,12 @@ int response_receive(http_response response, connection conn, size_t max_content
 	size_t content_length;
 	void *content;
 
-	if (!read_response_status_line(response, conn, e)) {
+	if (!read_response_status_line(response, conn, e))
 		return 0;
-	}
 
 	/* Now read and parse all fields (if any) */
-	if (!read_response_header_fields(conn, response, e)) {
+	if (!read_response_header_fields(conn, response, e))
 		return 0;
-	}
 
 	/* Now we hopefully have a content-length field. See if we can read
 	 * it or if it is too big
@@ -1640,41 +1622,45 @@ int response_receive(http_response response, connection conn, size_t max_content
 		content_length = max_content;
 		if ((content = malloc(content_length)) == NULL)
 			return set_os_error(e, errno);
-		else if (!connection_read(conn, content, max_content)) {
+
+		if (!connection_read(conn, content, max_content)) {
 			set_os_error(e, errno);
 			free(content);
 			return 0;
 		}
-		else if (!response_set_allocated_content_buffer(response, content, content_length)) {
+
+		if (!response_set_allocated_content_buffer(response, content, content_length)) {
 			set_os_error(e, errno);
 			free(content);
 			return 0;
 		}
-		else {
-			return 1;
-		}
+
+		return 1;
 	}
 	else {
 		content_length = entity_header_get_content_length(eh);
 		if (content_length == 0)
 			return 1;
-		else if (content_length > max_content)
+
+		if (content_length > max_content)
 			return set_app_error(e, ENOSPC);
-		else if ((content = malloc(content_length)) == NULL)
+
+		if ((content = malloc(content_length)) == NULL)
 			return set_os_error(e, errno);
-		else if (!connection_read(conn, content, content_length)) {
+
+		if (!connection_read(conn, content, content_length)) {
 			set_os_error(e, errno);
 			free(content);
 			return 0;
 		}
-		else if (!response_set_allocated_content_buffer(response, content, content_length)) {
+
+		if (!response_set_allocated_content_buffer(response, content, content_length)) {
 			set_os_error(e, errno);
 			free(content);
 			return 0;
 		}
-		else {
-			return 1;
-		}
+
+		return 1;
 	}
 }
 

@@ -148,7 +148,8 @@ static int send_disk_file(
 		strcat(filename, "/index.html");
 		if (stat(filename, &st))
 			return set_http_error(e, HTTP_404_NOT_FOUND);
-		else if (!S_ISREG(st.st_mode))
+
+		if (!S_ISREG(st.st_mode))
 			return set_http_error(e, HTTP_400_BAD_REQUEST);
 	}
 	else
@@ -173,10 +174,9 @@ static int send_disk_file(
 	 */
 	if (!response_send_file(response, filename, content_type, e))
 		return 0;
-	else {
-		response_set_status(response, HTTP_200_OK);
-		return 1;
-	}
+
+	response_set_status(response, HTTP_200_OK);
+	return 1;
 }
 
 /* Call the callback function for the page */
@@ -200,8 +200,8 @@ int handle_dynamic(
 	}
 	/* NOTE/TODO: This seems to be a good place to add authorization stuff.
 	 * Check if the request has authorization info and send 401 if not.
-	 * We don't have to keep state as the next request will have all autorization
-	 * stuff needed to keeep going.
+	 * We don't have to keep state as the next request will
+	 * have all autorization stuff needed to keep going.
 	 * boa 20080125.
 	 * PS: This comment is added because Tandberg wants me to add support
 	 * for RFC2617 HTTP Authentication
@@ -226,7 +226,8 @@ int handle_dynamic(
 	}
 }
 
-/* uri params are separated by =, so if there are any = in the string, we have more params */
+/* uri params are separated by =, so if there are any = in the string,
+ * we have more params */
 
 #if 0
 /*
@@ -258,10 +259,9 @@ static int semantic_error(http_request request)
 	 * a) rfc2616 requires that all 1.1 messages includes a Host:
 	 * and that servers MUST respond with 400 if Host: is missing.
 	 */
-	http_version version = request_get_version(request);
-	if (version == VERSION_11 && NULL == request_get_host(request)) {
+	http_version v = request_get_version(request);
+	if (v == VERSION_11 && request_get_host(request) == NULL)
 		return 1;
-	}
 
 	/* OK */
 	return 0;
@@ -277,19 +277,17 @@ void* serviceConnection(void* psa)
 	http_response response;
 	meta_error e = meta_error_new();
 
-	conn = (connection)psa;
+	conn = psa;
 	srv =  connection_arg2(conn);
 	request = http_server_get_request(srv);
 	request_set_defered_read(request, http_server_get_defered_read(srv));
 	response = http_server_get_response(srv);
 
 	success = serviceConnection2(srv, conn, request, response, e);
-	if (!success && is_tcpip_error(e)) {
+	if (!success && is_tcpip_error(e))
 		connection_discard(conn);
-	}
-	else {
+	else
 		connection_close(conn);
-	}
 
 	http_server_recycle_request(srv, request);
 	http_server_recycle_response(srv, response);

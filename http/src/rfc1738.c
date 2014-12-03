@@ -93,16 +93,16 @@ static int decode(const char* src)
 	return (c1 << 4) + c2;
 }
 
-size_t rfc1738_encode(char* dest, size_t cbdest, const char* src, size_t cbsrc)
+size_t rfc1738_encode(char* dest, size_t destsize, const char* src, size_t srclen)
 {
 	size_t size = 0;
 
 	assert(src != NULL);
 	assert(dest != NULL);
-	assert(cbdest > 0);
-	assert(cbsrc > 0);
+	assert(destsize > 0);
+	assert(srclen > 0);
 
-	while (cbsrc > 0 && cbdest > 0) {
+	while (srclen > 0 && destsize > 0) {
 
 		/* No isalnum() due to locale */
 		if ((*src >= 'A' && *src <= 'Z')
@@ -110,20 +110,20 @@ size_t rfc1738_encode(char* dest, size_t cbdest, const char* src, size_t cbsrc)
 		|| (*src >= '0' && *src <= '9')) {
 			*dest++ = *src++;
 			size++;
-			cbsrc--;
-			cbdest--;
+			srclen--;
+			destsize--;
 		}
-		else if (cbdest > 2) {
+		else if (destsize > 2) {
 			if (!encode((unsigned char)*src, dest)) {
 				errno = EINVAL;
 				return 0;
 			}
 
 			dest+=3;
-			cbdest-=3;
+			destsize-=3;
 			src++;
 			size += 3;
-			cbsrc--;
+			srclen--;
 		}
 		else {
 			errno = ENOSPC;
@@ -141,7 +141,7 @@ size_t rfc1738_encode(char* dest, size_t cbdest, const char* src, size_t cbsrc)
 	return size;
 }
 
-size_t rfc1738_decode(char* dest, size_t cbdest, const char* src, size_t cbsrc)
+size_t rfc1738_decode(char* dest, size_t destsize, const char* src, size_t srclen)
 {
 	int c;
 	size_t size = 0;
@@ -149,7 +149,7 @@ size_t rfc1738_decode(char* dest, size_t cbdest, const char* src, size_t cbsrc)
 	assert(src != NULL);
 	assert(dest != NULL);
 
-	while (cbdest > 0 && cbsrc > 0) {
+	while (destsize > 0 && srclen > 0) {
 		if (*src == '%') {
 			if ((c = decode(src)) == -1) {
 				errno = EINVAL;
@@ -158,17 +158,17 @@ size_t rfc1738_decode(char* dest, size_t cbdest, const char* src, size_t cbsrc)
 
 			*dest++ = c;
 			src += 3;
-			cbsrc-=2;
+			srclen -= 2;
 		}
 		else
 			*dest++ = *src++;
 
 		size++;
-		cbdest--;
-		cbsrc--;
+		destsize--;
+		srclen--;
 	}
 
-	if (cbdest == 0) {
+	if (destsize == 0) {
 		errno = ENOSPC;
 		return 0;
 	}
@@ -177,13 +177,13 @@ size_t rfc1738_decode(char* dest, size_t cbdest, const char* src, size_t cbsrc)
 	return size;
 }
 
-size_t rfc1738_encode_string(char* dest, size_t cbdest, const char* src)
+size_t rfc1738_encode_string(char* dest, size_t destsize, const char* src)
 {
 	size_t size;
 
-	if ((size = rfc1738_encode(dest, cbdest, src, strlen(src))) == 0)
+	if ((size = rfc1738_encode(dest, destsize, src, strlen(src))) == 0)
 		return 0;
-	else if (size == cbdest)
+	else if (size == destsize)
 		return 0; /* No room for null character */
 	else {
 		dest[size] = '\0';
@@ -191,13 +191,13 @@ size_t rfc1738_encode_string(char* dest, size_t cbdest, const char* src)
 	}
 }
 
-size_t rfc1738_decode_string(char* dest, size_t cbdest, const char* src)
+size_t rfc1738_decode_string(char* dest, size_t destsize, const char* src)
 {
 	size_t size;
 
-	if ((size = rfc1738_decode(dest, cbdest, src, strlen(src))) == 0)
+	if ((size = rfc1738_decode(dest, destsize, src, strlen(src))) == 0)
 		return 0;
-	else if (size == cbdest)
+	else if (size == destsize)
 		return 0; /* No room for null character */
 	else {
 		dest[size] = '\0';

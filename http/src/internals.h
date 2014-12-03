@@ -91,15 +91,6 @@ extern "C" {
 /* Magic value for cookies */
 #define MAX_AGE_NOT_SET -1
 
-
-#if 0
-int response_send_entity(http_response response, connection conn);
-int response_send_header(http_response p, connection conn, meta_error e);
-int response_send_header_fields(http_response p, connection conn);
-int fs_close(int sock);
-#endif
-
-
 void *serviceConnection(void *psa);
 
 dynamic_page http_server_lookup(http_server srv, http_request request);

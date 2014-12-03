@@ -978,6 +978,7 @@ size_t request_get_content_length(http_request request)
 	assert(request != NULL);
 	if (!entity_header_content_length_isset(request->entity_header))
 		return 0; /* This is actually an error */
+
 	return entity_header_get_content_length(request->entity_header);
 }
 
@@ -1511,32 +1512,33 @@ int request_send(http_request r, connection c, meta_error e)
 	return 1;
 }
 
-static int
-read_posted_content(size_t max_post_content, connection conn, http_request req, meta_error e)
+static int read_posted_content(
+	size_t max_post_content,
+	connection conn,
+	http_request req,
+	meta_error e)
 {
 	void *buf;
-	size_t cbContent;
+	size_t content_len;
 
-	cbContent = request_get_content_length(req);
-	if (cbContent == 0)
+	content_len = request_get_content_length(req);
+	if (content_len == 0)
 		return set_http_error(e, HTTP_411_LENGTH_REQUIRED);
 
-	if (max_post_content < cbContent)
+	if (max_post_content < content_len)
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
-
-	if ((buf = malloc(cbContent)) == NULL) {
+	if ((buf = malloc(content_len)) == NULL)
 		return set_os_error(e, errno);
-	}
 
-	if (!connection_read(conn, buf, cbContent)) {
+	if (!connection_read(conn, buf, content_len)) {
 		set_tcpip_error(e, errno);
 		free(buf);
 		return 0;
 	}
 
-	if (!request_set_entity(req, buf, cbContent)) {
-		set_os_error(e, errno);
+	if (!request_set_entity(req, buf, content_len)) {
+		set_os_error(e, ENOSPC);
 		free(buf);
 		return 0;
 	}
@@ -1675,14 +1677,14 @@ read_request_header_fields(connection conn, http_request request, meta_error e)
 
 		if ((!read_line(conn, buf, sizeof buf, e)))
 			return 0;
-		else if (strlen(buf) == 0) {
-			/*
-			 * An empty buffer means that we have read the \r\n sequence
-			 * separating header fields from entities or terminating the
-			 * message. This means that there is no more header fields to read.
-			 */
+
+		/*
+		 * An empty buffer means that we have read the \r\n sequence
+		 * separating header fields from entities or terminating the
+		 * message. This means that there is no more header fields to read.
+		 */
+		if (strlen(buf) == 0)
 			return 1;
-		}
 
 		if (!parse_one_field(conn, request, buf, e)) {
 			if (is_app_error(e)
@@ -1767,30 +1769,32 @@ static inline int more_uri_params_available(const char *s)
 	return strchr(s, '=') != NULL;
 }
 
-static int get_uri_param_name(const char* src, char dest[], size_t destsize)
+static int get_uri_param_name(const char* src, char dest[], size_t destsize, meta_error e)
 {
 
 	/* '=' is required */
 	if (strchr(src, '=') == NULL)
-		return HTTP_400_BAD_REQUEST;
-	else if (!copy_word(src, dest, '=', destsize))
-		return HTTP_414_REQUEST_URI_TOO_LARGE;
-	else
-		return 0;
+		return set_http_error(e, HTTP_400_BAD_REQUEST);
+
+	if (!copy_word(src, dest, '=', destsize))
+		return set_http_error(e, HTTP_414_REQUEST_URI_TOO_LARGE);
+
+	return 1;
 }
 
 /* Locate '=' and skip it, then copy value */
-static int get_uri_param_value(const char* src, char dest[], size_t destsize)
+static int get_uri_param_value(const char* src, char dest[], size_t destsize, meta_error e)
 {
 	char *p;
 
 	p = strchr(src, '=');
 	if (NULL == p)
-		return HTTP_400_BAD_REQUEST;
-	else if (!copy_word(++p, dest, '&', destsize))
-		return HTTP_414_REQUEST_URI_TOO_LARGE;
-	else
-		return 0;
+		return set_http_error(e, HTTP_400_BAD_REQUEST);
+
+	if (!copy_word(++p, dest, '&', destsize))
+		return set_http_error(e, HTTP_414_REQUEST_URI_TOO_LARGE);
+
+	return 1;
 }
 
 
@@ -1808,11 +1812,18 @@ static char* locate_next_uri_param(char *s)
 }
 
 static inline int
-decode_uri_param_value(char* decoded, const char* value, size_t cb)
+decode_uri_param_value(char* decoded, const char* value, size_t cb, meta_error e)
 {
-	return rfc1738_decode(decoded, cb, value, strlen(value)) == 0 ? errno : 0;
-}
+	int rc = rfc1738_decode(decoded, cb, value, strlen(value));
+	if (rc == 0) {
+		if (errno == EINVAL)
+			return set_http_error(e, HTTP_400_BAD_REQUEST);
+		else
+			return set_os_error(e, errno);
+	}
 
+	return 1;
+}
 
 static int set_one_uri_param(http_request request, char *s, meta_error e)
 {
@@ -1820,21 +1831,19 @@ static int set_one_uri_param(http_request request, char *s, meta_error e)
 	char value[CCH_PARAMVALUE_MAX + 1];
 	char decoded[CCH_PARAMVALUE_MAX + 1];
 
-	int error;
+	if (!get_uri_param_name(s, name, sizeof name, e))
+		return 0;
 
-	if ((error = get_uri_param_name(s, name, sizeof name))) {
-		return set_http_error(e, error);
-	}
-	else if ((error = get_uri_param_value(s, value, sizeof value))) {
-		return set_http_error(e, error);
-	}
-	else if ((error = decode_uri_param_value(decoded, value, sizeof(decoded)))) {
-		return set_http_error(e, error);
-	}
-	else if (!request_add_param(request, name, decoded))
+	if (!get_uri_param_value(s, value, sizeof value, e))
+		return 0;
+
+	if (!decode_uri_param_value(decoded, value, sizeof decoded, e))
+		return 0;
+
+	if (!request_add_param(request, name, decoded))
 		return set_os_error(e, errno);
-	else
-		return 1;
+
+	return 1;
 }
 
 /*
@@ -1955,7 +1964,7 @@ parse_request_line(const char* line, http_request request, meta_error e)
 		return 0;
 }
 
-static const struct request_mapper {
+static const struct {
 	const char* name;
 	int (*handler)(http_request req, const char* value, meta_error e);
 } request_header_fields[] = {
@@ -1992,8 +2001,8 @@ static const struct request_mapper {
  * the field was not found. */
 int find_request_header(const char* name)
 {
-	int i, nelem = sizeof request_header_fields / sizeof *request_header_fields;
-	for (i = 0; i < nelem; i++) {
+	int i, n = sizeof request_header_fields / sizeof *request_header_fields;
+	for (i = 0; i < n; i++) {
 		if (strcmp(request_header_fields[i].name, name) == 0)
 			return i;
 	}
@@ -2072,7 +2081,6 @@ connection request_get_connection(http_request request)
 
 	return request->external_conn;
 }
-
 
 void request_set_defered_read(http_request req, int flag)
 {

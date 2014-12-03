@@ -72,7 +72,7 @@ void cookie_free(cookie p)
 	}
 }
 
-int cookie_set_name(cookie c, const char* s)
+int cookie_set_name(cookie c, const char *s)
 {
 	assert(NULL != c);
 	assert(NULL != s);
@@ -80,7 +80,7 @@ int cookie_set_name(cookie c, const char* s)
 	return cstring_copy(c->name, s);
 }
 
-int cookie_set_value(cookie c, const char* s)
+int cookie_set_value(cookie c, const char *s)
 {
 	assert(NULL != c);
 	assert(NULL != s);
@@ -88,7 +88,7 @@ int cookie_set_value(cookie c, const char* s)
 	return cstring_copy(c->value, s);
 }
 
-int cookie_set_comment(cookie c, const char* s)
+int cookie_set_comment(cookie c, const char *s)
 {
 	assert(NULL != c);
 	assert(NULL != s);
@@ -96,7 +96,7 @@ int cookie_set_comment(cookie c, const char* s)
 	return cstring_copy(c->comment, s);
 }
 
-int cookie_set_domain(cookie c, const char* s)
+int cookie_set_domain(cookie c, const char *s)
 {
 	assert(NULL != c);
 	assert(NULL != s);
@@ -104,7 +104,7 @@ int cookie_set_domain(cookie c, const char* s)
 	return cstring_copy(c->domain, s);
 }
 
-int cookie_set_path(cookie c, const char* s)
+int cookie_set_path(cookie c, const char *s)
 {
 	assert(NULL != c);
 	assert(NULL != s);
@@ -137,31 +137,31 @@ int cookie_set_max_age(cookie c, int v)
 	return 1;
 }
 
-const char* cookie_get_name(cookie c)
+const char *cookie_get_name(cookie c)
 {
 	assert(NULL != c);
 	return c_str(c->name);
 }
 
-const char* cookie_get_value(cookie c)
+const char *cookie_get_value(cookie c)
 {
 	assert(NULL != c);
 	return c_str(c->value);
 }
 
-const char* cookie_get_comment(cookie c)
+const char *cookie_get_comment(cookie c)
 {
 	assert(NULL != c);
 	return c_str(c->comment);
 }
 
-const char* cookie_get_domain(cookie c)
+const char *cookie_get_domain(cookie c)
 {
 	assert(NULL != c);
 	return c_str(c->domain);
 }
 
-const char* cookie_get_path(cookie c)
+const char *cookie_get_path(cookie c)
 {
 	assert(NULL != c);
 	return c_str(c->path);
@@ -192,12 +192,12 @@ int cookie_get_max_age(cookie c)
  * so we do not need meta_error.
  */
 static int get_cookie_attribute(
-	const char* s,
-	const char* attribute,	/* $Version, $Path, $Secure or $Domain */
+	const char *s,
+	const char *attribute,	/* $Version, $Path, $Secure or $Domain */
 	cstring value,		/* Store result here */
 	meta_error e)
 {
-	char* location;
+	char *location;
 	size_t i;
 
 	assert(attribute != NULL);
@@ -251,7 +251,7 @@ static int get_cookie_attribute(
 int parse_cookie(http_request req, const char *value, meta_error e)
 {
 	/* Locate version */
-	char* s;
+	char *s;
 
 #define SUPPORT_EMPTY_COOKIES 1
 #ifdef SUPPORT_EMPTY_COOKIES
@@ -266,7 +266,7 @@ int parse_cookie(http_request req, const char *value, meta_error e)
 		return parse_old_cookie(req, value, e);
 }
 
-static const char* find_first_non_space(const char* s)
+static const char *find_first_non_space(const char *s)
 {
 	while (*s != '\0' && (*s == ' ' || *s == '\t'))
 		s++;
@@ -276,8 +276,8 @@ static const char* find_first_non_space(const char* s)
 
 static int parse_cookie_attr(
 	cookie c,
-	const char* input,
-	const char* look_for,
+	const char *input,
+	const char *look_for,
 	int (*set_attr)(cookie, const char*),
 	meta_error e)
 {
@@ -300,7 +300,7 @@ static int parse_cookie_attr(
  * add name and value to the cookie .
  * Returns 1 on success, else a http error do
  */
-static int parse_new_cookie_name(cookie c, const char* input, meta_error e)
+static int parse_new_cookie_name(cookie c, const char *input, meta_error e)
 {
 	const char *s, *s2;
 	cstring str;
@@ -354,7 +354,7 @@ static int parse_new_cookie_name(cookie c, const char* input, meta_error e)
 	return 1;
 }
 
-static int parse_new_cookie_secure(cookie c, const char* value, meta_error e)
+static int parse_new_cookie_secure(cookie c, const char *value, meta_error e)
 {
 	int secure;
 	cstring str;
@@ -378,17 +378,17 @@ static int parse_new_cookie_secure(cookie c, const char* value, meta_error e)
 	return 1;
 }
 
-static int parse_new_cookie_domain(cookie c, const char* value, meta_error e)
+static int parse_new_cookie_domain(cookie c, const char *value, meta_error e)
 {
 	return parse_cookie_attr(c, value, "$Domain", cookie_set_domain, e);
 }
 
-static int parse_new_cookie_path(cookie c, const char* value, meta_error e)
+static int parse_new_cookie_path(cookie c, const char *value, meta_error e)
 {
 	return parse_cookie_attr(c, value, "$Path", cookie_set_path, e);
 }
 
-static int parse_new_cookie_version(cookie c, const char* value, meta_error e)
+static int parse_new_cookie_version(cookie c, const char *value, meta_error e)
 {
 	int version;
 	cstring str;
@@ -411,7 +411,7 @@ static int parse_new_cookie_version(cookie c, const char* value, meta_error e)
 	return 1;
 }
 
-int parse_new_cookie(http_request req, const char* value, meta_error e)
+int parse_new_cookie(http_request req, const char *value, meta_error e)
 {
 	cookie c;
 
@@ -449,7 +449,7 @@ int parse_new_cookie(http_request req, const char* value, meta_error e)
  * The old cookie format is (hopefully) name=value
  * where value may be quoted.
  */
-int parse_old_cookie(http_request req, const char* input, meta_error e)
+int parse_old_cookie(http_request req, const char *input, meta_error e)
 {
 	cookie c = NULL;
 	cstring name = NULL, value = NULL;
@@ -520,11 +520,11 @@ int main(void)
 {
 	cookie c;
 	size_t i, niter = 10000;
-	const char* name = "name";
-	const char* value = "value";
-	const char* domain = "DOMAIN";
-	const char* path = "PATH";
-	const char* comment = "THIS IS A COMMENT";
+	const char *name = "name";
+	const char *value = "value";
+	const char *domain = "DOMAIN";
+	const char *path = "PATH";
+	const char *comment = "THIS IS A COMMENT";
 	int max_age = 0;
 	int secure = 1;
 	int version = 1;

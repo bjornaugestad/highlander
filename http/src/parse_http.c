@@ -31,9 +31,20 @@
 
 #include "internals.h"
 
-
 /* Ungrouped handlers */
-static int parse_connection(connection conn, const char* s, meta_error e);
+static int parse_connection(connection conn, const char* value, meta_error e)
+{
+	assert(NULL != value);
+	UNUSED(e);
+
+	if (strstr(value, "keep-alive"))
+		connection_set_persistent(conn, 1);
+
+	if (strstr(value, "close"))
+		connection_set_persistent(conn, 0);
+
+	return 1;
+}
 
 /*
  * Here we map header fields to handling functions. We need separate functions
@@ -59,7 +70,7 @@ int parse_request_headerfield(
 	http_request req,
 	meta_error e)
 {
-	size_t i, size;
+	size_t i, n;
 	int idx;
 
 	entity_header eh = request_get_entity_header(req);
@@ -75,12 +86,10 @@ int parse_request_headerfield(
 
 	/* Now locate the handling function.
 	 * Go for the connection_map first as it is smaller */
-	size = sizeof(connection_map) / sizeof(connection_map[0]);
-	for (i = 0; i < size; i++) {
-		if (0 == strcmp(name, connection_map[i].name)) {
-			/* execute the handling function and return */
+	n = sizeof connection_map / sizeof *connection_map;
+	for (i = 0; i < n; i++) {
+		if (strcmp(name, connection_map[i].name) == 0)
 			return connection_map[i].handler(conn, value, e);
-		}
 	}
 
 	if ((idx = find_request_header(name)) != -1)
@@ -118,20 +127,6 @@ int parse_response_headerfield(
 }
 
 
-static int parse_connection(connection conn, const char* value, meta_error e)
-{
-	assert(NULL != value);
-	UNUSED(e);
-
-	if (strstr(value, "keep-alive"))
-		connection_set_persistent(conn, 1);
-
-	if (strstr(value, "close"))
-		connection_set_persistent(conn, 0);
-
-	return 1;
-}
-
 /* Helper function to have the algorithm one place only */
 int parse_multivalued_fields(
 	void *dest,
@@ -139,7 +134,7 @@ int parse_multivalued_fields(
 	int(*set_func)(void* dest, const char* value, meta_error e),
 	meta_error e)
 {
-	const int sep = (int)',';
+	const int sep = ',';
 	char buf[100];
 	char* s;
 
@@ -147,7 +142,8 @@ int parse_multivalued_fields(
 	assert(NULL != value);
 
 	while ((s = strchr(value, sep)) != NULL) {
-		/* The correct type would be ptrdiff_t, but -ansi -pedantic complains */
+		/* The correct type would be ptrdiff_t,
+		 * but -ansi -pedantic complains */
 		size_t span = (size_t)(s - value);
 		if (span + 1 > sizeof buf) {
 			/* We don't want buffer overflow... */
