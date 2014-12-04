@@ -129,6 +129,7 @@ check_PROGRAMS=\
 	pair_check
 
 
+AM_CFLAGS=-p -pg
 list_check_SOURCES=meta_list.c meta_common.c
 list_check_CFLAGS=-DLIST_CHECK $(AM_CFLAGS) 
 

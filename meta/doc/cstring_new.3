@@ -5,6 +5,7 @@
 .Sh NAME
 .Nm cstring_new()
 .Nm cstring_multinew()
+.Nm cstring_dup()
 .Nm cstring_free()
 .Nd Create and destroy cstrings
 .Sh SYNOPSIS
@@ -16,18 +17,25 @@
 .Fa "cstring *pstr"
 .Fa "size_t nelem"
 .Fc
+.Fo "cstring cstring_dup"
+.Fa "const char *src"
+.Fc
 .Fo "void cstring_free"
 .Fa "cstring s"
 .Fc
 .Sh DESCRIPTION
 .Nm cstring_new()
-creates a new cstring.  The string will initially have room for 255 characters plus the always present string terminator ('\\0').
+creates a new cstring.  The string will initially have room for
+255 characters plus the always present string terminator ('\\0').
 .Pp
 .Nm cstring_multinew()
 creates multiple new cstrings.
-This function is a bit experimental and the intention is to reduce the number of tests in functions that allocates more than one cstring. 
+This function is a bit experimental and the intention is to 
+reduce the number of tests in functions that allocates more than one cstring. 
 The array is used only to store pointers when making the function call.
 .Pp
+.Nm cstring_dup()
+creates a cstring from a string literal.
 .Nm cstring_free()
 frees all memory used by the string, including the cstring itself.
 The string cannot be used after a call to cstring_free. 

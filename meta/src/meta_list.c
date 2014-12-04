@@ -789,7 +789,6 @@ int main(void)
 
 	while (!list_end(li)) {
 		struct item *p = list_get(li);
-		fprintf(stderr, "%zu\n", p->value);
 		li = list_delete(a, li, item_dtor);
 	}
 
