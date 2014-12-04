@@ -17,7 +17,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -107,7 +106,6 @@ int parse_response_headerfield(
 {
 	int idx;
 
-	fprintf(stderr, "Got name/value %s/%s\n", name, value);
 	entity_header eh = response_get_entity_header(req);
 	general_header gh = response_get_general_header(req);
 
