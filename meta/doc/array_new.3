@@ -25,5 +25,49 @@ is allowed to grow automatically.
 frees the array. If the cleanup function parameter is NULL,
 the entries in the array will not be freed by 
 .Nm array_free().
+.Sh EXAMPLE
+.Bd -literal
+#include <stdlib.h>
+#include <stdio.h>
+#include <meta_array.h>
+
+int main(void)
+{
+    array a;
+    size_t i, n = 10;
+    char *s;
+    
+    // Store integers in array
+    a = array_new(10, 0);
+    for (i = 0; i < n; i++)
+        array_add(a, (void*)i);
+
+    for (i = 0; i < n; i++) {
+        size_t val = (size_t)array_get(a, i);
+        printf("Value for %zu: %zu\n", i, val);
+    }
+
+    // No dtor function since entries don't point to alloc'ed mem.
+    array_free(a, 0);
+
+    // Store strings in array.
+    a = array_new(10, 0);
+    for (i = 0; i < n; i++) {
+        s = malloc(20);
+
+        sprintf(s, "%zu", i);
+        array_add(a, s);
+    }
+
+    for (i = 0; i < n; i++) {
+        s = array_get(a, i);
+        printf("Value for %zu: %s\n", i, s);
+    }
+
+    // Use free() to free allocated mem.
+    array_free(a, free);
+    return 0;
+}
+.Ed
 .Sh AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

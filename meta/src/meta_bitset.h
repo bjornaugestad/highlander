@@ -31,20 +31,35 @@ typedef struct bitset_tag* bitset;
 
 bitset bitset_new(size_t bitcount);
 void bitset_free(bitset b);
+bitset bitset_dup(bitset b);
+int bitset_cmp(const bitset a, const bitset b);
 
 void bitset_set(bitset b, size_t i);
 void bitset_clear(bitset b, size_t i);
 void bitset_clear_all(bitset b);
 void bitset_set_all(bitset b);
 
-int bitset_is_set(bitset b, size_t i);
+int bitset_is_set(const bitset b, size_t i);
+int bitset_allzero(const bitset b);
+int bitset_allone(const bitset b);
 
 size_t bitset_size(bitset b);
+size_t bitset_bitcount(bitset b);
 
 bitset bitset_map(void *mem, size_t cb);
 void bitset_remap(bitset b, void *mem, size_t cb);
 void bitset_unmap(bitset b);
 void *bitset_data(bitset b);
+
+// equals a = b & c; and returns a. Remember to free it.
+bitset bitset_and(bitset b1, bitset b2);
+bitset bitset_or(bitset b1, bitset b2);
+bitset bitset_xor(bitset b1, bitset b2);
+
+// equals a &= b;
+void bitset_and_eq(bitset a, bitset b);
+void bitset_or_eq(bitset a, bitset b);
+void bitset_xor_eq(bitset a, bitset b);
 
 #ifdef __cplusplus
 }

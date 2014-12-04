@@ -105,7 +105,6 @@ int array_extend(array a, size_t nmemb)
 int array_add(array a, void *elem)
 {
 	assert(NULL != a);
-	assert(NULL != elem);
 
 	if (a->nused == a->nallocated) {
 		if (!a->can_grow || !array_extend(a, a->nused))

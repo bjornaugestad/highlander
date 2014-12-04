@@ -50,6 +50,30 @@
 .Fo "void* bitset_data"
 .Fa "bitset b"
 .Fc
+.Fo "bitset bitset_and"
+.Fa "bitset b"
+.Fa "bitset c"
+.Fc
+.Fo "bitset bitset_or"
+.Fa "bitset b"
+.Fa "bitset c"
+.Fc
+.Fo "bitset bitset_xor"
+.Fa "bitset b"
+.Fa "bitset c"
+.Fc
+.Fo "void bitset_and_eq"
+.Fa "bitset b"
+.Fa "bitset c"
+.Fc
+.Fo "void bitset_or_eq"
+.Fa "bitset b"
+.Fa "bitset c"
+.Fc
+.Fo "void bitset_xor_eq"
+.Fa "bitset b"
+.Fa "bitset c"
+.Fc
 .Sh DESCRIPTION
 A bitset is nothing more than a very long integer with bits to indicate
 true or false. 

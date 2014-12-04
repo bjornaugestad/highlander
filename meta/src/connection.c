@@ -609,17 +609,17 @@ int connection_write_big_buffer(
 	const void *buf,
 	size_t count,
 	int timeout,
-	int retries)
+	int nretries)
 {
 	int success;
 
 	assert(conn != NULL);
 	assert(buf != NULL);
 	assert(timeout >= 0);
-	assert(retries >= 0);
+	assert(nretries >= 0);
 
 	if ((success = connection_flush(conn)))
-		success = sock_write(conn->sock, buf, count, timeout, retries);
+		success = sock_write(conn->sock, buf, count, timeout, nretries);
 
 	return success;
 }

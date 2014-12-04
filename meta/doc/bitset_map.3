@@ -9,22 +9,22 @@
 .Fd #include <meta_bitset.h>
 .Fo "bitset bitset_map"
 .Fa "bitset b "
-.Fa "void *mem"
-.Fa "size_t cb"
+.Fa "void *buf"
+.Fa "size_t len"
 .Fc
 .Sh DESCRIPTION
 Use bitset_map() if you have a bitset in memory or want to 
 create one in memory. Typical use will be if you have a memory
 mapped file and parts of that file is a bitset. 
 .Pp
-mem is a pointer to the memory that you will use as a bitset.
+buf is a pointer to the memory that you will use as a bitset.
 This pointer can point to just about anything, but is most 
 meaningful if it points to memory previously used as a bitset.
 .Pp
 It is possible to memory map e.g. an executable and then manipulate
 each bit of that executable using a bitset.
 .Pp
-cb is the size of the memory area in bytes
+len is the length of the buffer in bytes
 The function returns a new bitset. Use bitset_unmap to free any memory used 
 by a mapped bitset. Calling bitset_free() will most probably
 crash your application, as the data pointed to hasn't been allocated.

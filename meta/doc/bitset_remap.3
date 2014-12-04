@@ -9,16 +9,16 @@
 .Fd #include <meta_bitset.h>
 .Fo "bitset bitset_remap"
 .Fa "bitset b "
-.Fa "void *mem"
-.Fa "size_t cb"
+.Fa "void *buf"
+.Fa "size_t buflen"
 .Fc
 .Sh DESCRIPTION
-Frees old memory and starts using the memory pointed to by mem.
+Frees old memory and starts using the memory pointed to by buf.
 Typical usage is when you e.g. create a new memory mapped indexed file with
 a bitmap created in memory and you want it moved to the new memory mapped file.
 .Pp
 b a bitset created by bitset_new
-mem The new memory to be used as a bitset.
-cb Size of memory the mem parameter points to
+buf The new memory to be used as a bitset.
+buflen Size of memory the buf parameter points to, in bytes.
 .Sh AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

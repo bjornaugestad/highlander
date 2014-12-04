@@ -9,9 +9,10 @@
 .Fd #include <meta_array.h>
 .Fo "int array_get"
 .Fa "array p "
-.Fa "size_t i"
+.Fa "size_t idx"
 .Fc
 .Sh DESCRIPTION
 Returns one element or NULL if the index is out of bounds.
+The index is zero-based.
 .Sh AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

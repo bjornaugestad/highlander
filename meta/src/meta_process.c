@@ -230,7 +230,7 @@ static void *shutdown_thread(void *arg)
 	pid_t my_pid;
 	size_t i;
 
-	p = (process)arg;
+	p = arg;
 
 	/*
 	 * Since this is the thread to receive the signal,
@@ -464,25 +464,11 @@ int process_wait_for_shutdown(process p)
 	 */
 	for (i = 0; i < p->objects_used; i++) {
 		struct srv* srv = &p->objects[i];
-		/* Note: We need to work around a warning here.
-		 * gcc 4.1.2 type-punned pointers and strict aliasing.
-		 * boa 20070105
-		  */
-#if 0
-		if ((error = pthread_join(srv->tid, (void*)&srv->exitcode))) {
+		void *pfoo = &srv->exitcode;
+		if ((error = pthread_join(srv->tid, &pfoo))) {
 			errno = error;
 			return 0;
 		}
-#else
-		{
-			void *pfoo = &srv->exitcode;
-			if ((error = pthread_join(srv->tid, &pfoo))) {
-				errno = error;
-				return 0;
-			}
-		}
-
-#endif
 	}
 
 	return 1;

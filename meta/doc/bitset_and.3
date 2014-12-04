@@ -1,0 +1,34 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th bitset_and 3
+.Sh NAME
+.Nm bitset_and
+.Nm bitset_or
+.Nm bitset_xor
+.Nd Binary AND/OR/XOR two bitsets. Return the result in a new bitset.
+.Sh SYNOPSIS
+.Fd #include <meta_bitset.h>
+.Fo "bitset bitset_and"
+.Fa "bitset b"
+.Fa "bitset c"
+.Fc
+.Fo "bitset bitset_or"
+.Fa "bitset b"
+.Fa "bitset c"
+.Fc
+.Fo "bitset bitset_xor"
+.Fa "bitset b"
+.Fa "bitset c"
+.Fc
+.Sh DESCRIPTION
+Binary AND two bitsets. Return the result in a new bitset.
+These three functions perform the equivalent of a = b OP c;
+where OP is &, | or ^.
+.Pp
+Remember to free the returned bitset.
+.Sh ERRORS
+The functions will return if they were unable to allocate room for
+the new bitset.
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com
