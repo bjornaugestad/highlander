@@ -224,7 +224,7 @@ int entity_header_send_fields(entity_header eh, connection c);
 
 int entity_header_set_allow(entity_header eh, const char *value);
 int entity_header_set_content_encoding(entity_header eh, const char *value);
-int entity_header_set_content_language(entity_header eh, const char *value);
+int entity_header_set_content_language(entity_header eh, const char *value, meta_error e);
 void entity_header_set_content_length(entity_header eh, size_t value);
 int entity_header_set_content_location(entity_header eh, const char *value);
 int entity_header_set_content_md5(entity_header eh, const char *value);

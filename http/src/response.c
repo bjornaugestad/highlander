@@ -899,10 +899,10 @@ int response_set_content_encoding(http_response response, const char* value)
 	return entity_header_set_content_encoding(response->entity_header, value);
 }
 
-int response_set_content_language(http_response response, const char* value)
+int response_set_content_language(http_response response, const char* value, meta_error e)
 {
 	assert(NULL != response);
-	return entity_header_set_content_language(response->entity_header, value);
+	return entity_header_set_content_language(response->entity_header, value, e);
 }
 
 int response_set_content_length(http_response response, size_t value)

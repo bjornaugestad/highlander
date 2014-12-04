@@ -161,13 +161,13 @@ void entity_header_set_last_modified(entity_header eh, time_t value)
 	entity_header_set_flag(eh, ENTITY_HEADER_LAST_MODIFIED_SET);
 }
 
-int entity_header_set_content_language(entity_header eh, const char* value)
+int entity_header_set_content_language(entity_header eh, const char* value, meta_error e)
 {
 	assert(NULL != eh);
 	assert(NULL != value);
 
 	if (!cstring_copy(eh->content_language, value))
-		return 0;
+		return set_os_error(e, errno);
 
 	entity_header_set_flag(eh, ENTITY_HEADER_CONTENT_LANGUAGE_SET);
 	return 1;
@@ -524,6 +524,41 @@ static int parse_content_md5(entity_header eh, const char* value, meta_error e)
 	return 1;
 }
 
+/* Helper function to have the algorithm one place only */
+static int eh_parse_multivalued_fields(
+	void *dest,
+	const char* value,
+	int(*set_func)(entity_header dest, const char* value, meta_error e),
+	meta_error e)
+{
+	const int sep = ',';
+	char buf[100];
+	char* s;
+
+	assert(NULL != dest);
+	assert(NULL != value);
+
+	while ((s = strchr(value, sep)) != NULL) {
+		/* The correct type would be ptrdiff_t,
+		 * but -ansi -pedantic complains */
+		size_t span = (size_t)(s - value);
+		if (span + 1 > sizeof buf) {
+			/* We don't want buffer overflow... */
+			value = s + 1;
+			continue;
+		}
+
+		memcpy(buf, value, span);
+		buf[span] = '\0';
+		if (!set_func(dest, buf, e))
+			return 0;
+
+		value = s + 1;
+	}
+
+	return set_func(dest, value, e);
+}
+
 /*
  * Notes: The language tags are defined in RFC1766, and there are 
  * too many to check.
@@ -538,7 +573,7 @@ static int parse_content_language(entity_header eh, const char* value, meta_erro
 	 * NOTE: If we receive a document with content-language, then we
 	 * MUST remember to store that information somewhere!
 	 */
-	return parse_multivalued_fields(eh, value, (int(*)(void*dest, const char*, meta_error))entity_header_set_content_language, e);
+	return eh_parse_multivalued_fields(eh, value, entity_header_set_content_language, e);
 }
 
 static int parse_allow(entity_header eh, const char* value, meta_error e)

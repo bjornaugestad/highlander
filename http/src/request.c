@@ -341,49 +341,49 @@ cookie request_get_cookie(const http_request p, size_t i)
 	return list_get_item(p->cookies, i);
 }
 
-int request_set_accept(http_request r, const char *value)
+int request_set_accept(http_request r, const char *value, meta_error e)
 {
 	assert(NULL != r);
 	assert(NULL != value);
 
 	if (!cstring_concat(r->accept, value))
-		return 0;
+		return set_os_error(e, errno);
 
 	request_set_flag(r, REQUEST_ACCEPT_SET);
 	return 1;
 }
 
-int request_set_accept_charset(http_request r, const char *value)
+int request_set_accept_charset(http_request r, const char *value, meta_error e)
 {
 	assert(NULL != r);
 	assert(NULL != value);
 
 	if (!cstring_concat(r->accept_charset, value))
-		return 0;
+		return set_os_error(e, errno);
 
 	request_set_flag(r, REQUEST_ACCEPT_CHARSET_SET);
 	return 1;
 }
 
-int request_set_accept_encoding(http_request r, const char *value)
+int request_set_accept_encoding(http_request r, const char *value, meta_error e)
 {
 	assert(NULL != r);
 	assert(NULL != value);
 
 	if (!cstring_concat(r->accept_encoding, value))
-		return 0;
+		return set_os_error(e, errno);
 
 	request_set_flag(r, REQUEST_ACCEPT_ENCODING_SET);
 	return 1;
 }
 
-int request_set_accept_language(http_request r, const char *value)
+int request_set_accept_language(http_request r, const char *value, meta_error e)
 {
 	assert(NULL != r);
 	assert(NULL != value);
 
 	if (!cstring_concat(r->accept_language, value))
-		return 0;
+		return set_os_error(e, errno);
 
 	request_set_flag(r, REQUEST_ACCEPT_LANGUAGE_SET);
 	return 1;
@@ -505,13 +505,13 @@ int request_set_range(http_request r, const char *value)
 	return 1;
 }
 
-int request_set_te(http_request r, const char *value)
+int request_set_te(http_request r, const char *value, meta_error e)
 {
 	assert(NULL != r);
 	assert(NULL != value);
 
 	if (!cstring_concat(r->te, value))
-		return 0;
+		return set_os_error(e, errno);
 
 	request_set_flag(r, REQUEST_TE_SET);
 	return 1;
@@ -982,6 +982,40 @@ size_t request_get_content_length(http_request request)
 	return entity_header_get_content_length(request->entity_header);
 }
 
+/* Helper function to have the algorithm one place only */
+static int req_parse_multivalued_fields(
+	http_request req,
+	const char* value,
+	int(*set_func)(http_request req, const char* value, meta_error e),
+	meta_error e)
+{
+	const int sep = ',';
+	char buf[100];
+	char* s;
+
+	assert(NULL != req);
+	assert(NULL != value);
+
+	while ((s = strchr(value, sep)) != NULL) {
+		/* The correct type would be ptrdiff_t,
+		 * but -ansi -pedantic complains */
+		size_t span = (size_t)(s - value);
+		if (span + 1 > sizeof buf) {
+			/* We don't want buffer overflow... */
+			value = s + 1;
+			continue;
+		}
+
+		memcpy(buf, value, span);
+		buf[span] = '\0';
+		if (!set_func(req, buf, e))
+			return 0;
+
+		value = s + 1;
+	}
+
+	return set_func(req, value, e);
+}
 /* http request handlers */
 static int parse_authorization(http_request req, const char* value, meta_error e)
 {
@@ -1118,7 +1152,7 @@ static int parse_te(http_request req, const char* value, meta_error e)
 {
 	assert(NULL != req);
 	assert(NULL != value);
-	return parse_multivalued_fields(req, value, (int(*)(void*dest, const char*, meta_error))request_set_te, e);
+	return req_parse_multivalued_fields(req, value, request_set_te, e);
 }
 
 static int parse_mime_version(http_request r, const char* value, meta_error e)
@@ -1176,22 +1210,22 @@ static int parse_user_agent(http_request req, const char* value, meta_error e)
 
 static int parse_accept(http_request req, const char* value, meta_error e)
 {
-	return parse_multivalued_fields(req, value, (int(*)(void*dest, const char*, meta_error))request_set_accept, e);
+	return req_parse_multivalued_fields(req, value, request_set_accept, e);
 }
 
 static int parse_accept_charset(http_request req, const char* value, meta_error e)
 {
-	return parse_multivalued_fields(req, value, (int(*)(void*dest, const char*, meta_error))request_set_accept_charset, e);
+	return req_parse_multivalued_fields(req, value, request_set_accept_charset, e);
 }
 
 static int parse_accept_encoding(http_request req, const char* value, meta_error e)
 {
-	return parse_multivalued_fields(req, value, (int(*)(void*dest, const char*, meta_error))request_set_accept_encoding, e);
+	return req_parse_multivalued_fields(req, value, request_set_accept_encoding, e);
 }
 
 static int parse_accept_language(http_request req, const char* value, meta_error e)
 {
-	return parse_multivalued_fields(req, value, (int(*)(void*dest, const char*, meta_error))request_set_accept_language, e);
+	return req_parse_multivalued_fields(req, value, request_set_accept_language, e);
 }
 
 /* The request line, defined in §5.1, is
