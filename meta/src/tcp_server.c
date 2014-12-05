@@ -466,14 +466,6 @@ static int accept_new_connections(tcp_server srv, meta_socket sock)
 			}
 		}
 
-		/*
-		 * Now clear the NONBLOCK flag from the new socket .
-		 * According to socket(7), the O_NONBLOCK flag is inherited
-		 * through an accept(), but this is NOT correct
-		 * in my Linux kernel (2.2.14-5).
-		 * According to accept(2) it is not inherited.
-		 * I keep the code here anyway...
-		 */
 		if (!sock_set_nonblock(newsock))
 			return 0;
 
