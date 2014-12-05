@@ -2055,7 +2055,7 @@ int parse_request_header(int idx, http_request req, const char* value, meta_erro
 static int
 read_request_line(connection conn, http_request request, meta_error e)
 {
-	char buf[CCH_REQUESTLINE_MAX + 1];
+	char buf[CCH_REQUESTLINE_MAX + 1] = {0};
 
 	if (read_line(conn, buf, sizeof(buf) - 1, e))
 		return parse_request_line(buf, request, e);

@@ -337,8 +337,9 @@ int response_add_char(http_response response, int c);
 int response_add_end(http_response response, const char* start, const char* end);
 int response_printf(http_response response, size_t size, const char* format, ...)
 	__attribute__ ((format(printf, 3, 4)));
-int response_set_content_buffer(http_response response, void* src, size_t n);
-int response_set_allocated_content_buffer(http_response response, void* src, size_t n);
+
+void response_set_content_buffer(http_response response, void* src, size_t n);
+void response_set_allocated_content_buffer(http_response response, void* src, size_t n);
 
 /* Add embedded, client side javascript, this is highly experimental so beware and enjoy the bugs */
 /* messagebox() adds code to display text in a message box */

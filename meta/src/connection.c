@@ -102,35 +102,31 @@ struct connection_tag {
 /* Local helpers */
 static inline int fill_read_buffer(connection conn)
 {
-	int success;
 	size_t nread;
 
 	assert(conn != NULL);
+	assert(membuf_canread(conn->readbuf) == 0);
 
 	/* Clear the read buffer */
 	membuf_reset(conn->readbuf);
 
-	success = sock_read(
+	nread = sock_read(
 		conn->sock,
 		membuf_data(conn->readbuf),
 		membuf_size(conn->readbuf),
 		conn->timeout_reads,
-		conn->retries_reads,
-		&nread);
+		conn->retries_reads);
 
 	/* NOTE: errors may indicate bad clients */
-	if (success) {
-		if (nread == 0) {
-			errno = EAGAIN;
-			success = 0;
-		}
-		else {
-			conn->incoming_bytes += nread;
-			membuf_set_written(conn->readbuf, nread);
-		}
+	if (nread == 0) {
+		errno = EAGAIN;
+	}
+	else if (nread > 0) {
+		conn->incoming_bytes += nread;
+		membuf_set_written(conn->readbuf, nread);
 	}
 
-	return success;
+	return nread > 0;
 }
 
 static inline void reset_counters(connection conn)
@@ -412,77 +408,70 @@ int connection_write(connection conn, const void *buf, size_t count)
  * We can either report an IP to the tcp_server or the tcp_server
  * can scan its connections for bad guys.
  */
-static int read_from_socket(connection conn, void *pbuf, size_t count)
+static ssize_t read_from_socket(connection conn, void *pbuf, size_t count)
 {
-	int success;
-	size_t nread;
+	ssize_t nread;
 
 	assert(conn != NULL);
 	assert(pbuf != NULL);
 	assert(readbuf_empty(conn));
 
-	success = sock_read(
+	nread = sock_read(
 		conn->sock,
 		pbuf,
 		count,
 		conn->timeout_reads,
-		conn->retries_reads,
-		&nread);
+		conn->retries_reads);
 
-	if (success) {
-		if (nread != count) {
-			errno = EAGAIN;
-			success = 0;
-		}
-		else {
-			conn->incoming_bytes += nread;
-		}
-	}
+	if (nread > 0)
+		conn->incoming_bytes += nread;
 
-	return success;
+	return nread;
 }
 
-int connection_read(connection conn, void *buf, size_t count)
+ssize_t connection_read(connection conn, void *buf, size_t count)
 {
 	int success = 1;
 	size_t ncopied;
-	char *cbuf;
+	ssize_t nread;
+
+	/* We need a char buffer to be able to compute offsets */
+	char *cbuf = buf;
 
 	assert(conn != NULL);
 	assert(buf != NULL);
 
 	ncopied = copy_from_readbuf(conn, buf, count);
 
-	/* We need a char buffer to be able to compute offsets */
-	cbuf = buf;
-
 	/* Were all bytes copied from cache? If so, return. */
 	if (ncopied == count)
-		return 1;
+		return ncopied;
 
 	count -= ncopied;
 	cbuf += ncopied;
 
 	/* Read from socket if buffer is too small anyway */
 	if (membuf_size(conn->readbuf) < count) {
-		success = read_from_socket(conn, cbuf, count);
+		if ((nread = read_from_socket(conn, cbuf, count)) == -1)
+			return -1;
+
+		return nread + ncopied;
 	}
-	else {
-		/* Fill the read buffer by reading data from the socket.
-		 * Then copy data from the read buffer to buf.
-		 */
-		success = fill_read_buffer(conn);
-		if (success) {
-			if (readbuf_contains_atleast(conn, count)) {
-				if (copy_from_readbuf(conn, cbuf, count) != count) {
-					errno = EAGAIN;
-					success = 0;
-				}
-			}
-			else {
+
+	/* Fill the read buffer by reading data from the socket.
+	 * Then copy data from the read buffer to buf.
+	 */
+	success = fill_read_buffer(conn);
+	if (success) {
+		if (readbuf_contains_atleast(conn, count)) {
+			if (copy_from_readbuf(conn, cbuf, count) != count) {
 				errno = EAGAIN;
 				success = 0;
 			}
+		}
+		else {
+			errno = EAGAIN;
+			success = 0;
 		}
 	}
 

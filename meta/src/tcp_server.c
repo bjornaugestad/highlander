@@ -474,7 +474,7 @@ static int accept_new_connections(tcp_server srv, meta_socket sock)
 		 * According to accept(2) it is not inherited.
 		 * I keep the code here anyway...
 		 */
-		if (!sock_clear_nonblock(newsock))
+		if (!sock_set_nonblock(newsock))
 			return 0;
 
 		/* Check if the client is permitted to connect or not. */

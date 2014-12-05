@@ -92,20 +92,14 @@ int handle_requests(const http_request req, http_response page)
     else if ((if_modified_since = request_get_if_modified_since(req)) == (time_t)-1) {
         /* Just send it */
         response_set_last_modified(page, st.st_mtime);
-        if (!response_set_content_buffer(page, file, size)) {
-            rc = HTTP_500_INTERNAL_SERVER_ERROR;
-        }
-        else {
-            rc = HTTP_200_OK;
-        }
+        response_set_content_buffer(page, file, size);
+		rc = HTTP_200_OK;
     }
     else if (if_modified_since >= st.st_mtime) {
         rc = HTTP_304_NOT_MODIFIED;
     }
-    else if (!response_set_content_buffer(page, file, size))  {
-        rc = HTTP_500_INTERNAL_SERVER_ERROR;
-    }
     else {
+		response_set_content_buffer(page, file, size);
         rc = HTTP_200_OK;
     }
 

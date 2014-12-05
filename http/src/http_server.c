@@ -132,7 +132,7 @@ static void set_server_defaults(http_server s)
 {
 	/* Set some defaults */
 	s->timeout_read = 5000;
-	s->timeout_write = 5000;
+	s->timeout_write = 500;
 	s->timeout_accept = 5000;
 	s->max_pages = 100;
 	s->npages = 0;

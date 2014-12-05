@@ -42,13 +42,12 @@ meta_socket sock_accept(meta_socket p, struct sockaddr *addr, socklen_t *addrsiz
  * the total number of bytes read in the parameter \e cbReadSum
  * and return 0 if no error occured.
  */
-int sock_read(
+ssize_t sock_read(
 	meta_socket p,
 	char *buf,
-	size_t cbMax,
+	size_t count,
 	int timeout,
-	int retries,
-	size_t* cbReadSum);
+	int retries);
 
 /* Waits for data to be available on the socket. */
 int wait_for_data(meta_socket p, int timeout);

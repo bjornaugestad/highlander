@@ -676,20 +676,20 @@ int http_send_field(connection conn, const char* name, cstring value)
 
 size_t response_get_content_length(http_response p)
 {
-	size_t content_length = 0;
+	size_t contentlen = 0;
 
 	assert(p != NULL);
 	assert(p->entity != NULL);
 
 	if (entity_header_content_length_isset(p->entity_header)) {
-		content_length = entity_header_get_content_length(p->entity_header);
+		contentlen = entity_header_get_content_length(p->entity_header);
 	}
 	else {
 		/* Shot in the dark, will not work for static pages */
-		content_length = cstring_length(p->entity);
+		contentlen = cstring_length(p->entity);
 	}
 
-	return content_length;
+	return contentlen;
 }
 
 
@@ -982,16 +982,15 @@ void response_recycle(http_response p)
 	cstring_recycle(p->www_authenticate);
 }
 
-int response_set_content_buffer(http_response p, void* data, size_t cb)
+void response_set_content_buffer(http_response p, void* data, size_t cb)
 {
 	response_set_flag(p, CONTENT_LENGTH);
 	p->content_buffer_in_use = 1;
 	p->content_buffer = data;
 	response_set_content_length(p, cb);
-	return 1;
 }
 
-int response_set_allocated_content_buffer(
+void response_set_allocated_content_buffer(
 	http_response p,
 	void* src,
 	size_t n)
@@ -1001,7 +1000,6 @@ int response_set_allocated_content_buffer(
 	p->content_buffer_in_use = 1;
 	p->content_buffer = src;
 	response_set_content_length(p, n);
-	return 1;
 }
 
 
@@ -1602,12 +1600,13 @@ read_response_header_fields(connection conn, http_response response, meta_error 
 int response_receive(
 	http_response response,
 	connection conn,
-	size_t max_content_len,
+	size_t max_contentlen,
 	meta_error e)
 {
 	entity_header eh = response_get_entity_header(response);
-	size_t content_length;
+	size_t contentlen;
 	void *content;
+	ssize_t nread;
 
 	if (!read_response_status_line(response, conn, e))
 		return 0;
@@ -1619,53 +1618,31 @@ int response_receive(
 	/* Now we hopefully have a content-length field. See if we can read
 	 * it or if it is too big
 	 */
-	if (!entity_header_content_length_isset(eh)) {
-		/* No content length, then we MUST deal with a version 1.0 server.
-		 * Read until max_content_len is reached or socket is closed.
-		 */
-		content_length = max_content_len;
-		if ((content = malloc(content_length)) == NULL)
-			return set_os_error(e, errno);
-
-		if (!connection_read(conn, content, max_content_len)) {
-			set_os_error(e, errno);
-			free(content);
-			return 0;
-		}
-
-		if (!response_set_allocated_content_buffer(response, content, content_length)) {
-			set_os_error(e, errno);
-			free(content);
-			return 0;
-		}
-
-		return 1;
-	}
-	else {
-		content_length = entity_header_get_content_length(eh);
-		if (content_length == 0)
+	if (entity_header_content_length_isset(eh)) {
+		contentlen = entity_header_get_content_length(eh);
+		if (contentlen == 0)
 			return 1;
 
-		if (content_length > max_content_len)
+		if (contentlen > max_contentlen)
 			return set_app_error(e, ENOSPC);
-
-		if ((content = malloc(content_length)) == NULL)
-			return set_os_error(e, errno);
-
-		if (!connection_read(conn, content, content_length)) {
-			set_os_error(e, errno);
-			free(content);
-			return 0;
-		}
-
-		if (!response_set_allocated_content_buffer(response, content, content_length)) {
-			set_os_error(e, errno);
-			free(content);
-			return 0;
-		}
-
-		return 1;
 	}
+	else {
+		/* No content length, then we MUST deal with a version 1.0 server.
+		 * Read until max_contentlen is reached or socket is closed.
+		 */
+		contentlen = max_contentlen;
+	}
+
+	if ((content = malloc(contentlen)) == NULL)
+		return set_os_error(e, errno);
+
+	if ((nread = connection_read(conn, content, contentlen)) == -1) {
+		free(content);
+		return set_os_error(e, errno);
+	}
+
+	response_set_allocated_content_buffer(response, content, nread);
+	return 1;
 }
 
 int response_dump(http_response r, FILE *f)
