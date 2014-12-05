@@ -1599,7 +1599,11 @@ read_response_header_fields(connection conn, http_response response, meta_error 
 	}
 }
 
-int response_receive(http_response response, connection conn, size_t max_content, meta_error e)
+int response_receive(
+	http_response response,
+	connection conn,
+	size_t max_content_len,
+	meta_error e)
 {
 	entity_header eh = response_get_entity_header(response);
 	size_t content_length;
@@ -1617,13 +1621,13 @@ int response_receive(http_response response, connection conn, size_t max_content
 	 */
 	if (!entity_header_content_length_isset(eh)) {
 		/* No content length, then we MUST deal with a version 1.0 server.
-		 * Read until max_content is reached or socket is closed.
+		 * Read until max_content_len is reached or socket is closed.
 		 */
-		content_length = max_content;
+		content_length = max_content_len;
 		if ((content = malloc(content_length)) == NULL)
 			return set_os_error(e, errno);
 
-		if (!connection_read(conn, content, max_content)) {
+		if (!connection_read(conn, content, max_content_len)) {
 			set_os_error(e, errno);
 			free(content);
 			return 0;
@@ -1642,7 +1646,7 @@ int response_receive(http_response response, connection conn, size_t max_content
 		if (content_length == 0)
 			return 1;
 
-		if (content_length > max_content)
+		if (content_length > max_content_len)
 			return set_app_error(e, ENOSPC);
 
 		if ((content = malloc(content_length)) == NULL)

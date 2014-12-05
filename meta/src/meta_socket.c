@@ -43,10 +43,66 @@ struct meta_socket_tag {
 };
 
 
-/* local helper functions */
-static int sock_poll_for(meta_socket p, int timeout, int poll_for);
-static int sock_set_reuseaddr(meta_socket p);
+/*
+ * Sets the socket options we want on the main socket
+ * Suitable for server sockets only.
+ */
+static int sock_set_reuseaddr(meta_socket p)
+{
+	int optval;
+	socklen_t optlen;
 
+	assert(p != NULL);
+	assert(p->fd >= 0);
+
+	optval = 1;
+	optlen = (socklen_t)sizeof(optval);
+	if (setsockopt(p->fd, SOL_SOCKET, SO_REUSEADDR, &optval, optlen) == -1)
+		return 0;
+	else
+		return 1;
+}
+
+
+/*
+ * This is a local helper function. It polls for some kind of event,
+ * which normally is POLLIN or POLLOUT.
+ * The function returns 1 if the event has occured, and 0 if an
+ * error occured. It set errno to EAGAIN if a timeout occured, and
+ * it maps POLLHUP and POLLERR to EPIPE, and POLLNVAL to EINVAL.
+ */
+static int sock_poll_for(meta_socket p, int timeout, int poll_for)
+{
+	struct pollfd pfd;
+	int rc;
+	int status = 0;
+
+	assert(p != NULL);
+	assert(p->fd >= 0);
+	assert(poll_for == POLLIN || poll_for == POLLOUT);
+	assert(timeout >= 0);
+
+	pfd.fd = p->fd;
+	pfd.events = (short)poll_for;
+
+	/* NOTE: poll is XPG4, not POSIX */
+	rc = poll(&pfd, 1, timeout * 1000);
+	if (rc == 1) {
+		/* We have info in pfd */
+		if (pfd.revents & POLLHUP)
+			errno = EPIPE;
+		else if (pfd.revents & POLLERR)
+			errno = EPIPE;
+		else if (pfd.revents & POLLNVAL)
+			errno = EINVAL;
+		else if ((pfd.revents & poll_for)  == poll_for)
+			status = 1;
+	}
+	else if (rc == 0)
+		errno = EAGAIN;
+
+	return status;
+}
 int wait_for_writability(meta_socket p, int timeout)
 {
 	assert(p != NULL);
@@ -98,45 +154,6 @@ int sock_write(meta_socket p, const char *buf, size_t count, int timeout, int nr
 }
 
 /*
- * This is a local helper function. It polls for some kind of event,
- * which normally is POLLIN or POLLOUT.
- * The function returns 1 if the event has occured, and 0 if an
- * error occured. It set errno to EAGAIN if a timeout occured, and
- * it maps POLLHUP and POLLERR to EPIPE, and POLLNVAL to EINVAL.
- */
-static int sock_poll_for(meta_socket p, int timeout, int poll_for)
-{
-	struct pollfd pfd;
-	int rc;
-	int status = 0;
-
-	assert(p != NULL);
-	assert(p->fd >= 0);
-	assert(poll_for == POLLIN || poll_for == POLLOUT);
-	assert(timeout >= 0);
-
-	pfd.fd = p->fd;
-	pfd.events = (short)poll_for;
-
-	/* NOTE: poll is XPG4, not POSIX */
-	rc = poll(&pfd, 1, timeout);
-	if (rc == 1) {
-		/* We have info in pfd */
-		if (pfd.revents & POLLHUP)
-			errno = EPIPE;
-		else if (pfd.revents & POLLERR)
-			errno = EPIPE;
-		else if (pfd.revents & POLLNVAL)
-			errno = EINVAL;
-		else if ((pfd.revents & poll_for)  == poll_for)
-			status = 1;
-	}
-	else if (rc == 0)
-		errno = EAGAIN;
-
-	return status;
-}
-/*
  * read UP TO AND INCLUDING cbMax bytes off the socket.
  *	The rules are:
  *	1. We poll with a timeout of timeout
@@ -171,8 +188,9 @@ int sock_read(
 		cbToRead = cbMax - *nreadsum;
 
 		if (!wait_for_data(p, timeout)) {
-			if (errno != EAGAIN)
+			if (errno != EAGAIN) {
 				return 0;
+			}
 		}
 		else if ((nread = read(p->fd, &dest[*nreadsum], cbToRead)) == -1) {
 			/*
@@ -392,26 +410,6 @@ int sock_clear_nonblock(meta_socket p)
 
 	flags -= (flags & O_NONBLOCK);
 	if (fcntl(p->fd, F_SETFL, flags) == -1)
-		return 0;
-	else
-		return 1;
-}
-
-/*
- * Sets the socket options we want on the main socket
- * Suitable for server sockets only.
- */
-static int sock_set_reuseaddr(meta_socket p)
-{
-	int optval;
-	socklen_t optlen;
-
-	assert(p != NULL);
-	assert(p->fd >= 0);
-
-	optval = 1;
-	optlen = (socklen_t)sizeof(optval);
-	if (setsockopt(p->fd, SOL_SOCKET, SO_REUSEADDR, &optval, optlen) == -1)
 		return 0;
 	else
 		return 1;
