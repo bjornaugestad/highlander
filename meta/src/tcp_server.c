@@ -754,3 +754,17 @@ unsigned long tcp_server_sum_denied_clients(tcp_server p)
 	assert(p != NULL);
 	return atomic_ulong_get(&p->sum_denied_clients);
 }
+
+#ifdef CHECK_TCP_SERVER
+
+// How to test the tcp server? A couple of no-brainer tests
+// would be to start a server and connect to it. More advanced tests
+// could be what?
+int main(void)
+{
+	tcp_server srv = tcp_server_new();
+
+	tcp_server_free(srv);
+	return 0;
+}
+#endif
