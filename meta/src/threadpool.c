@@ -22,15 +22,11 @@
  * page 99+, with a few bugs removed :-)
  */
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <assert.h>
 #include <errno.h>
-
-#ifdef __sun
-#	define _POSIX_PTHREAD_SEMANTICS
-#endif
 #include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include <meta_common.h>
 #include <threadpool.h>
@@ -42,11 +38,11 @@
  * functions.
  */
 struct threadpool_work {
-	void *(*work_func)(void*);
-	void *work_arg;
+	void *(*workfn)(void*);
+	void *workarg;
 
-	void (*initialize)(void*, void*);
-	void *initialize_arg;
+	void (*initfn)(void*, void*);
+	void *initarg;
 
 	void (*cleanup)(void*, void*);
 	void *cleanup_arg;
@@ -99,6 +95,7 @@ static void *threadpool_exec_thread(void *arg)
 	threadpool pool = (threadpool)arg;
 
 	pthread_detach(pthread_self());
+
 	for (;;) {
 		/* Get the lock so that we can do a cond_wait later */
 		pthread_mutex_lock(&pool->queue_lock);
@@ -124,7 +121,7 @@ static void *threadpool_exec_thread(void *arg)
 			pool->queue_head = wp->next;
 
 		if (pool->block_when_full
-		&& pool->cur_queue_size == (pool->max_queue_size - 1)) {
+		&& pool->cur_queue_size == pool->max_queue_size - 1) {
 			/* Tell producer(s) that there now is room in the queue */
 			pthread_cond_signal(&pool->queue_not_full);
 		}
@@ -136,18 +133,17 @@ static void *threadpool_exec_thread(void *arg)
 		pthread_mutex_unlock(&pool->queue_lock);
 
 		/* Perform initialization, action and cleanup */
-		if (wp->initialize != NULL)
-			wp->initialize(wp->initialize_arg, wp->work_arg);
-
+		if (wp->initfn != NULL)
+			wp->initfn(wp->initarg, wp->workarg);
 
 		/* Do the actual work. We cannot handle or use the
 		 * return value, as we are a thread _pool_ and each
 		 * thread will (over time) serve many different requests.
 		 */
-		(void)wp->work_func(wp->work_arg);
+		wp->workfn(wp->workarg);
 
 		if (wp->cleanup != NULL)
-			wp->cleanup(wp->cleanup_arg, wp->work_arg);
+			wp->cleanup(wp->cleanup_arg, wp->workarg);
 
 		free(wp);
 	}
@@ -160,86 +156,88 @@ static void *threadpool_exec_thread(void *arg)
 }
 
 threadpool threadpool_new(
-	size_t num_worker_threads,
+	size_t nthreads,
 	size_t max_queue_size,
 	int block_when_full)
 {
-	int error;
-	unsigned int i;
-	threadpool tpool;
+	int err;
+	size_t i;
+	threadpool p;
 
-	assert(num_worker_threads > 0);
+	assert(nthreads > 0);
 	assert(max_queue_size > 0);
 
 	/* Allocate space for the pool */
-	if ((tpool = malloc(sizeof(struct threadpool_tag))) == NULL
-	|| (tpool->threads = malloc(sizeof(pthread_t) * num_worker_threads)) == NULL) {
-		free(tpool);
+	if ((p = malloc(sizeof *p)) == NULL
+	|| (p->threads = malloc(sizeof *p->threads * nthreads)) == NULL) {
+		free(p);
 		return NULL;
 	}
 
-	tpool->nthreads = num_worker_threads;
-	tpool->max_queue_size = max_queue_size;
-	tpool->block_when_full = block_when_full;
+	p->nthreads = nthreads;
+	p->max_queue_size = max_queue_size;
+	p->block_when_full = block_when_full;
 
-	tpool->cur_queue_size = 0;
-	tpool->queue_head = NULL;
-	tpool->queue_tail = NULL;
-	tpool->queue_closed = 0;
-	tpool->shutdown = 0;
+	p->cur_queue_size = 0;
+	p->queue_head = NULL;
+	p->queue_tail = NULL;
+	p->queue_closed = 0;
+	p->shutdown = 0;
 
-	if ((error = pthread_mutex_init(&tpool->queue_lock, NULL))
-	||	(error = pthread_cond_init(&tpool->queue_not_empty, NULL))
-	||	(error = pthread_cond_init(&tpool->queue_not_full, NULL))
-	||	(error = pthread_cond_init(&tpool->queue_empty, NULL))) {
-		free(tpool->threads);
-		free(tpool);
-		errno = error;
+	if ((err = pthread_mutex_init(&p->queue_lock, NULL))
+	||	(err = pthread_cond_init(&p->queue_not_empty, NULL))
+	||	(err = pthread_cond_init(&p->queue_not_full, NULL))
+	||	(err = pthread_cond_init(&p->queue_empty, NULL))) {
+		free(p->threads);
+		free(p);
+		errno = err;
 		return NULL;
 	}
 
 	/* Create the threads */
-	for (i = 0; i < num_worker_threads; i++) {
-		error = pthread_create(
-			&tpool->threads[i],
+	for (i = 0; i < nthreads; i++) {
+		err = pthread_create(
+			&p->threads[i],
 			NULL,
 			threadpool_exec_thread,
-			tpool);
+			p);
 
-		if (error) {
+		if (err) {
 			/* NOTE: Should we destroy the threads as well? */
-			free(tpool->threads);
-			free(tpool);
-			errno = error;
+			free(p->threads);
+			free(p);
+			errno = err;
 			return NULL;
 		}
 	}
 
 	/* Initialize stats counters */
-	atomic_ulong_init(&tpool->sum_work_added);
-	atomic_ulong_init(&tpool->sum_blocked);
-	atomic_ulong_init(&tpool->sum_discarded);
-	return tpool;
+	atomic_ulong_init(&p->sum_work_added);
+	atomic_ulong_init(&p->sum_blocked);
+	atomic_ulong_init(&p->sum_discarded);
+	return p;
 }
 
 int threadpool_add_work(
 	threadpool pool,
-	void (*initialize)(void*, void*),
-	void *initialize_arg,
 
-	void *(*work_func)(void*),
-	void *work_arg,
+	void (*initfn)(void*, void*),
+	void *initarg,
+
+	void *(*workfn)(void*),
+	void *workarg,
+
 	void (*cleanup)(void*, void*),
 	void *cleanup_arg)
 {
 	struct threadpool_work* wp;
-	int error;
+	int err;
 
 	assert(NULL != pool);
-	assert(NULL != work_func);
+	assert(NULL != workfn);
 
-	if ((error = pthread_mutex_lock(&pool->queue_lock))) {
-		errno = error;
+	if ((err = pthread_mutex_lock(&pool->queue_lock))) {
+		errno = err;
 		return 0;
 	}
 
@@ -259,8 +257,8 @@ int threadpool_add_work(
 
 	/* Wait until there is available space in the queue */
 	while (queue_full(pool) && !pool->shutdown && !pool->queue_closed) {
-		if ((error = pthread_cond_wait(&pool->queue_not_full, &pool->queue_lock))) {
-			errno = error;
+		if ((err = pthread_cond_wait(&pool->queue_not_full, &pool->queue_lock))) {
+			errno = err;
 			return 0;
 		}
 	}
@@ -282,10 +280,10 @@ int threadpool_add_work(
 		return 0;
 	}
 
-	wp->initialize = initialize;
-	wp->initialize_arg = initialize_arg;
-	wp->work_func = work_func;
-	wp->work_arg = work_arg;
+	wp->initfn = initfn;
+	wp->initarg = initarg;
+	wp->workfn = workfn;
+	wp->workarg = workarg;
 	wp->cleanup = cleanup;
 	wp->cleanup_arg = cleanup_arg;
 	wp->next = NULL;
@@ -308,14 +306,14 @@ int threadpool_add_work(
 
 int threadpool_destroy(threadpool pool, unsigned int finish)
 {
-	unsigned int i;
-	int error;
+	size_t i;
+	int err;
 
 	if (pool == NULL)
 		return 1;
 
-	if ((error = pthread_mutex_lock(&pool->queue_lock))) {
-		errno = error;
+	if ((err = pthread_mutex_lock(&pool->queue_lock))) {
+		errno = err;
 		return 0;
 	}
 
@@ -329,26 +327,26 @@ int threadpool_destroy(threadpool pool, unsigned int finish)
 	pool->queue_closed = 1;
 	if (finish) {
 		while (!queue_empty(pool)) {
-			error = pthread_cond_wait(&pool->queue_empty, &pool->queue_lock);
-			if (error) {
+			err = pthread_cond_wait(&pool->queue_empty, &pool->queue_lock);
+			if (err) {
 				/* Unable to condwait for the other threads to finish */
 				pthread_mutex_unlock(&pool->queue_lock);
-				errno = error;
+				errno = err;
 				return 0;
 			}
 		}
 	}
 
 	pool->shutdown = 1;
-	if ((error = pthread_mutex_unlock(&pool->queue_lock))) {
-		errno = error;
+	if ((err = pthread_mutex_unlock(&pool->queue_lock))) {
+		errno = err;
 		return 0;
 	}
 
 	/* Wake up any sleeping worker threads so that they
 	 * check the shutdown flag */
-	if ((error = pthread_cond_broadcast(&pool->queue_not_empty))) {
-		errno = error;
+	if ((err = pthread_cond_broadcast(&pool->queue_not_empty))) {
+		errno = err;
 		return 0;
 	}
 
@@ -356,15 +354,15 @@ int threadpool_destroy(threadpool pool, unsigned int finish)
 	 * Note that threadpool_add_work will fail as it tests for
 	 * the shutdown flag
 	 */
-	if ((error = pthread_cond_broadcast(&pool->queue_not_full))) {
-		errno = error;
+	if ((err = pthread_cond_broadcast(&pool->queue_not_full))) {
+		errno = err;
 		return 0;
 	}
 
 	/* Now wait for each thread to finish */
 	for (i = 0; i < pool->nthreads; i++) {
-		if ((error = pthread_join(pool->threads[i], NULL))) {
-			errno = error;
+		if ((err = pthread_join(pool->threads[i], NULL))) {
+			errno = err;
 			return 0;
 		}
 	}
