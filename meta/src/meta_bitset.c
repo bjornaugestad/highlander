@@ -40,16 +40,16 @@ bitset bitset_new(size_t bitcount)
 	size_t size = bitcount / CHAR_BIT + (bitcount % CHAR_BIT ? 1 : 0);
 
 	if ((b = calloc(1, sizeof *b)) == NULL)
-		;
-	else if ((b->data = malloc(size)) == NULL) {
+		return NULL;
+
+	if ((b->data = malloc(size)) == NULL) {
 		free(b);
-		b = NULL;
+		return NULL;
 	}
-	else {
-		b->size = size;
-		b->bitcount = bitcount;
-		bitset_clear_all(b);
-	}
+
+	b->size = size;
+	b->bitcount = bitcount;
+	bitset_clear_all(b);
 
 	return b;
 }

@@ -75,39 +75,35 @@ fifo fifo_new(size_t size)
 
 void fifo_free(fifo p, dtor dtor_fn)
 {
-	if (p != NULL) {
-		if (dtor_fn != NULL) {
-			size_t i;
+	if (p == NULL)
+		return;
 
-			for (i = 0; i < p->size; i++) {
-				if (p->pelem[i] != NULL) {
-					dtor_fn(p->pelem[i]);
-				}
-			}
+	if (dtor_fn != NULL) {
+		size_t i;
+
+		for (i = 0; i < p->size; i++) {
+			if (p->pelem[i] != NULL)
+				dtor_fn(p->pelem[i]);
 		}
-
-		wlock_free(p->lock);
-		free(p->pelem);
-		free(p);
 	}
+
+	wlock_free(p->lock);
+	free(p->pelem);
+	free(p);
 }
 
 int fifo_lock(fifo p)
 {
 	assert(p != NULL);
-	if (!wlock_lock(p->lock))
-		return 0;
 
-	return 1;
+	return wlock_lock(p->lock);
 }
 
 int fifo_unlock(fifo p)
 {
 	assert(p != NULL);
-	if (!wlock_unlock(p->lock))
-		return 0;
 
-	return 1;
+	return wlock_unlock(p->lock);
 }
 
 size_t fifo_nelem(fifo p)
@@ -267,6 +263,7 @@ static void *reader(void *arg)
 			fprintf(stderr, "From reader, who read: %s\n", s);
 			free(s);
 		}
+
 		fifo_unlock(f);
 	}
 

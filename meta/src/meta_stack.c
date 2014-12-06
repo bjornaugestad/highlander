@@ -36,11 +36,12 @@ stack stack_new(void)
 {
 	stack s;
 
-	if ((s = malloc(sizeof *s)) != NULL) {
-		if ((s->lst = list_new()) == NULL) {
-			free(s);
-			s = NULL;
-		}
+	if ((s = malloc(sizeof *s)) == NULL)
+		return NULL;
+		
+	if ((s->lst = list_new()) == NULL) {
+		free(s);
+		return NULL;
 	}
 
 	return s;
@@ -67,13 +68,13 @@ int stack_push(stack s, void *p)
 
 	if (list_insert(s->lst, p) == NULL)
 		return 0;
-	else
-		return 1;
+
+	return 1;
 }
 
 void *stack_top(stack s)
 {
-	void *d = NULL;
+	void *top = NULL;
 	list_iterator i;
 
 	assert(s != NULL);
@@ -81,10 +82,10 @@ void *stack_top(stack s)
 
 	i = list_first(s->lst);
 	if (!list_end(i))
-		d = list_get(i);
+		top = list_get(i);
 
-	assert(d != NULL);
-	return d;
+	assert(top != NULL);
+	return top;
 }
 
 void stack_pop(stack s)

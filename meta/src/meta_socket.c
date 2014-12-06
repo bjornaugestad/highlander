@@ -59,8 +59,8 @@ static int sock_set_reuseaddr(meta_socket p)
 	optlen = (socklen_t)sizeof(optval);
 	if (setsockopt(p->fd, SOL_SOCKET, SO_REUSEADDR, &optval, optlen) == -1)
 		return 0;
-	else
-		return 1;
+
+	return 1;
 }
 
 
@@ -110,6 +110,7 @@ static int sock_poll_for(meta_socket p, int timeout, short poll_for)
 
 	return status;
 }
+
 int wait_for_writability(meta_socket p, int timeout)
 {
 	assert(p != NULL);
@@ -139,18 +140,21 @@ int sock_write(meta_socket p, const char *buf, size_t count, int timeout, int nr
 		if (!wait_for_writability(p, timeout)) {
 			if (errno != EAGAIN)
 				return 0;
+
+			// We got EAGAIN, so retry.
+			continue;
 		}
-		else if ((nwritten = write(p->fd, buf, count)) == -1) {
+
+		if ((nwritten = write(p->fd, buf, count)) == -1) {
 			perror("write");
 			return 0;
 		}
-		else if (nwritten != (ssize_t)count) {
+
+		if (nwritten != (ssize_t)count) {
 			buf += nwritten;
 			count -= nwritten;
 		}
-
-
-	} while((ssize_t)count != nwritten && nretries--);
+	} while(count > 0 && nretries--);
 
 	/* If not able to write and no errors detected, we have a timeout */
 	if ((ssize_t)count != nwritten) {

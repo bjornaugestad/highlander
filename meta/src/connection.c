@@ -210,18 +210,19 @@ connection connection_new(
 	assert(retries_writes >= 0);
 
 	/* Allocate memory needed */
-	if ((p = calloc(1, sizeof *p)) != NULL) {
-		p->readbuf = NULL;
-		p->writebuf = NULL;
-		p->persistent = 0;
-		p->timeout_reads = timeout_reads;
-		p->timeout_writes = timeout_writes;
-		p->retries_reads = retries_reads;
-		p->retries_writes = retries_writes;
-		p->arg2 = arg2;
-		p->sock = NULL;
-		reset_counters(p);
-	}
+	if ((p = calloc(1, sizeof *p)) == NULL)
+		return NULL;
+
+	p->readbuf = NULL;
+	p->writebuf = NULL;
+	p->persistent = 0;
+	p->timeout_reads = timeout_reads;
+	p->timeout_writes = timeout_writes;
+	p->retries_reads = retries_reads;
+	p->retries_writes = retries_writes;
+	p->arg2 = arg2;
+	p->sock = NULL;
+	reset_counters(p);
 
 	return p;
 }
@@ -232,8 +233,8 @@ int connection_connect(connection c, const char *host, int port)
 
 	if ((c->sock = create_client_socket(host, port)) == NULL)
 		return 0;
-	else
-		return 1;
+
+	return 1;
 }
 
 membuf connection_reclaim_read_buffer(connection conn)
@@ -322,12 +323,12 @@ int connection_close(connection conn)
 	return rc;
 }
 
-int connection_getc(connection conn, int *pchar)
+int connection_getc(connection conn, int *pc)
 {
 	int success = 1;
 
 	assert(conn != NULL);
-	assert(pchar != NULL);
+	assert(pc != NULL);
 
 	/* Fill buffer if empty */
 	if (readbuf_empty(conn))
@@ -335,8 +336,8 @@ int connection_getc(connection conn, int *pchar)
 
 	/* Get one character from buffer */
 	if (success) {
-		*pchar = conn_getc(conn);
-		if (*pchar == EOF)
+		*pc = conn_getc(conn);
+		if (*pc == EOF)
 			success = 0;
 	}
 
@@ -382,7 +383,8 @@ int connection_write(connection conn, const void *buf, size_t count)
 }
 
 
-/* This function is used whenever we want to bypass the read buffer.
+/*
+ * This function is used whenever we want to bypass the read buffer.
  * That's relevant e.g. when we read more than the size of the buffer
  * in one chunk. Doesn't happen very often, but it may happen.
  *
@@ -458,24 +460,24 @@ ssize_t connection_read(connection conn, void *buf, size_t count)
 		return nread + ncopied;
 	}
 
-	/* Fill the read buffer by reading data from the socket.
+	/*
+	 * Fill the read buffer by reading data from the socket.
 	 * Then copy data from the read buffer to buf.
 	 */
-	success = fill_read_buffer(conn);
-	if (success) {
-		if (readbuf_contains_atleast(conn, count)) {
-			if (copy_from_readbuf(conn, cbuf, count) != count) {
-				errno = EAGAIN;
-				success = 0;
-			}
-		}
-		else {
-			errno = EAGAIN;
-			success = 0;
-		}
+	if ((success = fill_read_buffer(conn)) == 0)
+		return 0;
+
+	if (!readbuf_contains_atleast(conn, count)) {
+		errno = EAGAIN;
+		return 0;
 	}
 
-	return success;
+	if (copy_from_readbuf(conn, cbuf, count) != count) {
+		errno = EAGAIN;
+		return 0;
+	}
+
+	return 1;
 }
 
 void *connection_arg2(connection conn)
