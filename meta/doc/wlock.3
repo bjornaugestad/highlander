@@ -1,0 +1,34 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt HIGHLANDER
+.Th wlock 3
+.Sh NAME
+.Nm wlock
+.Nd a lock one can wait on. 
+.Sh SYNOPSIS
+.Fd #include <meta_wlock.h>
+.Fo "wlock wlock_new"
+.Fa "void"
+.Fc
+.Fo "void wlock_free"
+.Fa "wlock p"
+.Fc
+.Fo "int wlock_lock"
+.Fa "wlock p"
+.Fc
+.Fo "int wlock_unlock"
+.Fa "wlock p"
+.Fc
+.Fo "int wlock_signal"
+.Fa "wlock p"
+.Fc
+.Fo "int wlock_wait"
+.Fa "wlock p"
+.Fc
+.Fo "int wlock_broadcast"
+.Fa "wlock p"
+.Fc
+.Sh DESCRIPTION
+The wlock ADT implements a waitable/signalable lock as one
+atomic type. It's a traditional combination of a mutex and
+a condition variable.

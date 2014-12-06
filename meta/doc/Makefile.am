@@ -176,5 +176,7 @@ man_MANS=\
 	wait_for_data.3\
 	wait_for_writability.3\
 	create_client_socket.3\
-	create_server_socket.3
+	create_server_socket.3\
+	\
+	wlock.3
 

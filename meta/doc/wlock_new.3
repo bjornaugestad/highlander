@@ -1,0 +1,24 @@
+.Dd Dec 06, 2014
+.Os POSIX
+.Dt META
+.Th wlock_new 3
+.Th wlock_free 3
+.Sh NAME
+.Nm wlock_new
+.Nm wlock_free
+.Nd create and destroy waitable locks.
+.Sh SYNOPSIS
+.Fd #include <meta_wlock.h>
+.Fo "wlock wlock_new"
+.Fa "void"
+.Fc
+.Fo "void wlock_fee"
+.Fa "wlock lock"
+.Fc
+.Sh DESCRIPTION
+.Nm wlock_new()
+and
+.Nm wlock_free()
+creates and destroys waitable locks.
+.Sh AUTHOR
+.An bjorn.augestad@gmail.com
