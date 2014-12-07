@@ -22,16 +22,11 @@
 #define HIGHLANDER_H
 
 /* System files we need */
-#include <stdio.h> /* for FILE* */
 #include <time.h> /* for time_t */
 
 #include <meta_process.h>
 #include <meta_error.h>
 #include <connection.h>
-
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -281,9 +276,10 @@ entity_header request_get_entity_header(http_request r);
 general_header response_get_general_header(http_response r);
 entity_header response_get_entity_header(http_response r);
 
-int response_dump(http_response r, FILE* f);
-int general_header_dump(general_header gh, FILE* f);
-int entity_header_dump(entity_header gh, FILE* f);
+/* Note that file argument *MUST* be a FILE* */
+int response_dump(http_response r, void *file);
+int general_header_dump(general_header gh, void *file);
+int entity_header_dump(entity_header gh, void *file);
 
 const char* response_get_connection(http_response response);
 const char*	response_get_entity(http_response p);

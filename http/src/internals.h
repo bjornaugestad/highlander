@@ -205,6 +205,8 @@ const char* general_header_get_warning(general_header gh);
 int general_header_no_cache_isset(general_header gh);
 int general_header_no_store_isset(general_header gh);
 int general_header_max_age_isset(general_header gh);
+int general_header_connection_isset(general_header gh);
+int general_header_pragma_isset(general_header gh);
 int general_header_max_stale_isset(general_header gh);
 int general_header_min_fresh_isset(general_header gh);
 int general_header_no_transform_isset(general_header gh);
@@ -276,7 +278,9 @@ int parse_multivalued_fields(
 	const char* value,
 	int(*set_func)(void *dest, const char* value, meta_error e),
 	meta_error e);
-/* Return an index in the entity header array, or -1 if the field was not found. */
+
+/* Return an index in the entity header array,
+ * or -1 if the field was not found. */
 int find_entity_header(const char* name);
 int parse_entity_header(int idx, entity_header gh, const char* value, meta_error e);
 
@@ -298,7 +302,7 @@ int parse_response_header(int idx, http_response req, const char* value, meta_er
 int parse_cookie(http_request r, const char* s, meta_error e);
 int parse_new_cookie(http_request r, const char* s, meta_error e);
 int parse_old_cookie(http_request r, const char* s, meta_error e);
-int cookie_dump(cookie c, FILE *f);
+int cookie_dump(cookie c,  void *file);
 
 #ifdef __cplusplus
 }

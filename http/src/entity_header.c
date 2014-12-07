@@ -671,8 +671,45 @@ int find_entity_header(const char* name)
 	return -1;
 }
 
-int entity_header_dump(entity_header eh, FILE* f)
+int entity_header_dump(entity_header eh, void *file)
 {
-	(void)eh;(void)f;
+	FILE *f = file;
+	char datebuf[100];
+
+	assert(eh != NULL);
+	assert(f != NULL);
+
+	fprintf(f, "Entity header fields\n");
+
+	if (entity_header_flag_is_set(eh, ENTITY_HEADER_ALLOW_SET))
+		fprintf(f, "\tallow: %s\n", c_str(eh->allow));
+
+	if (entity_header_flag_is_set(eh, ENTITY_HEADER_CONTENT_ENCODING_SET))
+		fprintf(f, "\tcontent_encoding: %s\n", c_str(eh->content_encoding));
+
+	if (entity_header_flag_is_set(eh, ENTITY_HEADER_CONTENT_LANGUAGE_SET))
+		fprintf(f, "\tcontent_language: %s\n", c_str(eh->content_language));
+
+	if (entity_header_flag_is_set(eh, ENTITY_HEADER_CONTENT_LENGTH_SET))
+		fprintf(f, "\tcontent_length: %zu\n", eh->content_length);
+
+	if (entity_header_flag_is_set(eh, ENTITY_HEADER_CONTENT_LOCATION_SET))
+		fprintf(f, "\tcontent_location: %s\n", c_str(eh->content_location));
+
+	if (entity_header_flag_is_set(eh, ENTITY_HEADER_CONTENT_MD5_SET))
+		fprintf(f, "\tcontent_md5: %s\n", c_str(eh->content_md5));
+
+	if (entity_header_flag_is_set(eh, ENTITY_HEADER_CONTENT_RANGE_SET))
+		fprintf(f, "\tcontent_range: %s\n", c_str(eh->content_range));
+
+	if (entity_header_flag_is_set(eh, ENTITY_HEADER_CONTENT_TYPE_SET))
+		fprintf(f, "\tcontent_type: %s\n", c_str(eh->content_type));
+
+	if (entity_header_flag_is_set(eh, ENTITY_HEADER_EXPIRES_SET))
+		fprintf(f, "\texpires: %s", ctime_r(&eh->expires, datebuf));
+
+	if (entity_header_flag_is_set(eh, ENTITY_HEADER_LAST_MODIFIED_SET))
+		fprintf(f, "\tlast_modified: %s", ctime_r(&eh->last_modified, datebuf));
+
 	return 1;
-}
+	}

@@ -19,6 +19,7 @@
 
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <errno.h>
 #include <assert.h>
 
@@ -499,8 +500,10 @@ memerr:
 	return set_os_error(e, ENOMEM);
 }
 
-int cookie_dump(cookie c, FILE *f)
+int cookie_dump(cookie c, void *file)
 {
+	FILE *f = file;
+
 	fprintf(f, "Name   :%s\n", c_str(c->name));
 	fprintf(f, "Value  :%s\n", c_str(c->value));
 	fprintf(f, "Domain :%s\n", c_str(c->domain));

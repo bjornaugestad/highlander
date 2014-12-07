@@ -1647,8 +1647,9 @@ int response_receive(
 	return 1;
 }
 
-int response_dump(http_response r, FILE *f)
+int response_dump(http_response r, void *file)
 {
+	FILE *f = file;
 
 	/* Now our own fields */
 	const char* version = "Unknown";

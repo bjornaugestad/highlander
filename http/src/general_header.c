@@ -18,6 +18,7 @@
  */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <errno.h>
 #include <highlander.h>
 #include <internals.h>
@@ -573,6 +574,18 @@ int general_header_max_age_isset(general_header gh)
 	return general_header_flag_is_set(gh, GENERAL_HEADER_MAX_AGE_SET);
 }
 
+int general_header_connection_isset(general_header gh)
+{
+	assert(gh != NULL);
+	return general_header_flag_is_set(gh, GENERAL_HEADER_CONNECTION_SET);
+}
+
+int general_header_pragma_isset(general_header gh)
+{
+	assert(gh != NULL);
+	return general_header_flag_is_set(gh, GENERAL_HEADER_PRAGMA_SET);
+}
+
 int general_header_max_stale_isset(general_header gh)
 {
 	assert(gh != NULL);
@@ -856,50 +869,91 @@ int general_header_send_fields(general_header gh, connection c)
 }
 
 /* General header handlers */
-static int set_cache_control(general_header gh, const char* s, meta_error e);
-static int parse_pragma(general_header gh, const char* value, meta_error e);
-static int parse_cache_control(general_header gh, const char* s, meta_error e);
-static int parse_date(general_header gh, const char* s, meta_error e);
-static int parse_connection(general_header gh, const char* s, meta_error e);
-static int parse_trailer(general_header gh, const char* s, meta_error e);
-static int parse_transfer_encoding(general_header gh, const char* value, meta_error e);
-static int parse_upgrade(general_header gh, const char* s, meta_error e);
-static int parse_via(general_header gh, const char* s, meta_error e);
-static int parse_warning(general_header gh, const char* s, meta_error e);
-static const struct {
-	const char* name;
-	int (*handler)(general_header gh, const char* value, meta_error e);
-} general_header_fields[] = {
-	{ "cache-control",		parse_cache_control },
-	{ "date",				parse_date },
-	{ "pragma",				parse_pragma },
-	{ "connection",			parse_connection },
-	{ "trailer",			parse_trailer },
-	{ "transfer-encoding",	parse_transfer_encoding },
-	{ "upgrade",			parse_upgrade },
-	{ "via",				parse_via },
-	{ "warning",			parse_warning }
-};
-
-/* Return an index in the general header array, or -1 if the field was not found. */
-int find_general_header(const char* name)
+/* Local helper for parse_cache_control. Needed since
+ * a lot of code is duplicated inside and after the loop
+ * The s argument must/should point to a legal request-directive
+ * to be understood.
+ * Returns 1 if OK, even if the directive wasn't understood.
+ * This is to 'accept' extensions from 14.9.6
+ */
+static int set_cache_control(general_header gh, const char* s, meta_error e)
 {
-	int i, nelem = sizeof general_header_fields / sizeof *general_header_fields;
-	for (i = 0; i < nelem; i++) {
-		if (strcmp(general_header_fields[i].name, name) == 0)
-			return i;
+	/*
+	 * We have 2 types of cache-request-directives, with and
+	 * without a numeric argument. We ignore extensions for now.
+	 */
+	static const struct {
+		const char* directive;
+		void (*func)(general_header);
+	} type1[] = {
+		{ "no-cache",		general_header_set_no_cache, },
+		{ "no-store",		general_header_set_no_store, },
+		{ "no-transform",	general_header_set_no_transform, },
+		{ "only-if-cached",	general_header_set_only_if_cached, },
+	};
+
+	static const struct {
+		const char* directive;
+		void (*func)(general_header, int);
+	} type2[] = {
+		{ "max-age",	general_header_set_max_age, },
+		{ "max-stale",	general_header_set_max_stale, },
+		{ "min-fresh",	general_header_set_min_fresh, },
+	};
+
+	size_t i;
+
+	/* Now look for type1 request-directives */
+	for (i = 0; i < sizeof(type1) / sizeof(type1[0]); i++) {
+		if (strstr(s, type1[i].directive) == s) {
+			/* NOTE: There MAY slip in a bug here, in case
+			 * a new directive starts with the same name
+			 * as an existing directive. We ignore that now,
+			 * then we don't have to extract the name from
+			 * the string 'value'
+			 */
+			(*type1[i].func)(gh);
+			return 1;
+		}
 	}
 
-	return -1;
+	/* Not a type1 directive, try type2 */
+	for (i = 0; i < sizeof(type2) / sizeof(type2[0]); i++) {
+		if (strstr(s, type2[i].directive) == s) {
+			/* NOTE: Same 'bug' as above */
+			char *eq = strchr(s, '=');
+			int arg;
+
+			/* Could not find = as in NAME=value */
+			if (NULL == eq)
+				return set_http_error(e, HTTP_400_BAD_REQUEST);
+
+			/* Skip = and convert arg to integer */
+			eq++;
+			arg = -1;
+			arg = atoi(eq);
+			if (-1 == arg) {
+				/* Conversion error. NOTE: How about strtol() instead? */
+				return set_http_error(e, HTTP_400_BAD_REQUEST);
+			}
+
+			/* Call function and continue */
+			(*type2[i].func)(gh, arg);
+			return 1;
+		}
+	}
+
+	/* Not found */
+	return 1;
 }
-int parse_general_header(int idx, general_header gh, const char* value, meta_error e)
+
+static int parse_transfer_encoding(general_header gh, const char* value, meta_error e)
 {
-	assert(idx >= 0);
-	assert((size_t)idx < sizeof general_header_fields / sizeof *general_header_fields);
+	if (!general_header_set_transfer_encoding(gh, value))
+		return set_os_error(e, errno);
 
-	return general_header_fields[idx].handler(gh, value, e);
+	return 1;
 }
-
 
 static int parse_pragma(general_header gh, const char* value, meta_error e)
 {
@@ -929,6 +983,7 @@ static int parse_warning(general_header gh, const char* value, meta_error e)
 
 	if (!general_header_set_warning(gh, value))
 		return set_os_error(e, errno);
+
 	return 1;
 }
 
@@ -1047,94 +1102,83 @@ static int parse_via(general_header gh, const char* value, meta_error e)
 	return 1;
 }
 
-/* Local helper for parse_cache_control. Needed since
- * a lot of code is duplicated inside and after the loop
- * The s argument must/should point to a legal request-directive
- * to be understood.
- * Returns 1 if OK, even if the directive wasn't understood.
- * This is to 'accept' extensions from 14.9.6
- */
-static int set_cache_control(general_header gh, const char* s, meta_error e)
+static const struct {
+	const char* name;
+	int (*handler)(general_header gh, const char* value, meta_error e);
+} general_header_fields[] = {
+	{ "cache-control",		parse_cache_control },
+	{ "date",				parse_date },
+	{ "pragma",				parse_pragma },
+	{ "connection",			parse_connection },
+	{ "trailer",			parse_trailer },
+	{ "transfer-encoding",	parse_transfer_encoding },
+	{ "upgrade",			parse_upgrade },
+	{ "via",				parse_via },
+	{ "warning",			parse_warning }
+};
+
+/* Return an index in the general header array,
+ * or -1 if the field was not found. */
+int find_general_header(const char* name)
 {
-	/*
-	 * We have 2 types of cache-request-directives, with and
-	 * without a numeric argument. We ignore extensions for now.
-	 */
-	static const struct {
-		const char* directive;
-		void (*func)(general_header);
-	} type1[] = {
-		{ "no-cache",		general_header_set_no_cache, },
-		{ "no-store",		general_header_set_no_store, },
-		{ "no-transform",	general_header_set_no_transform, },
-		{ "only-if-cached",	general_header_set_only_if_cached, },
-	};
-
-	static const struct {
-		const char* directive;
-		void (*func)(general_header, int);
-	} type2[] = {
-		{ "max-age",	general_header_set_max_age, },
-		{ "max-stale",	general_header_set_max_stale, },
-		{ "min-fresh",	general_header_set_min_fresh, },
-	};
-
-	size_t i;
-
-	/* Now look for type1 request-directives */
-	for (i = 0; i < sizeof(type1) / sizeof(type1[0]); i++) {
-		if (strstr(s, type1[i].directive) == s) {
-			/* NOTE: There MAY slip in a bug here, in case
-			 * a new directive starts with the same name
-			 * as an existing directive. We ignore that now,
-			 * then we don't have to extract the name from
-			 * the string 'value'
-			 */
-			(*type1[i].func)(gh);
-			return 1;
-		}
+	int i, nelem = sizeof general_header_fields / sizeof *general_header_fields;
+	for (i = 0; i < nelem; i++) {
+		if (strcmp(general_header_fields[i].name, name) == 0)
+			return i;
 	}
 
-	/* Not a type1 directive, try type2 */
-	for (i = 0; i < sizeof(type2) / sizeof(type2[0]); i++) {
-		if (strstr(s, type2[i].directive) == s) {
-			/* NOTE: Same 'bug' as above */
-			char *eq = strchr(s, '=');
-			int arg;
+	return -1;
+}
+int parse_general_header(int idx, general_header gh, const char* value, meta_error e)
+{
+	assert(idx >= 0);
+	assert((size_t)idx < sizeof general_header_fields / sizeof *general_header_fields);
 
-			/* Could not find = as in NAME=value */
-			if (NULL == eq)
-				return set_http_error(e, HTTP_400_BAD_REQUEST);
-
-			/* Skip = and convert arg to integer */
-			eq++;
-			arg = -1;
-			arg = atoi(eq);
-			if (-1 == arg) {
-				/* Conversion error. NOTE: How about strtol() instead? */
-				return set_http_error(e, HTTP_400_BAD_REQUEST);
-			}
-
-			/* Call function and continue */
-			(*type2[i].func)(gh, arg);
-			return 1;
-		}
-	}
-
-	/* Not found */
-	return 1;
+	return general_header_fields[idx].handler(gh, value, e);
 }
 
-static int parse_transfer_encoding(general_header gh, const char* value, meta_error e)
-{
-	if (!general_header_set_transfer_encoding(gh, value))
-		return set_os_error(e, errno);
 
-	return 1;
-}
-
-int general_header_dump(general_header gh, FILE* f)
+int general_header_dump(general_header gh, void *file)
 {
-	(void)gh;(void)f;
+	FILE *f = file;
+	char date[100];
+
+	assert(f != NULL);
+	assert(gh != NULL);
+
+	fprintf(f, "General Header fields\n");
+	if (general_header_max_age_isset(gh))
+		fprintf(f, "\tmax_age: %d\n", gh->max_age);
+
+	if (general_header_flag_is_set(gh, GENERAL_HEADER_S_MAXAGE_SET))
+		fprintf(f, "\ts_maxage: %d\n", gh->s_maxage);
+
+	if (general_header_max_stale_isset(gh))
+		fprintf(f, "\tmax_stale: %d\n", gh->max_stale);
+
+	if (general_header_min_fresh_isset(gh))
+		fprintf(f, "\tmin_fresh: %d\n", gh->min_fresh);
+
+	if (general_header_connection_isset(gh))
+		fprintf(f, "\tconnection: %s\n", c_str(gh->connection));
+
+	if (general_header_date_isset(gh))
+		fprintf(f, "\tdate: %s", ctime_r(&gh->date, date));
+
+	if (general_header_pragma_isset(gh))
+		fprintf(f, "\tpragma: %s\n", c_str(gh->pragma));
+
+	if (general_header_transfer_encoding_isset(gh))
+		fprintf(f, "\ttransfer_encoding: %s\n", c_str(gh->transfer_encoding));
+
+	if (general_header_upgrade_isset(gh))
+		fprintf(f, "\tupgrade: %s\n", c_str(gh->upgrade));
+
+	if (general_header_via_isset(gh))
+		fprintf(f, "\tvia: %s\n", c_str(gh->via));
+
+	if (general_header_warning_isset(gh))
+		fprintf(f, "\twarning: %s\n", c_str(gh->warning));
+
 	return 1;
 }

@@ -27,10 +27,6 @@
 #include <string.h>
 #include <assert.h>
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #include <rfc1738.h>
 #include <meta_misc.h>
 
