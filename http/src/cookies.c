@@ -41,21 +41,21 @@ cookie cookie_new(void)
 	cstring arr[5];
 
 	if ((p = malloc(sizeof *p)) == NULL)
-		;
-	else if (!cstring_multinew(arr, 5)) {
+		return NULL;
+
+	if (!cstring_multinew(arr, 5)) {
 		free(p);
-		p = NULL;
+		return NULL;
 	}
-	else  {
-		p->name = arr[0];
-		p->value = arr[1];
-		p->domain = arr[2];
-		p->path = arr[3];
-		p->comment = arr[4];
-		p->max_age = MAX_AGE_NOT_SET;
-		p->secure = 0;
-		p->version = 1; /* default acc. to rfc2109 */
-	}
+
+	p->name = arr[0];
+	p->value = arr[1];
+	p->domain = arr[2];
+	p->path = arr[3];
+	p->comment = arr[4];
+	p->max_age = MAX_AGE_NOT_SET;
+	p->secure = 0;
+	p->version = 1; /* default acc. to rfc2109 */
 
 	return p;
 }
@@ -285,7 +285,8 @@ static int parse_cookie_attr(
 
 	if ((str = cstring_new()) == NULL)
 		return set_os_error(e, ENOMEM);
-	else if (!get_cookie_attribute(input, look_for, str, e)) {
+
+	if (!get_cookie_attribute(input, look_for, str, e)) {
 		cstring_free(str);
 		return 0;
 	}

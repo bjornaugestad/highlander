@@ -35,18 +35,20 @@ dynamic_page dynamic_new(const char* uri, PAGE_FUNCTION handler, page_attribute 
 {
 	dynamic_page p;
 
-	if ((p = malloc(sizeof *p)) != NULL) {
-		p->handler = handler;
-		p->attr = NULL;
-		if ((p->uri = cstring_dup(uri)) == NULL) {
-			free(p);
-			p = NULL;
-		}
-		else if (a != NULL && (p->attr = attribute_dup(a)) == NULL) {
-			cstring_free(p->uri);
-			free(p);
-			p = NULL;
-		}
+	if ((p = malloc(sizeof *p)) == NULL)
+		return NULL;
+
+	p->handler = handler;
+	p->attr = NULL;
+	if ((p->uri = cstring_dup(uri)) == NULL) {
+		free(p);
+		return NULL;
+	}
+
+	if (a != NULL && (p->attr = attribute_dup(a)) == NULL) {
+		cstring_free(p->uri);
+		free(p);
+		return NULL;
 	}
 
 	return p;

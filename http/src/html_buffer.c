@@ -47,7 +47,6 @@ int html_printf(html_buffer b, size_t cb, const char* fmt, ...)
 	vsprintf(buf, fmt, ap);
 	va_end(ap);
 
-
 	rc = cstring_concat(b->buffer, buf);
 	free(buf);
 	return rc;

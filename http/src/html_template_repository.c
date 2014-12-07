@@ -51,7 +51,8 @@ static int init_repos(void)
 	if (repos == NULL) {
 		if ((repos = malloc(sizeof *repos)) == NULL)
 			return 0;
-		else if ((repos->templates = map_new((void(*)(void*))html_template_free)) == NULL) {
+
+		if ((repos->templates = map_new((void(*)(void*))html_template_free)) == NULL) {
 			free(repos);
 			repos = NULL;
 			return 0;
@@ -71,20 +72,21 @@ html_buffer html_template_repository_use(const char* template)
 
 	if ((t = map_get(repos->templates, template)) == NULL)
 		return NULL;
-	else if ((b = html_buffer_new()) == NULL)
+
+	if ((b = html_buffer_new()) == NULL)
 		return NULL;
-	else {
-		html_buffer_set_template(b, t);
-		return b;
-	}
+
+	html_buffer_set_template(b, t);
+	return b;
 }
 
 int html_template_repository_add(const char* name, html_template t)
 {
 	if (!init_repos())
 		return 0;
-	else if (!map_set(repos->templates, name, t))
+
+	if (!map_set(repos->templates, name, t))
 		return 0;
-	else
-		return 1;
+
+	return 1;
 }

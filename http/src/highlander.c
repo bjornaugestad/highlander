@@ -76,8 +76,7 @@ static int fs_can_run(http_server srv, http_request request, dynamic_page p)
 	if (NULL == a)
 		return 1;
 
-	else
-		return check_attributes(request, a);
+	return check_attributes(request, a);
 }
 
 /*
@@ -141,7 +140,8 @@ static int send_disk_file(
 	/* Does the file exist? */
 	if (stat(filename, &st))
 		return set_http_error(e, HTTP_404_NOT_FOUND);
-	else if (S_ISREG(st.st_mode))
+
+	if (S_ISREG(st.st_mode))
 		;
 	else if (S_ISDIR(st.st_mode)) {
 		/* BUG? If docroot+uri+index.html > sizeof(filename) we have issues */
@@ -168,7 +168,8 @@ static int send_disk_file(
 
 	content_type = get_mime_type(filename);
 
-	/* This function does not actually send the file, just stats it
+	/*
+	 * This function does not actually send the file, just stats it
 	 * and stores the path. The contents will be sent later when
 	 * response_send_entity is called.
 	 */
@@ -198,6 +199,7 @@ int handle_dynamic(
 		response_set_status(response, HTTP_406_NOT_ACCEPTABLE);
 		return set_http_error(e, HTTP_406_NOT_ACCEPTABLE);
 	}
+
 	/* NOTE/TODO: This seems to be a good place to add authorization stuff.
 	 * Check if the request has authorization info and send 401 if not.
 	 * We don't have to keep state as the next request will
@@ -206,24 +208,22 @@ int handle_dynamic(
 	 * PS: This comment is added because Tandberg wants me to add support
 	 * for RFC2617 HTTP Authentication
 	 */
-	else {
-		request_set_connection(req, conn);
-		response_set_version(response, version);
-		response_set_last_modified(response, time(NULL));
+	request_set_connection(req, conn);
+	response_set_version(response, version);
+	response_set_last_modified(response, time(NULL));
 
-		/*
-		 * Run the dynamic function. It is supposed to return 0 for OK,
-		 * but we accept any legal HTTP status code. Illegal status codes
-		 * are mapped to 500.
-		 */
-		if ((status = dynamic_run(p, req, response)))
-			status = http_status_code(status) ? status : HTTP_500_INTERNAL_SERVER_ERROR;
-		else
-			status = HTTP_200_OK;
+	/*
+	 * Run the dynamic function. It is supposed to return 0 for OK,
+	 * but we accept any legal HTTP status code. Illegal status codes
+	 * are mapped to 500.
+	 */
+	if ((status = dynamic_run(p, req, response)))
+		status = http_status_code(status) ? status : HTTP_500_INTERNAL_SERVER_ERROR;
+	else
+		status = HTTP_200_OK;
 
-		response_set_status(response, status);
-		return 1;
-	}
+	response_set_status(response, status);
+	return 1;
 }
 
 /* uri params are separated by =, so if there are any = in the string,

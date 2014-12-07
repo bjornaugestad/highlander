@@ -18,20 +18,12 @@
  */
 
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #include <unistd.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 #include <errno.h>
 #include <arpa/inet.h>
-
-#ifdef __sun
-#		define _POSIX_PTHREAD_SEMANTICS
-#endif
 
 #include <pthread.h>
 
@@ -164,15 +156,15 @@ http_server http_server_new(void)
 {
 	http_server s;
 
-	if ((s = calloc(1, sizeof *s)) != NULL) {
-		if ((s->socket_engine = tcp_server_new()) == NULL) {
-			free(s);
-			s = NULL;
-		}
-		else
-			set_server_defaults(s);
+	if ((s = calloc(1, sizeof *s)) == NULL)
+		return NULL;
+
+	if ((s->socket_engine = tcp_server_new()) == NULL) {
+		free(s);
+		return NULL;
 	}
 
+	set_server_defaults(s);
 	return s;
 }
 
@@ -205,7 +197,7 @@ int http_server_set_documentroot(http_server s, const char* docroot)
 	assert(s != NULL);
 	assert(docroot != NULL);
 
-	if (strlen(docroot) + 1 > sizeof(s->documentroot)) {
+	if (strlen(docroot) + 1 > sizeof s->documentroot) {
 		errno = ENOSPC;
 		return 0;
 	}
@@ -251,18 +243,15 @@ void http_server_set_logrotate(http_server s, int logrotate)
 
 void http_server_free(http_server s)
 {
-	assert(s != NULL);
 	if (s != NULL) {
 		pthread_mutex_destroy(&s->logfile_lock);
 		tcp_server_free(s->socket_engine);
 		http_server_free_request_pool(s);
 		http_server_free_response_pool(s);
 		http_server_free_page_structs(s);
-		if (s->default_attributes != NULL)
-			attribute_free(s->default_attributes);
 
-		if (s->host != NULL)
-			free(s->host);
+		attribute_free(s->default_attributes);
+		free(s->host);
 
 		if (s->logfile != NULL)
 			fclose(s->logfile);
@@ -275,8 +264,8 @@ static int http_server_alloc_page_structs(http_server s)
 {
 	if ((s->pages = calloc(s->max_pages, sizeof *s->pages)) == NULL)
 		return 0;
-	else
-		return 1;
+
+	return 1;
 }
 
 static void http_server_free_page_structs(http_server s)
@@ -300,11 +289,13 @@ int http_server_alloc(http_server s)
 {
 	if (!http_server_alloc_page_structs(s))
 		return 0;
-	else if (!http_server_alloc_request_pool(s)) {
+
+	if (!http_server_alloc_request_pool(s)) {
 		http_server_free_page_structs(s);
 		return 0;
 	}
-	else if (!http_server_alloc_response_pool(s)) {
+
+	if (!http_server_alloc_response_pool(s)) {
 		http_server_free_request_pool(s);
 		http_server_free_page_structs(s);
 		return 0;
@@ -341,10 +332,13 @@ static int configure_tcp_server(http_server srv)
  */
 int http_server_start(http_server s)
 {
-	if ( tcp_server_init(s->socket_engine) && tcp_server_start(s->socket_engine))
-		return 1;
-	else
+	if (!tcp_server_init(s->socket_engine))
 		return 0;
+		
+	if (!tcp_server_start(s->socket_engine))
+		return 0;
+
+	return 1;
 }
 
 int http_server_add_page(
@@ -362,11 +356,8 @@ int http_server_add_page(
 
 	if ((dp = dynamic_new(uri, func, attr)) == NULL)
 		return 0;
-	else {
-		srv->pages[srv->npages++] = dp;
-		return 1;
-	}
 
+	srv->pages[srv->npages++] = dp;
 	return 1;
 }
 
@@ -529,6 +520,7 @@ int http_server_shutting_down(http_server srv)
 static int http_server_alloc_request_pool(http_server srv)
 {
 	size_t i;
+	http_request r;
 
 	assert(srv != NULL);
 	assert(srv->requests == NULL);
@@ -539,15 +531,14 @@ static int http_server_alloc_request_pool(http_server srv)
 
 	/* Allocate each request object */
 	for (i = 0; i < srv->worker_threads; i++) {
-		http_request r = request_new();
-		if (r != NULL)
-			pool_add(srv->requests, r);
-		else {
+		if ((r = request_new()) == NULL) {
 			/* Free any prev. allocated */
 			pool_free(srv->requests, (dtor)request_free);
 			srv->requests = NULL;
 			return 0;
 		}
+
+		pool_add(srv->requests, r);
 	}
 
 	return 1;
@@ -567,15 +558,14 @@ static int http_server_alloc_response_pool(http_server srv)
 
 	/* Allocate each response object */
 	for (i = 0; i < srv->worker_threads; i++) {
-		if ((r = response_new()) != NULL) {
-			pool_add(srv->responses, r);
-		}
-		else {
+		if ((r = response_new()) == NULL) {
 			/* Free any prev. allocated */
 			pool_free(srv->responses, (dtor)response_free);
 			srv->responses = NULL;
 			return 0;
 		}
+
+		pool_add(srv->responses, r);
 	}
 
 	return 1;
@@ -690,7 +680,7 @@ int http_server_set_logfile(http_server srv, const char *name)
 	assert(name != NULL);
 	assert(srv->logfile == NULL); /* Do not call twice */
 
-	if (strlen(name) + 1 > sizeof(srv->logfile_name)) {
+	if (strlen(name) + 1 > sizeof srv->logfile_name) {
 		errno = ENOSPC;
 		return 0;
 	}
@@ -742,18 +732,9 @@ static int rotate_if_needed(http_server s)
 	if (rename(s->logfile_name, newname)) {
 		char err[1024];
 
-#if defined(HAVE_STRERROR_R)
 		if (strerror_r(errno, err, sizeof err))
 			strcpy(err, "Unknown error");
-#else
-		{
-			char*str = strerror(errno);
-			if (str != NULL)
-				strcpy(err, str);
-			else
-				strcpy(err, "Unknown error");
-		}
-#endif
+
 		warning("Could not rename logfile, error:%s\n", err);
 		return 0;
 	}
@@ -805,7 +786,6 @@ void http_server_add_logentry(
 	if (!srv->logging)
 		return;
 
-
 	if (pthread_mutex_lock(&srv->logfile_lock))
 		return;
 
@@ -832,12 +812,15 @@ void http_server_add_logentry(
 		case METHOD_GET:
 			method = "GET";
 			break;
+
 		case METHOD_HEAD:
 			method = "HEAD";
 			break;
+
 		case METHOD_POST:
 			method = "POST";
 			break;
+
 		default:
 			method="unknown";
 			break;
@@ -860,6 +843,7 @@ void http_server_add_logentry(
 		request_get_uri(request),
 		status_code ,
 		(unsigned long)bytes_sent);
+
 	if (cc <= 0) {
 		srv->logging = 0;
 		fclose(srv->logfile);
@@ -964,103 +948,60 @@ int http_server_configure(http_server s, process p, const char* filename)
 	if ((cf = configfile_read(filename)) == NULL)
 		return 0;
 
-	if (configfile_exists(cf, "workers")) {
-		if (!configfile_get_int(cf, "workers", &workers)) {
-			configfile_free(cf);
-			return 0;
-		}
-	}
+	if (configfile_exists(cf, "workers")
+	&& !configfile_get_int(cf, "workers", &workers))
+		goto readerr;
 
-	if (configfile_exists(cf, "queuesize")) {
-		if (!configfile_get_int(cf, "queuesize", &queuesize)) {
-			configfile_free(cf);
-			return 0;
-		}
-	}
+	if (configfile_exists(cf, "queuesize")
+	&& !configfile_get_int(cf, "queuesize", &queuesize))
+		goto readerr;
 
-	if (configfile_exists(cf, "block_when_full")) {
-		if (!configfile_get_int(cf, "block_when_full", &block_when_full)) {
-			configfile_free(cf);
-			return 0;
-		}
-	}
+	if (configfile_exists(cf, "block_when_full")
+	&& !configfile_get_int(cf, "block_when_full", &block_when_full))
+		goto readerr;
 
-	if (configfile_exists(cf, "timeout_read")) {
-		if (!configfile_get_int(cf, "timeout_read", &timeout_read)) {
-			configfile_free(cf);
-			return 0;
-		}
-	}
+	if (configfile_exists(cf, "timeout_read")
+	&& !configfile_get_int(cf, "timeout_read", &timeout_read))
+		goto readerr;
 
-	if (configfile_exists(cf, "timeout_write")) {
-		if (!configfile_get_int(cf, "timeout_write", &timeout_write)) {
-			configfile_free(cf);
-			return 0;
-		}
-	}
+	if (configfile_exists(cf, "timeout_write")
+	&& !configfile_get_int(cf, "timeout_write", &timeout_write))
+		goto readerr;
 
-	if (configfile_exists(cf, "retries_read")) {
-		if (!configfile_get_int(cf, "retries_read", &retries_read)) {
-			configfile_free(cf);
-			return 0;
-		}
-	}
+	if (configfile_exists(cf, "retries_read")
+	&& !configfile_get_int(cf, "retries_read", &retries_read))
+		goto readerr;
 
-	if (configfile_exists(cf, "retries_write")) {
-		if (!configfile_get_int(cf, "retries_write", &retries_write)) {
-			configfile_free(cf);
-			return 0;
-		}
-	}
+	if (configfile_exists(cf, "retries_write")
+	&& !configfile_get_int(cf, "retries_write", &retries_write))
+		goto readerr;
 
-	if (configfile_exists(cf, "logrotate")) {
-		if (!configfile_get_int(cf, "logrotate", &logrotate)) {
-			configfile_free(cf);
-			return 0;
-		}
-	}
+	if (configfile_exists(cf, "logrotate")
+	&& !configfile_get_int(cf, "logrotate", &logrotate))
+		goto readerr;
 
-	if (configfile_exists(cf, "username")) {
-		if (!configfile_get_string(cf, "username", username, sizeof(username))) {
-			configfile_free(cf);
-			return 0;
-		}
-	}
+	if (configfile_exists(cf, "username")
+	&& !configfile_get_string(cf, "username", username, sizeof username))
+		goto readerr;
 
-	if (configfile_exists(cf, "rootdir")) {
-		if (!configfile_get_string(cf, "rootdir", rootdir, sizeof(rootdir))) {
-			configfile_free(cf);
-			return 0;
-		}
-	}
+	if (configfile_exists(cf, "rootdir")
+	&& !configfile_get_string(cf, "rootdir", rootdir, sizeof rootdir))
+		goto readerr;
 
-	if (configfile_exists(cf, "documentroot")) {
-		if (!configfile_get_string(cf, "documentroot", docroot, sizeof(docroot))) {
-			configfile_free(cf);
-			return 0;
-		}
-	}
+	if (configfile_exists(cf, "documentroot")
+	&& !configfile_get_string(cf, "documentroot", docroot, sizeof docroot))
+		goto readerr;
 
-	if (configfile_exists(cf, "port")) {
-		if (!configfile_get_int(cf, "port", &port)) {
-			configfile_free(cf);
-			return 0;
-		}
-	}
+	if (configfile_exists(cf, "port") && !configfile_get_int(cf, "port", &port))
+		goto readerr;
 
-	if (configfile_exists(cf, "hostname")) {
-		if (!configfile_get_string(cf, "hostname", hostname, sizeof(hostname))) {
-			configfile_free(cf);
-			return 0;
-		}
-	}
+	if (configfile_exists(cf, "hostname")
+	&& !configfile_get_string(cf, "hostname", hostname, sizeof hostname))
+		goto readerr;
 
-	if (configfile_exists(cf, "logfile")) {
-		if (!configfile_get_string(cf, "logfile", logfile, sizeof(logfile))) {
-			configfile_free(cf);
-			return 0;
-		}
-	}
+	if (configfile_exists(cf, "logfile")
+	&& !configfile_get_string(cf, "logfile", logfile, sizeof logfile))
+		goto readerr;
 
 	configfile_free(cf);
 
@@ -1094,36 +1035,34 @@ int http_server_configure(http_server s, process p, const char* filename)
 	if (workers != -1)
 		http_server_set_worker_threads(s, (size_t)workers);
 
-	if (strlen(hostname) > 0) {
-		if (!http_server_set_host(s, hostname))
-			return 0;
-	}
+	if (strlen(hostname) > 0 && !http_server_set_host(s, hostname))
+		return 0;
 
-	if (strlen(logfile) > 0) {
-		if (!http_server_set_logfile(s, logfile))
-			return 0;
-	}
+	if (strlen(logfile) > 0 && !http_server_set_logfile(s, logfile))
+		return 0;
 
-	if (strlen(docroot) > 0) {
-		if (!http_server_set_documentroot(s, docroot) )
-			return 0;
-	}
+	if (strlen(docroot) > 0 && !http_server_set_documentroot(s, docroot))
+		return 0;
 
 	/* Now for process stuff */
 	if (p == NULL)
 		return 1;
 
-	if (strlen(username) > 0) {
-		if (getuid() == 0 && !process_set_username(p, username) )
-			return 0;
-	}
+	if (strlen(username) > 0 
+	&& getuid() == 0 
+	&& !process_set_username(p, username))
+		return 0;
 
-	if (strlen(rootdir) > 0) {
-		if (getuid() == 0 && !process_set_rootdir(p, rootdir) )
-			return 0;
-	}
+	if (strlen(rootdir) > 0
+	&& getuid() == 0 
+	&& !process_set_rootdir(p, rootdir))
+		return 0;
 
 	return 1;
+
+readerr:
+	configfile_free(cf);
+	return 0;
 }
 
 unsigned long http_server_sum_blocked(http_server s)

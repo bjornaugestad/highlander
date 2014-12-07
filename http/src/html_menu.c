@@ -40,19 +40,19 @@ html_menu html_menu_new(void)
 	cstring arr[4];
 
 	if ((m = malloc(sizeof *m)) == NULL)
-		;
-	else if ((m->items = list_new()) == NULL
+		return NULL;
+
+	if ((m->items = list_new()) == NULL
 	|| !cstring_multinew(arr, 4)) {
 		list_free(m->items, NULL);
 		free(m);
-		m = NULL;
+		return NULL;
 	}
-	else {
-		m->text = arr[0];
-		m->image = arr[1];
-		m->hover_image = arr[2];
-		m->link = arr[3];
-	}
+
+	m->text = arr[0];
+	m->image = arr[1];
+	m->hover_image = arr[2];
+	m->link = arr[3];
 
 	return m;
 }

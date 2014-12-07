@@ -403,9 +403,11 @@ static int create_cookie_string(cookie c, cstring str)
 
 	if ((s = cookie_get_name(c)) == NULL)
 		return 0;
-	else if (!cstring_copy(str, "Set-Cookie: "))
+
+	if (!cstring_copy(str, "Set-Cookie: "))
 		return 0;
-	else if (!cstring_concat(str, s))
+
+	if (!cstring_concat(str, s))
 		return 0;
 
 	/* Now get value and append. Remember to quote value if needed
@@ -416,9 +418,11 @@ static int create_cookie_string(cookie c, cstring str)
 	if (s) {
 		if (!cstring_charcat(str, '='))
 			return 0;
-		else if (need_quote(c_str(str)) && !strcat_quoted(str, s))
+
+		if (need_quote(c_str(str)) && !strcat_quoted(str, s))
 			return 0;
-		else if (!cstring_concat(str, s))
+
+		if (!cstring_concat(str, s))
 			return 0;
 	}
 
@@ -455,28 +459,28 @@ static int send_cookie(cookie c, connection conn, meta_error e)
 {
 	const char* s;
 	cstring str;
+	size_t cb;
 
 	assert(NULL != c);
 	assert(NULL != conn);
 
 	/* A cookie with no name ? */
-	if ((s = cookie_get_name(c)) == NULL) {
+	if ((s = cookie_get_name(c)) == NULL)
 		return set_app_error(e, EFS_INTERNAL);
-	}
-	else if ((str = cstring_new()) == NULL) {
+
+	if ((str = cstring_new()) == NULL)
 		return set_os_error(e, ENOMEM);
-	}
-	else if (!create_cookie_string(c, str)) {
+
+	if (!create_cookie_string(c, str)) {
 		cstring_free(str);
 		return set_os_error(e, ENOMEM);
 	}
-	else {
-		size_t cb = cstring_length(str);
-		if (!connection_write(conn, c_str(str), cb)) {
-			set_tcpip_error(e, errno);
-			cstring_free(str);
-			return 0;
-		}
+
+	cb = cstring_length(str);
+	if (!connection_write(conn, c_str(str), cb)) {
+		set_tcpip_error(e, errno);
+		cstring_free(str);
+		return 0;
 	}
 
 	cstring_free(str);
@@ -512,20 +516,18 @@ static int response_send_header(
 		return 0;
 
 	/* Special stuff to support pers. conns in HTTP 1.0 */
-	if (connection_is_persistent(conn) && response->version == VERSION_10) {
-		if (!response_set_connection(response, "Keep-Alive")) {
-			return set_os_error(e, errno);
-		}
-	}
+	if (connection_is_persistent(conn) 
+	&& response->version == VERSION_10
+	&& !response_set_connection(response, "Keep-Alive"))
+		return set_os_error(e, errno);
 
 	if (!response_send_header_fields(response, conn))
 		return set_tcpip_error(e, errno);
 
 	/* Send cookies, if any */
-	if (response->cookies != NULL) {
-		if (!response_send_cookies(response, conn, e))
-			return 0;
-	}
+	if (response->cookies != NULL 
+	&& !response_send_cookies(response, conn, e))
+		return 0;
 
 	/* Send the \r\n separating all headers from an optional entity */
 	if (!connection_write(conn, "\r\n", 2))
@@ -632,8 +634,8 @@ int http_send_date(connection conn, const char* name, time_t value)
 		cb = strftime(date, sizeof(date), "%a, %d %b %Y %H:%M:%S GMT\r\n", ptm);
 		return connection_write(conn, date, cb);
 	}
-	else
-		return 0;
+
+	return 0;
 }
 
 int http_send_string(connection conn, const char* s)
@@ -663,15 +665,14 @@ int http_send_field(connection conn, const char* name, cstring value)
 	assert(NULL != value);
 
 	cb = strlen(name);
-	if (connection_write(conn, name, cb)) {
-		cb = cstring_length(value);
-		if (connection_write(conn, c_str(value), cb))
-			return connection_write(conn, "\r\n", 2);
-		else
-			return 0;
-	}
-	else
+	if (!connection_write(conn, name, cb))
 		return 0;
+
+	cb = cstring_length(value);
+	if (!connection_write(conn, c_str(value), cb))
+		return 0;
+
+	return connection_write(conn, "\r\n", 2);
 }
 
 size_t response_get_content_length(http_response p)
@@ -1021,8 +1022,8 @@ int response_send_file(http_response p, const char *path, const char* ctype, met
 		p->send_file = 1;
 		return 1;
 	}
-	else
-		return set_os_error(e, errno);
+
+	return set_os_error(e, errno);
 }
 
 /*
@@ -1093,6 +1094,7 @@ static int
 response_send_entity(http_response r, connection conn, size_t *pcb)
 {
 	int success = 1;
+
 	if (r->content_buffer_in_use) {
 		size_t cb = response_get_content_length(r);
 		*pcb = cb;

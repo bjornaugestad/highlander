@@ -79,37 +79,26 @@ static void entity_header_clear_flags(entity_header eh)
 entity_header entity_header_new(void)
 {
 	entity_header p;
+	cstring arr[7];
 
-	if ((p = calloc(1, sizeof *p)) != NULL) {
-		entity_header_clear_flags(p);
-		if ((p->allow = cstring_new()) == NULL)
-			goto err;
+	if ((p = calloc(1, sizeof *p)) == NULL)
+		return NULL;
 
-		if ((p->content_encoding = cstring_new()) == NULL)
-			goto err;
-
-		if ((p->content_language = cstring_new()) == NULL)
-			goto err;
-
-		if ((p->content_location = cstring_new()) == NULL)
-			goto err;
-
-		if ((p->content_md5 = cstring_new()) == NULL)
-			goto err;
-
-		if ((p->content_type = cstring_new()) == NULL)
-			goto err;
-
-		if ((p->content_range = cstring_new()) == NULL)
-			goto err;
-
+	if (!cstring_multinew(arr, sizeof arr / sizeof *arr)) {
+		free(p);
+		return NULL;
 	}
 
-	return p;
+	entity_header_clear_flags(p);
+	p->allow = arr[0];
+	p->content_encoding = arr[1];
+	p->content_language = arr[2];
+	p->content_location = arr[3];
+	p->content_md5 = arr[4];
+	p->content_type = arr[5];
+	p->content_range = arr[6];
 
-err:
-	entity_header_free(p);
-	return NULL;
+	return p;
 }
 
 void entity_header_free(entity_header p)

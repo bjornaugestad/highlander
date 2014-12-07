@@ -50,19 +50,19 @@ html_template html_template_new(void)
 	html_template t;
 
 	if ((t = malloc(sizeof *t)) == NULL)
-		;
-	else if ((t->sections = list_new()) == NULL) {
+		return  NULL;
+
+	if ((t->sections = list_new()) == NULL) {
 		free(t);
-		t = NULL;
+		return  NULL;
 	}
-	else {
-		t->width = 0;
-		t->height = 0;
-		t->layout = NULL;
-		t->menu = NULL;
-		t->rendered_menu = NULL;
-		pthread_mutex_init(&t->menulock, NULL);
-	}
+
+	t->width = 0;
+	t->height = 0;
+	t->layout = NULL;
+	t->menu = NULL;
+	t->rendered_menu = NULL;
+	pthread_mutex_init(&t->menulock, NULL);
 
 	return t;
 }
@@ -116,16 +116,18 @@ int html_template_add_user_section(html_template t)
 
 	if ((s = html_section_new()) == NULL)
 		return 0;
-	else if (html_section_set_name(s, "user") == 0) {
+
+	if (html_section_set_name(s, "user") == 0) {
 		html_section_free(s);
 		return 0;
 	}
-	else if (list_add(t->sections, s) == NULL) {
+
+	if (list_add(t->sections, s) == NULL) {
 		html_section_free(s);
 		return 0;
 	}
-	else
-		return 1;
+
+	return 1;
 }
 
 /*

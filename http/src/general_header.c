@@ -206,36 +206,26 @@ void general_header_free(general_header p)
 general_header general_header_new(void)
 {
 	general_header p;
+	cstring arr[7];
 
-	if ((p = calloc(1, sizeof *p)) != NULL) {
-		general_header_clear_flags(p);
-		if ((p->connection = cstring_new()) == NULL)
-			goto err;
+	if ((p = calloc(1, sizeof *p)) == NULL)
+		return NULL;
 
-		if ((p->pragma = cstring_new()) == NULL)
-			goto err;
-
-		if ((p->trailer = cstring_new()) == NULL)
-			goto err;
-
-		if ((p->transfer_encoding = cstring_new()) == NULL)
-			goto err;
-
-		if ((p->upgrade = cstring_new()) == NULL)
-			goto err;
-
-		if ((p->via = cstring_new()) == NULL)
-			goto err;
-
-		if ((p->warning = cstring_new()) == NULL)
-			goto err;
+	if (!cstring_multinew(arr, sizeof arr / sizeof *arr)) {
+		free(p);
+		return NULL;
 	}
 
-	return p;
+	general_header_clear_flags(p);
+	p->connection = arr[0];
+	p->pragma = arr[1];
+	p->trailer = arr[2];
+	p->transfer_encoding = arr[3];
+	p->upgrade = arr[4];
+	p->via = arr[5];
+	p->warning = arr[6];
 
-err:
-	general_header_free(p);
-	return NULL;
+	return p;
 }
 
 void general_header_recycle(general_header p)
@@ -712,7 +702,8 @@ static inline int send_cachecontrol(general_header gh, connection conn)
 	if (general_header_flag_is_set(gh, GENERAL_HEADER_NO_CACHE_SET)) {
 		if (!http_send_string(conn, "no-cache"))
 			return 0;
-		else if (nfields && !http_send_string(conn, ", "))
+
+		if (nfields && !http_send_string(conn, ", "))
 			return 0;
 
 		nfields--;
@@ -721,7 +712,8 @@ static inline int send_cachecontrol(general_header gh, connection conn)
 	if (general_header_flag_is_set(gh, GENERAL_HEADER_NO_STORE_SET)) {
 		if (!http_send_string(conn, "no-store"))
 			return 0;
-		else if (nfields && !http_send_string(conn, ", "))
+
+		if (nfields && !http_send_string(conn, ", "))
 			return 0;
 		nfields--;
 	}
@@ -729,72 +721,90 @@ static inline int send_cachecontrol(general_header gh, connection conn)
 	if (general_header_flag_is_set(gh, GENERAL_HEADER_MAX_AGE_SET)) {
 		if (!http_send_ulong(conn, "max-age=", gh->max_age))
 			return 0;
-		else if (nfields && !http_send_string(conn, ", "))
+
+		if (nfields && !http_send_string(conn, ", "))
 			return 0;
+
 		nfields--;
 	}
 
 	if (general_header_flag_is_set(gh, GENERAL_HEADER_MAX_STALE_SET)) {
 		if (!http_send_ulong(conn, "max-stale=", gh->max_stale))
 			return 0;
-		else if (nfields && !http_send_string(conn, ", "))
+
+		if (nfields && !http_send_string(conn, ", "))
 			return 0;
+
 		nfields--;
 	}
 
 	if (general_header_flag_is_set(gh, GENERAL_HEADER_MIN_FRESH_SET)) {
 		if (!http_send_ulong(conn, "min-fresh=", gh->min_fresh))
 			return 0;
-		else if (nfields && !http_send_string(conn, ", "))
+
+		if (nfields && !http_send_string(conn, ", "))
 			return 0;
+
 		nfields--;
 	}
 
 	if (general_header_flag_is_set(gh, GENERAL_HEADER_NO_TRANSFORM_SET)) {
 		if (!http_send_string(conn, "no-transform"))
 			return 0;
-		else if (nfields && !http_send_string(conn, ", "))
+
+		if (nfields && !http_send_string(conn, ", "))
 			return 0;
+
 		nfields--;
 	}
 
 	if (general_header_flag_is_set(gh, GENERAL_HEADER_PUBLIC_SET)) {
 		if (!http_send_string(conn, "public"))
 			return 0;
-		else if (nfields && !http_send_string(conn, ", "))
+
+		if (nfields && !http_send_string(conn, ", "))
 			return 0;
+
 		nfields--;
 	}
 
 	if (general_header_flag_is_set(gh, GENERAL_HEADER_PRIVATE_SET)) {
 		if (!http_send_string(conn, "private"))
 			return 0;
-		else if (nfields && !http_send_string(conn, ", "))
+
+		if (nfields && !http_send_string(conn, ", "))
 			return 0;
+
 		nfields--;
 	}
 
 	if (general_header_flag_is_set(gh, GENERAL_HEADER_MUST_REVALIDATE_SET)) {
 		if (!http_send_string(conn, "must-revalidate"))
 			return 0;
-		else if (nfields && !http_send_string(conn, ", "))
+
+		if (nfields && !http_send_string(conn, ", "))
 			return 0;
+
 		nfields--;
 	}
 
 	if (general_header_flag_is_set(gh, GENERAL_HEADER_PROXY_REVALIDATE_SET)) {
 		if (!http_send_string(conn, "proxy-revalidate"))
 			return 0;
-		else if (nfields && !http_send_string(conn, ", "))
+
+		if (nfields && !http_send_string(conn, ", "))
 			return 0;
+
 		nfields--;
 	}
 
 	if (general_header_flag_is_set(gh, GENERAL_HEADER_S_MAXAGE_SET)) {
 		if (!http_send_ulong(conn, "s-maxage=", gh->s_maxage))
 			return 0;
-		else if (nfields && !http_send_string(conn, ", "))
+
+		if (nfields && !http_send_string(conn, ", "))
 			return 0;
+
 		nfields--;
 	}
 
@@ -991,8 +1001,8 @@ static int parse_connection(general_header gh, const char* value, meta_error e)
 
 	if (!general_header_set_connection(gh, value))
 		return set_os_error(e, errno);
-	else
-		return 1;
+
+	return 1;
 }
 
 static int parse_trailer(general_header gh, const char* value, meta_error e)
@@ -1002,6 +1012,7 @@ static int parse_trailer(general_header gh, const char* value, meta_error e)
 
 	if (!general_header_set_trailer(gh, value))
 		return set_os_error(e, errno);
+
 	return 1;
 }
 
@@ -1020,6 +1031,7 @@ static int parse_upgrade(general_header gh, const char* value, meta_error e)
 	 */
 	if (!general_header_set_upgrade(gh, value))
 		return set_os_error(e, errno);
+
 	return 1;
 }
 

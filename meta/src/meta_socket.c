@@ -309,17 +309,16 @@ meta_socket sock_socket(int unix_socket)
 	meta_socket p;
 	int af = unix_socket ? AF_UNIX : AF_INET;
 
-	if ((p = malloc(sizeof *p)) == NULL) {
+	if ((p = malloc(sizeof *p)) == NULL)
 		return NULL;
-	}
-	else if ((p->fd = socket(af, SOCK_STREAM, 0)) == -1) {
+
+	if ((p->fd = socket(af, SOCK_STREAM, 0)) == -1) {
 		free(p);
 		return NULL;
 	}
-	else {
-		p->unix_socket = unix_socket;
-		return p;
-	}
+
+	p->unix_socket = unix_socket;
+	return p;
 }
 
 int sock_listen(meta_socket p, int backlog)
@@ -329,8 +328,8 @@ int sock_listen(meta_socket p, int backlog)
 
 	if (listen(p->fd, backlog) == -1)
 		return 0;
-	else
-		return 1;
+
+	return 1;
 }
 
 meta_socket create_server_socket(int unix_socket, const char *host, int port)
@@ -416,8 +415,8 @@ int sock_clear_nonblock(meta_socket p)
 	flags -= (flags & O_NONBLOCK);
 	if (fcntl(p->fd, F_SETFL, flags) == -1)
 		return 0;
-	else
-		return 1;
+
+	return 1;
 }
 
 int sock_close(meta_socket p)
@@ -440,8 +439,8 @@ int sock_close(meta_socket p)
 
 	if (close(fd))
 		return 0;
-	else
-		return 1;
+
+	return 1;
 }
 
 meta_socket sock_accept(meta_socket p, struct sockaddr *addr, socklen_t *addrsize)

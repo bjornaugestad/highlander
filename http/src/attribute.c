@@ -33,19 +33,18 @@ page_attribute attribute_new(void)
 	page_attribute p;
 	cstring arr[4];
 
-
 	if ((p = calloc(1, sizeof *p)) == NULL)
-		;
-	else if (!cstring_multinew(arr, sizeof arr / sizeof *arr)) {
+		return NULL;
+
+	if (!cstring_multinew(arr, sizeof arr / sizeof *arr)) {
 		free(p);
-		p = NULL;
+		return NULL;
 	}
-	else {
-		p->media_type = arr[0];
-		p->language = arr[1];
-		p->charset = arr[2];
-		p->encoding = arr[3];
-	}
+
+	p->media_type = arr[0];
+	p->language = arr[1];
+	p->charset = arr[2];
+	p->encoding = arr[3];
 
 	return p;
 }
@@ -66,13 +65,14 @@ page_attribute attribute_dup(page_attribute a)
 	page_attribute p;
 
 	if ((p = attribute_new()) == NULL)
-		;
-	else if (!cstring_copy(p->language, c_str(a->language))
+		return NULL;
+
+	if (!cstring_copy(p->language, c_str(a->language))
 	|| !cstring_copy(p->charset, c_str(a->charset))
 	|| !cstring_copy(p->encoding, c_str(a->encoding))
 	|| !cstring_copy(p->media_type, c_str(a->media_type))) {
 		attribute_free(p);
-		p = NULL;
+		return NULL;
 	}
 
 	return p;

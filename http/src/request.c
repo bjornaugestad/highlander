@@ -619,79 +619,50 @@ static void request_clear_flags(http_request r)
 http_request request_new(void)
 {
 	http_request p;
+	cstring arr[18];
 
-	if ((p = calloc(1, sizeof(*p))) != NULL) {
-		request_clear_flags(p);
+	if ((p = calloc(1, sizeof *p)) == NULL)
+		return NULL;
 
-		if ((p->general_header = general_header_new()) == NULL)
-			goto err;
+	request_clear_flags(p);
 
-		if ((p->entity_header = entity_header_new()) == NULL)
-			goto err;
+	if ((p->general_header = general_header_new()) == NULL)
+		goto err;
 
-		p->version = VERSION_UNKNOWN;
-		p->method = METHOD_UNKNOWN;
-		p->entity_buf = NULL;
+	if ((p->entity_header = entity_header_new()) == NULL)
+		goto err;
 
-		if ((p->uri = cstring_new()) == NULL)
-			goto err;
+	if (!cstring_multinew(arr, sizeof arr / sizeof *arr)) 
+		goto err;
 
-		if ((p->accept = cstring_new()) == NULL)
-			goto err;
+	p->version = VERSION_UNKNOWN;
+	p->method = METHOD_UNKNOWN;
+	p->entity_buf = NULL;
 
-		if ((p->accept_charset = cstring_new()) == NULL)
-			goto err;
-
-		if ((p->accept_encoding = cstring_new()) == NULL)
-			goto err;
-
-		if ((p->accept_language = cstring_new()) == NULL)
-			goto err;
-
-		if ((p->authorization = cstring_new()) == NULL)
-			goto err;
-
-		if ((p->from = cstring_new()) == NULL)
-			goto err;
-
-		if ((p->referer = cstring_new()) == NULL)
-			goto err;
-
-		if ((p->user_agent = cstring_new()) == NULL)
-			goto err;
-
-		if ((p->link = cstring_new()) == NULL)
-			goto err;
-
-		if ((p->range = cstring_new()) == NULL)
-			goto err;
-
-		if ((p->te = cstring_new()) == NULL)
-			goto err;
-
-		if ((p->title = cstring_new()) == NULL)
-			goto err;
-
-		if ((p->expect = cstring_new()) == NULL)
-			goto err;
-
-		if ((p->host = cstring_new()) == NULL)
-			goto err;
-
-		if ((p->if_match = cstring_new()) == NULL)
-			goto err;
-
-		if ((p->if_none_match = cstring_new()) == NULL)
-			goto err;
-
-		if ((p->if_range = cstring_new()) == NULL)
-			goto err;
-
-	}
+	p->uri = arr[0];
+	p->accept = arr[1];
+	p->accept_charset = arr[2];
+	p->accept_encoding = arr[3];
+	p->accept_language = arr[4];
+	p->authorization = arr[5];
+	p->from = arr[6];
+	p->referer = arr[7];
+	p->user_agent = arr[8];
+	p->link = arr[9];
+	p->range = arr[10];
+	p->te = arr[11];
+	p->title = arr[12];
+	p->expect = arr[13];
+	p->host = arr[14];
+	p->if_match = arr[15];
+	p->if_none_match = arr[16];
+	p->if_range = arr[17];
 
 	return p;
 
 err:
+	general_header_free(p->general_header);
+	entity_header_free(p->entity_header);
 	request_free(p);
 	return NULL;
 }
@@ -701,9 +672,9 @@ int request_accepts_media_type(http_request r, const char *val)
 	/* We accept if request has no opinion */
 	if (!request_flag_is_set(r, REQUEST_ACCEPT_SET))
 		return 1;
-	else
-		/* The client accepts a media type if we find it */
-		return strstr(c_str(r->accept), val) == NULL ? 0 : 1;
+
+	/* The client accepts a media type if we find it */
+	return strstr(c_str(r->accept), val) == NULL ? 0 : 1;
 }
 
 int request_accepts_language(http_request r, const char *val)
@@ -730,6 +701,7 @@ int request_set_proxy_authorization(http_request r, const char *value)
 {
 	assert(r != NULL);
 	assert(value != NULL);
+
 	if (!cstring_copy(r->proxy_authorization, value))
 		return 0;
 
@@ -799,6 +771,7 @@ static const char* get_field_start(const char *content, size_t cb, size_t idx)
 	while (idx > 0 && start < stop) {
 		if (*start == '&')
 			idx--;
+
 		start++;
 	}
 
@@ -942,9 +915,11 @@ int request_get_field_value_by_name(http_request request, const char *name, char
 
 	for (i = 0; i < fieldcount; i++) {
 		char sz[10240];
+
 		if (!request_get_field_name(request, i, sz, sizeof(sz) - 1))
 			return 0;
-		else if (strcmp(sz, name) == 0)
+
+		if (strcmp(sz, name) == 0)
 			return request_get_field_value(request, i, value, cb);
 	}
 
@@ -1043,6 +1018,7 @@ static int parse_if_match(http_request req, const char* value, meta_error e)
 {
 	assert(NULL != req);
 	assert(NULL != value);
+
 	if (!request_set_if_match(req, value))
 		return set_os_error(e, errno);
 
@@ -1621,15 +1597,17 @@ int read_line(connection conn, char* buf, size_t cchMax, meta_error e)
 		if (c == '\r') {
 			/* We got a \r. Look for \n */
 			buf[i] = '\0';
+
 			if (!connection_getc(conn, &c))
 				return set_tcpip_error(e, errno);
-			else if (c != '\n')
+
+			if (c != '\n')
 				return set_http_error(e, HTTP_400_BAD_REQUEST);
-			else
-				return 1;
+
+			return 1;
 		}
-		else
-			buf[i++] = c;
+
+		buf[i++] = c;
 	}
 
 	/* The buffer provided was too small. */
@@ -1939,14 +1917,17 @@ parse_request_uri(const char* line, http_request request, meta_error e)
 
 	if (strlen(line) >= CCH_URI_MAX)
 		return set_http_error(e, HTTP_414_REQUEST_URI_TOO_LARGE);
-	else if (!get_word_from_string(line, uri, sizeof uri, 1))
+
+	if (!get_word_from_string(line, uri, sizeof uri, 1))
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
-	else if (fUriHasParams(uri))
+
+	if (fUriHasParams(uri))
 		return set_uri_and_params(request, uri, e);
-	else if (!request_set_uri(request, uri))
+
+	if (!request_set_uri(request, uri))
 		return set_os_error(e, errno);
-	else
-		return 1;
+
+	return 1;
 }
 
 static int
