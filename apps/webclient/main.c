@@ -122,8 +122,8 @@ static void print_response_contents(http_response response)
 void* threadfunc(void* arg)
 {
 	// timeout is in ms. 
-	int timeout_reads = 2000, timeout_writes = 50;
-	int nretries_read = 4, nretries_write = 4;
+	int timeout_reads = 200, timeout_writes = 50;
+	int nretries_read = 8, nretries_write = 4;
 
 	(void)arg;
 
@@ -158,7 +158,7 @@ void* threadfunc(void* arg)
 			die_meta_error("Could not send request to server", e);
 
 		/* Now read the response back from the server */
-		if(!response_receive(response, c, 1024 * 1024, e)) 
+		if(!response_receive(response, c, 10 * 1024 * 1024, e)) 
 			die_meta_error("Could not receive response from server", e);
 
 		verbose(1, "Got response from server.\n");

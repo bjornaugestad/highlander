@@ -102,7 +102,7 @@ struct connection_tag {
 /* Local helpers */
 static inline int fill_read_buffer(connection conn)
 {
-	size_t nread;
+	ssize_t nread;
 
 	assert(conn != NULL);
 	assert(membuf_canread(conn->readbuf) == 0);

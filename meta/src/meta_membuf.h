@@ -93,6 +93,8 @@ static inline size_t membuf_canread(membuf mb)
 {
 	assert(mb != NULL);
 	assert(mb->written >= mb->read);
+	assert(mb->written - mb->read <= mb->size);
+
 	return mb->written - mb->read;
 }
 
