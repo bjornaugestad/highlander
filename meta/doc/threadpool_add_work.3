@@ -1,0 +1,44 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th threadpool_add_work 3
+.Sh NAME
+.Nm threadpool_add_work
+.Nd Add work to the thread pool's work queue.
+.Sh SYNOPSIS
+.Fd #include <threadpool.h>
+.Fo "int threadpool_add_work"
+.Fa "threadpool tp"
+.Fa "void (*initfn)(void*, void*)"
+.Fa "void *initarg"
+.Fa "void* (*workfn)(void*)"
+.Fa "void* workarg"
+.Fa "void (*exitfn)(void*, void*)"
+.Fa "void* exitarg"
+.Fc
+.Sh DESCRIPTION
+.Nm threadpool_add_work()
+adds work to the queue. The work will be performed by the work_func,
+After the work_func has been executed, the cleanup function will
+be executed. This way you can pass e.g. allocated memory to work_func
+and cleanup_func can free it.
+.Pp
+This function accepts three pairs of a function pointer plus a function
+argument. These three functions are an initialization function, a work
+function which performs the actual work, and a cleanup function called
+after the work function returns. 
+.Pp
+The init and exit functions, which both can be null if they're not needed,
+accept two arguments. The first argument is the
+.Fa initarg
+and the second
+is the 
+.Fa workarg.
+.Pp
+Note that initialize function and the cleanup function takes 2 parameters,
+cleanup_arg and work_arg, in that order.
+.Pp
+This function sets errno to ENOSPC if the work queue is full and
+the pool is set to not block.
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com
