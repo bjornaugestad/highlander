@@ -92,9 +92,7 @@ static int queue_full(threadpool tp)
 static void *threadpool_exec_thread(void *arg)
 {
 	struct threadpool_work* wp;
-	threadpool pool = (threadpool)arg;
-
-	pthread_detach(pthread_self());
+	threadpool pool = arg;
 
 	for (;;) {
 		/* Get the lock so that we can do a cond_wait later */
