@@ -20,6 +20,7 @@
 #ifndef META_COMMON_H
 #define META_COMMON_H
 
+#include <stdarg.h> /* for va_list */
 
 #ifdef __cplusplus
 extern "C" {
@@ -48,6 +49,22 @@ extern int meta_indent_level;
 
 void verbose(int level, const char *fmt, ...)
 	__attribute__((format(printf,2,3)));
+
+/* Write a warning to the syslog */
+void warning(const char *fmt, ...);
+void meta_vsyslog(int class, const char *fmt, va_list ap);
+
+void warning(const char *fmt, ...)
+	__attribute__((format(printf,1,2)));
+
+void die(const char *fmt, ...)
+	__attribute__((format(printf,1,2)))
+	__attribute__ ((noreturn)) ;
+
+void die_perror(const char *fmt, ...)
+	__attribute__((format(printf,1,2)))
+	__attribute__ ((noreturn));
+
 
 
 /*

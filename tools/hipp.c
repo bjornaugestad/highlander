@@ -569,7 +569,9 @@ static void create_mainfile(int argc, char *argv[], const char *filename)
     }
 
     p(f, "#include <stdlib.h>\n");
+    p(f, "#include <unistd.h>\n");
     p(f, "#include <errno.h>\n");
+    "",
     p(f, "#include <highlander.h>\n");
     p(f, "#include <meta_process.h>\n");
     p(f, "#include <meta_common.h>\n");
@@ -704,7 +706,7 @@ static void create_makefile_am(int argc, char *argv[])
         p(f, "%s.c ", remove_ext(argv[i]));
     p(f, "\n");
     p(f, "foo_CFLAGS=-W -Wall -pedantic -Wextra -std=gnu99 -Wshadow -Wmissing-prototypes -pthread\n");
-    p(f, "foo_LDADD=-lhighlander -lpthread\n");
+    p(f, "foo_LDADD=-lhighlander -lmeta -lpthread\n");
     p(f, "\n");
 
     /* Add all the translation rules for extensions? */

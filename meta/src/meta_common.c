@@ -17,9 +17,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include <assert.h>
+#include <ctype.h>
+#include <errno.h>
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <syslog.h>
 
 #include <meta_common.h>
 
@@ -40,6 +45,61 @@ void verbose(int level, const char *fmt, ...)
 		va_start(ap, fmt);
 		vprintf(fmt, ap);
 		va_end(ap);
+	}
+}
+
+void die(const char *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	meta_vsyslog(LOG_ERR, fmt, ap);
+	va_end(ap);
+	exit(EXIT_FAILURE);
+}
+
+void die_perror(const char *fmt, ...)
+{
+	va_list ap;
+
+	fprintf(stderr, "%s", strerror(errno));
+	va_start(ap, fmt);
+	vfprintf(stderr, fmt, ap);
+	va_end(ap);
+
+	exit(EXIT_FAILURE);
+}
+
+void warning(const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	meta_vsyslog(LOG_WARNING, fmt, ap);
+	va_end(ap);
+}
+
+/*
+ * Aix has no vsyslog, so we use our own.
+ * We limit the output to 1000 characters. That should be
+ * sufficient for most error messages.
+ */
+void meta_vsyslog(int class, const char *fmt, va_list ap)
+{
+	char err[1000];
+
+	vsnprintf(err, sizeof err, fmt, ap);
+	syslog(class, "%s", err);
+}
+
+void fs_lower(char *s)
+{
+	assert(NULL != s);
+
+	while (*s != '\0') {
+		if (isupper((int)*s))
+			*s = tolower((int)*s);
+
+		s++;
 	}
 }
 

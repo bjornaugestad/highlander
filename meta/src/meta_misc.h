@@ -21,7 +21,6 @@
 #define META_MISC_H
 
 #include <stddef.h>		/* for size_t */
-#include <stdarg.h> /* for va_list */
 
 #ifdef __cplusplus
 extern "C" {
@@ -90,22 +89,6 @@ int copy_word(
 	char word[],
 	int separator,
 	size_t cchWordMax);
-
-/* Write a warning to the syslog */
-void warning(const char *fmt, ...);
-void meta_vsyslog(int class, const char *fmt, va_list ap);
-
-void warning(const char *fmt, ...)
-	__attribute__((format(printf,1,2)));
-
-void die(const char *fmt, ...)
-	__attribute__((format(printf,1,2)))
-	__attribute__ ((noreturn)) ;
-
-void die_perror(const char *fmt, ...)
-	__attribute__((format(printf,1,2)))
-	__attribute__ ((noreturn));
-
 
 #if !defined(min) && !defined(max)
 #define min(a, b) ((a) < (b) ? (a) : (b))

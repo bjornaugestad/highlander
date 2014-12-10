@@ -8,7 +8,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <meta_misc.h>
+#include <meta_common.h>
 #include <highlander.h>
 #include <connection.h>
 
@@ -19,7 +19,6 @@ int g_nthreads = 1;
 int g_nrequests = 1;
 int g_print_contents = 0;
 int g_print_header = 0;
-int g_verbose = 0;
 
 const char*g_hostname = NULL;
 int g_port = 0;
@@ -35,18 +34,6 @@ static void die_meta_error(const char* context, meta_error e)
 		strerror(get_error_code(e)), get_error_code(e));
 
 	exit(EXIT_FAILURE);
-}
-
-static void verbose(int level, const char* fmt, ...)
-{
-	if(level > g_verbose)
-		return;
-
-	va_list ap;
-	va_start(ap, fmt);
-
-	vfprintf(stdout, fmt, ap);
-	va_end(ap);
 }
 
 static void show_help(void)
@@ -66,7 +53,7 @@ void parse_commandline(int argc, char *argv[])
 	while( (c = getopt(argc, argv, "vu:t:r:hCH")) != EOF) {
 		switch(c) {
 			case 'v':
-				g_verbose++;
+				meta_verbose_level++;
 				break;
 
 			case 'u':

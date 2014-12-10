@@ -32,35 +32,9 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <syslog.h>
 #include <pthread.h>
 
 #include <meta_misc.h>
-
-/*
- * Aix has no vsyslog, so we use our own.
- * We limit the output to 1000 characters. That should be
- * sufficient for most error messages.
- */
-void meta_vsyslog(int class, const char *fmt, va_list ap)
-{
-	char err[1000];
-
-	vsnprintf(err, sizeof err, fmt, ap);
-	syslog(class, "%s", err);
-}
-
-void fs_lower(char *s)
-{
-	assert(NULL != s);
-
-	while (*s != '\0') {
-		if (isupper((int)*s))
-			*s = tolower((int)*s);
-
-		s++;
-	}
-}
 
 int string2size_t(const char *s, size_t *val)
 {
@@ -189,36 +163,6 @@ void remove_trailing_newline(char *s)
 		if (s[i] == '\n')
 			s[i] = '\0';
 	}
-}
-
-void die(const char *fmt, ...)
-{
-	va_list ap;
-
-	va_start(ap, fmt);
-	meta_vsyslog(LOG_ERR, fmt, ap);
-	va_end(ap);
-	exit(EXIT_FAILURE);
-}
-
-void die_perror(const char *fmt, ...)
-{
-	va_list ap;
-
-	fprintf(stderr, "%s", strerror(errno));
-	va_start(ap, fmt);
-	vfprintf(stderr, fmt, ap);
-	va_end(ap);
-
-	exit(EXIT_FAILURE);
-}
-
-void warning(const char *fmt, ...)
-{
-	va_list ap;
-	va_start(ap, fmt);
-	meta_vsyslog(LOG_WARNING, fmt, ap);
-	va_end(ap);
 }
 
 int get_extension(const char *src, char *dest, size_t destsize)
