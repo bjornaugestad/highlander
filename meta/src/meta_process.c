@@ -173,13 +173,13 @@ static int set_signals_to_block(void)
 
 	errno = 0;
 	if (SIG_ERR == signal(SIGPIPE, SIG_IGN))
-		;
+		debug("%s: signal failed\n", __func__);
 	else if (-1 == sigemptyset(&block))
-		;
+		debug("%s: sigempty failed\n", __func__);
 	else if (-1 == sigaddset(&block, SIGTERM))
-		;
+		debug("%s: sigaddset failed\n", __func__);
 	else if (pthread_sigmask(SIG_BLOCK, &block, NULL))
-		;
+		debug("%s: pthread_sigmask failed\n", __func__);
 	else
 		success = 1;
 
@@ -238,9 +238,11 @@ static void *shutdown_thread(void *arg)
 	 * as each thread has its own pid.
 	 */
 	my_pid = getpid();
-	if (!write_pid(p, my_pid))
+	if (!write_pid(p, my_pid)) {
 		warning("Unable to write pid %lu to the pid file.",
 			(unsigned long)my_pid);
+	}
+
 	sigemptyset(&catch);
 	sigaddset(&catch, SIGTERM);
 
@@ -262,11 +264,14 @@ static int handle_shutdown(process p)
 	int error;
 
 	/* Block the signals we handle before creating threads */
-	if (!set_signals_to_block())
+	if (!set_signals_to_block()) {
+		debug("Could not block signals\n");
 		return 0;
+	}
 
 	/* start the shutdown thread */
 	if ((error = pthread_create(&p->sdt, NULL, shutdown_thread, p))) {
+		debug("Could not create debug thread\n");
 		errno = error;
 		return 0;
 	}
@@ -394,6 +399,7 @@ int process_start(process p, int fork_and_close)
 			if (errno == 0)
 				errno = ENOENT;
 
+			debug("Could not get username. getpwnam() failed\n");
 			return 0;
 		}
 
@@ -403,6 +409,7 @@ int process_start(process p, int fork_and_close)
 				/* Hmm, unable to change directory. */
 				shutdown_shutdown(p);
 				undo(p, NULL);
+				debug("Could not change root directory\n");
 				return 0;
 			}
 		}
@@ -415,6 +422,7 @@ int process_start(process p, int fork_and_close)
 			 */
 			undo(p, NULL);
 			shutdown_shutdown(p);
+			debug("Could not set uid\n");
 			return 0;
 		}
 	}

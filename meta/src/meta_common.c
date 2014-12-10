@@ -42,3 +42,28 @@ void verbose(int level, const char *fmt, ...)
 		va_end(ap);
 	}
 }
+
+static int meta_debug_enabled;
+
+void meta_enable_debug_output(void)
+{
+	meta_debug_enabled = 1;
+}
+
+void meta_disable_debug_output(void)
+{
+	meta_debug_enabled = 0;
+}
+
+void debugimpl(const char *fmt, ...)
+{
+
+	if (meta_debug_enabled) {
+		va_list ap;
+
+		va_start(ap, fmt);
+		vfprintf(stderr, fmt, ap);
+		va_end(ap);
+	}
+}
+

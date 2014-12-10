@@ -572,6 +572,7 @@ static void create_mainfile(int argc, char *argv[], const char *filename)
     p(f, "#include <errno.h>\n");
     p(f, "#include <highlander.h>\n");
     p(f, "#include <meta_process.h>\n");
+    p(f, "#include <meta_common.h>\n");
     p(f, "\n");
     p(f, "#include \"%s\"\n", g_headerfile);
     p(f, "\n");
@@ -597,27 +598,32 @@ static void create_mainfile(int argc, char *argv[], const char *filename)
     "   (void)argc;",
     "   (void)argv;",
     "",
+    "   /* Enable debug output from the debug() function. */",
+    "   meta_enable_debug_output();",
+    "",
+    "   /* Print a test line. */",
+    "   debug(\"Here we go\\n\");",
+    "",
     "   /* First we create the web server and the process */",
     "   if( (s = http_server_new()) == NULL)",
-    "       exit(EXIT_FAILURE);",
+    "       die(\"Could not create http server.\\n\");",
     "",
     "   if( (proc = process_new(appname)) == NULL)",
-    "       exit(EXIT_FAILURE);",
+    "       die(\"Could not create process object.\\n\");",
     "",
-    "#if 1",
     "    // Configure the process object.",
     "    // See functions' man pages for details.",
-    "    process_set_rootdir(proc, rootdir);",
-    "    process_set_username(proc, user);",
-    "#endif",
-    "   /* Then configure the memory requirements */",
-    "   /* Here are some dummy statements to make it easier for the user */",
-    "#if 0",
+	"    // Note that one must be root to change to root dir.",
+	"    if (getuid() == 0) {",
+    "    	process_set_rootdir(proc, rootdir);",
+    "    	process_set_username(proc, user);",
+	"   }",
+	"",
+    "    /* Configuere some server values. Not needed, but makes it",
+	"     * to change values later. */",
     "   http_server_set_worker_threads(s, 8);",
     "   http_server_set_queue_size(s, 10);",
     "   http_server_set_max_pages(s, 20);",
-    "#endif",
-    "",
     "",
     "   /* Allocate all buffers needed */",
     "   if(!http_server_alloc(s)) {",
@@ -634,31 +640,14 @@ static void create_mainfile(int argc, char *argv[], const char *filename)
         p(f, "    http_server_add_page(s, \"/%s\", %s, NULL);\n", argv[i], function_name(argv[i]));
     }
 
-    p(f, "  /* More configuration settings */\n");
-    p(f, "#if 0\n");
-    p(f, "    http_server_set_timeout_read(s, 5);\n");
-    p(f, "    http_server_set_timeout_write(s, 5);\n");
-    p(f, "    http_server_set_timeout_accept(s, 5);\n");
-    p(f, "    http_server_set_retries_read(s, 0);\n");
-    p(f, "    http_server_set_retries_write(s, 2);\n");
-    p(f, "#endif\n");
     p(f, "\n");
-    p(f, "\n");
-    p(f, "#if 1\n");
-    p(f, "    http_server_set_block_when_full(s, 0);\n");
-    p(f, "    http_server_set_logfile(s, \"my_logfile\");\n");
-    p(f, "    http_server_set_logrotate(s, 100000);\n");
-    p(f, "\n");
-    p(f, "#endif\n");
-    p(f, "\n");
-    p(f, "#if 1\n");
     p(f, "    http_server_set_host(s, \"localhost\");\n");
     p(f, "    http_server_set_port(s, portnumber);\n");
-    p(f, "#endif\n");
+    p(f, "\n");
     p(f, "\n");
     p(f, "#if 0\n");
     p(f, "    http_server_set_documentroot(s, \"/path/to/my/root\");\n");
-    p(f, "    http_server_set_can_read_files(s, 0);\n");
+    p(f, "    http_server_set_can_read_files(s, 1);\n");
     p(f, "    http_server_set_post_limit(s, 1024 * 1024);\n");
     p(f, "#endif\n");
     p(f, "\n");
@@ -675,6 +664,7 @@ static void create_mainfile(int argc, char *argv[], const char *filename)
 
     p(f, "    /* Do general cleanup */\n");
     p(f, "    http_server_free(s);\n");
+    p(f, "    process_free(proc);\n");
     p(f, "    return 0;\n");
     p(f, "}\n");
     p(f, "\n");

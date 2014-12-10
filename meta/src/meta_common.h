@@ -50,6 +50,22 @@ void verbose(int level, const char *fmt, ...)
 	__attribute__((format(printf,2,3)));
 
 
+/*
+ * Debugging: Do we need it? Well, it's handy, at least in debug
+ * builds. Let's utilize vararg macros and strip debug info from
+ * non-debug builds.
+ */
+#ifdef NDEBUG
+#define debug(...)
+#else
+#define debug(...) debugimpl(__VA_ARGS__)
+void debugimpl(const char *fmt, ...);
+
+void meta_enable_debug_output(void);
+void meta_disable_debug_output(void);
+
+#endif
+
 #ifdef __cplusplus
 }
 #endif
