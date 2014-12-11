@@ -30,6 +30,16 @@
 
 #define CSTRING_INITIAL_SIZE 256
 
+/* Return 1 if the string has room for n new characters,
+ * in addition to whatever number of characters it already
+ * has.
+ */
+static inline int has_room_for(cstring s, size_t n)
+{
+	size_t freespace = s->size - s->len - 1;
+	return n <= freespace;
+}
+
 int cstring_extend(cstring s, size_t size)
 {
 	size_t bytes_needed, newsize;
@@ -79,7 +89,7 @@ int cstring_vprintf(
 	assert(NULL != dest->data);
 	assert(dest->len == strlen(dest->data));
 
-	if (!cstring_extend(dest, needs_max))
+	if (!has_room_for(dest, needs_max) && !cstring_extend(dest, needs_max))
 		return 0;
 
 	/* We append the new data, therefore the & */
@@ -119,7 +129,7 @@ int cstring_pcat(cstring dest, const char *start, const char *end)
 	assert(start < end);
 
 	cb = end - start;
-	if (!cstring_extend(dest, cb))
+	if (!has_room_for(dest, cb) && !cstring_extend(dest, cb))
 		return 0;
 
 	memcpy(&dest->data[dest->len], start, cb);
@@ -138,7 +148,7 @@ int cstring_concat(cstring dest, const char *src)
 	assert(NULL != dest);
 
 	cb = strlen(src);
-	if (!cstring_extend(dest, cb))
+	if (!has_room_for(dest, cb) && !cstring_extend(dest, cb))
 		return 0;
 
 	/* Now add the string to the dest */
@@ -153,15 +163,8 @@ int cstring_charcat(cstring dest, int c)
 {
 	assert(NULL != dest);
 
-	/* This function gets called a lot these days, esp.
-	 * after the html_template ADT was added. I've
-	 * therefore added a small extra test here to avoid
-	 * millions of function calls.
-	 */
-	if (dest->len >= dest->size) {
-		if (!cstring_extend(dest, 1))
-			return 0;
-	}
+	if (!has_room_for(dest, 1) && !cstring_extend(dest, 1))
+		return 0;
 
 	dest->data[dest->len++] = c;
 	dest->data[dest->len] = '\0';
@@ -174,27 +177,17 @@ cstring cstring_new(void)
 {
 	cstring p;
 
-	/*
-	 * Rumours are that some OS'es use an optimistic memory allocation
-	 * strategy, which means that they don't allocate memory until the
-	 * mem is accessed. We therefore request memory with calloc
-	 * instead of malloc.
-	 * Other rumours say that the OS just marks the page as a zeroed
-	 * page and doesn't do anything until the page is read from.
-	 * Hmm, what's a poor coder to do? Write to the page? That hurts
-	 * performance...
-	 */
-	if ((p = calloc(1, sizeof *p)) == NULL)
-		;
-	else if ((p->data = calloc(1, CSTRING_INITIAL_SIZE)) == NULL) {
+	if ((p = malloc(sizeof *p)) == NULL)
+		return NULL;
+
+	if ((p->data = malloc(CSTRING_INITIAL_SIZE)) == NULL) {
 		free(p);
-		p = NULL;
+		return NULL;
 	}
-	else {
-		p->len = 0;
-		p->size = CSTRING_INITIAL_SIZE;
-		*p->data = '\0';
-	}
+
+	p->len = 0;
+	p->size = CSTRING_INITIAL_SIZE;
+	*p->data = '\0';
 
 	return p;
 }
@@ -204,11 +197,13 @@ cstring cstring_dup(const char *src)
 	cstring dest = NULL;
 
 	assert(src != NULL);
-	if ((dest = cstring_new()) != NULL) {
-		if (!cstring_copy(dest, src)) {
-			cstring_free(dest);
-			dest = NULL;
-		}
+
+	if ((dest = cstring_new()) == NULL)
+		return NULL;
+
+	if (!cstring_copy(dest, src)) {
+		cstring_free(dest);
+		return NULL;
 	}
 
 	return dest;
@@ -216,19 +211,19 @@ cstring cstring_dup(const char *src)
 
 int cstring_copy(cstring dest, const char *src)
 {
-	size_t c;
+	size_t n;
 
 	assert(NULL != dest);
 	assert(NULL != dest->data);
 	assert(NULL != src);
 
 	cstring_recycle(dest);
-	c = strlen(src);
-	if (!cstring_extend(dest, c))
+	n = strlen(src);
+	if (!has_room_for(dest, n) && !cstring_extend(dest, n))
 		return 0;
 
 	strcpy(dest->data, src);
-	dest->len += c;
+	dest->len += n;
 
 	assert(dest->len == strlen(dest->data));
 	return 1;
@@ -236,23 +231,23 @@ int cstring_copy(cstring dest, const char *src)
 
 int cstring_ncopy(cstring dest, const char *src, const size_t cch)
 {
-	size_t c;
+	size_t len;
 
 	assert(NULL != dest);
 	assert(NULL != dest->data);
 	assert(NULL != src);
 
 	cstring_recycle(dest);
-	c = strlen(src);
-	if (c > cch)
-		c = cch;
+	len = strlen(src);
+	if (len > cch)
+		len = cch;
 
-	if (!cstring_extend(dest, c))
+	if (!has_room_for(dest, len) && !cstring_extend(dest, len))
 		return 0;
 
-	strncpy(dest->data, src, c);
-	dest->data[c] = '\0';
-	dest->len = c;
+	strncpy(dest->data, src, len);
+	dest->data[len] = '\0';
+	dest->len = len;
 
 	assert(dest->len == strlen(dest->data));
 	return 1;
@@ -266,8 +261,8 @@ int cstring_concat2(cstring dest, const char *s1, const char *s2)
 
 	if (cstring_concat(dest, s1) && cstring_concat(dest, s2))
 		return 1;
-	else
-		return 0;
+
+	return 0;
 }
 
 int cstring_concat3(
@@ -285,8 +280,8 @@ int cstring_concat3(
 	&& cstring_concat(dest, s2)
 	&& cstring_concat(dest, s3))
 		return 1;
-	else
-		return 0;
+
+	return 0;
 }
 
 int cstring_multinew(cstring* pstr, size_t nelem)
@@ -325,35 +320,41 @@ cstring cstring_left(cstring src, size_t n)
 
 	assert(src != NULL);
 
-	if ((dest = cstring_new()) == NULL || !cstring_extend(dest, n)) {
+	if ((dest = cstring_new()) == NULL)
+		return NULL;
+		
+	if (!cstring_extend(dest, n)) {
 		cstring_free(dest);
-		dest = NULL;
+		return NULL;
 	}
-	else
-		cstring_ncopy(dest, src->data, n);
 
+	cstring_ncopy(dest, src->data, n);
 	return dest;
 }
 
 cstring cstring_right(cstring src, size_t n)
 {
 	cstring dest;
+	const char *s;
+	size_t cb;
 
 	/* Get mem */
-	if ((dest = cstring_new()) == NULL || !cstring_extend(dest, n)) {
+	if ((dest = cstring_new()) == NULL)
+		return NULL;
+		
+	if (!cstring_extend(dest, n)) {
 		cstring_free(dest);
-		dest = NULL;
-	}
-	else {
-		const char *s = src->data;
-		size_t cb = strlen(s);
-
-		/* Copy string */
-		if (cb > n)
-			s += cb - n;
-		cstring_copy(dest, s);
+		return NULL;
 	}
 
+	s = src->data;
+	cb = strlen(s);
+
+	/* Copy string */
+	if (cb > n)
+		s += cb - n;
+
+	cstring_copy(dest, s);
 	return dest;
 }
 
@@ -370,13 +371,15 @@ cstring cstring_substring(cstring src, size_t from, size_t to)
 		to = src->len;
 
 	cb = to - from + 1;
-	if ((dest = cstring_new()) == NULL || !cstring_extend(dest, cb)) {
+	if ((dest = cstring_new()) == NULL)
+		return NULL;
+		
+	if (!cstring_extend(dest, cb)) {
 		cstring_free(dest);
-		dest = NULL;
+		return NULL;
 	}
-	else
-		cstring_pcat(dest, &src->data[from], &src->data[to]);
 
+	cstring_pcat(dest, &src->data[from], &src->data[to]);
 	return dest;
 }
 
@@ -385,6 +388,7 @@ void cstring_reverse(cstring s)
 	if (s->len > 0) {
 		char *beg = s->data;
 		char *end = s->data + s->len - 1;
+
 		while (beg < end) {
 			char tmp = *end;
 			*end-- = *beg;
@@ -392,7 +396,6 @@ void cstring_reverse(cstring s)
 		}
 	}
 }
-
 
 /*
  * 1. Count the number of words
@@ -426,7 +429,8 @@ size_t cstring_split(cstring** dest, const char *src, const char *delim)
 	/* allocate space */
 	if ((*dest = malloc(sizeof *dest * nelem)) == NULL)
 		return 0;
-	else if (cstring_multinew(*dest, nelem) == 0) {
+
+	if (cstring_multinew(*dest, nelem) == 0) {
 		free(*dest);
 		return 0;
 	}
@@ -471,7 +475,6 @@ void cstring_strip(cstring s)
 		memmove(&s->data[0], &s->data[i], s->len);
 		s->data[s->len] = '\0';
 	}
-
 }
 
 void cstring_lower(cstring s)
