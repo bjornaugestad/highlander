@@ -33,6 +33,14 @@
 #include <meta_stringmap.h>
 #include <meta_filecache.h>
 
+struct fileinfo_tag {
+	struct stat st;
+	char *mimetype;
+	char *name;
+	char *alias;
+	void *contents;
+};
+
 /* We store a couple of things for each file in a struct like this */
 fileinfo fileinfo_new(void)
 {
@@ -336,6 +344,31 @@ fileinfo filecache_fileinfo(filecache fc, const char *filename)
 	else
 		return NULL;
 }
+
+const struct stat* fileinfo_stat(fileinfo p)
+{
+	assert(p != NULL);
+	return &p->st;
+}
+
+const char *fileinfo_name(fileinfo p)
+{
+	assert(p != NULL);
+	return p->name;
+}
+
+const char *fileinfo_alias(fileinfo p)
+{
+	assert(p != NULL);
+	return p->alias;
+}
+
+const char *fileinfo_mimetype(fileinfo p)
+{
+	assert(p != NULL);
+	return p->mimetype;
+}
+
 
 #ifdef CHECK_FILECACHE
 #include <stdio.h>

@@ -64,13 +64,6 @@ typedef struct filecache_tag* filecache;
 
 /* What we store about each file. */
 typedef struct fileinfo_tag* fileinfo;
-struct fileinfo_tag {
-	struct stat st;
-	char *mimetype;
-	char *name;
-	char *alias;
-	void *contents;
-};
 
 /*
  * Implementation of the filecache ADT.
@@ -89,29 +82,10 @@ struct filecache_tag {
 fileinfo fileinfo_new(void);
 void	 fileinfo_free(fileinfo p);
 
-static inline const struct stat* fileinfo_stat(fileinfo p)
-{
-	assert(p != NULL);
-	return &p->st;
-}
-
-static inline const char *fileinfo_name(fileinfo p)
-{
-	assert(p != NULL);
-	return p->name;
-}
-
-static inline const char *fileinfo_alias(fileinfo p)
-{
-	assert(p != NULL);
-	return p->alias;
-}
-
-static inline const char *fileinfo_mimetype(fileinfo p)
-{
-	assert(p != NULL);
-	return p->mimetype;
-}
+const struct stat* fileinfo_stat(fileinfo p);
+const char *fileinfo_name(fileinfo p);
+const char *fileinfo_alias(fileinfo p);
+const char *fileinfo_mimetype(fileinfo p);
 
 int fileinfo_set_stat(fileinfo p, const struct stat* pst);
 int fileinfo_set_name(fileinfo p, const char *s);
