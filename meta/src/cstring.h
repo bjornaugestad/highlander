@@ -45,32 +45,32 @@ struct cstring_tag {
 };
 typedef struct cstring_tag* cstring;
 
-cstring cstring_new(void);
-cstring cstring_dup(const char *src);
-status_t cstring_multinew(cstring *pstr, size_t nelem);
-status_t cstring_extend(cstring s, size_t size);
+cstring cstring_new(void) __attribute__((warn_unused_result));
+cstring cstring_dup(const char *src) __attribute__((warn_unused_result));
+status_t cstring_multinew(cstring *pstr, size_t nelem) __attribute__((warn_unused_result));
+status_t cstring_extend(cstring s, size_t size) __attribute__((warn_unused_result));
 
 
-status_t cstring_copy(cstring dest, const cstring src);
+status_t cstring_copy(cstring dest, const cstring src) __attribute__((warn_unused_result));
 
-status_t cstring_set(cstring dest, const char *src);
-status_t cstring_nset(cstring dest, const char *src, size_t n);
-status_t cstring_charcat(cstring dest, int c);
+status_t cstring_set(cstring dest, const char *src) __attribute__((warn_unused_result));
+status_t cstring_nset(cstring dest, const char *src, size_t n) __attribute__((warn_unused_result));
+status_t cstring_charcat(cstring dest, int c) __attribute__((warn_unused_result));
 
-status_t cstring_concat(cstring dest, const char *src);
-status_t cstring_concat2(cstring dest, const char *src1, const char *src2);
-status_t cstring_concat3(cstring dest, const char *src1, const char *src2, const char *src3);
+status_t cstring_concat(cstring dest, const char *src) __attribute__((warn_unused_result));
+status_t cstring_concat2(cstring dest, const char *src1, const char *src2) __attribute__((warn_unused_result));
+status_t cstring_concat3(cstring dest, const char *src1, const char *src2, const char *src3) __attribute__((warn_unused_result));
 
-status_t cstring_pcat(cstring dest, const char *start, const char *end);
+status_t cstring_pcat(cstring dest, const char *start, const char *end) __attribute__((warn_unused_result));
 
 status_t cstring_printf(cstring dest, size_t needs_max, const char *fmt, ...)
-	__attribute__((format(printf, 3, 4)));
+	__attribute__((format(printf, 3, 4))) __attribute__((warn_unused_result));
 
-status_t cstring_vprintf(cstring dest, size_t needs_max, const char *fmt, va_list ap);
+status_t cstring_vprintf(cstring dest, size_t needs_max, const char *fmt, va_list ap) __attribute__((warn_unused_result));
 
-cstring cstring_left(cstring src, size_t n);
-cstring cstring_right(cstring src, size_t n);
-cstring cstring_substring(cstring src, size_t from, size_t to);
+cstring cstring_left(cstring src, size_t n) __attribute__((warn_unused_result));
+cstring cstring_right(cstring src, size_t n) __attribute__((warn_unused_result));
+cstring cstring_substring(cstring src, size_t from, size_t to) __attribute__((warn_unused_result));
 
 void cstring_reverse(cstring s);
 

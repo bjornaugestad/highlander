@@ -335,7 +335,11 @@ cstring cstring_left(cstring src, size_t n)
 		return NULL;
 	}
 
-	cstring_nset(dest, src->data, n);
+	if (!cstring_nset(dest, src->data, n)) {
+		cstring_free(dest);
+		return NULL;
+	}
+
 	return dest;
 }
 
@@ -361,7 +365,11 @@ cstring cstring_right(cstring src, size_t n)
 	if (cb > n)
 		s += cb - n;
 
-	cstring_set(dest, s);
+	if (!cstring_set(dest, s)) {
+		cstring_free(dest);
+		return NULL;
+	}
+
 	return dest;
 }
 
@@ -386,7 +394,11 @@ cstring cstring_substring(cstring src, size_t from, size_t to)
 		return NULL;
 	}
 
-	cstring_pcat(dest, &src->data[from], &src->data[to]);
+	if (!cstring_pcat(dest, &src->data[from], &src->data[to])) {
+		cstring_free(dest);
+		return NULL;
+	}
+
 	return dest;
 }
 
@@ -516,6 +528,7 @@ int main(void)
 	int rc;
 	const char *start = "This is a string";
 	const char *end = start + strlen(start);
+	status_t status;
 
 	char longstring[10000];
 
@@ -529,8 +542,8 @@ int main(void)
 		s = cstring_new();
 		assert(s != NULL);
 
-		rc = cstring_set(s, "Hello");
-		assert(rc == 1);
+		status = cstring_set(s, "Hello");
+		assert(status == success);
 
 		rc = cstring_compare(s, "Hello");
 		assert(rc == 0);
@@ -538,38 +551,38 @@ int main(void)
 		rc = cstring_compare(s, "hello");
 		assert(rc != 0);
 
-		rc = cstring_concat(s, ", world");
-		assert(rc == 1);
+		status = cstring_concat(s, ", world");
+		assert(status == success);
 
 		rc = cstring_compare(s, "Hello, world");
 		assert(rc == 0);
 
-		rc = cstring_concat(s, longstring);
-		assert(rc == 1);
+		status = cstring_concat(s, longstring);
+		assert(status == success);
 
-		rc = cstring_charcat(s, 'A');
-		assert(rc == 1);
+		status = cstring_charcat(s, 'A');
+		assert(status == success);
 
 		cstring_recycle(s);
-		rc = cstring_concat(s, longstring);
-		assert(rc == 1);
+		status = cstring_concat(s, longstring);
+		assert(status == success);
 
-		rc = cstring_concat2(s, longstring, longstring);
-		assert(rc == 1);
+		status = cstring_concat2(s, longstring, longstring);
+		assert(status == success);
 
-		rc = cstring_concat3(s, longstring, longstring, longstring);
-		assert(rc == 1);
+		status = cstring_concat3(s, longstring, longstring, longstring);
+		assert(status == success);
 
 		/* Test strpcat */
 		cstring_recycle(s);
-		rc = cstring_pcat(s, start, end);
-		assert(rc == 1);
+		status = cstring_pcat(s, start, end);
+		assert(status == success);
 
 		rc = cstring_compare(s, start);
 		assert(rc == 0);
 
 		/* Test cstring_left() */
-		cstring_set(s, "hello, world");
+		status = cstring_set(s, "hello, world");
 		dest = cstring_left(s, 5);
 		rc = cstring_compare(dest, "hello");
 		assert(rc == 0);
@@ -582,7 +595,7 @@ int main(void)
 		cstring_free(dest);
 
 		/* cstring_right() */
-		cstring_set(s, "hello, world");
+		status = cstring_set(s, "hello, world");
 		dest = cstring_right(s, 5);
 		rc = cstring_compare(dest, "world");
 		assert(rc == 0);
@@ -594,7 +607,7 @@ int main(void)
 		cstring_free(dest);
 
 		/* cstring_substring */
-		cstring_set(s, "hello, world");
+		status = cstring_set(s, "hello, world");
 		dest = cstring_substring(s, 0, 5);
 		rc = cstring_compare(dest, "hello");
 		assert(rc == 0);
@@ -611,13 +624,13 @@ int main(void)
 		cstring_free(dest);
 
 		/* cstring_reverse */
-		cstring_set(s, "hello, world");
+		status = cstring_set(s, "hello, world");
 		cstring_reverse(s);
 		rc = cstring_compare(s, "dlrow ,olleh");
 		assert(rc == 0);
 		/* cstring_strip */
 
-		cstring_set(s, "  a b c d e f	");
+		status = cstring_set(s, "  a b c d e f	");
 		cstring_strip(s);
 		rc = cstring_compare(s, "a b c d e f");
 		assert(rc == 0);

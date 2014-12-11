@@ -1217,15 +1217,21 @@ static int send_request_line(http_request r, connection c, meta_error e)
 
 	switch (request_get_method(r)) {
 		case METHOD_HEAD:
-			cstring_concat(s, "HEAD ");
+			if (!cstring_concat(s, "HEAD "))
+				goto err;
+
 			break;
 
 		case METHOD_GET:
-			cstring_concat(s, "GET ");
+			if (!cstring_concat(s, "GET "))
+				goto err;
+
 			break;
 
 		case METHOD_POST:
-			cstring_concat(s, "POST ");
+			if (!cstring_concat(s, "POST "))
+				goto err;
+
 			break;
 
 		default:
@@ -1244,11 +1250,15 @@ static int send_request_line(http_request r, connection c, meta_error e)
 
 	switch (request_get_version(r)) {
 		case VERSION_10:
-			cstring_concat(s, " HTTP/1.0\r\n");
+			if (!cstring_concat(s, " HTTP/1.0\r\n"))
+				goto err;
+
 			break;
 
 		case VERSION_11:
-			cstring_concat(s, " HTTP/1.1\r\n");
+			if (!cstring_concat(s, " HTTP/1.1\r\n"))
+				goto err;
+
 			break;
 
 		default:
@@ -1264,6 +1274,10 @@ static int send_request_line(http_request r, connection c, meta_error e)
 
 	cstring_free(s);
 	return 1;
+
+err:
+	cstring_free(s);
+	return set_http_error(e, HTTP_500_INTERNAL_SERVER_ERROR);
 }
 
 static int send_accept(http_request r, connection c);

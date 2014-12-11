@@ -625,10 +625,8 @@ void tcp_server_set_service_function(
 	srv->service_arg = arg;
 }
 
-int tcp_server_set_hostname(tcp_server srv, const char *host)
+status_t tcp_server_set_hostname(tcp_server srv, const char *host)
 {
-	size_t n;
-
 	assert(srv != NULL);
 
 	if (srv->host != NULL)
@@ -636,13 +634,13 @@ int tcp_server_set_hostname(tcp_server srv, const char *host)
 
 	if (host == NULL) {
 		srv->host = NULL;
-		return 1;
+		return success;
 	}
 
 	if ((srv->host = cstring_dup(host)) == NULL)
-		return 0;
+		return failure;
 
-	return 1;
+	return success;
 }
 
 /*

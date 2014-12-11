@@ -208,7 +208,7 @@ ssize_t sock_read(
 		 */
 		while ((nread = read(p->fd, &dest[nreadsum], cbToRead)) > 0) {
 			nreadsum += nread;
-			if (nreadsum == count) {
+			if (nreadsum == (ssize_t)count) {
 				return nreadsum; // we're done
 			}
 
@@ -219,7 +219,7 @@ ssize_t sock_read(
 			/* An error occured. Uncool. */
 			return -1;
 		}
-	} while(nreadsum < count && nretries--);
+	} while(nreadsum < (ssize_t)count && nretries--);
 
 	return nreadsum;
 }

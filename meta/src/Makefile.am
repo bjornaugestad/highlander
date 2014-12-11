@@ -133,7 +133,7 @@ check_PROGRAMS=\
 	tcp_server_check
 
 
-AM_CFLAGS=-p -pg
+AM_CFLAGS=-p -pg -Wall -pedantic -std=gnu99 -Wextra -Werror
 tcp_server_check_SOURCES=tcp_server.c threadpool.c meta_membuf.c meta_pool.c\
 	meta_socket.c connection.c meta_process.c cstring.c meta_common.c
 tcp_server_check_CFLAGS=-DCHECK_TCP_SERVER $(AM_CFLAGS) 

@@ -798,7 +798,6 @@ int main(void)
 	li = list_first(a);
 
 	while (!list_end(li)) {
-		struct item *p = list_get(li);
 		li = list_delete(a, li, item_dtor);
 	}
 
