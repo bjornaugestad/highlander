@@ -495,14 +495,11 @@ void connection_discard(connection conn)
 	reset_counters(conn);
 }
 
-int connection_ungetc(connection conn, int c)
+status_t connection_ungetc(connection conn, int c)
 {
-	int rc;
-
 	(void)c;
 	assert(conn != NULL);
-	rc = membuf_unget(conn->readbuf);
-	return rc == 1 ? 0 : -1;
+	return membuf_unget(conn->readbuf);
 }
 
 void connection_set_persistent(connection conn, int val)
@@ -554,7 +551,7 @@ int data_on_socket(connection conn)
 {
 	assert(conn != NULL);
 
-	return wait_for_data(conn->sock, conn->timeout_reads);
+	return wait_for_data(conn->sock, conn->timeout_reads) == success;
 }
 
 status_t connection_putc(connection conn, int ch)

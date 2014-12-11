@@ -258,7 +258,7 @@ http_version request_get_version(http_request p)
 	return p->version;
 }
 
-int request_add_param(http_request p, const char *name, const char *value)
+status_t request_add_param(http_request p, const char *name, const char *value)
 {
 	assert(NULL != p);
 	assert(NULL != name);
@@ -267,7 +267,7 @@ int request_add_param(http_request p, const char *name, const char *value)
 
 	if (NULL == p->params) {
 		if ((p->params = pair_new(20)) == NULL)
-			return 0;
+			return failure;
 	}
 
 	return pair_set(p->params, name, value);
@@ -306,10 +306,10 @@ const char* request_get_parameter_value(const http_request p, const char *pname)
 {
 	assert(p != NULL);
 
-	if (p->params != NULL)
-		return pair_get(p->params, pname);
-	else
+	if (p->params == NULL)
 		return NULL;
+
+	return pair_get(p->params, pname);
 }
 
 status_t request_add_cookie(http_request p, cookie c)
@@ -331,13 +331,14 @@ size_t request_get_cookie_count(const http_request p)
 
 	if (NULL == p->cookies)
 		return 0;
-	else
-		return list_size(p->cookies);
+
+	return list_size(p->cookies);
 }
 
 cookie request_get_cookie(const http_request p, size_t i)
 {
 	assert(NULL != p);
+
 	return list_get_item(p->cookies, i);
 }
 
@@ -805,8 +806,8 @@ size_t request_get_field_namelen(http_request request, size_t idx)
 
 	if (start == end)
 		return 0;
-	else
-		return cb;
+
+	return cb;
 }
 
 size_t request_get_field_valuelen(http_request request, size_t idx)
@@ -1172,14 +1173,15 @@ static status_t parse_host(http_request req, const char* value, meta_error e)
 {
 	if (!request_set_host(req, value))
 		return set_os_error(e, errno);
-	else
-		return success;
+
+	return success;
 }
 
 static status_t parse_user_agent(http_request req, const char* value, meta_error e)
 {
 	if (!request_set_user_agent(req, value))
 		return set_os_error(e, errno);
+
 	return success;
 }
 
@@ -1242,7 +1244,8 @@ static status_t send_request_line(http_request r, connection c, meta_error e)
 		cstring_free(s);
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 	}
-	else if (!cstring_concat(s, p)) {
+
+	if (!cstring_concat(s, p)) {
 		cstring_free(s);
 		return set_os_error(e, errno);
 	}
@@ -1276,7 +1279,7 @@ static status_t send_request_line(http_request r, connection c, meta_error e)
 
 err:
 	cstring_free(s);
-	return set_http_error(e, HTTP_500_INTERNAL_SERVER_ERROR);
+	return set_http_error(e, HTTP_503_SERVICE_UNAVAILABLE);
 }
 
 static status_t send_accept(http_request r, connection c);
@@ -1343,15 +1346,15 @@ static status_t request_send_fields(http_request r, connection c)
 		#endif
 	};
 
-	status_t rc = success;
 	size_t i, nelem = sizeof fields / sizeof *fields;
+
 	for (i = 0; i < nelem; i++) {
 		if (request_flag_is_set(r, fields[i].flag))
-			if ((rc = fields[i].func(r, c)) == failure)
-				break;
+			if (!fields[i].func(r, c))
+				return failure;
 	}
 
-	return rc;
+	return success;
 }
 
 

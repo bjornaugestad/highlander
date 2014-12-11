@@ -20,6 +20,8 @@
 #ifndef META_STACK_H
 #define META_STACK_H
 
+#include <meta_common.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -43,7 +45,8 @@ void stack_free(stack s);
  * @param p Pointer to item to push. Cannot be NULL.
  * @return 1 if success, 0 if failure. Failure is ENOMEM.
  */
-int stack_push(stack s, void *p);
+status_t stack_push(stack s, void *p) __attribute__((warn_unused_result));
+
 
 /*
  * Returns the top item on the stack. Will return NULL if the

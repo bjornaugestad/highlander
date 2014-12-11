@@ -59,7 +59,8 @@ void map_free(map m);
  * If an existing entry exists, the memory pointed to by the prev.
  * value will be freed.
  */
-int map_set(map m, const char *key, void *value);
+status_t map_set(map m, const char *key, void *value)
+	__attribute__((warn_unused_result));
 
 /*
  * Returns 1 if key exists in map, 0 if not.

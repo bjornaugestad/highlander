@@ -138,7 +138,7 @@ map_find(map m, const char *key)
 	return NULL;
 }
 
-int map_set(map m, const char *key, void *value)
+status_t map_set(map m, const char *key, void *value)
 {
 	struct pair *p, *i;
 	list tmp;
@@ -151,11 +151,11 @@ int map_set(map m, const char *key, void *value)
 	}
 
 	if ((p = malloc(sizeof *p)) == NULL)
-		return 0;
+		return failure;
 
 	if ((p->key = malloc(strlen(key) + 1)) == NULL)  {
 		free(p);
-		return 0;
+		return failure;
 	}
 
 	strcpy(p->key, key);
@@ -167,7 +167,7 @@ int map_set(map m, const char *key, void *value)
 		free(p);
 	}
 	
-	return tmp != NULL;
+	return tmp != NULL ? success : failure;
 }
 
 int map_exists(map m, const char *key)

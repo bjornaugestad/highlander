@@ -103,17 +103,17 @@ typedef int (*PAGE_FUNCTION)(http_request, http_response);
 http_server http_server_new(void);
 void http_server_free(http_server s);
 
-int http_server_configure(http_server s, process p, const char* filename);
-int http_server_start_via_process(process p, http_server s);
+status_t http_server_configure(http_server s, process p, const char* filename);
+status_t http_server_start_via_process(process p, http_server s);
 void http_server_set_can_read_files(http_server s, int val);
 int http_server_can_read_files(http_server s);
-int http_server_alloc(http_server s);
-int http_server_get_root_resources(http_server s);
-int http_server_free_root_resources(http_server s);
-int http_server_start(http_server srv);
+status_t http_server_alloc(http_server s);
+status_t http_server_get_root_resources(http_server s);
+status_t http_server_free_root_resources(http_server s);
+status_t http_server_start(http_server srv);
 int http_server_shutting_down(http_server s);
-int http_server_shutdown(http_server s);
-int http_server_add_page(http_server s, const char* uri, PAGE_FUNCTION pf, page_attribute attr);
+status_t http_server_shutdown(http_server s);
+status_t http_server_add_page(http_server s, const char* uri, PAGE_FUNCTION pf, page_attribute attr);
 void http_server_trace(http_server s, int level);
 
 void http_server_set_defered_read(http_server s, int flag);
@@ -224,7 +224,7 @@ void request_set_version(http_request r, http_version version);
 void request_recycle(http_request r);
 
 /* @return 0 for success or error code for failure (ENOMEM) */
-int request_add_param(http_request r, const char *name, const char *value);
+status_t request_add_param(http_request r, const char *name, const char *value);
 void request_set_method(http_request r, http_method method);
 
 /* @return 0 for success  or error code indicating failure(ENOMEM). */

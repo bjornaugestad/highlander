@@ -53,21 +53,22 @@ void membuf_free(membuf p)
 	}
 }
 
-size_t membuf_write(membuf p, const void *src, size_t cb)
+size_t membuf_write(membuf p, const void *src, size_t count)
 {
-	size_t cbToAdd;
+	size_t n;
 
 	assert(p != NULL);
 	assert(src != NULL);
 
 	/* Don't bother to write empty buffers */
-	if (cb == 0)
+	if (count == 0)
 		return 0;
+
 	/*
 	 * Decide how much we can write and reset the
 	 * buffer if needed (and possible).
 	 */
-	if (cb > (p->size - p->written)) {
+	if (count > p->size - p->written) {
 		/*
 		 * Has all written bytes also been read?
 		 * If so, reset the buffer.
@@ -76,43 +77,41 @@ size_t membuf_write(membuf p, const void *src, size_t cb)
 			p->written = p->read = 0;
 
 		/* Is there space available after reset ? */
-		if (cb <= (p->size - p->written))
-			cbToAdd = cb;
+		if (count <= p->size - p->written)
+			n = count;
 		else
-			cbToAdd = p->size - p->written;
+			n = p->size - p->written;
 	}
 	else
-		cbToAdd = cb;
+		n = count;
 
 	/* Check that we didn't screw up above */
-	assert(cbToAdd <= membuf_canwrite(p));
+	assert(n <= membuf_canwrite(p));
 
-	memcpy(&p->data[p->written], src, cbToAdd);
-	p->written += cbToAdd;
+	memcpy(&p->data[p->written], src, n);
+	p->written += n;
 
-	return cbToAdd;
+	return n;
 }
 
-size_t membuf_read(membuf p, void *dest, size_t cb)
+size_t membuf_read(membuf p, void *dest, size_t count)
 {
-	size_t cbAvail, cbToRead;
+	size_t navail;
 
 	assert(p != NULL);
 	assert(dest != NULL);
-	assert(cb != 0);
+	assert(count != 0);
 	assert(p->written >= p->read);
 
-	cbAvail = membuf_canread(p);
-	if (cbAvail >= cb)
-		cbToRead = cb;
-	else
-		cbToRead = cbAvail;
+	navail = membuf_canread(p);
+	if (navail < count)
+		count = navail;
 
-	if (cbToRead == 0)
+	if (count == 0)
 		return 0;
 
-	memcpy(dest, &p->data[p->read], cbToRead);
-	p->read += cbToRead;
+	memcpy(dest, &p->data[p->read], count);
+	p->read += count;
 
 	assert(p->read <= p->written);
 
@@ -120,7 +119,7 @@ size_t membuf_read(membuf p, void *dest, size_t cb)
 	if (p->written == p->read)
 		p->written = p->read = 0;
 
-	return cbToRead;
+	return count;
 }
 
 #ifdef CHECK_MEMBUF

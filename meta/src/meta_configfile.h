@@ -31,11 +31,21 @@ typedef struct configfile_tag* configfile;
 configfile configfile_read(const char *path);
 
 int configfile_exists(configfile cf, const char *name);
-int configfile_get_string(configfile cf, const char *name, char *value, size_t cb);
-int configfile_get_long(configfile cf, const char *name, long *value);
-int configfile_get_ulong(configfile cf, const char *name, unsigned long *value);
-int configfile_get_int(configfile cf, const char *name, int *value);
-int configfile_get_uint(configfile cf, const char *name, unsigned int *value);
+status_t configfile_get_string(configfile cf, const char *name, char *value, size_t cb)
+	__attribute__((warn_unused_result));
+
+status_t configfile_get_long(configfile cf, const char *name, long *value)
+	__attribute__((warn_unused_result));
+
+status_t configfile_get_ulong(configfile cf, const char *name, unsigned long *value)
+	__attribute__((warn_unused_result));
+
+status_t configfile_get_int(configfile cf, const char *name, int *value)
+	__attribute__((warn_unused_result));
+
+status_t configfile_get_uint(configfile cf, const char *name, unsigned int *value)
+	__attribute__((warn_unused_result));
+
 
 void configfile_free(configfile cf);
 

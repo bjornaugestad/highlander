@@ -24,6 +24,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <meta_common.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -130,19 +132,17 @@ static inline void membuf_reset(membuf mb)
  * the character was read from the buffer. Since this is a
  * membuf, you can unget more than one character, but this
  * version supports one character only.
- *
- * Returns 1 if successful, else 0.
  */
-static inline int membuf_unget(membuf mb)
+static inline status_t membuf_unget(membuf mb)
 {
 	assert(mb != NULL);
 
 	if (mb->read > 0) {
 		mb->read--;
-		return 1;
+		return success;
 	}
 
-	return 0;
+	return failure;
 }
 
 /*

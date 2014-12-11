@@ -61,15 +61,15 @@ void stack_free(stack s)
 	}
 }
 
-int stack_push(stack s, void *p)
+status_t stack_push(stack s, void *p)
 {
 	assert(s != NULL);
 	assert(p != NULL);
 
 	if (list_insert(s->lst, p) == NULL)
-		return 0;
+		return failure;
 
-	return 1;
+	return success;
 }
 
 void *stack_top(stack s)
@@ -134,7 +134,8 @@ int main(void)
 		}
 
 		sprintf(str, "%zu", i);
-		stack_push(s, str);
+		if (!stack_push(s, str))
+			exit(EXIT_FAILURE);
 	}
 
 	assert(nelem == stack_nelem(s));

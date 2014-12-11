@@ -33,19 +33,29 @@ void process_free(process p);
 
 int process_shutting_down(process p);
 
-status_t process_set_rootdir(process p, const char *path);
-status_t process_set_username(process p, const char *username);
+status_t process_set_rootdir(process p, const char *path)
+	__attribute__((warn_unused_result));
 
-int process_add_object_to_start(
+status_t process_set_username(process p, const char *username)
+	__attribute__((warn_unused_result));
+
+
+status_t process_add_object_to_start(
 	process p,
 	void *object,
-	int do_func(void *),
-	int undo_func(void *),
-	int run_func(void *),
-	int shutdown_func(void *));
+	status_t do_func(void *),
+	status_t undo_func(void *),
+	status_t run_func(void *),
+	status_t shutdown_func(void *))
+		__attribute__((warn_unused_result));
 
-int process_start(process p, int fork_and_close);
-int process_wait_for_shutdown(process p);
+
+status_t process_start(process p, int fork_and_close)
+	__attribute__((warn_unused_result));
+
+status_t process_wait_for_shutdown(process p)
+	__attribute__((warn_unused_result));
+
 int process_get_exitcode(process p, void *object);
 
 

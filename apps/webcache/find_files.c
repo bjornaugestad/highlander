@@ -297,9 +297,10 @@ static int handle_one_file(
 
             /* Save info in a node and add it to the list */
             known_as = create_known_as(rootdir, path);
+            fileinfo_set_stat(fi, pst);
+
             if (fileinfo_set_alias(fi, known_as)
             && fileinfo_set_name(fi, path)
-            && fileinfo_set_stat(fi, pst)
             && fileinfo_set_mimetype(fi, mimetype)
             && list_add(lst, fi)) {
                 /* Stop checking patterns */

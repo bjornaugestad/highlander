@@ -395,7 +395,7 @@ list list_insert(list lst, void *data)
 	return lst;
 }
 
-int list_insert_before(list_iterator li, void *data)
+status_t list_insert_before(list_iterator li, void *data)
 {
 	list new, curr;
 
@@ -403,7 +403,7 @@ int list_insert_before(list_iterator li, void *data)
 	assert(data != NULL);
 
 	if ((new = calloc(1, sizeof *new)) == NULL)
-		return 0;
+		return failure;
 
 	curr = li.node;
 	new->data = data;
@@ -411,10 +411,10 @@ int list_insert_before(list_iterator li, void *data)
 	new->prev = curr->prev;
 	curr->prev->next = new;
 	curr->prev = new;
-	return 1;
+	return success;
 }
 
-int list_insert_after(list_iterator li, void *data)
+status_t list_insert_after(list_iterator li, void *data)
 {
 	list new, curr;
 
@@ -422,7 +422,7 @@ int list_insert_after(list_iterator li, void *data)
 	assert(data != NULL);
 
 	if ((new = calloc(1, sizeof *new)) == NULL)
-		return 0;
+		return failure;
 
 	curr = li.node;
 	new->data = data;
@@ -432,7 +432,7 @@ int list_insert_after(list_iterator li, void *data)
 		curr->next->prev = new;
 
 	curr->next = new;
-	return 1;
+	return success;
 }
 
 void list_sort(list lst, int(*func)(const void *p1, const void *p2))
@@ -850,7 +850,9 @@ int main(void)
 	// Now test adding with one item in the list.
 	a = list_new();
 	list_add(a, strdup("foo"));
-	list_insert_after(list_first(a), strdup("bar"));
+	if (!list_insert_after(list_first(a), strdup("bar")))
+		return 1;
+
 	s = list_get_item(a, 1);
 	if (strcmp(s, "bar") != 0)
 		return77("Expected 'bar', got %s\n", s);

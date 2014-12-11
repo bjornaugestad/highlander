@@ -64,8 +64,12 @@ void list_free(list lst, dtor free_fn);
 list list_copy(list lst, void*(*copier)(const void*), dtor dtor_fn);
 list list_add(list lst, void *data);
 list list_insert(list lst, void *data);
-int list_insert_before(list_iterator li, void *data);
-int list_insert_after(list_iterator li, void *data);
+status_t list_insert_before(list_iterator li, void *data)
+	__attribute__((warn_unused_result));
+
+status_t list_insert_after(list_iterator li, void *data)
+	__attribute__((warn_unused_result));
+
 size_t list_size(list lst);
 
 list_iterator list_delete(list lst, list_iterator i, dtor dtor_fn);

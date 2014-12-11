@@ -68,15 +68,14 @@ void fileinfo_free(fileinfo p)
 	}
 }
 
-int fileinfo_set_stat(fileinfo p, const struct stat* pst)
+void fileinfo_set_stat(fileinfo p, const struct stat* pst)
 {
 	assert(p != NULL);
 	assert(pst != NULL);
 	p->st = *pst;
-	return 1;
 }
 
-int fileinfo_set_name(fileinfo p, const char *s)
+status_t fileinfo_set_name(fileinfo p, const char *s)
 {
 	assert(p != NULL);
 	assert(s != NULL);
@@ -85,13 +84,13 @@ int fileinfo_set_name(fileinfo p, const char *s)
 		free(p->name);
 
 	if ((p->name = malloc(strlen(s) + 1)) == NULL)
-		return 0;
+		return failure;
 
 	strcpy(p->name, s);
-	return 1;
+	return success;
 }
 
-int fileinfo_set_alias(fileinfo p, const char *s)
+status_t fileinfo_set_alias(fileinfo p, const char *s)
 {
 	assert(p != NULL);
 	assert(s != NULL);
@@ -100,13 +99,13 @@ int fileinfo_set_alias(fileinfo p, const char *s)
 		free(p->alias);
 
 	if ((p->alias = malloc(strlen(s) + 1)) == NULL)
-		return 0;
+		return failure;
 
 	strcpy(p->alias, s);
-	return 1;
+	return success;
 }
 
-int fileinfo_set_mimetype(fileinfo p, const char *s)
+status_t fileinfo_set_mimetype(fileinfo p, const char *s)
 {
 	assert(p != NULL);
 	assert(s != NULL);
@@ -115,10 +114,10 @@ int fileinfo_set_mimetype(fileinfo p, const char *s)
 		free(p->mimetype);
 
 	if ((p->mimetype = malloc(strlen(s) + 1)) == NULL)
-		return 0;
+		return failure;
 
 	strcpy(p->mimetype, s);
-	return 1;
+	return success;
 }
 
 
@@ -420,10 +419,22 @@ int main(void)
 			buf[offset] = '\0';
 
 			fi = fileinfo_new();
-			fileinfo_set_name(fi, de->d_name);
-			fileinfo_set_alias(fi, de->d_name);
+			if (!fileinfo_set_name(fi, de->d_name)) {
+				perror(de->d_name);
+				exit(EXIT_FAILURE);
+			}
+
+			if (!fileinfo_set_alias(fi, de->d_name)) {
+				perror(de->d_name);
+				exit(EXIT_FAILURE);
+			}
+
 			fileinfo_set_stat(fi, &st);
-			fileinfo_set_mimetype(fi, buf);
+
+			if (!fileinfo_set_mimetype(fi, buf)) {
+				perror(de->d_name);
+				exit(EXIT_FAILURE);
+			}
 
 			if (st.st_size == 0)
 				; /* Do not add empty files */

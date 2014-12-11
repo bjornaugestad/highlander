@@ -36,7 +36,7 @@
 
 #include <meta_misc.h>
 
-int string2size_t(const char *s, size_t *val)
+status_t string2size_t(const char *s, size_t *val)
 {
 	assert(s != NULL);
 	assert(val != NULL);
@@ -44,13 +44,13 @@ int string2size_t(const char *s, size_t *val)
 	*val = 0;
 	while (*s) {
 		if (!isdigit((int)*s))
-			return 0;
+			return failure;
 
 		*val = (*val * 10) + (*s - '0');
 		s++;
 	}
 
-	return 1;
+	return success;
 }
 
 int find_word(const char *s, size_t iWord)
@@ -106,7 +106,7 @@ int get_word_count(const char *s)
 	return n;
 }
 
-int get_word_from_string(
+status_t get_word_from_string(
 	const char *src,
 	char dest[],
 	size_t destsize,
@@ -121,15 +121,17 @@ int get_word_from_string(
 	i = find_word(src, iWord);
 
 	/* if index out of range */
-	if (i == -1)
-		return 0;
+	if (i == -1) {
+		errno = ERANGE;
+		return failure;
+	}
 
 	/* copy the word */
 	src += i;
 	return copy_word(src, dest, ' ', destsize);
 }
 
-int copy_word(
+status_t copy_word(
 	const char *src,
 	char dest[],
 	int separator,
@@ -145,11 +147,13 @@ int copy_word(
 	while (*src != '\0' && *src != separator && i < destsize)
 		dest[i++] = *src++;
 
-	if (i == destsize)
-		return 0;
+	if (i == destsize) {
+		errno = ENOSPC;
+		return failure;
+	}
 
 	dest[i] = '\0';
-	return 1;
+	return success;
 }
 
 void remove_trailing_newline(char *s)
@@ -166,7 +170,7 @@ void remove_trailing_newline(char *s)
 	}
 }
 
-int get_extension(const char *src, char *dest, size_t destsize)
+status_t get_extension(const char *src, char *dest, size_t destsize)
 {
 	const char *end;
 	size_t i = destsize - 1;
@@ -190,7 +194,7 @@ int get_extension(const char *src, char *dest, size_t destsize)
 
 	if (i == 0) {
 		errno = ENOSPC;
-		return 0;
+		return failure;
 	}
 
 	if (found)
@@ -198,7 +202,7 @@ int get_extension(const char *src, char *dest, size_t destsize)
 	else
 		*dest = '\0';
 
-	return 1;
+	return success;
 }
 
 

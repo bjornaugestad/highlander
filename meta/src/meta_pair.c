@@ -89,7 +89,7 @@ void pair_free(pair p)
 	free(p);
 }
 
-static int pair_extend(pair p, size_t cElementsToAdd)
+static status_t pair_extend(pair p, size_t cElementsToAdd)
 {
 	struct element* new;
 
@@ -97,11 +97,11 @@ static int pair_extend(pair p, size_t cElementsToAdd)
 
 	new = realloc(p->element, sizeof *p->element * (p->nelem + cElementsToAdd));
 	if (new == NULL)
-		return 0;
+		return failure;
 
 	p->element = new;
 	p->nelem += cElementsToAdd;
-	return 1;
+	return success;
 }
 
 size_t pair_size(pair p)
@@ -131,12 +131,8 @@ const char *pair_get(pair p, const char *name)
 }
 
 
-/* overwrites an existing value . Adds a new entry if not.
- * returns
- *	1	OK
- *	0	Memory problems
- */
-int pair_set(pair p, const char *name, const char *value)
+/* overwrites an existing value. Adds a new entry if needed.  */
+status_t pair_set(pair p, const char *name, const char *value)
 {
 	size_t i, oldlen, newlen;
 
@@ -149,44 +145,46 @@ int pair_set(pair p, const char *name, const char *value)
 	if (oldlen < newlen) {
 		char *s = realloc(p->element[i].value, newlen + 1);
 		if (NULL == s)
-			return 0;
+			return failure;
 
 		p->element[i].value = s;
 	}
 
 	strcpy(p->element[i].value, value);
-	return 1;
+	return success;
 }
 
-int pair_add(pair p, const char *name, const char *value)
+status_t pair_add(pair p, const char *name, const char *value)
 {
 	struct element* new; /* Just a helper to beautify the code */
 	size_t namelen, valuelen;
 
 	/* Resize when needed */
 	if (p->used == p->nelem && !pair_extend(p, p->nelem * 2))
-		return 0;
+		return failure;
 
 	/* Assign the helper */
 	new = &p->element[p->used];
 	namelen = strlen(name) + 1;
 	valuelen = strlen(value) + 1;
 	if ((new->name = malloc(namelen)) == NULL)
-		return 0;
+		return failure;
 
 	if ((new->value = malloc(valuelen)) == NULL) {
 		free(new->name);
-		return 0;
+		return failure;
 	}
 
 	memcpy(new->name, name, namelen);
 	memcpy(new->value, value, valuelen);
 	p->used++;
-	return 1;
+	return success;
 }
 
 const char *pair_get_name(pair p, size_t idx)
 {
+	assert(p != NULL);
+	assert(idx < p->used);
 	return p->element[idx].name;
 }
 

@@ -33,7 +33,9 @@ typedef struct meta_socket_tag *meta_socket;
 meta_socket sock_socket(int unix_socket);
 
 /* Calls listen() */
-int sock_listen(meta_socket p, int backlog);
+status_t sock_listen(meta_socket p, int backlog)
+	__attribute__((warn_unused_result));
+
 meta_socket sock_accept(meta_socket p, struct sockaddr *addr, socklen_t *addrsize);
 
 /*
@@ -51,13 +53,13 @@ ssize_t sock_read(
 	int retries);
 
 /* Waits for data to be available on the socket. */
-int wait_for_data(meta_socket p, int timeout);
+status_t wait_for_data(meta_socket p, int timeout);
 
 /*
  * Waits for up to \e timeout seconds to see if it is possible to
  * write to the socket.
  */
-int wait_for_writability(meta_socket p, int timeout);
+status_t wait_for_writability(meta_socket p, int timeout);
 
 /*
  * Tries to write \e count bytes to the socket, retrying \e retries

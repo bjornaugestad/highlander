@@ -11,8 +11,8 @@ static void* fn(void* arg)
 	char buf[1024];
 
 	while (connection_gets(c, buf, sizeof buf)) {
-		connection_puts(c, buf);
-		connection_flush(c);
+		if (!connection_puts(c, buf) || !connection_flush(c))
+			warning("Could not echo input.\n");
 	}
 
 	return NULL;
@@ -30,7 +30,11 @@ int main(void)
 	if (!process_start(p, 1))
 		exit(1);
 
-	process_wait_for_shutdown(p);
+	if (!process_wait_for_shutdown(p)) {
+		perror("process_wait_for_shutdown");
+		exit(EXIT_FAILURE);
+	}
+
 	tcp_server_free(srv);
 	process_free(p);
 	return 0;

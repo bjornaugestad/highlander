@@ -71,11 +71,11 @@ static int sock_set_reuseaddr(meta_socket p)
  * error occured. It set errno to EAGAIN if a timeout occured, and
  * it maps POLLHUP and POLLERR to EPIPE, and POLLNVAL to EINVAL.
  */
-static int sock_poll_for(meta_socket p, int timeout, short poll_for)
+static status_t sock_poll_for(meta_socket p, int timeout, short poll_for)
 {
 	struct pollfd pfd;
 	int rc;
-	int status = 0;
+	status_t status = failure;
 
 	assert(p != NULL);
 	assert(p->fd >= 0);
@@ -99,7 +99,7 @@ static int sock_poll_for(meta_socket p, int timeout, short poll_for)
 			errno = EINVAL;
 		}
 		else if ((pfd.revents & poll_for)  == poll_for) {
-			status = 1;
+			status = success;
 		}
 	}
 	else if (rc == 0) {
@@ -111,14 +111,14 @@ static int sock_poll_for(meta_socket p, int timeout, short poll_for)
 	return status;
 }
 
-int wait_for_writability(meta_socket p, int timeout)
+status_t wait_for_writability(meta_socket p, int timeout)
 {
 	assert(p != NULL);
 
 	return sock_poll_for(p, timeout, POLLOUT);
 }
 
-int wait_for_data(meta_socket p, int timeout)
+status_t wait_for_data(meta_socket p, int timeout)
 {
 	assert(p != NULL);
 
@@ -321,15 +321,15 @@ meta_socket sock_socket(int unix_socket)
 	return p;
 }
 
-int sock_listen(meta_socket p, int backlog)
+status_t sock_listen(meta_socket p, int backlog)
 {
 	assert(p != NULL);
 	assert(p->fd >= 0);
 
 	if (listen(p->fd, backlog) == -1)
-		return 0;
+		return failure;
 
-	return 1;
+	return success;
 }
 
 meta_socket create_server_socket(int unix_socket, const char *host, int port)

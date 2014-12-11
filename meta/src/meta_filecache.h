@@ -87,10 +87,16 @@ const char *fileinfo_name(fileinfo p);
 const char *fileinfo_alias(fileinfo p);
 const char *fileinfo_mimetype(fileinfo p);
 
-int fileinfo_set_stat(fileinfo p, const struct stat* pst);
-int fileinfo_set_name(fileinfo p, const char *s);
-int fileinfo_set_alias(fileinfo p, const char *s);
-int fileinfo_set_mimetype(fileinfo p, const char *s);
+void fileinfo_set_stat(fileinfo p, const struct stat* pst);
+
+status_t fileinfo_set_name(fileinfo p, const char *s)
+	__attribute__((warn_unused_result));
+
+status_t fileinfo_set_alias(fileinfo p, const char *s)
+	__attribute__((warn_unused_result));
+
+status_t fileinfo_set_mimetype(fileinfo p, const char *s)
+	__attribute__((warn_unused_result));
 
 
 /*

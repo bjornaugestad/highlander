@@ -530,29 +530,29 @@ static int accept_new_connections(tcp_server srv, meta_socket sock)
 	return 1; /* Shutdown was requested */
 }
 
-int tcp_server_get_root_resources(tcp_server srv)
+status_t tcp_server_get_root_resources(tcp_server srv)
 {
 	srv->sock = create_server_socket(srv->unix_socket, c_str(srv->host), srv->port);
 	if (srv->sock == NULL)
-		return 0;
+		return failure;
 
-	return 1;
+	return success;
 }
 
-int tcp_server_start(tcp_server srv)
+status_t tcp_server_start(tcp_server srv)
 {
-	int rc;
+	status_t rc;
 
 	assert(NULL != srv);
 
 	if (!accept_new_connections(srv, srv->sock)) {
 		sock_close(srv->sock);
-		rc = 0;
+		rc = failure;
 	}
 	else if (sock_close(srv->sock))
-		rc = 0;
+		rc = failure;
 	else
-		rc = 1;
+		rc = success;
 
 	srv->sock = NULL;
 	return rc;
@@ -687,22 +687,22 @@ static int client_can_connect(tcp_server srv, struct sockaddr_in* addr)
 	return 1;
 }
 
-int tcp_server_start_via_process(process p, tcp_server s)
+status_t tcp_server_start_via_process(process p, tcp_server s)
 {
 	return process_add_object_to_start(
 		p,
 		s,
-		(int(*)(void*))tcp_server_get_root_resources,
-		(int(*)(void*))tcp_server_free_root_resources,
-		(int(*)(void*))tcp_server_start,
-		(int(*)(void*))tcp_server_shutdown);
+		(status_t(*)(void*))tcp_server_get_root_resources,
+		(status_t(*)(void*))tcp_server_free_root_resources,
+		(status_t(*)(void*))tcp_server_start,
+		(status_t(*)(void*))tcp_server_shutdown);
 }
 
-int tcp_server_free_root_resources(tcp_server s)
+status_t tcp_server_free_root_resources(tcp_server s)
 {
 	/* NOTE: 2005-11-27: Check out why we don't close the socket here. */
 	(void)s;
-	return 1;
+	return success;
 }
 
 int tcp_server_shutting_down(tcp_server srv)

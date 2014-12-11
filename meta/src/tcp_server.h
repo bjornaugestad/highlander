@@ -41,8 +41,8 @@ int	 tcp_server_allow_clients(tcp_server srv, const char *filter);
 void tcp_server_clear_client_filter(tcp_server srv);
 
 /* resource management */
-int tcp_server_get_root_resources(tcp_server srv);
-int tcp_server_free_root_resources(tcp_server s);
+status_t tcp_server_get_root_resources(tcp_server srv);
+status_t tcp_server_free_root_resources(tcp_server s);
 
 /* Configuration */
 status_t tcp_server_set_hostname(tcp_server srv, const char *host);
@@ -58,8 +58,8 @@ void tcp_server_set_timeout(tcp_server srv, int reads, int writes, int accepts);
 void tcp_server_set_retries(tcp_server srv, int reads, int writes);
 
 /* startup and shutdown */
-int tcp_server_start(tcp_server srv);
-int tcp_server_start_via_process(process p, tcp_server s);
+status_t tcp_server_start(tcp_server srv);
+status_t tcp_server_start_via_process(process p, tcp_server s);
 int tcp_server_shutting_down(tcp_server srv);
 int tcp_server_shutdown(tcp_server srv);
 

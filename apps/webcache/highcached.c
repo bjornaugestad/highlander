@@ -115,7 +115,9 @@ int main(int argc, char *argv[])
         die("Could not start the statpack thread\n");
 
     verbose(1, "Waiting for shutdown signal(TERM)\n");
-    process_wait_for_shutdown(p);
+    if (!process_wait_for_shutdown(p))
+		die("Failed to wait for shutdown: %s\n", strerror(errno));
+
     verbose(1, "Shutdown signal(TERM) received\n");
 
     statpack_stop();

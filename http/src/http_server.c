@@ -286,32 +286,32 @@ void http_server_set_default_page_handler(http_server s, PAGE_FUNCTION pf)
 	s->default_handler = pf;
 }
 
-int http_server_alloc(http_server s)
+status_t http_server_alloc(http_server s)
 {
 	if (!http_server_alloc_page_structs(s))
-		return 0;
+		return failure;
 
 	if (!http_server_alloc_request_pool(s)) {
 		http_server_free_page_structs(s);
-		return 0;
+		return failure;
 	}
 
 	if (!http_server_alloc_response_pool(s)) {
 		http_server_free_request_pool(s);
 		http_server_free_page_structs(s);
-		return 0;
+		return failure;
 	}
 
-	return 1;
+	return success;
 }
 
-static int configure_tcp_server(http_server srv)
+static status_t configure_tcp_server(http_server srv)
 {
 	tcp_server se;
 
 	se = srv->socket_engine;
 	if (!tcp_server_set_hostname(se, srv->host))
-		return 0;
+		return failure;
 
 	tcp_server_set_port(se, srv->port);
 	tcp_server_set_timeout(se, srv->timeout_read, srv->timeout_write, srv->timeout_accept);
@@ -321,7 +321,7 @@ static int configure_tcp_server(http_server srv)
 	tcp_server_set_worker_threads(se, srv->worker_threads);
 	tcp_server_set_service_function(se, serviceConnection, srv);
 
-	return 1;
+	return success;
 }
 
 /*
@@ -331,18 +331,18 @@ static int configure_tcp_server(http_server srv)
  * http_server_get_root_resources() right before
  * the call to http_server_go().
  */
-int http_server_start(http_server s)
+status_t http_server_start(http_server s)
 {
 	if (!tcp_server_init(s->socket_engine))
-		return 0;
+		return failure;
 		
 	if (!tcp_server_start(s->socket_engine))
-		return 0;
+		return failure;
 
-	return 1;
+	return success;
 }
 
-int http_server_add_page(
+status_t http_server_add_page(
 	http_server srv,
 	const char* uri,
 	PAGE_FUNCTION func,
@@ -356,10 +356,10 @@ int http_server_add_page(
 	assert(srv->npages < srv->max_pages);
 
 	if ((dp = dynamic_new(uri, func, attr)) == NULL)
-		return 0;
+		return failure;
 
 	srv->pages[srv->npages++] = dp;
-	return 1;
+	return success;
 }
 
 dynamic_page http_server_lookup(http_server srv, http_request request)
@@ -858,30 +858,32 @@ void http_server_add_logentry(
 	pthread_mutex_unlock(&srv->logfile_lock);
 }
 
-int http_server_shutdown(http_server srv)
+status_t http_server_shutdown(http_server srv)
 {
 	assert(srv != NULL);
 	srv->shutting_down = 1;
 	tcp_server_shutdown(srv->socket_engine);
-	return 1;
+	return success;
 }
 
-int http_server_get_root_resources(http_server s)
+status_t http_server_get_root_resources(http_server s)
 {
 	assert(s != NULL);
 
-	if (configure_tcp_server(s)
-	&& tcp_server_get_root_resources(s->socket_engine))
-		return 1;
-	else
-		return 0;
+	if (!configure_tcp_server(s))
+		return failure;
+
+	if (!tcp_server_get_root_resources(s->socket_engine))
+		return failure;
+
+	return success;
 }
 
-int http_server_free_root_resources(http_server s)
+status_t http_server_free_root_resources(http_server s)
 {
 	/* NOTE: 2005-11-27: Check out why we don't close the socket here. */
 	(void)s;
-	return 1;
+	return success;
 }
 
 int http_server_has_default_page_handler(http_server s)
@@ -914,18 +916,18 @@ status_t http_server_run_default_page_handler(
 	return rc;
 }
 
-int http_server_start_via_process(process p, http_server s)
+status_t http_server_start_via_process(process p, http_server s)
 {
 	return process_add_object_to_start(
 		p,
 		s,
-		(int(*)(void*))http_server_get_root_resources,
-		(int(*)(void*))http_server_free_root_resources,
-		(int(*)(void*))http_server_start,
-		(int(*)(void*))http_server_shutdown);
+		(status_t(*)(void*))http_server_get_root_resources,
+		(status_t(*)(void*))http_server_free_root_resources,
+		(status_t(*)(void*))http_server_start,
+		(status_t(*)(void*))http_server_shutdown);
 }
 
-int http_server_configure(http_server s, process p, const char* filename)
+status_t http_server_configure(http_server s, process p, const char* filename)
 {
 	int port = -1;
 	int workers = -1;
@@ -947,7 +949,7 @@ int http_server_configure(http_server s, process p, const char* filename)
 	configfile cf;
 
 	if ((cf = configfile_read(filename)) == NULL)
-		return 0;
+		return failure;
 
 	if (configfile_exists(cf, "workers")
 	&& !configfile_get_int(cf, "workers", &workers))
@@ -1037,33 +1039,33 @@ int http_server_configure(http_server s, process p, const char* filename)
 		http_server_set_worker_threads(s, (size_t)workers);
 
 	if (strlen(hostname) > 0 && !http_server_set_host(s, hostname))
-		return 0;
+		return failure;
 
 	if (strlen(logfile) > 0 && !http_server_set_logfile(s, logfile))
-		return 0;
+		return failure;
 
 	if (strlen(docroot) > 0 && !http_server_set_documentroot(s, docroot))
-		return 0;
+		return failure;
 
 	/* Now for process stuff */
 	if (p == NULL)
-		return 1;
+		return success;
 
 	if (strlen(username) > 0 
 	&& getuid() == 0 
 	&& !process_set_username(p, username))
-		return 0;
+		return failure;
 
 	if (strlen(rootdir) > 0
 	&& getuid() == 0 
 	&& !process_set_rootdir(p, rootdir))
-		return 0;
+		return failure;
 
-	return 1;
+	return success;
 
 readerr:
 	configfile_free(cf);
-	return 0;
+	return failure;
 }
 
 unsigned long http_server_sum_blocked(http_server s)

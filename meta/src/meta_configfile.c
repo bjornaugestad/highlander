@@ -199,11 +199,11 @@ int configfile_exists(configfile cf, const char *name)
 
 	if (find(cf, name) != NULL)
 		return 1;
-	else
-		return 0;
+
+	return 0;
 }
 
-int configfile_get_string(configfile cf, const char *name, char *value, size_t cb)
+status_t configfile_get_string(configfile cf, const char *name, char *value, size_t cb)
 {
 	struct nameval* pnv;
 
@@ -214,19 +214,19 @@ int configfile_get_string(configfile cf, const char *name, char *value, size_t c
 
 	if ((pnv = find(cf, name)) == NULL) {
 		errno = ENOENT;
-		return 0;
+		return failure;
 	}
 
 	if (strlen(pnv->value) + 1 > cb) {
 		errno = ENOSPC;
-		return 0;
+		return failure;
 	}
 
 	strcpy(value, pnv->value);
-	return 1;
+	return success;
 }
 
-int configfile_get_long(configfile cf, const char *name, long *value)
+status_t configfile_get_long(configfile cf, const char *name, long *value)
 {
 	char sz[20];
 
@@ -235,20 +235,20 @@ int configfile_get_long(configfile cf, const char *name, long *value)
 	assert(value != NULL);
 
 	if (!configfile_get_string(cf, name, sz, sizeof sz))
-		return 0;
+		return failure;
 
 	errno = 0;
 	*value = strtol(sz, NULL, 10);
 	if (*value == LONG_MIN || *value == LONG_MAX)
-		return 0;
+		return failure;
 
 	if (*value == 0 && errno == EINVAL)
-		return 0;
+		return failure;
 
-	return 1;
+	return success;
 }
 
-int configfile_get_ulong(configfile cf, const char *name, unsigned long *value)
+status_t configfile_get_ulong(configfile cf, const char *name, unsigned long *value)
 {
 	char sz[20];
 
@@ -257,21 +257,21 @@ int configfile_get_ulong(configfile cf, const char *name, unsigned long *value)
 	assert(value != NULL);
 
 	if (!configfile_get_string(cf, name, sz, sizeof sz))
-		return 0;
+		return failure;
 
 	errno = 0;
 	*value = strtol(sz, NULL, 10);
 	if (*value == ULONG_MAX)
-		return 0;
+		return failure;
 
 	if (*value == 0 && errno == EINVAL)
-		return 0;
+		return failure;
 
-	return 1;
+	return success;
 }
 
 
-int configfile_get_uint(configfile cf, const char *name, unsigned int *value)
+status_t configfile_get_uint(configfile cf, const char *name, unsigned int *value)
 {
 	unsigned long tmp;
 
@@ -280,18 +280,18 @@ int configfile_get_uint(configfile cf, const char *name, unsigned int *value)
 	assert(value != NULL);
 
 	if (!configfile_get_ulong(cf, name, &tmp))
-		return 0;
+		return failure;
 
 	if (tmp > UINT_MAX) {
 		errno = EINVAL;
-		return 0;
+		return failure;
 	}
 
 	*value = (unsigned int)tmp;
-	return 1;
+	return success;
 }
 
-int configfile_get_int(configfile cf, const char *name, int *value)
+status_t configfile_get_int(configfile cf, const char *name, int *value)
 {
 	long tmp;
 
@@ -300,15 +300,15 @@ int configfile_get_int(configfile cf, const char *name, int *value)
 	assert(value != NULL);
 
 	if (!configfile_get_long(cf, name, &tmp))
-		return 0;
+		return failure;
 
 	if (tmp < INT_MIN || tmp > INT_MAX) {
 		errno = EINVAL;
-		return 0;
+		return failure;
 	}
 
 	*value = (int)tmp;
-	return 1;
+	return success;
 }
 
 void configfile_free(configfile cf)

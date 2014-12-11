@@ -38,10 +38,10 @@
  */
 struct srv {
 	void *object;
-	int (*do_func)(void *object);
-	int (*undo_func)(void *object);
-	int (*run_func)(void *object);
-	int (*shutdown_func)(void *object);
+	status_t (*do_func)(void *object);
+	status_t (*undo_func)(void *object);
+	status_t (*run_func)(void *object);
+	status_t (*shutdown_func)(void *object);
 
 	/* We must wait for each started object to finish
 	 * so that the main process can e.g. free the object
@@ -129,13 +129,13 @@ status_t process_set_username(process p, const char *username)
 	return cstring_set(p->username, username);
 }
 
-int process_add_object_to_start(
+status_t process_add_object_to_start(
 	process p,
 	void *object,
-	int do_func(void *),
-	int undo_func(void *),
-	int run_func(void *),
-	int shutdown_func(void *))
+	status_t do_func(void *),
+	status_t undo_func(void *),
+	status_t run_func(void *),
+	status_t shutdown_func(void *))
 {
 	assert(p != NULL);
 	assert(object != NULL);
@@ -147,8 +147,10 @@ int process_add_object_to_start(
 	assert(run_func != NULL);
 	assert(shutdown_func != NULL);
 
-	if (p->objects_used == MAX_OBJECTS)
-		return 0;
+	if (p->objects_used == MAX_OBJECTS) {
+		errno = ENOSPC;
+		return failure;
+	}
 
 	p->objects[p->objects_used].object = object;
 	p->objects[p->objects_used].do_func = do_func;
@@ -157,7 +159,7 @@ int process_add_object_to_start(
 	p->objects[p->objects_used].shutdown_func = shutdown_func;
 	p->objects[p->objects_used].exitcode = -1;
 	p->objects_used++;
-	return 1;
+	return success;
 }
 
 /*
@@ -261,29 +263,29 @@ static void *shutdown_thread(void *arg)
 	return NULL;
 }
 
-static int handle_shutdown(process p)
+static status_t handle_shutdown(process p)
 {
 	int error;
 
 	/* Block the signals we handle before creating threads */
 	if (!set_signals_to_block()) {
 		debug("Could not block signals\n");
-		return 0;
+		return failure;
 	}
 
 	/* start the shutdown thread */
 	if ((error = pthread_create(&p->sdt, NULL, shutdown_thread, p))) {
 		debug("Could not create debug thread\n");
 		errno = error;
-		return 0;
+		return failure;
 	}
 
-	return 1;
+	return success;
 }
 
 static void *launcher(void *args)
 {
-	int exitcode;
+	status_t exitcode;
 	struct srv* s = args;
 	exitcode = s->run_func(s->object);
 	return (void*)(intptr_t)exitcode;
@@ -348,7 +350,7 @@ static void shutdown_shutdown(process p)
 }
 
 
-int process_start(process p, int fork_and_close)
+status_t process_start(process p, int fork_and_close)
 {
 	size_t i;
 	struct srv *s;
@@ -360,7 +362,7 @@ int process_start(process p, int fork_and_close)
 		pid_t pid;
 
 		if ((pid = fork()) == -1)
-			return 0;
+			return failure;
 		else if (pid != 0)
 			exit(EXIT_SUCCESS);
 
@@ -373,7 +375,7 @@ int process_start(process p, int fork_and_close)
 		s = &p->objects[i];
 		if (s->do_func != NULL && !s->do_func(s->object)) {
 			undo(p, s);
-			return 0;
+			return failure;
 		}
 	}
 
@@ -381,7 +383,7 @@ int process_start(process p, int fork_and_close)
 	 * be able to write to /var/run. */
 	if (!handle_shutdown(p)) {
 		undo(p, NULL);
-		return 0;
+		return failure;
 	}
 
 	/* Set current directory and user id if supplied by the caller */
@@ -402,7 +404,7 @@ int process_start(process p, int fork_and_close)
 				errno = ENOENT;
 
 			debug("Could not get username. getpwnam() failed\n");
-			return 0;
+			return failure;
 		}
 
 		/* We must chroot before setuid() to be allowed to chroot. */
@@ -412,7 +414,7 @@ int process_start(process p, int fork_and_close)
 				shutdown_shutdown(p);
 				undo(p, NULL);
 				debug("Could not change root directory\n");
-				return 0;
+				return failure;
 			}
 		}
 
@@ -425,7 +427,7 @@ int process_start(process p, int fork_and_close)
 			undo(p, NULL);
 			shutdown_shutdown(p);
 			debug("Could not set uid\n");
-			return 0;
+			return failure;
 		}
 	}
 	else {
@@ -435,7 +437,7 @@ int process_start(process p, int fork_and_close)
 				/* Hmm, unable to change directory. */
 				undo(p, NULL);
 				shutdown_shutdown(p);
-				return 0;
+				return failure;
 			}
 		}
 	}
@@ -450,15 +452,15 @@ int process_start(process p, int fork_and_close)
 			 */
 			shutdown_started_objects(p, s);
 			shutdown_shutdown(p);
-			return 0;
+			return failure;
 		}
 	}
 
 	/* Success. */
-	return 1;
+	return success;
 }
 
-int process_wait_for_shutdown(process p)
+status_t process_wait_for_shutdown(process p)
 {
 	size_t i;
 	int error;
@@ -466,7 +468,7 @@ int process_wait_for_shutdown(process p)
 	assert(p != NULL);
 	if ((error = pthread_join(p->sdt, NULL))) {
 		errno = error;
-		return 0;
+		return failure;
 	}
 
 	/* Now that the shutdown thread has exited, it
@@ -477,11 +479,11 @@ int process_wait_for_shutdown(process p)
 		void *pfoo = &srv->exitcode;
 		if ((error = pthread_join(srv->tid, &pfoo))) {
 			errno = error;
-			return 0;
+			return failure;
 		}
 	}
 
-	return 1;
+	return success;
 }
 
 int process_get_exitcode(process p, void *object)

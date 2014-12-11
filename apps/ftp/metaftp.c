@@ -177,7 +177,11 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    process_wait_for_shutdown(p);
+    if (!process_wait_for_shutdown(p)) {
+		perror("process_wait_for_shutdown");
+		exit(EXIT_FAILURE);
+	}
+
     process_free(p);
     http_server_free(g_server);
     exit(0);

@@ -20,6 +20,10 @@
 #ifndef META_PAIR_H
 #define META_PAIR_H
 
+#include <stddef.h>
+
+#include <meta_common.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -32,8 +36,12 @@ typedef struct pair_tag* pair;
 pair pair_new(size_t nelem);
 void pair_free(pair p);
 
-int	pair_add(pair p, const char *name, const char *value);
-int	pair_set(pair p, const char *name, const char *value);
+status_t pair_add(pair p, const char *name, const char *value)
+	__attribute__((warn_unused_result));
+
+status_t pair_set(pair p, const char *name, const char *value)
+	__attribute__((warn_unused_result));
+
 const char *pair_get_name(pair p, size_t i);
 const char *pair_get(pair p, const char *name);
 

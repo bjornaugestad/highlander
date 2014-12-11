@@ -162,7 +162,9 @@ void* threadfunc(void* arg)
 	request_free(request);
 	response_free(response);
 
-	connection_close(c);
+	if (!connection_close(c))
+		warning("Could not close connection\n");
+
 	connection_free(c);
 	membuf_free(rb);
 	membuf_free(wb);

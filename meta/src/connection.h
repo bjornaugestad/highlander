@@ -40,22 +40,40 @@ void connection_recycle(connection conn);
 void *connection_arg2(connection conn);
 
 /* connect to a host on a port, return 0 on errors */
-status_t connection_connect(connection c, const char *host, int port);
+status_t connection_connect(connection c, const char *host, int port)
+	__attribute__((warn_unused_result));
 
 
-status_t connection_putc(connection conn, int ch);
-status_t connection_puts(connection conn, const char *s);
-status_t connection_write(connection conn, const void *buf, size_t count);
-status_t connection_write_big_buffer(connection conn, const void *buf, size_t count, int timeout, int retries);
-status_t connection_flush(connection conn);
+status_t connection_putc(connection conn, int ch)
+	__attribute__((warn_unused_result));
+
+status_t connection_puts(connection conn, const char *s)
+	__attribute__((warn_unused_result));
+
+status_t connection_write(connection conn, const void *buf, size_t count)
+	__attribute__((warn_unused_result));
+
+status_t connection_write_big_buffer(connection conn, const void *buf, size_t count, int timeout, int retries)
+	__attribute__((warn_unused_result));
+
+status_t connection_flush(connection conn)
+	__attribute__((warn_unused_result));
 
 ssize_t connection_read(connection conn, void *buf, size_t bufsize);
-status_t connection_getc(connection conn, int* pchar);
-status_t connection_gets(connection conn, char *buf, size_t bufsize);
-int connection_ungetc(connection conn, int c);
+
+status_t connection_getc(connection conn, int* pchar)
+	__attribute__((warn_unused_result));
+
+status_t connection_gets(connection conn, char *buf, size_t bufsize)
+	__attribute__((warn_unused_result));
+
+status_t connection_ungetc(connection conn, int c)
+	__attribute__((warn_unused_result));
 
 void connection_discard(connection conn);
-status_t connection_close(connection conn);
+
+status_t connection_close(connection conn)
+	__attribute__((warn_unused_result));
 
 void connection_set_persistent(connection conn, int val);
 int	 connection_is_persistent(connection conn);

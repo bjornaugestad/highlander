@@ -282,8 +282,8 @@ void* serviceConnection(void* psa)
 	status = serviceConnection2(srv, conn, request, response, e);
 	if (!status && is_tcpip_error(e))
 		connection_discard(conn);
-	else
-		connection_close(conn);
+	else if (!connection_close(conn)) 
+		warning("Could not close connection\n");
 
 	http_server_recycle_request(srv, request);
 	http_server_recycle_response(srv, response);
@@ -392,7 +392,9 @@ static status_t serviceConnection2(
 		 * kun om køen har > 0 entries.
 		 */
 
-		connection_flush(conn);
+		if (!connection_flush(conn))
+			warning("Could not flush connection\n");
+
 		request_recycle(request);
 		response_recycle(response);
 	}

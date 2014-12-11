@@ -22,6 +22,8 @@
 
 #include <stddef.h>		/* for size_t */
 
+#include <meta_common.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -32,7 +34,7 @@ void fs_lower(char *s);
  * Converts a string of digits only to size_t.
  * returns 0 on error, 1 on success.
  */
-int string2size_t(const char *s, size_t *val);
+status_t string2size_t(const char *s, size_t *val);
 
 void remove_trailing_newline(char *s);
 
@@ -63,7 +65,7 @@ int find_word(const char *s, size_t iWord);
  * 1 if successful. Note that 1 will be returned even if
  * no extension exists as it is legal not to have an extension.
  */
-int get_extension(const char *src, char *dest, size_t destsize);
+status_t get_extension(const char *src, char *dest, size_t destsize);
 const char *get_mime_type(const char *filename);
 
 /*
@@ -72,23 +74,22 @@ const char *get_mime_type(const char *filename);
  * @param cchWordMax	Max # of chars excl. '\0' in word
  * @param iWord			 zero-based index of word to copy
  */
-int get_word_from_string(
+status_t get_word_from_string(
 	const char *string,
 	char word[],
 	size_t cchWordMax,
-	size_t iWord);
+	size_t iWord) __attribute__((warn_unused_result));
 
 /*
  * Copies one word from 'input' and places it in 'word'.
  * Stops at either '\0' or 'separator'.
  * Terminates 'word' with a '\0' if enough space was available.
- * Returns -1 on buffer overflow and 0 on success.
  */
-int copy_word(
+status_t copy_word(
 	const char *input,
 	char word[],
 	int separator,
-	size_t cchWordMax);
+	size_t cchWordMax) __attribute__((warn_unused_result));
 
 #if !defined(min) && !defined(max)
 #define min(a, b) ((a) < (b) ? (a) : (b))
