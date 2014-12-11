@@ -40,12 +40,13 @@ wlock wlock_new(void)
 {
 	wlock p;
 
-	if ((p = malloc(sizeof *p)) != NULL) {
-		pthread_mutexattr_init(&p->ma);
-		pthread_mutexattr_settype(&p->ma, PTHREAD_MUTEX_ERRORCHECK);
-		pthread_mutex_init(&p->lock, &p->ma);
-		pthread_cond_init(&p->condvar, NULL);
-	}
+	if ((p = malloc(sizeof *p)) == NULL)
+		return NULL;
+
+	pthread_mutexattr_init(&p->ma);
+	pthread_mutexattr_settype(&p->ma, PTHREAD_MUTEX_ERRORCHECK);
+	pthread_mutex_init(&p->lock, &p->ma);
+	pthread_cond_init(&p->condvar, NULL);
 
 	return p;
 }

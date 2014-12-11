@@ -166,8 +166,10 @@ threadpool threadpool_new(
 	assert(max_queue_size > 0);
 
 	/* Allocate space for the pool */
-	if ((p = malloc(sizeof *p)) == NULL
-	|| (p->threads = malloc(sizeof *p->threads * nthreads)) == NULL) {
+	if ((p = malloc(sizeof *p)) == NULL)
+		return NULL;
+
+	if ((p->threads = malloc(sizeof *p->threads * nthreads)) == NULL) {
 		free(p);
 		return NULL;
 	}
@@ -194,18 +196,9 @@ threadpool threadpool_new(
 
 	/* Create the threads */
 	for (i = 0; i < nthreads; i++) {
-		err = pthread_create(
-			&p->threads[i],
-			NULL,
-			threadpool_exec_thread,
-			p);
-
+		err = pthread_create(&p->threads[i], NULL, threadpool_exec_thread, p);
 		if (err) {
-			/* NOTE: Should we destroy the threads as well? */
-			free(p->threads);
-			free(p);
-			errno = err;
-			return NULL;
+			threadpool_destroy(p, 0);
 		}
 	}
 
@@ -359,6 +352,10 @@ int threadpool_destroy(threadpool pool, unsigned int finish)
 
 	/* Now wait for each thread to finish */
 	for (i = 0; i < pool->nthreads; i++) {
+		// Don't join NULL threads.
+		if (pool->threads[i] == 0)
+			continue;
+
 		if ((err = pthread_join(pool->threads[i], NULL))) {
 			errno = err;
 			return 0;

@@ -47,16 +47,17 @@ ticker ticker_new(int usec)
 {
 	ticker t;
 
-	if ((t = malloc(sizeof *t)) == NULL
-	||	(t->actions = list_new()) == NULL) {
+	if ((t = malloc(sizeof *t)) == NULL)
+		return NULL;
+
+	if ((t->actions = list_new()) == NULL) {
 		free(t);
-		t = NULL;
+		return NULL;
 	}
-	else {
-		t->usec = usec;
-		t->stop = 0;
-		t->running = 0;
-	}
+
+	t->usec = usec;
+	t->stop = 0;
+	t->running = 0;
 
 	return t;
 }

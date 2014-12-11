@@ -289,10 +289,9 @@ int tcp_server_allow_clients(tcp_server srv, const char *filter)
 		errno = err;
 		return 0;
 	}
-	else {
-		srv->pattern_compiled = 1;
-		return 1;
-	}
+
+	srv->pattern_compiled = 1;
+	return 1;
 }
 
 void tcp_server_clear_client_filter(tcp_server srv)
@@ -535,8 +534,8 @@ int tcp_server_get_root_resources(tcp_server srv)
 	srv->sock = create_server_socket(srv->unix_socket, srv->host, srv->port);
 	if (srv->sock == NULL)
 		return 0;
-	else
-		return 1;
+
+	return 1;
 }
 
 int tcp_server_start(tcp_server srv)
@@ -627,16 +626,23 @@ void tcp_server_set_service_function(
 
 int tcp_server_set_hostname(tcp_server srv, const char *host)
 {
+	size_t n;
+
+	assert(srv != NULL);
+
 	if (srv->host != NULL)
 		free(srv->host);
 
-	if (host == NULL)
+	if (host == NULL) {
 		srv->host = NULL;
-	else if ((srv->host = malloc(strlen(host) + 1)) == NULL)
-		return 0;
-	else
-		strcpy(srv->host, host);
+		return 1;
+	}
 
+	n = strlen(host) + 1;
+	if ((srv->host = malloc(n)) == NULL)
+		return 0;
+
+	memcpy(srv->host, host, n);
 	return 1;
 }
 
@@ -670,16 +676,18 @@ static int client_can_connect(tcp_server srv, struct sockaddr_in* addr)
 		/* No permissions set. Allow all */
 		return 1;
 	}
-	else if (inet_ntop(AF_INET, &vaddr, sz, sizeof(sz)) == NULL) {
+
+	if (inet_ntop(AF_INET, &vaddr, sz, sizeof sz) == NULL) {
 		/* Crappy addr or internal error. Deny */
 		return 0;
 	}
-	else if (regexec(&srv->allowed_clients, sz, 0, NULL, 0) == REG_NOMATCH){
+
+	if (regexec(&srv->allowed_clients, sz, 0, NULL, 0) == REG_NOMATCH){
 		/* Not found in pattern */
 		return 0;
 	}
-	else
-		return 1;
+
+	return 1;
 }
 
 int tcp_server_start_via_process(process p, tcp_server s)
