@@ -425,7 +425,7 @@ static inline int send_content_length(entity_header eh, connection conn)
 int entity_header_send_fields(entity_header eh, connection c)
 {
 	int success = 1;
-	size_t i, nelem;
+	size_t i, n;
 
 	static const struct {
 		size_t flag;
@@ -443,8 +443,8 @@ int entity_header_send_fields(entity_header eh, connection c)
 		{ ENTITY_HEADER_LAST_MODIFIED_SET,		send_last_modified },
 	};
 
-	nelem = sizeof fields / sizeof *fields;
-	for (i = 0; i < nelem; i++) {
+	n = sizeof fields / sizeof *fields;
+	for (i = 0; i < n; i++) {
 		if (entity_header_flag_is_set(eh, fields[i].flag))
 			if ((success = fields[i].func(eh, c)) == 0)
 				break;
@@ -661,8 +661,9 @@ int parse_entity_header(int idx, entity_header gh, const char* value, meta_error
 
 int find_entity_header(const char* name)
 {
-	int i, nelem = sizeof entity_header_fields / sizeof *entity_header_fields;
-	for (i = 0; i < nelem; i++) {
+	int i, n = sizeof entity_header_fields / sizeof *entity_header_fields;
+
+	for (i = 0; i < n; i++) {
 		if (strcmp(entity_header_fields[i].name, name) == 0) {
 			return i;
 		}

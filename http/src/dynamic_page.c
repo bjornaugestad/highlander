@@ -97,9 +97,9 @@ int dynamic_set_attributes(dynamic_page p, page_attribute a)
 {
 	attribute_free(p->attr);
 	if ((p->attr = attribute_dup(a)) == NULL)
-		return ENOMEM;
+		return 0;
 
-	return 0;
+	return 1;
 }
 
 page_attribute dynamic_get_attributes(dynamic_page p)
