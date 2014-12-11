@@ -34,13 +34,14 @@
 #include <tcp_server.h>
 #include <connection.h>
 #include <meta_socket.h>
+#include <cstring.h>
 
 /*
  * Implementation of the TCP server ADT.
  */
 struct tcp_server_tag {
 	/* Hostname, for gethostbyaddr */
-	char *host;
+	cstring host;
 
 	/* Port to listen to */
 	int port;
@@ -165,7 +166,7 @@ void tcp_server_free(tcp_server srv)
 		pool_free(srv->read_buffers, (dtor)membuf_free);
 		pool_free(srv->write_buffers, (dtor)membuf_free);
 
-		free(srv->host);
+		cstring_free(srv->host);
 
 		/* Free the regex struct */
 		if (srv->pattern_compiled) {
@@ -531,7 +532,7 @@ static int accept_new_connections(tcp_server srv, meta_socket sock)
 
 int tcp_server_get_root_resources(tcp_server srv)
 {
-	srv->sock = create_server_socket(srv->unix_socket, srv->host, srv->port);
+	srv->sock = create_server_socket(srv->unix_socket, c_str(srv->host), srv->port);
 	if (srv->sock == NULL)
 		return 0;
 
@@ -631,18 +632,16 @@ int tcp_server_set_hostname(tcp_server srv, const char *host)
 	assert(srv != NULL);
 
 	if (srv->host != NULL)
-		free(srv->host);
+		cstring_free(srv->host);
 
 	if (host == NULL) {
 		srv->host = NULL;
 		return 1;
 	}
 
-	n = strlen(host) + 1;
-	if ((srv->host = malloc(n)) == NULL)
+	if ((srv->host = cstring_dup(host)) == NULL)
 		return 0;
 
-	memcpy(srv->host, host, n);
 	return 1;
 }
 
