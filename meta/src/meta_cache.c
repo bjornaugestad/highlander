@@ -124,7 +124,7 @@ void cache_free(cache c, dtor cleanup)
 		cleanup = free;
 
 	if (c == NULL)
-		return NULL;
+		return;
 
 	for (i = 0; i < c->nelem; i++) {
 		list lst = c->hashtable[i];

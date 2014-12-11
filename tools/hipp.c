@@ -571,7 +571,6 @@ static void create_mainfile(int argc, char *argv[], const char *filename)
     p(f, "#include <stdlib.h>\n");
     p(f, "#include <unistd.h>\n");
     p(f, "#include <errno.h>\n");
-    "",
     p(f, "#include <highlander.h>\n");
     p(f, "#include <meta_process.h>\n");
     p(f, "#include <meta_common.h>\n");
