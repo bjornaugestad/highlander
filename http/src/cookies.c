@@ -192,7 +192,7 @@ int cookie_get_max_age(cookie c)
  * With fixed buffer sizes, we can always return HTTP_BAD_REQUEST
  * so we do not need meta_error.
  */
-static int get_cookie_attribute(
+static status_t get_cookie_attribute(
 	const char *s,
 	const char *attribute,	/* $Version, $Path, $Secure or $Domain */
 	cstring value,		/* Store result here */
@@ -220,7 +220,7 @@ static int get_cookie_attribute(
 	if (*location != '"')
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
-	return 1;
+	return success;
 }
 
 /* Cookies are defined in rfc2109
@@ -249,7 +249,7 @@ static int get_cookie_attribute(
  *	   so that we can switch the support for illegal cookie tags on and off.
  *	   To summarize; we now support "Cookie: \r\n".
  */
-int parse_cookie(http_request req, const char *value, meta_error e)
+status_t parse_cookie(http_request req, const char *value, meta_error e)
 {
 	/* Locate version */
 	char *s;
@@ -257,7 +257,7 @@ int parse_cookie(http_request req, const char *value, meta_error e)
 #define SUPPORT_EMPTY_COOKIES 1
 #ifdef SUPPORT_EMPTY_COOKIES
 	if (strcmp(value, "") == 0) {
-		return 1;
+		return success;
 	}
 #endif
 
@@ -275,7 +275,7 @@ static const char *find_first_non_space(const char *s)
 	return s;
 }
 
-static int parse_cookie_attr(
+static status_t parse_cookie_attr(
 	cookie c,
 	const char *input,
 	const char *look_for,
@@ -294,7 +294,7 @@ static int parse_cookie_attr(
 
 	set_attr(c, c_str(str));
 	cstring_free(str);
-	return 1;
+	return success;
 }
 
 /*
@@ -302,7 +302,7 @@ static int parse_cookie_attr(
  * add name and value to the cookie .
  * Returns 1 on success, else a http error do
  */
-static int parse_new_cookie_name(cookie c, const char *input, meta_error e)
+static status_t parse_new_cookie_name(cookie c, const char *input, meta_error e)
 {
 	const char *s, *s2;
 	cstring str;
@@ -353,10 +353,10 @@ static int parse_new_cookie_name(cookie c, const char *input, meta_error e)
 	}
 
 	cstring_free(str);
-	return 1;
+	return success;
 }
 
-static int parse_new_cookie_secure(cookie c, const char *value, meta_error e)
+static status_t parse_new_cookie_secure(cookie c, const char *value, meta_error e)
 {
 	int secure;
 	cstring str;
@@ -377,20 +377,20 @@ static int parse_new_cookie_secure(cookie c, const char *value, meta_error e)
 
 	cookie_set_secure(c, secure);
 	cstring_free(str);
-	return 1;
+	return success;
 }
 
-static int parse_new_cookie_domain(cookie c, const char *value, meta_error e)
+static status_t parse_new_cookie_domain(cookie c, const char *value, meta_error e)
 {
 	return parse_cookie_attr(c, value, "$Domain", cookie_set_domain, e);
 }
 
-static int parse_new_cookie_path(cookie c, const char *value, meta_error e)
+static status_t parse_new_cookie_path(cookie c, const char *value, meta_error e)
 {
 	return parse_cookie_attr(c, value, "$Path", cookie_set_path, e);
 }
 
-static int parse_new_cookie_version(cookie c, const char *value, meta_error e)
+static status_t parse_new_cookie_version(cookie c, const char *value, meta_error e)
 {
 	int version;
 	cstring str;
@@ -410,10 +410,10 @@ static int parse_new_cookie_version(cookie c, const char *value, meta_error e)
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
 	cookie_set_version(c, version);
-	return 1;
+	return success;
 }
 
-int parse_new_cookie(http_request req, const char *value, meta_error e)
+status_t parse_new_cookie(http_request req, const char *value, meta_error e)
 {
 	cookie c;
 
@@ -426,7 +426,7 @@ int parse_new_cookie(http_request req, const char *value, meta_error e)
 	/* New cookies require this field! */
 	if (!parse_new_cookie_version(c, value, e)) {
 		cookie_free(c);
-		return 0;
+		return failure;
 	}
 
 	/* Now for the rest of the attributes */
@@ -435,23 +435,23 @@ int parse_new_cookie(http_request req, const char *value, meta_error e)
 	|| !parse_new_cookie_domain(c, value, e)
 	|| !parse_new_cookie_secure(c, value, e)) {
 		cookie_free(c);
-		return 0;
+		return failure;
 	}
 
 	if (!request_add_cookie(req, c)) {
 		set_os_error(e, errno);
 		cookie_free(c);
-		return 0;
+		return failure;
 	}
 
-	return 1;
+	return success;
 }
 
 /*
  * The old cookie format is (hopefully) name=value
  * where value may be quoted.
  */
-int parse_old_cookie(http_request req, const char *input, meta_error e)
+status_t parse_old_cookie(http_request req, const char *input, meta_error e)
 {
 	cookie c = NULL;
 	cstring name = NULL, value = NULL;
@@ -491,7 +491,7 @@ int parse_old_cookie(http_request req, const char *input, meta_error e)
 		return 0;
 	}
 
-	return 1;
+	return success;
 
 memerr:
 	cstring_free(name);
@@ -500,7 +500,7 @@ memerr:
 	return set_os_error(e, ENOMEM);
 }
 
-int cookie_dump(cookie c, void *file)
+status_t cookie_dump(cookie c, void *file)
 {
 	FILE *f = file;
 
@@ -512,7 +512,7 @@ int cookie_dump(cookie c, void *file)
 	fprintf(f, "Max-Age:%d\n", c->max_age);
 	fprintf(f, "Secure :%d\n", c->secure);
 	fprintf(f, "Version:%d\n", c->version);
-	return 1;
+	return success;
 }
 
 

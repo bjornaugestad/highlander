@@ -60,64 +60,64 @@ void meta_error_free(meta_error e)
 	free(e);
 }
 
-int set_tcpip_error(meta_error e, int val)
+status_t set_tcpip_error(meta_error e, int val)
 {
 	assert(e != NULL);
 
 	e->group = meg_tcpip;
 	e->code = val;
 
-	return 0;
+	return failure;
 }
 
-int set_http_error(meta_error e, int val)
+status_t set_http_error(meta_error e, int val)
 {
 	if (e != NULL) {
 		e->group = meg_protocol;
 		e->code = val;
 	}
 
-	return 0;
+	return failure;
 }
 
-int set_app_error(meta_error e, int val)
+status_t set_app_error(meta_error e, int val)
 {
 	if (e != NULL) {
 		e->group = meg_app;
 		e->code = val;
 	}
 
-	return 0;
+	return failure;
 }
 
-int set_os_error(meta_error e, int val)
+status_t set_os_error(meta_error e, int val)
 {
 	if (e != NULL) {
 		e->group = meg_os;
 		e->code = val;
 	}
 
-	return 0;
+	return failure;
 }
 
-int set_db_error(meta_error e, int val)
+status_t set_db_error(meta_error e, int val)
 {
 	if (e != NULL) {
 		e->group = meg_db;
 		e->code = val;
 	}
 
-	return 0;
+	return failure;
 }
 
-int set_other_error(meta_error e, int val)
+status_t set_other_error(meta_error e, int val)
 {
 	if (e != NULL) {
 		e->group = meg_other;
 		e->code = val;
 	}
 
-	return 0;
+	return failure;
 }
 
 int is_tcpip_error(meta_error e)

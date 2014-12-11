@@ -122,16 +122,16 @@ void entity_header_recycle(entity_header p)
 	cstring_recycle(p->content_language);
 }
 
-int entity_header_set_allow(entity_header eh, const char* value)
+status_t entity_header_set_allow(entity_header eh, const char* value)
 {
 	assert(NULL != eh);
 	assert(NULL != value);
 
 	if (!cstring_set(eh->allow, value))
-		return 0;
+		return failure;
 
 	entity_header_set_flag(eh, ENTITY_HEADER_ALLOW_SET);
-	return 1;
+	return success;
 }
 
 void entity_header_set_expires(entity_header eh, time_t value)
@@ -150,7 +150,7 @@ void entity_header_set_last_modified(entity_header eh, time_t value)
 	entity_header_set_flag(eh, ENTITY_HEADER_LAST_MODIFIED_SET);
 }
 
-int entity_header_set_content_language(entity_header eh, const char* value, meta_error e)
+status_t entity_header_set_content_language(entity_header eh, const char* value, meta_error e)
 {
 	assert(NULL != eh);
 	assert(NULL != value);
@@ -159,7 +159,7 @@ int entity_header_set_content_language(entity_header eh, const char* value, meta
 		return set_os_error(e, errno);
 
 	entity_header_set_flag(eh, ENTITY_HEADER_CONTENT_LANGUAGE_SET);
-	return 1;
+	return success;
 }
 
 void entity_header_set_content_length(entity_header eh, const size_t value)
@@ -170,65 +170,65 @@ void entity_header_set_content_length(entity_header eh, const size_t value)
 	entity_header_set_flag(eh, ENTITY_HEADER_CONTENT_LENGTH_SET);
 }
 
-int entity_header_set_content_encoding(entity_header eh, const char* value)
+status_t entity_header_set_content_encoding(entity_header eh, const char* value)
 {
 	assert(NULL != eh);
 	assert(NULL != value);
 
 	if (!cstring_set(eh->content_encoding, value))
-		return 0;
+		return failure;
 
 	entity_header_set_flag(eh, ENTITY_HEADER_CONTENT_ENCODING_SET);
-	return 1;
+	return success;
 }
 
-int entity_header_set_content_type(entity_header eh, const char* value)
+status_t entity_header_set_content_type(entity_header eh, const char* value)
 {
 	assert(NULL != eh);
 	assert(NULL != value);
 
 	if (!cstring_set(eh->content_type, value))
-		return 0;
+		return failure;
 
 	entity_header_set_flag(eh, ENTITY_HEADER_CONTENT_TYPE_SET);
-	return 1;
+	return success;
 }
 
 
-int entity_header_set_content_md5(entity_header eh, const char* value)
+status_t entity_header_set_content_md5(entity_header eh, const char* value)
 {
 	assert(NULL != eh);
 	assert(NULL != value);
 
 	if (!cstring_set(eh->content_md5, value))
-		return 0;
+		return failure;
 
 	entity_header_set_flag(eh, ENTITY_HEADER_CONTENT_MD5_SET);
-	return 1;
+	return success;
 }
 
-int entity_header_set_content_location(entity_header eh, const char* value)
+status_t entity_header_set_content_location(entity_header eh, const char* value)
 {
 	assert(NULL != eh);
 	assert(NULL != value);
 
 	if (!cstring_set(eh->content_location, value))
-		return 0;
+		return failure;
 
 	entity_header_set_flag(eh, ENTITY_HEADER_CONTENT_LOCATION_SET);
-	return 1;
+	return success;
 }
 
-int entity_header_set_content_range(entity_header eh, const char* value)
+status_t entity_header_set_content_range(entity_header eh, const char* value)
 {
 	assert(NULL != eh);
 	assert(NULL != value);
 
 	if (!cstring_set(eh->content_range, value))
-		return 0;
+		return failure;
 
 	entity_header_set_flag(eh, ENTITY_HEADER_CONTENT_RANGE_SET);
-	return 1;
+	return success;
 }
 
 int entity_header_content_type_is(entity_header eh, const char* val)
@@ -366,52 +366,52 @@ time_t entity_header_get_last_modified(entity_header eh)
 	return eh->last_modified;
 }
 
-static inline int send_allow(entity_header eh, connection conn)
+static inline status_t send_allow(entity_header eh, connection conn)
 {
 	return http_send_field(conn, "Allow: ", eh->allow);
 }
 
-static inline int send_content_encoding(entity_header eh, connection conn)
+static inline status_t send_content_encoding(entity_header eh, connection conn)
 {
 	return http_send_field(conn, "Content-Encoding: ", eh->content_encoding);
 }
 
-static inline int send_content_language(entity_header eh, connection conn)
+static inline status_t send_content_language(entity_header eh, connection conn)
 {
 	return http_send_field(conn, "Content-Language: ", eh->content_language);
 }
 
-static inline int send_content_location(entity_header eh, connection conn)
+static inline status_t send_content_location(entity_header eh, connection conn)
 {
 	return http_send_field(conn, "Content-Location: ", eh->content_location);
 }
 
-static inline int send_content_md5(entity_header eh, connection conn)
+static inline status_t send_content_md5(entity_header eh, connection conn)
 {
 	return http_send_field(conn, "Content-MD5: ", eh->content_md5);
 }
 
-static inline int send_content_range(entity_header eh, connection conn)
+static inline status_t send_content_range(entity_header eh, connection conn)
 {
 	return http_send_field(conn, "Content-Range: ", eh->content_range);
 }
 
-static inline int send_content_type(entity_header eh, connection conn)
+static inline status_t send_content_type(entity_header eh, connection conn)
 {
 	return http_send_field(conn, "Content-Type: ", eh->content_type);
 }
 
-static inline int send_expires(entity_header eh, connection conn)
+static inline status_t send_expires(entity_header eh, connection conn)
 {
 	return http_send_date(conn, "Expires: ", eh->expires);
 }
 
-static inline int send_last_modified(entity_header eh, connection conn)
+static inline status_t send_last_modified(entity_header eh, connection conn)
 {
 	return http_send_date(conn, "Last-Modified: ", eh->last_modified);
 }
 
-static inline int send_content_length(entity_header eh, connection conn)
+static inline status_t send_content_length(entity_header eh, connection conn)
 {
 	char buf[100] = {'\0'}; /* "Content-Length: " + length + '\r\n\0' */
 	size_t cb, content_length = 0;
@@ -422,14 +422,14 @@ static inline int send_content_length(entity_header eh, connection conn)
 	return connection_write(conn, buf, cb);
 }
 
-int entity_header_send_fields(entity_header eh, connection c)
+status_t entity_header_send_fields(entity_header eh, connection c)
 {
-	int xsuccess = 1;
+	status_t rc = success;
 	size_t i, n;
 
 	static const struct {
 		size_t flag;
-		int (*func)(entity_header, connection);
+		status_t (*func)(entity_header, connection);
 	} fields[] = {
 		{ ENTITY_HEADER_ALLOW_SET,				send_allow },
 		{ ENTITY_HEADER_CONTENT_ENCODING_SET,	send_content_encoding },
@@ -446,18 +446,18 @@ int entity_header_send_fields(entity_header eh, connection c)
 	n = sizeof fields / sizeof *fields;
 	for (i = 0; i < n; i++) {
 		if (entity_header_flag_is_set(eh, fields[i].flag))
-			if ((xsuccess = fields[i].func(eh, c)) == 0)
+			if ((rc = fields[i].func(eh, c)) == failure)
 				break;
 	}
 
-	return xsuccess;
+	return rc;
 
 }
 
 /* Parsing functions */
 /* Entity header handlers */
 
-static int parse_content_encoding(entity_header eh, const char* value, meta_error e)
+static status_t parse_content_encoding(entity_header eh, const char* value, meta_error e)
 {
 	assert(NULL != eh);
 	assert(NULL != value);
@@ -474,10 +474,10 @@ static int parse_content_encoding(entity_header eh, const char* value, meta_erro
 	if (!entity_header_set_content_encoding(eh, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
-static int parse_content_length(entity_header eh, const char* value, meta_error e)
+static status_t parse_content_length(entity_header eh, const char* value, meta_error e)
 {
 	size_t len;
 	/*
@@ -499,10 +499,10 @@ static int parse_content_length(entity_header eh, const char* value, meta_error 
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
 	entity_header_set_content_length(eh, (unsigned long)len);
-	return 1;
+	return success;
 }
 
-static int parse_content_md5(entity_header eh, const char* value, meta_error e)
+static status_t parse_content_md5(entity_header eh, const char* value, meta_error e)
 {
 	assert(NULL != eh);
 	assert(NULL != value);
@@ -510,14 +510,14 @@ static int parse_content_md5(entity_header eh, const char* value, meta_error e)
 	if (!entity_header_set_allow(eh, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
 /* Helper function to have the algorithm one place only */
-static int eh_parse_multivalued_fields(
+static status_t eh_parse_multivalued_fields(
 	void *dest,
 	const char* value,
-	int(*set_func)(entity_header dest, const char* value, meta_error e),
+	status_t(*set_func)(entity_header dest, const char* value, meta_error e),
 	meta_error e)
 {
 	const int sep = ',';
@@ -553,7 +553,7 @@ static int eh_parse_multivalued_fields(
  * too many to check.
  * Anything goes, IOW.
  */
-static int parse_content_language(entity_header eh, const char* value, meta_error e)
+static status_t parse_content_language(entity_header eh, const char* value, meta_error e)
 {
 	assert(NULL != eh);
 	assert(NULL != value);
@@ -565,7 +565,7 @@ static int parse_content_language(entity_header eh, const char* value, meta_erro
 	return eh_parse_multivalued_fields(eh, value, entity_header_set_content_language, e);
 }
 
-static int parse_allow(entity_header eh, const char* value, meta_error e)
+static status_t parse_allow(entity_header eh, const char* value, meta_error e)
 {
 	assert(NULL != eh);
 	assert(NULL != value);
@@ -573,10 +573,10 @@ static int parse_allow(entity_header eh, const char* value, meta_error e)
 	if (!entity_header_set_allow(eh, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
-static int parse_content_location(entity_header eh, const char* value, meta_error e)
+static status_t parse_content_location(entity_header eh, const char* value, meta_error e)
 {
 	assert(NULL != eh);
 	assert(NULL != value);
@@ -584,10 +584,10 @@ static int parse_content_location(entity_header eh, const char* value, meta_erro
 	if (!entity_header_set_content_location(eh, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
-static int parse_content_range(entity_header eh, const char* value, meta_error e)
+static status_t parse_content_range(entity_header eh, const char* value, meta_error e)
 {
 	assert(NULL != eh);
 	assert(NULL != value);
@@ -595,18 +595,18 @@ static int parse_content_range(entity_header eh, const char* value, meta_error e
 	if (!entity_header_set_content_range(eh, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
-static int parse_content_type(entity_header eh, const char* value, meta_error e)
+static status_t parse_content_type(entity_header eh, const char* value, meta_error e)
 {
 	if (!entity_header_set_content_type(eh, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
-static int parse_expires(entity_header eh, const char* value, meta_error e)
+static status_t parse_expires(entity_header eh, const char* value, meta_error e)
 {
 	time_t t;
 
@@ -617,10 +617,10 @@ static int parse_expires(entity_header eh, const char* value, meta_error e)
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
 	entity_header_set_expires(eh, t);
-	return 1;
+	return success;
 }
 
-static int parse_last_modified(entity_header eh, const char* value, meta_error e)
+static status_t parse_last_modified(entity_header eh, const char* value, meta_error e)
 {
 	time_t t;
 
@@ -631,12 +631,12 @@ static int parse_last_modified(entity_header eh, const char* value, meta_error e
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
 	entity_header_set_last_modified(eh, t);
-	return 1;
+	return success;
 }
 
 static const struct {
 	const char* name;
-	int (*handler)(entity_header eh, const char* value, meta_error e);
+	status_t (*handler)(entity_header eh, const char* value, meta_error e);
 } entity_header_fields[] = {
 	{ "allow",				parse_allow },
 	{ "content-encoding",	parse_content_encoding },
@@ -650,7 +650,7 @@ static const struct {
 	{ "last-modified",		parse_last_modified },
 };
 
-int parse_entity_header(int idx, entity_header gh, const char* value, meta_error e)
+status_t parse_entity_header(int idx, entity_header gh, const char* value, meta_error e)
 {
 	assert(idx >= 0);
 	assert((size_t)idx < sizeof entity_header_fields / sizeof *entity_header_fields);

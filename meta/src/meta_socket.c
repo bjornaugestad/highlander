@@ -125,7 +125,7 @@ int wait_for_data(meta_socket p, int timeout)
 	return sock_poll_for(p, timeout, POLLIN);
 }
 
-int sock_write(meta_socket p, const char *buf, size_t count, int timeout, int nretries)
+status_t sock_write(meta_socket p, const char *buf, size_t count, int timeout, int nretries)
 {
 	ssize_t nwritten = 0;
 
@@ -147,7 +147,7 @@ int sock_write(meta_socket p, const char *buf, size_t count, int timeout, int nr
 
 		if ((nwritten = write(p->fd, buf, count)) == -1) {
 			perror("write");
-			return 0;
+			return failure;
 		}
 
 		if (nwritten != (ssize_t)count) {
@@ -159,10 +159,10 @@ int sock_write(meta_socket p, const char *buf, size_t count, int timeout, int nr
 	/* If not able to write and no errors detected, we have a timeout */
 	if ((ssize_t)count != nwritten) {
 		errno = EAGAIN;
-		return 0;
+		return failure;
 	}
 
-	return 1;
+	return success;
 }
 
 /*
@@ -383,7 +383,7 @@ meta_socket create_client_socket(const char *host, int port)
 	return p;
 }
 
-int sock_set_nonblock(meta_socket p)
+status_t sock_set_nonblock(meta_socket p)
 {
 	int flags;
 
@@ -396,12 +396,12 @@ int sock_set_nonblock(meta_socket p)
 
 	flags |= O_NONBLOCK;
 	if (fcntl(p->fd, F_SETFL, flags) == -1)
-		return 0;
+		return failure;
 
-	return 1;
+	return success;
 }
 
-int sock_clear_nonblock(meta_socket p)
+status_t sock_clear_nonblock(meta_socket p)
 {
 	int flags;
 
@@ -410,16 +410,16 @@ int sock_clear_nonblock(meta_socket p)
 
 	flags = fcntl(p->fd, F_GETFL);
 	if (flags == -1)
-		return 0;
+		return failure;
 
 	flags -= (flags & O_NONBLOCK);
 	if (fcntl(p->fd, F_SETFL, flags) == -1)
-		return 0;
+		return failure;
 
-	return 1;
+	return success;
 }
 
-int sock_close(meta_socket p)
+status_t sock_close(meta_socket p)
 {
 	int fd;
 
@@ -438,9 +438,9 @@ int sock_close(meta_socket p)
 	shutdown(fd, SHUT_RDWR);
 
 	if (close(fd))
-		return 0;
+		return failure;
 
-	return 1;
+	return success;
 }
 
 meta_socket sock_accept(meta_socket p, struct sockaddr *addr, socklen_t *addrsize)

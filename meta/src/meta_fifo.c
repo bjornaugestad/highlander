@@ -96,14 +96,14 @@ void fifo_free(fifo p, dtor dtor_fn)
 	free(p);
 }
 
-int fifo_lock(fifo p)
+status_t fifo_lock(fifo p)
 {
 	assert(p != NULL);
 
 	return wlock_lock(p->lock);
 }
 
-int fifo_unlock(fifo p)
+status_t fifo_unlock(fifo p)
 {
 	assert(p != NULL);
 
@@ -122,7 +122,7 @@ size_t fifo_free_slot_count(fifo p)
 	return p->size - p->nelem;
 }
 
-int fifo_add(fifo p, void *data)
+status_t fifo_add(fifo p, void *data)
 {
 	assert(p != NULL);
 
@@ -132,11 +132,11 @@ int fifo_add(fifo p, void *data)
 
 	/* Do not write if slot is taken already */
 	if (p->pelem[p->iwrite] != NULL)
-		return 0;
+		return failure;
 
 	p->pelem[p->iwrite++] = data;
 	p->nelem++;
-	return 1;
+	return success;
 }
 
 void *fifo_peek(fifo p, size_t i)
@@ -173,34 +173,39 @@ void *fifo_get(fifo p)
 }
 
 
-int fifo_write_signal(fifo p, void *data)
+status_t fifo_write_signal(fifo p, void *data)
 {
 	assert(p != NULL);
 	assert(data != NULL);
 
 	if (!fifo_lock(p))
-		return 0;
+		return failure;
 
 	if (!fifo_add(p, data)) {
-		fifo_unlock(p);
-		return 0;
+		(void)fifo_unlock(p);
+		return failure;
 	}
 
-	fifo_unlock(p);
-	fifo_signal(p);
-	return 1;
+	if (!fifo_unlock(p))
+		return failure;
+
+	if (!fifo_signal(p))
+		return failure;
+
+	return success;
 
 }
 
-int fifo_wait_cond(fifo p)
+status_t fifo_wait_cond(fifo p)
 {
 	assert(p != NULL);
 
-	fifo_lock(p);
+	if (!fifo_lock(p))
+		return failure;
 
 	if (!wlock_wait(p->lock)) {
-		fifo_unlock(p);
-		return 0;
+		(void)fifo_unlock(p);
+		return failure;
 	}
 
 	/* OK, we have the lock. See if there are data or not.
@@ -208,21 +213,21 @@ int fifo_wait_cond(fifo p)
 	 */
 	if (fifo_nelem(p) == 0) {
 		errno = ENOENT;
-		fifo_unlock(p);
-		return 0;
+		(void)fifo_unlock(p);
+		return failure;
 	}
 
-	return 1;
+	return success;
 }
 
-int fifo_signal(fifo p)
+status_t fifo_signal(fifo p)
 {
 	assert(p != NULL);
 
 	return wlock_signal(p->lock);
 }
 
-int fifo_wake(fifo p)
+status_t fifo_wake(fifo p)
 {
 	assert(p != NULL);
 
@@ -281,7 +286,7 @@ int main(void)
 {
 	fifo f;
 	size_t i, nelem;
-	int rc;
+	status_t rc;
 	char dummydata[1000] = "Hello";
 	clock_t stop, start;
 	double duration;
@@ -363,7 +368,9 @@ int main(void)
 		pthread_create(&r, NULL, reader, f);
 		pthread_create(&w, NULL, writer, f);
 		pthread_join(w, NULL);
-		fifo_wake(f);
+		if (!fifo_wake(f))
+			exit(EXIT_FAILURE);
+			
 		pthread_join(r, NULL);
 	 }
 

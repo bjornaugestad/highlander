@@ -61,7 +61,7 @@ void wlock_free(wlock p)
 	}
 }
 
-int wlock_lock(wlock p)
+status_t wlock_lock(wlock p)
 {
 	int err;
 
@@ -69,13 +69,13 @@ int wlock_lock(wlock p)
 
 	if ((err = pthread_mutex_lock(&p->lock))) {
 		errno = err;
-		return 0;
+		return failure;
 	}
 
-	return 1;
+	return success;
 }
 
-int wlock_unlock(wlock p)
+status_t wlock_unlock(wlock p)
 {
 	int err;
 
@@ -83,13 +83,13 @@ int wlock_unlock(wlock p)
 
 	if ((err = pthread_mutex_unlock(&p->lock))) {
 		errno = err;
-		return 0;
+		return failure;
 	}
 
-	return 1;
+	return success;
 }
 
-int wlock_signal(wlock p)
+status_t wlock_signal(wlock p)
 {
 	int err;
 
@@ -97,13 +97,13 @@ int wlock_signal(wlock p)
 
 	if ((err = pthread_cond_signal(&p->condvar))) {
 		errno = err;
-		return 0;
+		return failure;
 	}
 
-	return 1;
+	return success;
 }
 
-int wlock_broadcast(wlock p)
+status_t wlock_broadcast(wlock p)
 {
 	int err;
 
@@ -111,12 +111,12 @@ int wlock_broadcast(wlock p)
 
 	if ((err = pthread_cond_broadcast(&p->condvar))) {
 		errno = err;
-		return 0;
+		return failure;
 	}
-	return 1;
+	return success;
 }
 
-int wlock_wait(wlock p)
+status_t wlock_wait(wlock p)
 {
 	int err;
 
@@ -125,10 +125,10 @@ int wlock_wait(wlock p)
 	/* wait for someone to signal us */
 	if ((err = pthread_cond_wait(&p->condvar, &p->lock))) {
 		errno = err;
-		return 0;
+		return failure;
 	}
 
-	return 1;
+	return success;
 }
 
 #ifdef CHECK_WLOCK
@@ -136,9 +136,15 @@ int wlock_wait(wlock p)
 static void *waiter(void *parg)
 {
 	wlock w = parg;
-	wlock_lock(w);
-	wlock_wait(w);
-	wlock_unlock(w);
+	if (!wlock_lock(w))
+		abort();
+
+	if (!wlock_wait(w))
+		abort();
+
+	if (!wlock_unlock(w))
+		abort();
+
 	return NULL;
 }
 
@@ -146,9 +152,15 @@ static void *signaler(void *parg)
 {
 	wlock w = parg;
 
-	wlock_lock(w);
-	wlock_unlock(w);
-	wlock_signal(w);
+	if (!wlock_lock(w))
+		abort();
+
+	if (!wlock_unlock(w))
+		abort();
+
+	if (!wlock_signal(w))
+		abort();
+
 	return NULL;
 }
 

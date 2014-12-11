@@ -241,10 +241,10 @@ int filecache_exists(filecache fc, const char *filename)
 	return rc;
 }
 
-int filecache_get(filecache fc, const char *filename, void** pdata, size_t* pcb)
+status_t filecache_get(filecache fc, const char *filename, void** pdata, size_t* pcb)
 {
 	unsigned long id;
-	int rc = 0;
+	status_t rc = failure;
 	void *p;
 
 	pthread_rwlock_rdlock(&fc->lock);
@@ -300,12 +300,12 @@ int filecache_stat(filecache fc, const char *filename, struct stat* p)
 	return rc;
 }
 
-int filecache_get_mime_type(filecache fc, const char *filename, char mime[], size_t cb)
+status_t filecache_get_mime_type(filecache fc, const char *filename, char mime[], size_t cb)
 {
 	unsigned long id;
 	void *p;
 	size_t cbptr;
-	int rc = 0;
+	status_t rc = failure;
 
 	pthread_rwlock_rdlock(&fc->lock);
 
@@ -313,7 +313,7 @@ int filecache_get_mime_type(filecache fc, const char *filename, char mime[], siz
 		if (cache_get(fc->metacache, id, (void*)&p, &cbptr)) {
 			mime[0] = '\0';
 			strncat(mime, fileinfo_mimetype(p), cb - 1);
-			rc = 1;
+			rc = success;
 		}
 	}
 
@@ -326,7 +326,7 @@ fileinfo filecache_fileinfo(filecache fc, const char *filename)
 	unsigned long id;
 	void *pst = NULL;
 	size_t cb;
-	int found = 0;
+	status_t rc = failure;
 
 	assert(fc != NULL);
 	assert(filename != NULL);
@@ -335,14 +335,14 @@ fileinfo filecache_fileinfo(filecache fc, const char *filename)
 	pthread_rwlock_rdlock(&fc->lock);
 
 	if (stringmap_get_id(fc->filenames, filename, &id))
-		found = cache_get(fc->metacache, id, (void*)&pst, &cb);
+		rc = cache_get(fc->metacache, id, (void*)&pst, &cb);
 
 	pthread_rwlock_unlock(&fc->lock);
 
-	if (found)
+	if (rc)
 		return pst;
-	else
-		return NULL;
+
+	return NULL;
 }
 
 const struct stat* fileinfo_stat(fileinfo p)

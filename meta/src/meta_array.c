@@ -83,7 +83,7 @@ void *array_get(array a, size_t ielem)
 	return a->elements[ielem];
 }
 
-int array_extend(array a, size_t nmemb)
+status_t array_extend(array a, size_t nmemb)
 {
 	void *tmp;
 	size_t n, size;
@@ -95,24 +95,24 @@ int array_extend(array a, size_t nmemb)
 	size = sizeof *a->elements * n;
 
 	if ((tmp = realloc(a->elements, size)) == NULL)
-		return 0;
+		return failure;
 
 	a->elements = tmp;
 	a->nallocated = n;
-	return 1;
+	return success;
 }
 
-int array_add(array a, void *elem)
+status_t array_add(array a, void *elem)
 {
 	assert(NULL != a);
 
 	if (a->nused == a->nallocated) {
 		if (!a->can_grow || !array_extend(a, a->nused))
-			return 0;
+			return failure;
 	}
 
 	a->elements[a->nused++] = elem;
-	return 1;
+	return success;
 }
 
 #ifdef CHECK_ARRAY

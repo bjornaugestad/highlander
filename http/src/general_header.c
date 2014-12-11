@@ -243,88 +243,88 @@ void general_header_set_date(general_header gh, time_t value)
 	general_header_set_flag(gh, GENERAL_HEADER_DATE_SET);
 }
 
-int general_header_set_connection(general_header gh, const char* value)
+status_t general_header_set_connection(general_header gh, const char* value)
 {
 	assert(NULL != gh);
 	assert(NULL != value);
 
 	if (!cstring_set(gh->connection, value))
-		return 0;
+		return failure;
 
 	general_header_set_flag(gh, GENERAL_HEADER_CONNECTION_SET);
-	return 1;
+	return success;
 }
 
-int general_header_set_pragma(general_header gh, const char* value)
+status_t general_header_set_pragma(general_header gh, const char* value)
 {
 	assert(NULL !=	gh);
 	assert(NULL != value);
 
 	if (!cstring_set(gh->pragma, value))
-		return 0;
+		return failure;
 
 	general_header_set_flag(gh, GENERAL_HEADER_PRAGMA_SET);
-	return 1;
+	return success;
 }
 
-int general_header_set_trailer(general_header gh, const char* value)
+status_t general_header_set_trailer(general_header gh, const char* value)
 {
 	assert(NULL != gh);
 	assert(NULL != value);
 
 	if (!cstring_set(gh->trailer, value))
-		return 0;
+		return failure;
 
 	general_header_set_flag(gh, GENERAL_HEADER_TRAILER_SET);
-	return 1;
+	return success;
 }
 
-int general_header_set_transfer_encoding(general_header gh, const char* value)
+status_t general_header_set_transfer_encoding(general_header gh, const char* value)
 {
 	assert(NULL != gh);
 	assert(NULL != value);
 
 	if (!cstring_set(gh->transfer_encoding, value))
-		return 0;
+		return failure;
 
 	general_header_set_flag(gh, GENERAL_HEADER_TRANSFER_ENCODING_SET);
-	return 1;
+	return success;
 }
 
-int general_header_set_upgrade(general_header gh, const char* value)
+status_t general_header_set_upgrade(general_header gh, const char* value)
 {
 	assert(NULL != gh);
 	assert(NULL != value);
 
 	if (!cstring_set(gh->upgrade, value))
-		return 0;
+		return failure;
 
 	general_header_set_flag(gh, GENERAL_HEADER_UPGRADE_SET);
-	return 1;
+	return success;
 }
 
-int general_header_set_via(general_header gh, const char* value)
+status_t general_header_set_via(general_header gh, const char* value)
 {
 	assert(NULL != gh);
 	assert(NULL != value);
 
 	if (!cstring_set(gh->via, value))
-		return 0;
+		return failure;
 
 	general_header_set_flag(gh, GENERAL_HEADER_VIA_SET);
-	return 1;
+	return success;
 }
 
-int general_header_set_warning(general_header gh, const char* value)
+status_t general_header_set_warning(general_header gh, const char* value)
 {
 	assert(NULL != gh);
 	assert(NULL != value);
 
 	if (!cstring_set(gh->warning, value))
-		return 0;
+		return failure;
 
 	general_header_set_flag(gh, GENERAL_HEADER_WARNING_SET);
-	return 1;
+	return success;
 }
 
 void general_header_set_no_cache(general_header gh)
@@ -646,42 +646,42 @@ int general_header_warning_isset(general_header gh)
 	return general_header_flag_is_set(gh, GENERAL_HEADER_WARNING_SET);
 }
 
-static inline int send_connection(general_header gh, connection conn)
+static inline status_t send_connection(general_header gh, connection conn)
 {
 	return http_send_field(conn, "Connection: ", gh->connection);
 }
 
-static inline int send_pragma(general_header p, connection conn)
+static inline status_t send_pragma(general_header p, connection conn)
 {
 	return http_send_field(conn, "Pragma: ", p->pragma);
 }
 
-static inline int send_trailer(general_header gh, connection conn)
+static inline status_t send_trailer(general_header gh, connection conn)
 {
 	return http_send_field(conn, "Trailer: ", gh->trailer);
 }
 
-static inline int send_transfer_encoding(general_header gh, connection conn)
+static inline status_t send_transfer_encoding(general_header gh, connection conn)
 {
 	return http_send_field(conn, "Transfer-Encoding: ", gh->transfer_encoding);
 }
 
-static inline int send_upgrade(general_header gh, connection conn)
+static inline status_t send_upgrade(general_header gh, connection conn)
 {
 	return http_send_field(conn, "Upgrade: ", gh->upgrade);
 }
 
-static inline int send_via(general_header gh, connection conn)
+static inline status_t send_via(general_header gh, connection conn)
 {
 	return http_send_field(conn, "Via: ", gh->via);
 }
 
-static inline int send_warning(general_header gh, connection conn)
+static inline status_t send_warning(general_header gh, connection conn)
 {
 	return http_send_field(conn, "Warning: ", gh->warning);
 }
 
-static inline int send_date(general_header gh, connection conn)
+static inline status_t send_date(general_header gh, connection conn)
 {
 	return http_send_date(conn, "Date: ", gh->date);
 }
@@ -705,7 +705,7 @@ static inline int cachecontrol_field_set(general_header gh)
 	return i;
 }
 
-static inline int send_cachecontrol(general_header gh, connection conn)
+static inline status_t send_cachecontrol(general_header gh, connection conn)
 {
 	int nfields = cachecontrol_field_set(gh);
 
@@ -825,17 +825,17 @@ static inline int send_cachecontrol(general_header gh, connection conn)
 	}
 
 	assert(nfields == 0);
-	return 1;
+	return success;
 }
 
-int general_header_send_fields(general_header gh, connection c)
+status_t general_header_send_fields(general_header gh, connection c)
 {
-	int xsuccess = 1;
+	status_t rc = success;
 	size_t i, nelem;
 
 	static const struct {
 		size_t flag;
-		int (*func)(general_header, connection);
+		status_t (*func)(general_header, connection);
 	} fields[] = {
 		{ GENERAL_HEADER_PRAGMA_SET,			send_pragma },
 		{ GENERAL_HEADER_DATE_SET,				send_date },
@@ -851,7 +851,7 @@ int general_header_send_fields(general_header gh, connection c)
 	nelem = sizeof fields / sizeof *fields;
 	for (i = 0; i < nelem; i++) {
 		if (general_header_flag_is_set(gh, fields[i].flag))
-			if ((xsuccess = fields[i].func(gh, c)) == 0)
+			if ((rc = fields[i].func(gh, c)) == failure)
 				break;
 	}
 
@@ -862,10 +862,10 @@ int general_header_send_fields(general_header gh, connection c)
 	 * fields are set, we send the Cache-Control field along with
 	 * all appropriate values.
 	 */
-	if (xsuccess && cachecontrol_field_set(gh))
-		xsuccess = send_cachecontrol(gh, c);
+	if (rc && cachecontrol_field_set(gh))
+		rc = send_cachecontrol(gh, c);
 
-	return xsuccess;
+	return rc;
 }
 
 /* General header handlers */
@@ -873,10 +873,10 @@ int general_header_send_fields(general_header gh, connection c)
  * a lot of code is duplicated inside and after the loop
  * The s argument must/should point to a legal request-directive
  * to be understood.
- * Returns 1 if OK, even if the directive wasn't understood.
+ * Returns success if OK, even if the directive wasn't understood.
  * This is to 'accept' extensions from 14.9.6
  */
-static int set_cache_control(general_header gh, const char* s, meta_error e)
+static status_t set_cache_control(general_header gh, const char* s, meta_error e)
 {
 	/*
 	 * We have 2 types of cache-request-directives, with and
@@ -913,7 +913,7 @@ static int set_cache_control(general_header gh, const char* s, meta_error e)
 			 * the string 'value'
 			 */
 			(*type1[i].func)(gh);
-			return 1;
+			return success;
 		}
 	}
 
@@ -939,23 +939,23 @@ static int set_cache_control(general_header gh, const char* s, meta_error e)
 
 			/* Call function and continue */
 			(*type2[i].func)(gh, arg);
-			return 1;
+			return success;
 		}
 	}
 
 	/* Not found */
-	return 1;
+	return success;
 }
 
-static int parse_transfer_encoding(general_header gh, const char* value, meta_error e)
+static status_t parse_transfer_encoding(general_header gh, const char* value, meta_error e)
 {
 	if (!general_header_set_transfer_encoding(gh, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
-static int parse_pragma(general_header gh, const char* value, meta_error e)
+static status_t parse_pragma(general_header gh, const char* value, meta_error e)
 {
 	UNUSED(e);
 
@@ -964,7 +964,7 @@ static int parse_pragma(general_header gh, const char* value, meta_error e)
 		general_header_set_no_cache(gh);
 
 	/* Silently ignore unknown pragmas */
-	return 1;
+	return success;
 }
 
 /*
@@ -976,7 +976,7 @@ static int parse_pragma(general_header gh, const char* value, meta_error e)
  * A response may even contain more than one warning. Do we care? We're neither
  * a client nor a proxy ATM, so just store the value.
  */
-static int parse_warning(general_header gh, const char* value, meta_error e)
+static status_t parse_warning(general_header gh, const char* value, meta_error e)
 {
 	assert(gh != NULL);
 	assert(value != NULL);
@@ -984,10 +984,10 @@ static int parse_warning(general_header gh, const char* value, meta_error e)
 	if (!general_header_set_warning(gh, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
-static int parse_cache_control(general_header gh, const char* value, meta_error e)
+static status_t parse_cache_control(general_header gh, const char* value, meta_error e)
 {
 	char* s;
 
@@ -1025,7 +1025,7 @@ static int parse_cache_control(general_header gh, const char* value, meta_error 
 	return set_cache_control(gh, value, e);
 }
 
-static int parse_date(general_header gh, const char* value, meta_error e)
+static status_t parse_date(general_header gh, const char* value, meta_error e)
 {
 	time_t d;
 	assert(NULL != gh);
@@ -1036,7 +1036,7 @@ static int parse_date(general_header gh, const char* value, meta_error e)
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
 	general_header_set_date(gh, d);
-	return 1;
+	return success;
 }
 
 /*
@@ -1046,7 +1046,7 @@ static int parse_date(general_header gh, const char* value, meta_error e)
  * Update 20070918: Being strict is not the best solution. From now on
  * we accept "keep-alive" and any other value is interpreted as "close".
  */
-static int parse_connection(general_header gh, const char* value, meta_error e)
+static status_t parse_connection(general_header gh, const char* value, meta_error e)
 {
 	assert(NULL != gh);
 	assert(NULL != value);
@@ -1057,10 +1057,10 @@ static int parse_connection(general_header gh, const char* value, meta_error e)
 	if (!general_header_set_connection(gh, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
-static int parse_trailer(general_header gh, const char* value, meta_error e)
+static status_t parse_trailer(general_header gh, const char* value, meta_error e)
 {
 	assert(NULL != gh);
 	assert(NULL != value);
@@ -1068,10 +1068,10 @@ static int parse_trailer(general_header gh, const char* value, meta_error e)
 	if (!general_header_set_trailer(gh, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
-static int parse_upgrade(general_header gh, const char* value, meta_error e)
+static status_t parse_upgrade(general_header gh, const char* value, meta_error e)
 {
 	assert(NULL != gh);
 	assert(NULL != value);
@@ -1087,10 +1087,10 @@ static int parse_upgrade(general_header gh, const char* value, meta_error e)
 	if (!general_header_set_upgrade(gh, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
-static int parse_via(general_header gh, const char* value, meta_error e)
+static status_t parse_via(general_header gh, const char* value, meta_error e)
 {
 	assert(NULL != gh);
 	assert(NULL != value);
@@ -1099,12 +1099,12 @@ static int parse_via(general_header gh, const char* value, meta_error e)
 	if (!general_header_set_via(gh, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
 static const struct {
 	const char* name;
-	int (*handler)(general_header gh, const char* value, meta_error e);
+	status_t (*handler)(general_header gh, const char* value, meta_error e);
 } general_header_fields[] = {
 	{ "cache-control",		parse_cache_control },
 	{ "date",				parse_date },
@@ -1129,7 +1129,7 @@ int find_general_header(const char* name)
 
 	return -1;
 }
-int parse_general_header(int idx, general_header gh, const char* value, meta_error e)
+status_t parse_general_header(int idx, general_header gh, const char* value, meta_error e)
 {
 	assert(idx >= 0);
 	assert((size_t)idx < sizeof general_header_fields / sizeof *general_header_fields);

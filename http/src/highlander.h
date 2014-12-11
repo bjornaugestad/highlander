@@ -218,7 +218,7 @@ http_request request_new(void);
 void request_free(http_request p);
 
 /* returns 0 on memory errors, else 1 */
-int request_set_entity(http_request r, void *entity, size_t cb);
+status_t request_set_entity(http_request r, void *entity, size_t cb);
 
 void request_set_version(http_request r, http_version version);
 void request_recycle(http_request r);
@@ -228,40 +228,40 @@ int request_add_param(http_request r, const char *name, const char *value);
 void request_set_method(http_request r, http_method method);
 
 /* @return 0 for success  or error code indicating failure(ENOMEM). */
-int request_set_uri(http_request r, const char *value);
-int request_set_mime_version(http_request request, int major, int minor, meta_error e);
+status_t request_set_uri(http_request r, const char *value);
+status_t request_set_mime_version(http_request request, int major, int minor, meta_error e);
 
-int request_set_accept_ranges(http_request r, const char *value);
-int request_set_age(http_request r, unsigned long value);
-int request_set_etag(http_request r, const char *value);
-int request_set_location(http_request r, const char *value);
-int request_set_proxy_authenticate(http_request r, const char *value);
-int request_set_retry_after(http_request r, const char *value);
-int request_set_server(http_request r, const char *value);
-int request_set_vary(http_request r, const char *value);
-int request_set_www_authenticate(http_request r, const char *value);
-int request_set_accept(http_request r, const char *value, meta_error e);
-int request_set_accept_charset(http_request r, const char *value, meta_error e);
-int request_set_accept_encoding(http_request r, const char *value, meta_error e);
-int request_set_accept_language(http_request r, const char *value, meta_error e);
-int request_set_authorization(http_request r, const char *value);
-int request_set_expect(http_request r, const char *value);
-int request_set_from(http_request r, const char *value);
-int request_set_host(http_request r, const char *value);
-int request_set_if_match(http_request r, const char *value);
+status_t request_set_accept_ranges(http_request r, const char *value);
+status_t request_set_age(http_request r, unsigned long value);
+status_t request_set_etag(http_request r, const char *value);
+status_t request_set_location(http_request r, const char *value);
+status_t request_set_proxy_authenticate(http_request r, const char *value);
+status_t request_set_retry_after(http_request r, const char *value);
+status_t request_set_server(http_request r, const char *value);
+status_t request_set_vary(http_request r, const char *value);
+status_t request_set_www_authenticate(http_request r, const char *value);
+status_t request_set_accept(http_request r, const char *value, meta_error e);
+status_t request_set_accept_charset(http_request r, const char *value, meta_error e);
+status_t request_set_accept_encoding(http_request r, const char *value, meta_error e);
+status_t request_set_accept_language(http_request r, const char *value, meta_error e);
+status_t request_set_authorization(http_request r, const char *value);
+status_t request_set_expect(http_request r, const char *value);
+status_t request_set_from(http_request r, const char *value);
+status_t request_set_host(http_request r, const char *value);
+status_t request_set_if_match(http_request r, const char *value);
 void request_set_if_modified_since(http_request r, time_t value);
-int request_set_if_none_match(http_request r, const char *value);
-int request_set_if_range(http_request r, const char *value);
-int request_set_if_unmodified_since(http_request r, time_t value);
+status_t request_set_if_none_match(http_request r, const char *value);
+status_t request_set_if_range(http_request r, const char *value);
+status_t request_set_if_unmodified_since(http_request r, time_t value);
 void request_set_max_forwards(http_request r, unsigned long value);
-int request_set_proxy_authorization(http_request r, const char *value);
-int request_set_range(http_request r, const char *value);
-int request_set_referer(http_request r, const char *value);
-int request_set_te(http_request r, const char *value, meta_error e);
-int request_set_user_agent(http_request r, const char *value);
-int request_add_cookie(http_request r, cookie c);
-int request_send(http_request r, connection c, meta_error e);
-int request_receive(http_request r, connection c, size_t max_posted_content, meta_error e);
+status_t request_set_proxy_authorization(http_request r, const char *value);
+status_t request_set_range(http_request r, const char *value);
+status_t request_set_referer(http_request r, const char *value);
+status_t request_set_te(http_request r, const char *value, meta_error e);
+status_t request_set_user_agent(http_request r, const char *value);
+status_t request_add_cookie(http_request r, cookie c);
+status_t request_send(http_request r, connection c, meta_error e);
+status_t request_receive(http_request r, connection c, size_t max_posted_content, meta_error e);
 
 http_response response_new(void);
 void response_free(http_response p);
@@ -285,16 +285,16 @@ const char* response_get_connection(http_response response);
 const char*	response_get_entity(http_response p);
 size_t response_get_content_length(http_response p);
 
-int response_set_cookie(http_response response, cookie c);
-int response_set_cache_control(http_response response, const char* value);
-int response_set_connection(http_response response, const char* value);
+status_t response_set_cookie(http_response response, cookie c);
+status_t response_set_cache_control(http_response response, const char* value);
+status_t response_set_connection(http_response response, const char* value);
 void response_set_date(http_response response, time_t value);
-int response_set_pragma(http_response response, const char* value);
-int response_set_trailer(http_response response, const char* value);
-int response_set_transfer_encoding(http_response response, const char* value);
-int response_set_upgrade(http_response response, const char* value);
-int response_set_via(http_response response, const char* value);
-int response_set_warning(http_response response, const char* value);
+status_t response_set_pragma(http_response response, const char* value);
+status_t response_set_trailer(http_response response, const char* value);
+status_t response_set_transfer_encoding(http_response response, const char* value);
+status_t response_set_upgrade(http_response response, const char* value);
+status_t response_set_via(http_response response, const char* value);
+status_t response_set_warning(http_response response, const char* value);
 
 /* new functions to support cache control stuff */
 void response_set_cachecontrol_public(http_response response);
@@ -310,22 +310,22 @@ void response_set_cachecontrol_s_maxage(http_response response, int value);
 
 void response_set_accept_ranges(http_response response, int value);
 void response_set_age(http_response response, unsigned long value);
-int response_set_etag(http_response response, const char* value);
-int response_set_location(http_response response, const char* value);
-int response_set_proxy_authenticate(http_response response, const char* value);
-int response_set_retry_after(http_response response, time_t value);
-int response_set_server(http_response response, const char* value);
-int response_set_vary(http_response response, const char* value);
-int response_set_www_authenticate(http_response response, const char* value);
+status_t response_set_etag(http_response response, const char* value);
+status_t response_set_location(http_response response, const char* value);
+status_t response_set_proxy_authenticate(http_response response, const char* value);
+status_t response_set_retry_after(http_response response, time_t value);
+status_t response_set_server(http_response response, const char* value);
+status_t response_set_vary(http_response response, const char* value);
+status_t response_set_www_authenticate(http_response response, const char* value);
 
-int response_set_allow(http_response response, const char* value);
-int response_set_content_encoding(http_response response, const char* value);
-int response_set_content_language(http_response response, const char* value, meta_error e);
-int response_set_content_length(http_response response, size_t value);
-int response_set_content_location(http_response response, const char* value);
-int response_set_content_md5(http_response response, const char* value);
-int response_set_content_range(http_response response, const char* value);
-int response_set_content_type(http_response response, const char* value);
+status_t response_set_allow(http_response response, const char* value);
+status_t response_set_content_encoding(http_response response, const char* value);
+status_t response_set_content_language(http_response response, const char* value, meta_error e);
+status_t response_set_content_length(http_response response, size_t value);
+status_t response_set_content_location(http_response response, const char* value);
+status_t response_set_content_md5(http_response response, const char* value);
+status_t response_set_content_range(http_response response, const char* value);
+status_t response_set_content_type(http_response response, const char* value);
 void response_set_expires(http_response response, time_t value);
 void response_set_last_modified(http_response response, time_t value);
 status_t response_add(http_response response, const char* src);
@@ -341,11 +341,11 @@ void response_set_allocated_content_buffer(http_response response, void* src, si
 /* messagebox() adds code to display text in a message box */
 status_t response_js_messagebox(http_response response, const char* text);
 
-int response_send_file(http_response response, const char *path, const char* type, meta_error e);
+status_t response_send_file(http_response response, const char *path, const char* type, meta_error e);
 
 /* Send the complete response to the client */
 size_t response_send(http_response r, connection c, meta_error e);
-int response_receive(http_response r, connection c, size_t max_content, meta_error e);
+status_t response_receive(http_response r, connection c, size_t max_content, meta_error e);
 
 /* New stuff 2005-12-14
  * Some formatting functions to ease the generation of HTML.

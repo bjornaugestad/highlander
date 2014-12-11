@@ -22,6 +22,7 @@
 
 #include <sys/socket.h>
 #include <meta_membuf.h>
+#include <meta_common.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -65,19 +66,19 @@ int wait_for_writability(meta_socket p, int timeout);
  * NOTE: sock_write() returns EAGAIN if it was unable to write \e count
  * bytes, even if it was able to write up to \e count - 1 bytes.
  */
-int sock_write(meta_socket p, const char *s, size_t count, int timeout, int retries);
+status_t sock_write(meta_socket p, const char *s, size_t count, int timeout, int retries);
 
 int sock_bind(meta_socket p, const char *hostname, int port);
 
 /*
  * Sets the socket to be nonblocking.
  */
-int sock_set_nonblock(meta_socket p);
+status_t sock_set_nonblock(meta_socket p);
 
 /*
  * Clears the nonblocking flag.
  */
-int sock_clear_nonblock(meta_socket p);
+status_t sock_clear_nonblock(meta_socket p);
 
 /*
  * Creates a server socket.
@@ -89,7 +90,6 @@ int sock_clear_nonblock(meta_socket p);
  * else it will create a regular AF_INET socket.
  *
  * A server socket is ready to accept connections.
- * @return 1 on success, else 0.
  */
 meta_socket create_server_socket(int unix_socket, const char *host, int port);
 
@@ -107,10 +107,8 @@ meta_socket create_client_socket(const char *host, int port);
  * Closes the socket.
  * sock_close first calls shutdown() with the how parameter set to
  * SHUT_RDWR. Then it closes the socket using close().
- *
- * @return 1 on success, else 0.
  */
-int sock_close(meta_socket p);
+status_t sock_close(meta_socket p);
 
 #ifdef __cplusplus
 }

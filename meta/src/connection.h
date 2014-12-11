@@ -24,6 +24,7 @@
 
 #include <meta_membuf.h>
 #include <meta_socket.h>
+#include <meta_common.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,22 +40,22 @@ void connection_recycle(connection conn);
 void *connection_arg2(connection conn);
 
 /* connect to a host on a port, return 0 on errors */
-int connection_connect(connection c, const char *host, int port);
+status_t connection_connect(connection c, const char *host, int port);
 
 
-int connection_putc(connection conn, int ch);
-int connection_puts(connection conn, const char *s);
-int connection_write(connection conn, const void *buf, size_t count);
-int connection_write_big_buffer(connection conn, const void *buf, size_t count, int timeout, int retries);
-int connection_flush(connection conn);
+status_t connection_putc(connection conn, int ch);
+status_t connection_puts(connection conn, const char *s);
+status_t connection_write(connection conn, const void *buf, size_t count);
+status_t connection_write_big_buffer(connection conn, const void *buf, size_t count, int timeout, int retries);
+status_t connection_flush(connection conn);
 
 ssize_t connection_read(connection conn, void *buf, size_t bufsize);
-int connection_getc(connection conn, int* pchar);
-int connection_gets(connection conn, char *buf, size_t bufsize);
+status_t connection_getc(connection conn, int* pchar);
+status_t connection_gets(connection conn, char *buf, size_t bufsize);
 int connection_ungetc(connection conn, int c);
 
 void connection_discard(connection conn);
-int connection_close(connection conn);
+status_t connection_close(connection conn);
 
 void connection_set_persistent(connection conn, int val);
 int	 connection_is_persistent(connection conn);

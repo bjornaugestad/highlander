@@ -27,7 +27,7 @@
 #include "internals.h"
 
 /* Ungrouped handlers */
-static int parse_connection(connection conn, const char* value, meta_error e)
+static status_t parse_connection(connection conn, const char* value, meta_error e)
 {
 	assert(NULL != value);
 	UNUSED(e);
@@ -38,7 +38,7 @@ static int parse_connection(connection conn, const char* value, meta_error e)
 	if (strstr(value, "close"))
 		connection_set_persistent(conn, 0);
 
-	return 1;
+	return success;
 }
 
 /*
@@ -48,7 +48,7 @@ static int parse_connection(connection conn, const char* value, meta_error e)
  */
 static const struct connection_mapper {
 	const char* name;
-	int (*handler)(connection req, const char* value, meta_error e);
+	status_t (*handler)(connection req, const char* value, meta_error e);
 } connection_map[] = {
 	{ "connection",			parse_connection },
 };
@@ -58,7 +58,7 @@ static const struct connection_mapper {
  * instead of the request object, as one connection may "live" longer
  * than the request.
  */
-int parse_request_headerfield(
+status_t parse_request_headerfield(
 	connection conn,
 	const char* name,
 	const char* value,
@@ -92,10 +92,10 @@ int parse_request_headerfield(
 
 	/* We have an unknown fieldname if we reach this point */
 	debug("%s: unknown header field: %s\n", __func__, name);
-	return 1; /* Silently ignore the unknown field */
+	return success; /* Silently ignore the unknown field */
 }
 
-int parse_response_headerfield(
+status_t parse_response_headerfield(
 	const char* name,
 	const char* value,
 	http_response req,
@@ -118,7 +118,7 @@ int parse_response_headerfield(
 		return parse_response_header(idx, req, value, e);
 
 	/* We have an unknown fieldname if we reach this point */
-	return 1; /* Silently ignore the unknown field */
+	return success; /* Silently ignore the unknown field */
 }
 
 

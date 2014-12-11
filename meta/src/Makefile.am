@@ -106,7 +106,6 @@ TESTS=\
 	filecache_check\
 	stringmap_check\
 	miscfunc_check\
-	tsb_check\
 	pair_check\
 	slotbuf_check\
 	tcp_server_check
@@ -128,7 +127,6 @@ check_PROGRAMS=\
 	filecache_check\
 	stringmap_check\
 	miscfunc_check\
-	tsb_check\
 	pair_check\
 	tcp_server_check
 

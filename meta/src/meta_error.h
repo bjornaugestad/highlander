@@ -20,6 +20,8 @@
 #ifndef META_ERROR_H
 #define META_ERROR_H
 
+#include <meta_common.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -50,19 +52,19 @@ meta_error meta_error_new(void);
 void meta_error_free(meta_error e);
 
 /*
- * All set_ functions return 0. This way we can write code
+ * All set_ functions return failure. This way we can write code
  * like "return set_http_error(e, HTTP_400_BAD_REQUEST);"
  * instead of
  *		set_http_error(e, HTTP_400_BAD_REQUEST);
- *		return 0;
+ *		return failure;
  * It saves us lots of blank lines and braces.
  */
-int set_tcpip_error(meta_error e, int val);
-int set_http_error(meta_error e, int val);
-int set_app_error(meta_error e, int val);
-int set_os_error(meta_error e, int val);
-int set_db_error(meta_error e, int val);
-int set_other_error(meta_error e, int val);
+status_t set_tcpip_error(meta_error e, int val);
+status_t set_http_error(meta_error e, int val);
+status_t set_app_error(meta_error e, int val);
+status_t set_os_error(meta_error e, int val);
+status_t set_db_error(meta_error e, int val);
+status_t set_other_error(meta_error e, int val);
 
 int is_tcpip_error(meta_error e);
 int is_protocol_error(meta_error e);

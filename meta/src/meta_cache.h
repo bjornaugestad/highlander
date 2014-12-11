@@ -27,11 +27,16 @@ typedef struct cache_tag* cache;
 
 cache cache_new(size_t nelem, size_t hotlist_nelem, size_t cb);
 void cache_free(cache c, dtor cleanup);
-
-int cache_add(cache c, size_t id, void *data, size_t cb, int pin);
 int cache_exists(cache c, size_t id);
-int cache_get(cache c, size_t id, void** pdata, size_t* pcb);
-int cache_remove(cache c, size_t id);
+
+status_t cache_add(cache c, size_t id, void *data, size_t cb, int pin)
+	__attribute__((warn_unused_result));
+
+status_t cache_get(cache c, size_t id, void** pdata, size_t* pcb)
+	__attribute__((warn_unused_result));
+
+status_t cache_remove(cache c, size_t id)
+	__attribute__((warn_unused_result));
 
 #if 0
 void cache_invalidate(cache c);

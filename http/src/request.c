@@ -211,17 +211,17 @@ void request_set_method(http_request p, http_method method)
 	p->method = method;
 }
 
-int request_set_uri(http_request p, const char *value)
+status_t request_set_uri(http_request p, const char *value)
 {
 	assert(NULL != p);
 	assert(NULL != value);
 	assert(strchr(value, '?') == NULL); /* Params must have been removed */
 
 	if (!cstring_set(p->uri, value))
-		return 0;
+		return failure;
 
 	request_set_flag(p, REQUEST_URI_SET);
-	return 1;
+	return success;
 }
 
 void request_set_version(http_request p, http_version version)
@@ -312,16 +312,16 @@ const char* request_get_parameter_value(const http_request p, const char *pname)
 		return NULL;
 }
 
-int request_add_cookie(http_request p, cookie c)
+status_t request_add_cookie(http_request p, cookie c)
 {
 	assert(NULL != p);
 
 	if (NULL == p->cookies) {
 		if ((p->cookies = list_new()) == NULL)
-			return 0;
+			return failure;
 	}
 
-	return list_add(p->cookies, c) == NULL ? 0 : 1;
+	return list_add(p->cookies, c) == NULL ? failure : success;
 }
 
 
@@ -341,7 +341,7 @@ cookie request_get_cookie(const http_request p, size_t i)
 	return list_get_item(p->cookies, i);
 }
 
-int request_set_accept(http_request r, const char *value, meta_error e)
+status_t request_set_accept(http_request r, const char *value, meta_error e)
 {
 	assert(NULL != r);
 	assert(NULL != value);
@@ -350,10 +350,10 @@ int request_set_accept(http_request r, const char *value, meta_error e)
 		return set_os_error(e, errno);
 
 	request_set_flag(r, REQUEST_ACCEPT_SET);
-	return 1;
+	return success;
 }
 
-int request_set_accept_charset(http_request r, const char *value, meta_error e)
+status_t request_set_accept_charset(http_request r, const char *value, meta_error e)
 {
 	assert(NULL != r);
 	assert(NULL != value);
@@ -362,10 +362,10 @@ int request_set_accept_charset(http_request r, const char *value, meta_error e)
 		return set_os_error(e, errno);
 
 	request_set_flag(r, REQUEST_ACCEPT_CHARSET_SET);
-	return 1;
+	return success;
 }
 
-int request_set_accept_encoding(http_request r, const char *value, meta_error e)
+status_t request_set_accept_encoding(http_request r, const char *value, meta_error e)
 {
 	assert(NULL != r);
 	assert(NULL != value);
@@ -374,10 +374,10 @@ int request_set_accept_encoding(http_request r, const char *value, meta_error e)
 		return set_os_error(e, errno);
 
 	request_set_flag(r, REQUEST_ACCEPT_ENCODING_SET);
-	return 1;
+	return success;
 }
 
-int request_set_accept_language(http_request r, const char *value, meta_error e)
+status_t request_set_accept_language(http_request r, const char *value, meta_error e)
 {
 	assert(NULL != r);
 	assert(NULL != value);
@@ -386,31 +386,31 @@ int request_set_accept_language(http_request r, const char *value, meta_error e)
 		return set_os_error(e, errno);
 
 	request_set_flag(r, REQUEST_ACCEPT_LANGUAGE_SET);
-	return 1;
+	return success;
 }
 
-int request_set_authorization(http_request r, const char *value)
+status_t request_set_authorization(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
 
 	if (!cstring_set(r->authorization, value))
-		return 0;
+		return failure;
 
 	request_set_flag(r, REQUEST_AUTHORIZATION_SET);
-	return 1;
+	return success;
 }
 
-int request_set_from(http_request r, const char *value)
+status_t request_set_from(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
 
 	if (!cstring_set(r->from, value))
-		return 0;
+		return failure;
 
 	request_set_flag(r, REQUEST_FROM_SET);
-	return 1;
+	return success;
 }
 
 void request_set_if_modified_since(http_request r, time_t value)
@@ -422,28 +422,28 @@ void request_set_if_modified_since(http_request r, time_t value)
 	request_set_flag(r, REQUEST_IF_MODIFIED_SINCE_SET);
 }
 
-int request_set_referer(http_request r, const char *value)
+status_t request_set_referer(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
 
 	if (!cstring_set(r->referer, value))
-		return 0;
+		return failure;
 
 	request_set_flag(r, REQUEST_REFERER_SET);
-	return 1;
+	return success;
 }
 
-int request_set_user_agent(http_request r, const char *value)
+status_t request_set_user_agent(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
 
 	if (!cstring_set(r->user_agent, value))
-		return 0;
+		return failure;
 
 	request_set_flag(r, REQUEST_USER_AGENT_SET);
-	return 1;
+	return success;
 }
 
 #if 0
@@ -459,7 +459,7 @@ int request_set_link(http_request r, const char *value)
 		return set_os_error(e, ENOMEM);
 
 	request_set_flag(r, REQUEST_LINK_SET);
-	return 1;
+	return success;
 }
 
 int request_set_title(http_request r, const char *value)
@@ -471,13 +471,13 @@ int request_set_title(http_request r, const char *value)
 		return set_os_error(e, ENOMEM);
 
 	request_set_flag(r, REQUEST_TITLE_SET);
-	return 1;
+	return success;
 }
 
 #endif
 
 
-int request_set_mime_version(http_request r, int major, int minor, meta_error e)
+status_t request_set_mime_version(http_request r, int major, int minor, meta_error e)
 {
 	assert(NULL != r);
 	assert(major);
@@ -485,27 +485,26 @@ int request_set_mime_version(http_request r, int major, int minor, meta_error e)
 	/* We only understand MIME 1.0 */
 	if (major != 1 || minor != 0)
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
-	else {
-		r->mime_version_major = major;
-		r->mime_version_minor = minor;
-		request_set_flag(r, REQUEST_MIME_VERSION_SET);
-		return 1;
-	}
+
+	r->mime_version_major = major;
+	r->mime_version_minor = minor;
+	request_set_flag(r, REQUEST_MIME_VERSION_SET);
+	return success;
 }
 
-int request_set_range(http_request r, const char *value)
+status_t request_set_range(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
 
 	if (!cstring_set(r->range, value))
-		return 0;
+		return failure;
 
 	request_set_flag(r, REQUEST_RANGE_SET);
-	return 1;
+	return success;
 }
 
-int request_set_te(http_request r, const char *value, meta_error e)
+status_t request_set_te(http_request r, const char *value, meta_error e)
 {
 	assert(NULL != r);
 	assert(NULL != value);
@@ -514,78 +513,78 @@ int request_set_te(http_request r, const char *value, meta_error e)
 		return set_os_error(e, errno);
 
 	request_set_flag(r, REQUEST_TE_SET);
-	return 1;
+	return success;
 }
 
-int request_set_expect(http_request r, const char *value)
+status_t request_set_expect(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
 
 	if (!cstring_set(r->expect, value))
-		return 0;
+		return failure;
 
 	request_set_flag(r, REQUEST_EXPECT_SET);
-	return 1;
+	return success;
 }
 
-int request_set_host(http_request r, const char *value)
+status_t request_set_host(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
 	assert(!request_flag_is_set(r, REQUEST_HOST_SET));
 
 	if (!cstring_set(r->host, value))
-		return 0;
+		return failure;
 
 	request_set_flag(r, REQUEST_HOST_SET);
-	return 1;
+	return success;
 }
 
-int request_set_if_match(http_request r, const char *value)
+status_t request_set_if_match(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
 
 	if (!cstring_set(r->if_match, value))
-		return 0;
+		return failure;
 
 	request_set_flag(r, REQUEST_IF_MATCH_SET);
-	return 1;
+	return success;
 }
 
-int request_set_if_none_match(http_request r, const char *value)
+status_t request_set_if_none_match(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
 
 	if (!cstring_set(r->if_none_match, value))
-		return 0;
+		return failure;
 
 	request_set_flag(r, REQUEST_IF_NONE_MATCH_SET);
-	return 1;
+	return success;
 }
 
-int request_set_if_range(http_request r, const char *value)
+status_t request_set_if_range(http_request r, const char *value)
 {
 	assert(NULL != r);
 	assert(NULL != value);
 
 	if (!cstring_set(r->if_range, value))
-		return 0;
+		return failure;
 
 	request_set_flag(r, REQUEST_IF_RANGE_SET);
-	return 1;
+	return success;
 }
 
-int request_set_if_unmodified_since(http_request r, time_t value)
+status_t request_set_if_unmodified_since(http_request r, time_t value)
 {
 	assert(NULL != r);
 	assert(value != (time_t)-1);
 
 	r->if_unmodified_since = value;
 	request_set_flag(r, REQUEST_IF_UNMODIFIED_SINCE_SET);
-	return 1;
+	return success;
 }
 
 void request_set_max_forwards(http_request r, unsigned long value)
@@ -697,16 +696,16 @@ int request_accepts_language(http_request r, const char *val)
 	}
 }
 
-int request_set_proxy_authorization(http_request r, const char *value)
+status_t request_set_proxy_authorization(http_request r, const char *value)
 {
 	assert(r != NULL);
 	assert(value != NULL);
 
 	if (!cstring_set(r->proxy_authorization, value))
-		return 0;
+		return failure;
 
 	request_set_flag(r, REQUEST_PROXY_AUTHORIZATION_SET);
-	return 1;
+	return success;
 }
 
 const char* request_get_content(http_request p)
@@ -714,7 +713,7 @@ const char* request_get_content(http_request p)
 	return p->entity_buf;
 }
 
-int request_set_entity(http_request p, void* entity, size_t cb)
+status_t request_set_entity(http_request p, void* entity, size_t cb)
 {
 	assert(entity_header_content_length_isset(p->entity_header));
 	assert(cb == entity_header_get_content_length(p->entity_header));
@@ -722,10 +721,10 @@ int request_set_entity(http_request p, void* entity, size_t cb)
 	assert(p->entity_buf == NULL);
 
 	if ((p->entity_buf = malloc(cb)) == NULL)
-		return 0;
+		return failure;
 
 	memcpy(p->entity_buf, entity, cb);
-	return 1;
+	return success;
 }
 
 const char* request_get_user_agent(http_request p)
@@ -958,10 +957,10 @@ size_t request_get_content_length(http_request request)
 }
 
 /* Helper function to have the algorithm one place only */
-static int req_parse_multivalued_fields(
+static status_t req_parse_multivalued_fields(
 	http_request req,
 	const char* value,
-	int(*set_func)(http_request req, const char* value, meta_error e),
+	status_t(*set_func)(http_request req, const char* value, meta_error e),
 	meta_error e)
 {
 	const int sep = ',';
@@ -992,7 +991,7 @@ static int req_parse_multivalued_fields(
 	return set_func(req, value, e);
 }
 /* http request handlers */
-static int parse_authorization(http_request req, const char* value, meta_error e)
+static status_t parse_authorization(http_request req, const char* value, meta_error e)
 {
 	assert(NULL != req);
 	assert(NULL != value);
@@ -1000,10 +999,10 @@ static int parse_authorization(http_request req, const char* value, meta_error e
 	if (!request_set_authorization(req, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
-static int parse_expect(http_request req, const char* value, meta_error e)
+static status_t parse_expect(http_request req, const char* value, meta_error e)
 {
 	assert(NULL != req);
 	assert(NULL != value);
@@ -1011,10 +1010,10 @@ static int parse_expect(http_request req, const char* value, meta_error e)
 	if (!request_set_expect(req, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
-static int parse_if_match(http_request req, const char* value, meta_error e)
+static status_t parse_if_match(http_request req, const char* value, meta_error e)
 {
 	assert(NULL != req);
 	assert(NULL != value);
@@ -1022,10 +1021,10 @@ static int parse_if_match(http_request req, const char* value, meta_error e)
 	if (!request_set_if_match(req, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
-static int parse_if_modified_since(http_request req, const char* value, meta_error e)
+static status_t parse_if_modified_since(http_request req, const char* value, meta_error e)
 {
 	time_t d;
 
@@ -1037,10 +1036,10 @@ static int parse_if_modified_since(http_request req, const char* value, meta_err
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
 	request_set_if_modified_since(req, d);
-	return 1;
+	return success;
 }
 
-static int parse_if_none_match(http_request req, const char* value, meta_error e)
+static status_t parse_if_none_match(http_request req, const char* value, meta_error e)
 {
 	assert(NULL != req);
 	assert(NULL != value);
@@ -1048,10 +1047,10 @@ static int parse_if_none_match(http_request req, const char* value, meta_error e
 	if (!request_set_if_none_match(req, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
-static int parse_if_range(http_request req, const char* value, meta_error e)
+static status_t parse_if_range(http_request req, const char* value, meta_error e)
 {
 	assert(NULL != req);
 	assert(NULL != value);
@@ -1059,10 +1058,10 @@ static int parse_if_range(http_request req, const char* value, meta_error e)
 	if (!request_set_if_range(req, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
-static int parse_max_forwards(http_request req, const char* value, meta_error e)
+static status_t parse_max_forwards(http_request req, const char* value, meta_error e)
 {
 	unsigned long v;
 
@@ -1073,10 +1072,10 @@ static int parse_max_forwards(http_request req, const char* value, meta_error e)
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
 	request_set_max_forwards(req, v);
-	return 1;
+	return success;
 }
 
-static int parse_proxy_authorization(http_request req, const char* value, meta_error e)
+static status_t parse_proxy_authorization(http_request req, const char* value, meta_error e)
 {
 	assert(NULL != req);
 	assert(NULL != value);
@@ -1084,10 +1083,10 @@ static int parse_proxy_authorization(http_request req, const char* value, meta_e
 	if (!request_set_proxy_authorization(req, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
-static int parse_if_unmodified_since(http_request req, const char* value, meta_error e)
+static status_t parse_if_unmodified_since(http_request req, const char* value, meta_error e)
 {
 	time_t d;
 
@@ -1099,10 +1098,10 @@ static int parse_if_unmodified_since(http_request req, const char* value, meta_e
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
 	request_set_if_unmodified_since(req, d);
-	return 1;
+	return success;
 }
 
-static int parse_range(http_request req, const char* value, meta_error e)
+static status_t parse_range(http_request req, const char* value, meta_error e)
 {
 	assert(NULL != req);
 	assert(NULL != value);
@@ -1110,10 +1109,10 @@ static int parse_range(http_request req, const char* value, meta_error e)
 	if (!request_set_range(req, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
-static int parse_referer(http_request req, const char* value, meta_error e)
+static status_t parse_referer(http_request req, const char* value, meta_error e)
 {
 	assert(NULL != req);
 	assert(NULL != value);
@@ -1121,17 +1120,17 @@ static int parse_referer(http_request req, const char* value, meta_error e)
 	if (!request_set_referer(req, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
-static int parse_te(http_request req, const char* value, meta_error e)
+static status_t parse_te(http_request req, const char* value, meta_error e)
 {
 	assert(NULL != req);
 	assert(NULL != value);
 	return req_parse_multivalued_fields(req, value, request_set_te, e);
 }
 
-static int parse_mime_version(http_request r, const char* value, meta_error e)
+static status_t parse_mime_version(http_request r, const char* value, meta_error e)
 {
 	/* See rfc 2045 for syntax (MIME-Version=x.y) */
 	int major, minor;
@@ -1145,7 +1144,7 @@ static int parse_mime_version(http_request r, const char* value, meta_error e)
 	}
 
 	if ('\0' == *value)
-		return HTTP_400_BAD_REQUEST;
+		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
 	/* Skip . */
 	value++;
@@ -1161,45 +1160,45 @@ static int parse_mime_version(http_request r, const char* value, meta_error e)
 	return request_set_mime_version(r, major, minor, e);
 }
 
-static int parse_from(http_request req, const char* value, meta_error e)
+static status_t parse_from(http_request req, const char* value, meta_error e)
 {
 	if (!request_set_from(req, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
-static int parse_host(http_request req, const char* value, meta_error e)
+static status_t parse_host(http_request req, const char* value, meta_error e)
 {
 	if (!request_set_host(req, value))
 		return set_os_error(e, errno);
 	else
-		return 1;
+		return success;
 }
 
-static int parse_user_agent(http_request req, const char* value, meta_error e)
+static status_t parse_user_agent(http_request req, const char* value, meta_error e)
 {
 	if (!request_set_user_agent(req, value))
 		return set_os_error(e, errno);
-	return 1;
+	return success;
 }
 
-static int parse_accept(http_request req, const char* value, meta_error e)
+static status_t parse_accept(http_request req, const char* value, meta_error e)
 {
 	return req_parse_multivalued_fields(req, value, request_set_accept, e);
 }
 
-static int parse_accept_charset(http_request req, const char* value, meta_error e)
+static status_t parse_accept_charset(http_request req, const char* value, meta_error e)
 {
 	return req_parse_multivalued_fields(req, value, request_set_accept_charset, e);
 }
 
-static int parse_accept_encoding(http_request req, const char* value, meta_error e)
+static status_t parse_accept_encoding(http_request req, const char* value, meta_error e)
 {
 	return req_parse_multivalued_fields(req, value, request_set_accept_encoding, e);
 }
 
-static int parse_accept_language(http_request req, const char* value, meta_error e)
+static status_t parse_accept_language(http_request req, const char* value, meta_error e)
 {
 	return req_parse_multivalued_fields(req, value, request_set_accept_language, e);
 }
@@ -1207,7 +1206,7 @@ static int parse_accept_language(http_request req, const char* value, meta_error
 /* The request line, defined in §5.1, is
  *		 Method SP Request-URI SP HTTP-Version CRLF
  */
-static int send_request_line(http_request r, connection c, meta_error e)
+static status_t send_request_line(http_request r, connection c, meta_error e)
 {
 	cstring s;
 	const char *p;
@@ -1273,47 +1272,47 @@ static int send_request_line(http_request r, connection c, meta_error e)
 	}
 
 	cstring_free(s);
-	return 1;
+	return success;
 
 err:
 	cstring_free(s);
 	return set_http_error(e, HTTP_500_INTERNAL_SERVER_ERROR);
 }
 
-static int send_accept(http_request r, connection c);
-static int send_accept_charset(http_request r, connection c);
-static int send_accept_encoding(http_request r, connection c);
-static int send_accept_language(http_request r, connection c);
-static int send_authorization(http_request r, connection c);
-static int send_from(http_request r, connection c);
-static int send_referer(http_request r, connection c);
-static int send_user_agent(http_request r, connection c);
-static int send_max_forwards(http_request r, connection c);
-static int send_proxy_authorization(http_request r, connection c);
-static int send_range(http_request r, connection c);
-static int send_te(http_request r, connection c);
-static int send_expect(http_request r, connection c);
-static int send_host(http_request r, connection c);
-static int send_if_match(http_request r, connection c);
-static int send_if_none_match(http_request r, connection c);
-static int send_if_range(http_request r, connection c);
-static int send_if_modified_since(http_request r, connection c);
-static int send_if_unmodified_since(http_request r, connection c);
+static status_t send_accept(http_request r, connection c);
+static status_t send_accept_charset(http_request r, connection c);
+static status_t send_accept_encoding(http_request r, connection c);
+static status_t send_accept_language(http_request r, connection c);
+static status_t send_authorization(http_request r, connection c);
+static status_t send_from(http_request r, connection c);
+static status_t send_referer(http_request r, connection c);
+static status_t send_user_agent(http_request r, connection c);
+static status_t send_max_forwards(http_request r, connection c);
+static status_t send_proxy_authorization(http_request r, connection c);
+static status_t send_range(http_request r, connection c);
+static status_t send_te(http_request r, connection c);
+static status_t send_expect(http_request r, connection c);
+static status_t send_host(http_request r, connection c);
+static status_t send_if_match(http_request r, connection c);
+static status_t send_if_none_match(http_request r, connection c);
+static status_t send_if_range(http_request r, connection c);
+static status_t send_if_modified_since(http_request r, connection c);
+static status_t send_if_unmodified_since(http_request r, connection c);
 
 /* V1.0 fields */
 #if 0 /* For now */
-static int send_pragma(http_request r, connection c);
-static int send_link(http_request r, connection c);
-static int send_mime_version(http_request r, connection c);
-static int send_title(http_request r, connection c);
-static int send_upgrade(http_request r, connection c);
+static status_t send_pragma(http_request r, connection c);
+static status_t send_link(http_request r, connection c);
+static status_t send_mime_version(http_request r, connection c);
+static status_t send_title(http_request r, connection c);
+static status_t send_upgrade(http_request r, connection c);
 #endif
 
-static int request_send_fields(http_request r, connection c)
+static status_t request_send_fields(http_request r, connection c)
 {
 	static const struct {
 		flagtype flag;
-		int(*func)(http_request, connection);
+		status_t(*func)(http_request, connection);
 	} fields[] = {
 		{ REQUEST_ACCEPT_SET,				send_accept },
 		{ REQUEST_ACCEPT_CHARSET_SET,		send_accept_charset },
@@ -1344,19 +1343,19 @@ static int request_send_fields(http_request r, connection c)
 		#endif
 	};
 
-	int xsuccess = 1;
+	status_t rc = success;
 	size_t i, nelem = sizeof fields / sizeof *fields;
 	for (i = 0; i < nelem; i++) {
 		if (request_flag_is_set(r, fields[i].flag))
-			if ((xsuccess = fields[i].func(r, c)) == 0)
+			if ((rc = fields[i].func(r, c)) == failure)
 				break;
 	}
 
-	return xsuccess;
+	return rc;
 }
 
 
-static int send_accept(http_request r, connection c)
+static status_t send_accept(http_request r, connection c)
 {
 	assert(r != NULL);
 	assert(c != NULL);
@@ -1364,7 +1363,7 @@ static int send_accept(http_request r, connection c)
 	return http_send_field(c, "Accept: ", r->accept);
 }
 
-static int send_accept_charset(http_request r, connection c)
+static status_t send_accept_charset(http_request r, connection c)
 {
 	assert(r != NULL);
 	assert(c != NULL);
@@ -1372,7 +1371,7 @@ static int send_accept_charset(http_request r, connection c)
 	return http_send_field(c, "Accept-Charset: ", r->accept_charset);
 }
 
-static int send_accept_encoding(http_request r, connection c)
+static status_t send_accept_encoding(http_request r, connection c)
 {
 	assert(r != NULL);
 	assert(c != NULL);
@@ -1380,7 +1379,7 @@ static int send_accept_encoding(http_request r, connection c)
 	return http_send_field(c, "Accept-Encoding: ", r->accept_encoding);
 }
 
-static int send_accept_language(http_request r, connection c)
+static status_t send_accept_language(http_request r, connection c)
 {
 	assert(r != NULL);
 	assert(c != NULL);
@@ -1388,7 +1387,7 @@ static int send_accept_language(http_request r, connection c)
 	return http_send_field(c, "Accept-Language: ", r->accept_language);
 }
 
-static int send_authorization(http_request r, connection c)
+static status_t send_authorization(http_request r, connection c)
 {
 	assert(r != NULL);
 	assert(c != NULL);
@@ -1396,7 +1395,7 @@ static int send_authorization(http_request r, connection c)
 	return http_send_field(c, "Authorization: ", r->authorization);
 }
 
-static int send_from(http_request r, connection c)
+static status_t send_from(http_request r, connection c)
 {
 	assert(r != NULL);
 	assert(c != NULL);
@@ -1404,7 +1403,7 @@ static int send_from(http_request r, connection c)
 	return http_send_field(c, "From: ", r->from);
 }
 
-static int send_referer(http_request r, connection c)
+static status_t send_referer(http_request r, connection c)
 {
 	assert(r != NULL);
 	assert(c != NULL);
@@ -1412,7 +1411,7 @@ static int send_referer(http_request r, connection c)
 	return http_send_field(c, "Referer: ", r->referer);
 }
 
-static int send_user_agent(http_request r, connection c)
+static status_t send_user_agent(http_request r, connection c)
 {
 	assert(r != NULL);
 	assert(c != NULL);
@@ -1420,7 +1419,7 @@ static int send_user_agent(http_request r, connection c)
 	return http_send_field(c, "User-Agent: ", r->user_agent);
 }
 
-static int send_max_forwards(http_request r, connection c)
+static status_t send_max_forwards(http_request r, connection c)
 {
 	assert(r != NULL);
 	assert(c != NULL);
@@ -1428,7 +1427,7 @@ static int send_max_forwards(http_request r, connection c)
 	return http_send_ulong(c, "Max-Forwards: ", r->max_forwards);
 }
 
-static int send_proxy_authorization(http_request r, connection c)
+static status_t send_proxy_authorization(http_request r, connection c)
 {
 	assert(r != NULL);
 	assert(c != NULL);
@@ -1436,7 +1435,7 @@ static int send_proxy_authorization(http_request r, connection c)
 	return http_send_field(c, "Proxy-Authorization: ", r->proxy_authorization);
 }
 
-static int send_range(http_request r, connection c)
+static status_t send_range(http_request r, connection c)
 {
 	assert(r != NULL);
 	assert(c != NULL);
@@ -1444,7 +1443,7 @@ static int send_range(http_request r, connection c)
 	return http_send_field(c, "Range: ", r->range);
 }
 
-static int send_te(http_request r, connection c)
+static status_t send_te(http_request r, connection c)
 {
 	assert(r != NULL);
 	assert(c != NULL);
@@ -1452,7 +1451,7 @@ static int send_te(http_request r, connection c)
 	return http_send_field(c, "TE: ", r->te);
 }
 
-static int send_expect(http_request r, connection c)
+static status_t send_expect(http_request r, connection c)
 {
 	assert(r != NULL);
 	assert(c != NULL);
@@ -1460,7 +1459,7 @@ static int send_expect(http_request r, connection c)
 	return http_send_field(c, "Expect: ", r->expect);
 }
 
-static int send_host(http_request r, connection c)
+static status_t send_host(http_request r, connection c)
 {
 	assert(r != NULL);
 	assert(c != NULL);
@@ -1468,7 +1467,7 @@ static int send_host(http_request r, connection c)
 	return http_send_field(c, "Host: ", r->host);
 }
 
-static int send_if_match(http_request r, connection c)
+static status_t send_if_match(http_request r, connection c)
 {
 	assert(r != NULL);
 	assert(c != NULL);
@@ -1476,7 +1475,7 @@ static int send_if_match(http_request r, connection c)
 	return http_send_field(c, "If-Match: ", r->if_match);
 }
 
-static int send_if_none_match(http_request r, connection c)
+static status_t send_if_none_match(http_request r, connection c)
 {
 	assert(r != NULL);
 	assert(c != NULL);
@@ -1484,7 +1483,7 @@ static int send_if_none_match(http_request r, connection c)
 	return http_send_field(c, "If-None-Match: ", r->if_none_match);
 }
 
-static int send_if_range(http_request r, connection c)
+static status_t send_if_range(http_request r, connection c)
 {
 	assert(r != NULL);
 	assert(c != NULL);
@@ -1492,7 +1491,7 @@ static int send_if_range(http_request r, connection c)
 	return http_send_field(c, "If-Range: ", r->if_range);
 }
 
-static int send_if_modified_since(http_request r, connection c)
+static status_t send_if_modified_since(http_request r, connection c)
 {
 	assert(r != NULL);
 	assert(c != NULL);
@@ -1500,7 +1499,7 @@ static int send_if_modified_since(http_request r, connection c)
 	return http_send_date(c, "If-Modified-Since: ", r->if_modified_since);
 }
 
-static int send_if_unmodified_since(http_request r, connection c)
+static status_t send_if_unmodified_since(http_request r, connection c)
 {
 	assert(r != NULL);
 	assert(c != NULL);
@@ -1508,35 +1507,36 @@ static int send_if_unmodified_since(http_request r, connection c)
 	return http_send_date(c, "If-Unmodified-Since: ", r->if_unmodified_since);
 }
 
-int request_send(http_request r, connection c, meta_error e)
+status_t request_send(http_request r, connection c, meta_error e)
 {
 	assert(r != NULL);
 	assert(c != NULL);
 	(void)e; /* for now, we may want to add semantic checks later */
 
 	if (!send_request_line(r, c, e))
-		return 0;
+		return failure;
 
 	if (!general_header_send_fields(r->general_header, c))
-		return 0;
+		return failure;
 
 	if (!entity_header_send_fields(r->entity_header, c))
-		return 0;
+		return failure;
 
 	/* Now send request fields */
 	if (!request_send_fields(r, c))
-		return 0;
+		return failure;
 
 	/* Now terminate the request */
 	if (!connection_write(c, "\r\n", 2))
-		return 0;
+		return failure;
 
 	if (!connection_flush(c))
-		return 0;
-	return 1;
+		return failure;
+
+	return success;
 }
 
-static int read_posted_content(
+static status_t read_posted_content(
 	size_t max_post_content,
 	connection conn,
 	http_request req,
@@ -1556,20 +1556,18 @@ static int read_posted_content(
 		return set_os_error(e, errno);
 
 	if (!connection_read(conn, buf, content_len)) {
-		set_tcpip_error(e, errno);
 		free(buf);
-		return 0;
+		return set_tcpip_error(e, errno);
 	}
 
 	if (!request_set_entity(req, buf, content_len)) {
-		set_os_error(e, ENOSPC);
 		free(buf);
-		return 0;
+		return set_os_error(e, ENOSPC);
 	}
 
 	/* success */
 	free(buf);
-	return 1;
+	return success;
 }
 
 /*
@@ -1599,7 +1597,7 @@ static int read_posted_content(
 	The client didn't send one, so we end up in poll() and
 	wait for a timeout :-(
  */
-int read_line(connection conn, char* buf, size_t cchMax, meta_error e)
+status_t read_line(connection conn, char* buf, size_t cchMax, meta_error e)
 {
 	int c;
 	size_t i = 0;
@@ -1618,46 +1616,44 @@ int read_line(connection conn, char* buf, size_t cchMax, meta_error e)
 			if (c != '\n')
 				return set_http_error(e, HTTP_400_BAD_REQUEST);
 
-			return 1;
+			return success;
 		}
 
 		buf[i++] = c;
 	}
 
 	/* The buffer provided was too small. */
-	set_app_error(e, ENOSPC);
-	return 0;
+	return set_app_error(e, ENOSPC);
 }
 
-int get_field_name(const char* src, char* dest, size_t destsize)
+status_t get_field_name(const char* src, char* dest, size_t destsize)
 {
 	char *s;
 	size_t span;
 
 	if ((s = strchr(src, ':')) == NULL)
-		return 0;
+		return failure;
 
 	span = (size_t)(s - src);
 	if (span + 1 >= destsize)
-		return 0;
+		return failure;
 
 	memcpy(dest, src, span);
 	dest[span] = '\0';
-	return 1;
+	return success;
 }
 
 /*
  * See get_field_name() for more info.
- * returns 0 on error, !0 on success
  */
-int get_field_value(const char* src, char* dest, size_t destsize)
+status_t get_field_value(const char* src, char* dest, size_t destsize)
 {
 	/* Locate separator as in name: value */
 	const char *s = strchr(src, ':');
 	size_t len;
 
 	if (s == NULL)
-		return 0;
+		return failure;
 
 	/* Skip : and any spaces after separator */
 	s++;
@@ -1666,17 +1662,17 @@ int get_field_value(const char* src, char* dest, size_t destsize)
 
 	len = strlen(s);
 	if (len >= destsize)
-		return 0;
+		return failure;
 
 	memcpy(dest, s, len + 1);
-	return 1;
+	return success;
 }
 
 /*
  * Input is normally "name: value"
  * as in Host: www.veryfast.com
  */
-static int parse_one_field(
+static status_t parse_one_field(
 	connection conn,
 	http_request request,
 	const char* buf,
@@ -1695,14 +1691,14 @@ static int parse_one_field(
 
 
 /* Reads all (if any) http header fields */
-static int
+static status_t
 read_request_header_fields(connection conn, http_request request, meta_error e)
 {
 	for (;;) {
 		char buf[CCH_FIELDNAME_MAX + CCH_FIELDVALUE_MAX + 10];
 
 		if ((!read_line(conn, buf, sizeof buf, e)))
-			return 0;
+			return failure;
 
 		/*
 		 * An empty buffer means that we have read the \r\n sequence
@@ -1710,7 +1706,7 @@ read_request_header_fields(connection conn, http_request request, meta_error e)
 		 * message. This means that there is no more header fields to read.
 		 */
 		if (strlen(buf) == 0)
-			return 1;
+			return success;
 
 		if (!parse_one_field(conn, request, buf, e)) {
 			if (is_app_error(e)
@@ -1718,7 +1714,7 @@ read_request_header_fields(connection conn, http_request request, meta_error e)
 				/* Someone sent us stuff we didn't understand. Just ignore it */
 				;
 			else
-				return 0;
+				return failure;
 		}
 	}
 }
@@ -1771,7 +1767,7 @@ static http_version get_version(const char* s)
 }
 
 
-static int
+static status_t
 parse_request_method(const char* line, http_request request, meta_error e)
 {
 	char strMethod[CCH_METHOD_MAX + 1];
@@ -1784,7 +1780,7 @@ parse_request_method(const char* line, http_request request, meta_error e)
 		return set_http_error(e, HTTP_501_NOT_IMPLEMENTED);
 
 	request_set_method(request, method);
-	return 1;
+	return success;
 }
 
 static inline int more_uri_params_available(const char *s)
@@ -1795,7 +1791,7 @@ static inline int more_uri_params_available(const char *s)
 	return strchr(s, '=') != NULL;
 }
 
-static int get_uri_param_name(const char* src, char dest[], size_t destsize, meta_error e)
+static status_t get_uri_param_name(const char* src, char dest[], size_t destsize, meta_error e)
 {
 
 	/* '=' is required */
@@ -1805,11 +1801,11 @@ static int get_uri_param_name(const char* src, char dest[], size_t destsize, met
 	if (!copy_word(src, dest, '=', destsize))
 		return set_http_error(e, HTTP_414_REQUEST_URI_TOO_LARGE);
 
-	return 1;
+	return success;
 }
 
 /* Locate '=' and skip it, then copy value */
-static int get_uri_param_value(const char* src, char dest[], size_t destsize, meta_error e)
+static status_t get_uri_param_value(const char* src, char dest[], size_t destsize, meta_error e)
 {
 	char *p;
 
@@ -1820,7 +1816,7 @@ static int get_uri_param_value(const char* src, char dest[], size_t destsize, me
 	if (!copy_word(++p, dest, '&', destsize))
 		return set_http_error(e, HTTP_414_REQUEST_URI_TOO_LARGE);
 
-	return 1;
+	return success;
 }
 
 
@@ -1837,7 +1833,7 @@ static char* locate_next_uri_param(char *s)
 	return s;
 }
 
-static inline int
+static inline status_t
 decode_uri_param_value(char* decoded, const char* value, size_t cb, meta_error e)
 {
 	int rc = rfc1738_decode(decoded, cb, value, strlen(value));
@@ -1848,28 +1844,28 @@ decode_uri_param_value(char* decoded, const char* value, size_t cb, meta_error e
 			return set_os_error(e, errno);
 	}
 
-	return 1;
+	return success;
 }
 
-static int set_one_uri_param(http_request request, char *s, meta_error e)
+static status_t set_one_uri_param(http_request request, char *s, meta_error e)
 {
 	char name[CCH_PARAMNAME_MAX + 1];
 	char value[CCH_PARAMVALUE_MAX + 1];
 	char decoded[CCH_PARAMVALUE_MAX + 1];
 
 	if (!get_uri_param_name(s, name, sizeof name, e))
-		return 0;
+		return failure;
 
 	if (!get_uri_param_value(s, value, sizeof value, e))
-		return 0;
+		return failure;
 
 	if (!decode_uri_param_value(decoded, value, sizeof decoded, e))
-		return 0;
+		return failure;
 
 	if (!request_add_param(request, name, decoded))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
 /*
@@ -1880,20 +1876,20 @@ static int set_one_uri_param(http_request request, char *s, meta_error e)
  * Will modify contents of s
  * Input is everything after the ? as in "/foo.html?bar=asdad;b2=x"
  */
-static int set_uri_params(http_request request, char* s, meta_error e)
+static status_t set_uri_params(http_request request, char* s, meta_error e)
 {
 	while (more_uri_params_available(s)) {
 		if (!set_one_uri_param(request, s, e))
-			return 0;
+			return failure;
 
 		if ((s = locate_next_uri_param(s)) == NULL)
 			break;
 	}
 
-	return 1;
+	return success;
 }
 
-static int set_uri_and_params(http_request request, char* uri, meta_error e)
+static status_t set_uri_and_params(http_request request, char* uri, meta_error e)
 {
 	char *s;
 
@@ -1921,7 +1917,7 @@ static inline int fUriHasParams(const char* uri)
 	return strchr(uri, '?') != NULL;
 }
 
-static int
+static status_t
 parse_request_uri(const char* line, http_request request, meta_error e)
 {
 	char uri[CCH_URI_MAX + 1];
@@ -1941,10 +1937,10 @@ parse_request_uri(const char* line, http_request request, meta_error e)
 	if (!request_set_uri(request, uri))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
-static int
+static status_t
 parse_request_version(const char* line, http_request request, meta_error e)
 {
 	int iword;
@@ -1958,7 +1954,7 @@ parse_request_version(const char* line, http_request request, meta_error e)
 	if ((iword = find_word(line, 2)) == -1) {
 		/* No version info == HTTP 0.9 */
 		request_set_version(request, VERSION_09);
-		return 1;
+		return success;
 	}
 
 	if (strlen(&line[iword]) > CCH_VERSION_MAX)
@@ -1971,7 +1967,7 @@ parse_request_version(const char* line, http_request request, meta_error e)
 		return set_http_error(e, HTTP_505_HTTP_VERSION_NOT_SUPPORTED);
 
 	request_set_version(request, version);
-	return 1;
+	return success;
 }
 
 
@@ -1982,20 +1978,20 @@ parse_request_version(const char* line, http_request request, meta_error e)
  * See §5.1 for details.
  * We support 0.9, 1.0 and 1.1 and GET, HEAD and POST
  */
-static int
+static status_t
 parse_request_line(const char* line, http_request request, meta_error e)
 {
 	if (parse_request_method(line, request, e)
 	&& parse_request_uri(line, request, e)
 	&& parse_request_version(line, request, e))
-		return 1;
+		return success;
 	else
-		return 0;
+		return failure;
 }
 
 static const struct {
 	const char* name;
-	int (*handler)(http_request req, const char* value, meta_error e);
+	status_t (*handler)(http_request req, const char* value, meta_error e);
 } request_header_fields[] = {
 	{ "user-agent",			parse_user_agent },
 	{ "cookie",				parse_cookie },
@@ -2039,7 +2035,7 @@ int find_request_header(const char* name)
 	return -1;
 }
 
-int parse_request_header(int idx, http_request req, const char* value, meta_error e)
+status_t parse_request_header(int idx, http_request req, const char* value, meta_error e)
 {
 	assert(idx >= 0);
 	assert((size_t)idx < sizeof request_header_fields / sizeof *request_header_fields);
@@ -2047,7 +2043,7 @@ int parse_request_header(int idx, http_request req, const char* value, meta_erro
 	return request_header_fields[idx].handler(req, value, e);
 }
 
-static int
+static status_t
 read_request_line(connection conn, http_request request, meta_error e)
 {
 	char buf[CCH_REQUESTLINE_MAX + 1] = {0};
@@ -2059,7 +2055,7 @@ read_request_line(connection conn, http_request request, meta_error e)
 	if (is_app_error(e) && get_error_code(e) == ENOSPC)
 		set_http_error(e, HTTP_414_REQUEST_URI_TOO_LARGE);
 
-	return 0;
+	return failure;
 }
 
 
@@ -2075,25 +2071,25 @@ read_request_line(connection conn, http_request request, meta_error e)
  * We now read all header fields. Check method
  * to see if we need to read an entity body as well.
  */
-int request_receive(
+status_t request_receive(
 	http_request request,
 	connection conn,
 	size_t max_post_content,
 	meta_error e)
 {
 	if (!read_request_line(conn, request, e))
-		return 0;
+		return failure;
 
 	if (request_get_version(request) == VERSION_11)
 		connection_set_persistent(conn, 1);
 
 	if (!read_request_header_fields(conn, request, e))
-		return 0;
+		return failure;
 
 	if (request_get_method(request) == METHOD_POST && !request->defered_read)
 		return read_posted_content(max_post_content, conn, request, e);
 
-	return 1;
+	return success;
 }
 
 void request_set_connection(http_request request, connection conn)

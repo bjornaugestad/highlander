@@ -894,7 +894,7 @@ int http_server_has_default_page_handler(http_server s)
  * we always use, handle_dynamic().
  * NOTE: This is slow, as we allocate and free memory for each request. :-(
  */
-int http_server_run_default_page_handler(
+status_t http_server_run_default_page_handler(
 	connection conn,
 	http_server s,
 	http_request request,
@@ -903,7 +903,7 @@ int http_server_run_default_page_handler(
 {
 	dynamic_page p;
 	const char* uri;
-	int rc;
+	status_t rc;
 
 	uri = request_get_uri(request);
 	if ((p = dynamic_new(uri, s->default_handler, NULL)) == NULL)

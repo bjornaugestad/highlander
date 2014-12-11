@@ -28,13 +28,13 @@ extern "C" {
 
 typedef struct array_tag* array;
 
-array array_new(size_t nmemb, int can_grow);
+array array_new(size_t nmemb, int can_grow) __attribute__((warn_unused_result));
 void  array_free(array a, dtor cln);
 
 size_t array_nelem(array a);
 void * array_get(array a, size_t ielem);
-int	   array_add(array a, void *elem);
-int	   array_extend(array a, size_t nmemb);
+status_t array_add(array a, void *elem) __attribute__((warn_unused_result));
+status_t array_extend(array a, size_t nmemb) __attribute__((warn_unused_result));
 
 #ifdef __cplusplus
 }

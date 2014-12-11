@@ -33,7 +33,7 @@
 #include "internals.h"
 
 /* Local helper functions */
-static int serviceConnection2(
+static status_t serviceConnection2(
 	http_server srv,
 	connection conn,
 	http_request req,
@@ -84,7 +84,7 @@ static int fs_can_run(http_server srv, http_request request, dynamic_page p)
  *	  it cannot contain "..". The docroot must either be ./ or / or
  *	  something longer.
  */
-static int send_disk_file(
+static status_t send_disk_file(
 	http_server s,
 	connection conn,
 	http_request req,
@@ -173,11 +173,11 @@ static int send_disk_file(
 		return 0;
 
 	response_set_status(response, HTTP_200_OK);
-	return 1;
+	return success;
 }
 
 /* Call the callback function for the page */
-int handle_dynamic(
+status_t handle_dynamic(
 	connection conn,
 	http_server srv,
 	dynamic_page p,
@@ -219,7 +219,7 @@ int handle_dynamic(
 		status = HTTP_200_OK;
 
 	response_set_status(response, status);
-	return 1;
+	return success;
 }
 
 /* uri params are separated by =, so if there are any = in the string,
@@ -266,7 +266,7 @@ static int semantic_error(http_request request)
 
 void* serviceConnection(void* psa)
 {
-	int xsuccess;
+	status_t status;
 	connection conn;
 	http_server srv;
 	http_request request;
@@ -279,8 +279,8 @@ void* serviceConnection(void* psa)
 	request_set_defered_read(request, http_server_get_defered_read(srv));
 	response = http_server_get_response(srv);
 
-	xsuccess = serviceConnection2(srv, conn, request, response, e);
-	if (!xsuccess && is_tcpip_error(e))
+	status = serviceConnection2(srv, conn, request, response, e);
+	if (!status && is_tcpip_error(e))
 		connection_discard(conn);
 	else
 		connection_close(conn);
@@ -289,10 +289,10 @@ void* serviceConnection(void* psa)
 	http_server_recycle_response(srv, response);
 
 	meta_error_free(e);
-	return (void*)(intptr_t)xsuccess;
+	return (void*)(intptr_t)status;
 }
 
-static int serviceConnection2(
+static status_t serviceConnection2(
 	http_server srv,
 	connection conn,
 	http_request request,
@@ -354,7 +354,7 @@ static int serviceConnection2(
 				http_server_add_logentry(srv, conn, request, status, cbSent);
 			}
 
-			return 0;
+			return failure;
 		}
 
 		/*
@@ -371,14 +371,14 @@ static int serviceConnection2(
 		cbSent = response_send(response, conn, e);
 		http_server_add_logentry(srv, conn, request, response_get_status(response), cbSent);
 		if (cbSent == 0)
-			return 0;
+			return failure;
 
 		/* Did the user set the Connection header field to "close" */
 		if (strcmp(response_get_connection(response), "close") == 0)
-			return 1;
+			return success;
 
 		if (!connection_is_persistent(conn))
-			return 1;
+			return success;
 
 		/*
 		 * NOTE: Her må/bør vi legge inn ny funksjonalitet:
@@ -398,7 +398,7 @@ static int serviceConnection2(
 	}
 
 	/* Shutdown detected */
-	return 1;
+	return success;
 }
 
 int http_status_code(int error)

@@ -243,48 +243,48 @@ int response_get_status(http_response r)
 	return r->status;
 }
 
-static int send_age(connection c, http_response p)
+static status_t send_age(connection c, http_response p)
 {
 	return http_send_ulong(c, "Age: ", p->age);
 }
 
-static int send_etag(connection conn, http_response p)
+static status_t send_etag(connection conn, http_response p)
 {
 	return http_send_field(conn, "ETag: ", p->etag);
 }
 
-static int send_location(connection conn, http_response p)
+static status_t send_location(connection conn, http_response p)
 {
 	return http_send_field(conn, "Location: ", p->location);
 }
 
-static int send_proxy_authenticate(connection conn, http_response p)
+static status_t send_proxy_authenticate(connection conn, http_response p)
 {
 	return http_send_field(conn, "Proxy-Authenticate: ", p->proxy_authenticate);
 }
 
-static int send_server(connection conn, http_response p)
+static status_t send_server(connection conn, http_response p)
 {
 	return http_send_field(conn, "Server: ", p->server);
 }
 
-static int send_vary(connection conn, http_response p)
+static status_t send_vary(connection conn, http_response p)
 {
 	return http_send_field(conn, "Vary: ", p->vary);
 }
 
-static int send_www_authenticate(connection conn, http_response p)
+static status_t send_www_authenticate(connection conn, http_response p)
 {
 	return http_send_field(conn, "WWW-Authenticate: ", p->www_authenticate);
 }
 
 
-static int send_retry_after(connection conn, http_response p)
+static status_t send_retry_after(connection conn, http_response p)
 {
 	return http_send_date(conn, "Retry-After: ", p->retry_after);
 }
 
-static int send_accept_ranges(connection conn, http_response p)
+static status_t send_accept_ranges(connection conn, http_response p)
 {
 	size_t cch;
 	const char* s;
@@ -299,14 +299,14 @@ static int send_accept_ranges(connection conn, http_response p)
 }
 
 
-static int response_send_header_fields(http_response p, connection conn)
+static status_t response_send_header_fields(http_response p, connection conn)
 {
-	int xsuccess = 1;
+	status_t status = success;
 	size_t i, cFields;
 
 	static const struct {
 		size_t flag;
-		int (*func)(connection, http_response);
+		status_t (*func)(connection, http_response);
 	} fields[] = {
 		{ AGE,					send_age },
 		{ ETAG,					send_etag },
@@ -333,18 +333,18 @@ static int response_send_header_fields(http_response p, connection conn)
 	entity_header_send_fields(p->entity_header, conn);
 
 
-	if (xsuccess) {
+	if (status) {
 		cFields = sizeof(fields) / sizeof(fields[0]);
 		for (i = 0; i < cFields; i++) {
 			if (response_flag_isset(p, fields[i].flag)) {
-				xsuccess = (*fields[i].func)(conn, p);
-				if (!xsuccess)
+				status = (*fields[i].func)(conn, p);
+				if (!status)
 					break;
 			}
 		}
 	}
 
-	return xsuccess;
+	return status;
 }
 
 /* return 1 if string needs to be quoted, 0 if not */
@@ -453,8 +453,7 @@ static status_t create_cookie_string(cookie c, cstring str)
 	return cstring_concat(str, "\r\n");
 }
 
-/* return 0 on error, 1 on success. */
-static int send_cookie(cookie c, connection conn, meta_error e)
+static status_t send_cookie(cookie c, connection conn, meta_error e)
 {
 	const char* s;
 	cstring str;
@@ -479,14 +478,14 @@ static int send_cookie(cookie c, connection conn, meta_error e)
 	if (!connection_write(conn, c_str(str), cb)) {
 		set_tcpip_error(e, errno);
 		cstring_free(str);
-		return 0;
+		return failure;
 	}
 
 	cstring_free(str);
-	return 1;
+	return success;
 }
 
-static int response_send_cookies(http_response p, connection conn, meta_error e)
+static status_t response_send_cookies(http_response p, connection conn, meta_error e)
 {
 	list_iterator i;
 
@@ -498,14 +497,14 @@ static int response_send_cookies(http_response p, connection conn, meta_error e)
 
 		c = list_get(i);
 		if (!send_cookie(c, conn, e))
-			return 0;
+			return failure;
 	}
 
-	return 1;
+	return success;
 }
 
 
-static int response_send_header(
+static status_t response_send_header(
 	http_response response,
 	connection conn,
 	meta_error e)
@@ -526,13 +525,13 @@ static int response_send_header(
 	/* Send cookies, if any */
 	if (response->cookies != NULL 
 	&& !response_send_cookies(response, conn, e))
-		return 0;
+		return failure;
 
 	/* Send the \r\n separating all headers from an optional entity */
 	if (!connection_write(conn, "\r\n", 2))
 		return set_tcpip_error(e, errno);
 
-	return 1;
+	return success;
 }
 
 status_t response_add(const http_response p, const char* value)
@@ -591,7 +590,7 @@ status_t response_printf(http_response page, const size_t needs_max, const char*
 }
 
 
-int response_set_cookie(http_response response, cookie new_cookie)
+status_t response_set_cookie(http_response response, cookie new_cookie)
 {
 	list_iterator i;
 	const char* nameNew;
@@ -609,17 +608,17 @@ int response_set_cookie(http_response response, cookie new_cookie)
 		if (0 == strcmp(nameNew, nameOld)) {
 			/* We have a duplicate */
 			errno = EINVAL;
-			return 0;
+			return failure;
 		}
 	}
 
 	if (!list_add(response->cookies, new_cookie))
-		return 0;
-	else
-		return 1;
+		return failure;
+
+	return success;
 }
 
-int http_send_date(connection conn, const char* name, time_t value)
+status_t http_send_date(connection conn, const char* name, time_t value)
 {
 	char date[100];
 	size_t cb;
@@ -634,10 +633,10 @@ int http_send_date(connection conn, const char* name, time_t value)
 		return connection_write(conn, date, cb);
 	}
 
-	return 0;
+	return failure;
 }
 
-int http_send_string(connection conn, const char* s)
+status_t http_send_string(connection conn, const char* s)
 {
 	assert(s != NULL);
 
@@ -645,17 +644,17 @@ int http_send_string(connection conn, const char* s)
 	return connection_write(conn, s, cb);
 }
 
-int http_send_ulong(connection conn, const char* name, unsigned long value)
+status_t http_send_ulong(connection conn, const char* name, unsigned long value)
 {
 	char val[1000];
 	size_t cb = snprintf(val, sizeof val, "%s%lu", name, value);
 	if (cb >= sizeof val)
-		return 0;
+		return failure;
 
 	return connection_write(conn, val, cb);
 }
 
-int http_send_field(connection conn, const char* name, cstring value)
+status_t http_send_field(connection conn, const char* name, cstring value)
 {
 	size_t cb;
 
@@ -665,11 +664,11 @@ int http_send_field(connection conn, const char* name, cstring value)
 
 	cb = strlen(name);
 	if (!connection_write(conn, name, cb))
-		return 0;
+		return failure;
 
 	cb = cstring_length(value);
 	if (!connection_write(conn, c_str(value), cb))
-		return 0;
+		return failure;
 
 	return connection_write(conn, "\r\n", 2);
 }
@@ -693,7 +692,7 @@ size_t response_get_content_length(http_response p)
 }
 
 
-int response_set_connection(http_response response, const char* value)
+status_t response_set_connection(http_response response, const char* value)
 {
 	assert(NULL != response);
 
@@ -706,19 +705,19 @@ void response_set_date(http_response response, time_t value)
 	general_header_set_date(response->general_header, value);
 }
 
-int response_set_pragma(http_response response, const char* value)
+status_t response_set_pragma(http_response response, const char* value)
 {
 	assert(NULL != response);
 	return general_header_set_pragma(response->general_header, value);
 }
 
-int response_set_trailer(http_response response, const char* value)
+status_t response_set_trailer(http_response response, const char* value)
 {
 	assert(NULL != response);
 	return general_header_set_trailer(response->general_header, value);
 }
 
-int response_set_transfer_encoding(http_response response, const char* value)
+status_t response_set_transfer_encoding(http_response response, const char* value)
 {
 	assert(NULL != response);
 	return general_header_set_transfer_encoding(response->general_header, value);
@@ -778,19 +777,19 @@ void response_set_cachecontrol_s_maxage(http_response response, int value)
 	general_header_set_s_maxage(response->general_header, value);
 }
 
-int response_set_upgrade(http_response response, const char* value)
+status_t response_set_upgrade(http_response response, const char* value)
 {
 	assert(NULL != response);
 	return general_header_set_upgrade(response->general_header, value);
 }
 
-int response_set_via(http_response response, const char* value)
+status_t response_set_via(http_response response, const char* value)
 {
 	assert(NULL != response);
 	return general_header_set_via(response->general_header, value);
 }
 
-int response_set_warning(http_response response, const char* value)
+status_t response_set_warning(http_response response, const char* value)
 {
 	assert(NULL != response);
 	return general_header_set_warning(response->general_header, value);
@@ -805,132 +804,132 @@ void response_set_accept_ranges(http_response response, int value)
 	response_set_flag(response, ACCEPT_RANGES);
 }
 
-int response_set_etag(http_response response, const char* value)
+status_t response_set_etag(http_response response, const char* value)
 {
 	assert(NULL != response);
 	assert(NULL != value);
 
 	if (!cstring_set(response->etag, value))
-		return 0;
+		return failure;
 
 	response_set_flag(response, ETAG);
-	return 1;
+	return success;
 }
 
-int response_set_location(http_response response, const char* value)
+status_t response_set_location(http_response response, const char* value)
 {
 	assert(NULL != response);
 	assert(NULL != value);
 
 	if (!cstring_set(response->location, value))
-		return 0;
+		return failure;
 
 	response_set_flag(response, LOCATION);
-	return 1;
+	return success;
 }
 
-int response_set_proxy_authenticate(http_response response, const char* value)
+status_t response_set_proxy_authenticate(http_response response, const char* value)
 {
 	assert(NULL != response);
 	assert(NULL != value);
 
 	if (!cstring_set(response->proxy_authenticate, value))
-		return 0;
+		return failure;
 
 	response_set_flag(response, PROXY_AUTHENTICATE);
-	return 1;
+	return success;
 }
 
-int response_set_retry_after(http_response response, time_t value)
+status_t response_set_retry_after(http_response response, time_t value)
 {
 	assert(NULL != response);
 	assert(value);
 
 	response->retry_after = value;
 	response_set_flag(response, RETRY_AFTER);
-	return 1;
+	return success;
 }
 
-int response_set_server(http_response response, const char* value)
+status_t response_set_server(http_response response, const char* value)
 {
 	assert(NULL != response);
 	assert(NULL != value);
 
 	if (!cstring_set(response->server, value))
-		return 0;
+		return failure;
 
 	response_set_flag(response, SERVER);
-	return 1;
+	return success;
 }
 
-int response_set_vary(http_response response, const char* value)
+status_t response_set_vary(http_response response, const char* value)
 {
 	assert(NULL != response);
 	assert(NULL != value);
 
 	if (!cstring_set(response->vary, value))
-		return 0;
+		return failure;
 
 	response_set_flag(response, VARY);
-	return 1;
+	return success;
 }
 
-int response_set_www_authenticate(http_response response, const char* value)
+status_t response_set_www_authenticate(http_response response, const char* value)
 {
 	assert(NULL != response);
 	assert(NULL != value);
 
 	if (!cstring_set(response->www_authenticate, value))
-		return 0;
+		return failure;
 
 	response_set_flag(response, WWW_AUTHENTICATE);
-	return 1;
+	return success;
 }
 
-int response_set_allow(http_response response, const char* value)
+status_t response_set_allow(http_response response, const char* value)
 {
 	assert(NULL != response);
 	return entity_header_set_allow(response->entity_header, value);
 }
 
-int response_set_content_encoding(http_response response, const char* value)
+status_t response_set_content_encoding(http_response response, const char* value)
 {
 	assert(NULL != response);
 	return entity_header_set_content_encoding(response->entity_header, value);
 }
 
-int response_set_content_language(http_response response, const char* value, meta_error e)
+status_t response_set_content_language(http_response response, const char* value, meta_error e)
 {
 	assert(NULL != response);
 	return entity_header_set_content_language(response->entity_header, value, e);
 }
 
-int response_set_content_length(http_response response, size_t value)
+status_t response_set_content_length(http_response response, size_t value)
 {
 	assert(NULL != response);
 	entity_header_set_content_length(response->entity_header, value);
-	return 1;
+	return success;
 }
 
-int response_set_content_location(http_response response, const char* value)
+status_t response_set_content_location(http_response response, const char* value)
 {
 	assert(NULL != response);
 	return entity_header_set_content_location(response->entity_header, value);
 }
 
-int response_set_content_md5(http_response response, const char* value)
+status_t response_set_content_md5(http_response response, const char* value)
 {
 	assert(NULL != response);
 	return entity_header_set_content_md5(response->entity_header, value);
 }
 
-int response_set_content_range(http_response response, const char* value)
+status_t response_set_content_range(http_response response, const char* value)
 {
 	assert(NULL != response);
 	return entity_header_set_content_range(response->entity_header, value);
 }
 
-int response_set_content_type(http_response response, const char* value)
+status_t response_set_content_type(http_response response, const char* value)
 {
 	assert(NULL != response);
 	return entity_header_set_content_type(response->entity_header, value);
@@ -1003,7 +1002,7 @@ void response_set_allocated_content_buffer(
 }
 
 
-int response_send_file(http_response p, const char *path, const char* ctype, meta_error e)
+status_t response_send_file(http_response p, const char *path, const char* ctype, meta_error e)
 {
 	struct stat st;
 	assert(p != NULL);
@@ -1019,7 +1018,7 @@ int response_send_file(http_response p, const char *path, const char* ctype, met
 	response_set_content_length(p, (size_t)st.st_size);
 	if (cstring_set(p->path, path)) {
 		p->send_file = 1;
-		return 1;
+		return success;
 	}
 
 	return set_os_error(e, errno);
@@ -1089,10 +1088,10 @@ fallback:
 }
 
 
-static int
+static status_t
 response_send_entity(http_response r, connection conn, size_t *pcb)
 {
-	int xsuccess = 1;
+	status_t rc = success;
 
 	if (r->content_buffer_in_use) {
 		size_t cb = response_get_content_length(r);
@@ -1101,7 +1100,7 @@ response_send_entity(http_response r, connection conn, size_t *pcb)
 			int timeout = 1;
 			int retries = cb / 1024;
 
-			xsuccess = connection_write_big_buffer(
+			rc = connection_write_big_buffer(
 				conn,
 				r->content_buffer,
 				cb,
@@ -1109,28 +1108,28 @@ response_send_entity(http_response r, connection conn, size_t *pcb)
 				retries);
 		}
 		else
-			xsuccess = connection_write(conn, r->content_buffer, cb);
+			rc = connection_write(conn, r->content_buffer, cb);
 
 		if (r->content_free_when_done) {
 			free((void*)r->content_buffer);
 			r->content_buffer = NULL;
 		}
 
-		if (!xsuccess)
-			return 0;
+		if (!rc)
+			return failure;
 	}
 	else if (r->send_file) {
 		if (!send_entire_file(conn, c_str(r->path), pcb))
-			return 0;
+			return failure;
 	}
 	else {
 		const char* entity = response_get_entity(r);
 		*pcb = response_get_content_length(r);
 		if (!connection_write(conn, entity, *pcb))
-			return 0;
+			return failure;
 	}
 
-	return 1;
+	return success;
 }
 
 #if 0
@@ -1360,7 +1359,7 @@ status_t response_js_messagebox(http_response response, const char* text)
 }
 
 /* response field functions */
-static int parse_age(http_response r, const char* value, meta_error e)
+static status_t parse_age(http_response r, const char* value, meta_error e)
 {
 	unsigned long v;
 	assert(r != NULL);
@@ -1370,10 +1369,10 @@ static int parse_age(http_response r, const char* value, meta_error e)
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
 	response_set_age(r, v);
-	return 1;
+	return success;
 }
 
-static int parse_etag(http_response r, const char* value, meta_error e)
+static status_t parse_etag(http_response r, const char* value, meta_error e)
 {
 	assert(r != NULL);
 	assert(value != NULL);
@@ -1381,10 +1380,10 @@ static int parse_etag(http_response r, const char* value, meta_error e)
 	if (!response_set_etag(r, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
-static int parse_location(http_response r, const char* value, meta_error e)
+static status_t parse_location(http_response r, const char* value, meta_error e)
 {
 	assert(r != NULL);
 	assert(value != NULL);
@@ -1392,10 +1391,10 @@ static int parse_location(http_response r, const char* value, meta_error e)
 	if (!response_set_location(r, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
-static int parse_www_authenticate(http_response r, const char* value, meta_error e)
+static status_t parse_www_authenticate(http_response r, const char* value, meta_error e)
 {
 	assert(r != NULL);
 	assert(value != NULL);
@@ -1403,10 +1402,10 @@ static int parse_www_authenticate(http_response r, const char* value, meta_error
 	if (!response_set_www_authenticate(r, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
-static int parse_server(http_response r, const char* value, meta_error e)
+static status_t parse_server(http_response r, const char* value, meta_error e)
 {
 	assert(r != NULL);
 	assert(value != NULL);
@@ -1414,7 +1413,7 @@ static int parse_server(http_response r, const char* value, meta_error e)
 	if (!response_set_server(r, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
 /*
@@ -1422,7 +1421,7 @@ static int parse_server(http_response r, const char* value, meta_error e)
  * The only range unit defined by HTTP 1.1 is "bytes", and we MAY ignore 
  * all others.
  */
-static int parse_accept_ranges(http_response r, const char* value, meta_error e)
+static status_t parse_accept_ranges(http_response r, const char* value, meta_error e)
 {
 	assert(r != NULL);
 	assert(value != NULL);
@@ -1436,10 +1435,10 @@ static int parse_accept_ranges(http_response r, const char* value, meta_error e)
 
 
 	/* Silently ignore other range units */
-	return 1;
+	return success;
 }
 
-static int parse_proxy_authenticate(http_response r, const char* value, meta_error e)
+static status_t parse_proxy_authenticate(http_response r, const char* value, meta_error e)
 {
 	assert(r != NULL);
 	assert(value != NULL);
@@ -1447,14 +1446,14 @@ static int parse_proxy_authenticate(http_response r, const char* value, meta_err
 	if (!response_set_proxy_authenticate(r, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 
 /*
  * The value can be either a rfc822 date or an integer value representing delta(seconds).
  * TODO: We need a way to separate between delta and absolute time.
  */
-static int parse_retry_after(http_response r, const char* value, meta_error e)
+static status_t parse_retry_after(http_response r, const char* value, meta_error e)
 {
 	time_t t;
 	long delta;
@@ -1469,10 +1468,10 @@ static int parse_retry_after(http_response r, const char* value, meta_error e)
 	else
 		response_set_retry_after(r, delta);
 
-	return 1;
+	return success;
 }
 
-static int parse_vary(http_response r, const char* value, meta_error e)
+static status_t parse_vary(http_response r, const char* value, meta_error e)
 {
 	assert(r != NULL);
 	assert(value != NULL);
@@ -1480,11 +1479,11 @@ static int parse_vary(http_response r, const char* value, meta_error e)
 	if (!response_set_vary(r, value))
 		return set_os_error(e, errno);
 
-	return 1;
+	return success;
 }
 static const struct response_mapper {
 	const char* name;
-	int (*handler)(http_response req, const char* value, meta_error e);
+	status_t (*handler)(http_response req, const char* value, meta_error e);
 } response_header_fields[] = {
 	{ "accept-ranges", parse_accept_ranges },
 	{ "age", parse_age },
@@ -1508,7 +1507,7 @@ int find_response_header(const char* name)
 	return -1;
 }
 
-int parse_response_header(int idx, http_response req, const char* value, meta_error e)
+status_t parse_response_header(int idx, http_response req, const char* value, meta_error e)
 {
 	assert(idx >= 0);
 	assert((size_t)idx < sizeof response_header_fields / sizeof *response_header_fields);
@@ -1520,14 +1519,14 @@ int parse_response_header(int idx, http_response req, const char* value, meta_er
  *		HTTP-Version SP Status-Code SP Reason-Phrase CRLF
  * It is the first line in all HTTP responses.
  */
-static int read_response_status_line(http_response response, connection conn, meta_error e)
+static status_t read_response_status_line(http_response response, connection conn, meta_error e)
 {
 	char *s, buf[CCH_STATUSLINE_MAX + 1];
 	int status_code;
 	enum http_version version;
 
 	if (!read_line(conn, buf, sizeof(buf) - 1, e))
-		return 0;
+		return failure;
 
 	/* The string must start with either HTTP/1.0 or HTTP/1.1 SP */
 	if (strstr(buf, "HTTP/1.0 ") == buf)
@@ -1563,11 +1562,11 @@ static int read_response_status_line(http_response response, connection conn, me
 
 	response_set_status(response, status_code);
 	response_set_version(response, version);
-	return 1;
+	return success;
 }
 
 /* Reads all (if any) http header fields */
-static int
+static status_t
 read_response_header_fields(connection conn, http_response response, meta_error e)
 {
 	for (;;) {
@@ -1576,7 +1575,7 @@ read_response_header_fields(connection conn, http_response response, meta_error 
 		char value[CCH_FIELDVALUE_MAX + 1];
 
 		if (!read_line(conn, buf, sizeof buf, e))
-			return 0;
+			return failure;
 
 		if (strlen(buf) == 0) {
 			/*
@@ -1585,7 +1584,7 @@ read_response_header_fields(connection conn, http_response response, meta_error 
 			 * message. This means that there is no more header
 			 * fields to read.
 			 */
-			return 1;
+			return success;
 		}
 
 		if (!get_field_name(buf, name, sizeof name)
@@ -1594,11 +1593,11 @@ read_response_header_fields(connection conn, http_response response, meta_error 
 
 		fs_lower(name);
 		if (!parse_response_headerfield(name, value, response, e))
-			return 0;
+			return failure;
 	}
 }
 
-int response_receive(
+status_t response_receive(
 	http_response response,
 	connection conn,
 	size_t max_contentlen,
@@ -1614,7 +1613,7 @@ int response_receive(
 
 	/* Now read and parse all fields (if any) */
 	if (!read_response_header_fields(conn, response, e))
-		return 0;
+		return failure;
 
 	/* Now we hopefully have a content-length field. See if we can read
 	 * it or if it is too big
@@ -1622,7 +1621,7 @@ int response_receive(
 	if (entity_header_content_length_isset(eh)) {
 		contentlen = entity_header_get_content_length(eh);
 		if (contentlen == 0)
-			return 1;
+			return success;
 
 		if (contentlen > max_contentlen)
 			return set_app_error(e, ENOSPC);
@@ -1643,7 +1642,7 @@ int response_receive(
 	}
 
 	response_set_allocated_content_buffer(response, content, nread);
-	return 1;
+	return success;
 }
 
 int response_dump(http_response r, void *file)

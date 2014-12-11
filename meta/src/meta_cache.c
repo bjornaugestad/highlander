@@ -214,8 +214,10 @@ static int make_space(cache c, size_t cb)
 		/* Iterate through the list and delete an item */
 		for (i =list_first(c->hashtable[hid]); !list_end(i); i = list_next(i)) {
 			p = list_get(i);
-			if (!on_hotlist(c, p->id) && !p->pinned)
-				cache_remove(c, p->id);
+			if (!on_hotlist(c, p->id) && !p->pinned) {
+				if (!cache_remove(c, p->id))
+					return 0;
+			}
 		}
 	}
 
@@ -225,42 +227,43 @@ static int make_space(cache c, size_t cb)
 }
 
 
-int cache_add(cache c, size_t id, void *data, size_t cb, int pin)
+status_t cache_add(cache c, size_t id, void *data, size_t cb, int pin)
 {
 	struct cache_entry *p;
 	size_t hid = id % c->nelem;
-	int rc = 0;
 
 	assert(c != NULL);
 	assert(data != NULL);
 
 	if (!make_space(c, cb))
-		;
-	else if ((p = malloc(sizeof *p)) == NULL)
-		;
-	else {
-		p->id = id;
-		p->data = data;
-		p->size = cb;
-		p->pinned = pin;
+		return failure;
 
-		if (cache_exists(c, id)) {
-			/* Hmm, duplicate. We don't like that (for now) */
-			free(p);
-			assert(0);
-		}
-		else if (c->hashtable[hid] == NULL
-		&& (c->hashtable[hid] = list_new()) == NULL) {
-			free(p);
-		}
-		else if (list_add(c->hashtable[hid], p) == NULL) {
-			free(p);
-		}
-		else
-			rc = 1;
+	if ((p = malloc(sizeof *p)) == NULL)
+		return failure;
+
+	p->id = id;
+	p->data = data;
+	p->size = cb;
+	p->pinned = pin;
+
+	if (cache_exists(c, id)) {
+		/* Hmm, duplicate. We don't like that (for now) */
+		free(p);
+		assert(0);
 	}
 
-	return rc;
+	if (c->hashtable[hid] == NULL
+	&& (c->hashtable[hid] = list_new()) == NULL) {
+		free(p);
+		return failure;
+	}
+
+	if (list_add(c->hashtable[hid], p) == NULL) {
+		free(p);
+		return failure;
+	}
+
+	return success;
 }
 
 /*
@@ -332,7 +335,7 @@ int cache_exists(cache c, size_t id)
 	return !list_end(i);
 }
 
-int cache_get(cache c, size_t id, void** pdata, size_t* pcb)
+status_t cache_get(cache c, size_t id, void** pdata, size_t* pcb)
 {
 	struct cache_entry *p;
 	list_iterator i;
@@ -342,15 +345,15 @@ int cache_get(cache c, size_t id, void** pdata, size_t* pcb)
 	assert(pcb != NULL);
 
 	i = find_entry(c, id);
-	if (!list_end(i)) {
-		p = list_get(i);
-		*pdata = p->data;
-		*pcb = p->size;
-		add_to_hotlist(c, p->id);
-		return 1;
-	}
+	if (list_end(i))
+		return failure;
 
-	return 0;
+	p = list_get(i);
+	*pdata = p->data;
+	*pcb = p->size;
+	add_to_hotlist(c, p->id);
+
+	return success;
 }
 
 /*
@@ -375,7 +378,7 @@ static void remove_from_hotlist(cache c, size_t id)
 	}
 }
 
-int cache_remove(cache c, size_t id)
+status_t cache_remove(cache c, size_t id)
 {
 	list_iterator i;
 
@@ -384,7 +387,7 @@ int cache_remove(cache c, size_t id)
 	i = find_entry(c, id);
 	if (list_end(i)) {
 		errno = ENOENT;
-		return 0;
+		return failure;
 	}
 
 	assert(c->hashtable[id % c->nelem] != NULL);
@@ -392,7 +395,7 @@ int cache_remove(cache c, size_t id)
 
 	list_delete(c->hashtable[id % c->nelem], i, (dtor)cache_entry_free);
 	remove_from_hotlist(c, id);
-	return 1;
+	return success;
 }
 
 #ifdef CHECK_CACHE
@@ -405,7 +408,7 @@ int main(void)
 	cache c;
 	clock_t start, stop;
 	double diff;
-	int rc;
+	status_t rc;
 	char buf[1024];
 
 	c = cache_new(nelem / 10, 10, 1024 * 1024 * 40);
