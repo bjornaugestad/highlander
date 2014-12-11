@@ -217,7 +217,7 @@ int request_set_uri(http_request p, const char *value)
 	assert(NULL != value);
 	assert(strchr(value, '?') == NULL); /* Params must have been removed */
 
-	if (!cstring_copy(p->uri, value))
+	if (!cstring_set(p->uri, value))
 		return 0;
 
 	request_set_flag(p, REQUEST_URI_SET);
@@ -394,7 +394,7 @@ int request_set_authorization(http_request r, const char *value)
 	assert(NULL != r);
 	assert(NULL != value);
 
-	if (!cstring_copy(r->authorization, value))
+	if (!cstring_set(r->authorization, value))
 		return 0;
 
 	request_set_flag(r, REQUEST_AUTHORIZATION_SET);
@@ -406,7 +406,7 @@ int request_set_from(http_request r, const char *value)
 	assert(NULL != r);
 	assert(NULL != value);
 
-	if (!cstring_copy(r->from, value))
+	if (!cstring_set(r->from, value))
 		return 0;
 
 	request_set_flag(r, REQUEST_FROM_SET);
@@ -427,7 +427,7 @@ int request_set_referer(http_request r, const char *value)
 	assert(NULL != r);
 	assert(NULL != value);
 
-	if (!cstring_copy(r->referer, value))
+	if (!cstring_set(r->referer, value))
 		return 0;
 
 	request_set_flag(r, REQUEST_REFERER_SET);
@@ -439,7 +439,7 @@ int request_set_user_agent(http_request r, const char *value)
 	assert(NULL != r);
 	assert(NULL != value);
 
-	if (!cstring_copy(r->user_agent, value))
+	if (!cstring_set(r->user_agent, value))
 		return 0;
 
 	request_set_flag(r, REQUEST_USER_AGENT_SET);
@@ -455,7 +455,7 @@ int request_set_link(http_request r, const char *value)
 	assert(NULL != r);
 	assert(NULL != value);
 
-	if (!cstring_copy(r->link, value))
+	if (!cstring_set(r->link, value))
 		return set_os_error(e, ENOMEM);
 
 	request_set_flag(r, REQUEST_LINK_SET);
@@ -467,7 +467,7 @@ int request_set_title(http_request r, const char *value)
 	assert(NULL != r);
 	assert(NULL != value);
 
-	if (!cstring_copy(r->title, value))
+	if (!cstring_set(r->title, value))
 		return set_os_error(e, ENOMEM);
 
 	request_set_flag(r, REQUEST_TITLE_SET);
@@ -498,7 +498,7 @@ int request_set_range(http_request r, const char *value)
 	assert(NULL != r);
 	assert(NULL != value);
 
-	if (!cstring_copy(r->range, value))
+	if (!cstring_set(r->range, value))
 		return 0;
 
 	request_set_flag(r, REQUEST_RANGE_SET);
@@ -522,7 +522,7 @@ int request_set_expect(http_request r, const char *value)
 	assert(NULL != r);
 	assert(NULL != value);
 
-	if (!cstring_copy(r->expect, value))
+	if (!cstring_set(r->expect, value))
 		return 0;
 
 	request_set_flag(r, REQUEST_EXPECT_SET);
@@ -535,7 +535,7 @@ int request_set_host(http_request r, const char *value)
 	assert(NULL != value);
 	assert(!request_flag_is_set(r, REQUEST_HOST_SET));
 
-	if (!cstring_copy(r->host, value))
+	if (!cstring_set(r->host, value))
 		return 0;
 
 	request_set_flag(r, REQUEST_HOST_SET);
@@ -547,7 +547,7 @@ int request_set_if_match(http_request r, const char *value)
 	assert(NULL != r);
 	assert(NULL != value);
 
-	if (!cstring_copy(r->if_match, value))
+	if (!cstring_set(r->if_match, value))
 		return 0;
 
 	request_set_flag(r, REQUEST_IF_MATCH_SET);
@@ -559,7 +559,7 @@ int request_set_if_none_match(http_request r, const char *value)
 	assert(NULL != r);
 	assert(NULL != value);
 
-	if (!cstring_copy(r->if_none_match, value))
+	if (!cstring_set(r->if_none_match, value))
 		return 0;
 
 	request_set_flag(r, REQUEST_IF_NONE_MATCH_SET);
@@ -571,7 +571,7 @@ int request_set_if_range(http_request r, const char *value)
 	assert(NULL != r);
 	assert(NULL != value);
 
-	if (!cstring_copy(r->if_range, value))
+	if (!cstring_set(r->if_range, value))
 		return 0;
 
 	request_set_flag(r, REQUEST_IF_RANGE_SET);
@@ -702,7 +702,7 @@ int request_set_proxy_authorization(http_request r, const char *value)
 	assert(r != NULL);
 	assert(value != NULL);
 
-	if (!cstring_copy(r->proxy_authorization, value))
+	if (!cstring_set(r->proxy_authorization, value))
 		return 0;
 
 	request_set_flag(r, REQUEST_PROXY_AUTHORIZATION_SET);

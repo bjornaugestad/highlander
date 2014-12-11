@@ -76,7 +76,7 @@ int dynamic_set_uri(dynamic_page p, const char* value)
 	assert(NULL != p);
 	assert(NULL != value);
 
-	return cstring_copy(p->uri, value);
+	return cstring_set(p->uri, value);
 }
 
 void dynamic_set_handler(dynamic_page p, PAGE_FUNCTION func)

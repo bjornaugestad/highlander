@@ -127,7 +127,7 @@ int entity_header_set_allow(entity_header eh, const char* value)
 	assert(NULL != eh);
 	assert(NULL != value);
 
-	if (!cstring_copy(eh->allow, value))
+	if (!cstring_set(eh->allow, value))
 		return 0;
 
 	entity_header_set_flag(eh, ENTITY_HEADER_ALLOW_SET);
@@ -155,7 +155,7 @@ int entity_header_set_content_language(entity_header eh, const char* value, meta
 	assert(NULL != eh);
 	assert(NULL != value);
 
-	if (!cstring_copy(eh->content_language, value))
+	if (!cstring_set(eh->content_language, value))
 		return set_os_error(e, errno);
 
 	entity_header_set_flag(eh, ENTITY_HEADER_CONTENT_LANGUAGE_SET);
@@ -175,7 +175,7 @@ int entity_header_set_content_encoding(entity_header eh, const char* value)
 	assert(NULL != eh);
 	assert(NULL != value);
 
-	if (!cstring_copy(eh->content_encoding, value))
+	if (!cstring_set(eh->content_encoding, value))
 		return 0;
 
 	entity_header_set_flag(eh, ENTITY_HEADER_CONTENT_ENCODING_SET);
@@ -187,7 +187,7 @@ int entity_header_set_content_type(entity_header eh, const char* value)
 	assert(NULL != eh);
 	assert(NULL != value);
 
-	if (!cstring_copy(eh->content_type, value))
+	if (!cstring_set(eh->content_type, value))
 		return 0;
 
 	entity_header_set_flag(eh, ENTITY_HEADER_CONTENT_TYPE_SET);
@@ -200,7 +200,7 @@ int entity_header_set_content_md5(entity_header eh, const char* value)
 	assert(NULL != eh);
 	assert(NULL != value);
 
-	if (!cstring_copy(eh->content_md5, value))
+	if (!cstring_set(eh->content_md5, value))
 		return 0;
 
 	entity_header_set_flag(eh, ENTITY_HEADER_CONTENT_MD5_SET);
@@ -212,7 +212,7 @@ int entity_header_set_content_location(entity_header eh, const char* value)
 	assert(NULL != eh);
 	assert(NULL != value);
 
-	if (!cstring_copy(eh->content_location, value))
+	if (!cstring_set(eh->content_location, value))
 		return 0;
 
 	entity_header_set_flag(eh, ENTITY_HEADER_CONTENT_LOCATION_SET);
@@ -224,7 +224,7 @@ int entity_header_set_content_range(entity_header eh, const char* value)
 	assert(NULL != eh);
 	assert(NULL != value);
 
-	if (!cstring_copy(eh->content_range, value))
+	if (!cstring_set(eh->content_range, value))
 		return 0;
 
 	entity_header_set_flag(eh, ENTITY_HEADER_CONTENT_RANGE_SET);

@@ -201,7 +201,7 @@ cstring cstring_dup(const char *src)
 	if ((dest = cstring_new()) == NULL)
 		return NULL;
 
-	if (!cstring_copy(dest, src)) {
+	if (!cstring_set(dest, src)) {
 		cstring_free(dest);
 		return NULL;
 	}
@@ -209,7 +209,7 @@ cstring cstring_dup(const char *src)
 	return dest;
 }
 
-int cstring_copy(cstring dest, const char *src)
+int cstring_set(cstring dest, const char *src)
 {
 	size_t n;
 
@@ -229,7 +229,7 @@ int cstring_copy(cstring dest, const char *src)
 	return 1;
 }
 
-int cstring_ncopy(cstring dest, const char *src, const size_t cch)
+int cstring_nset(cstring dest, const char *src, const size_t cch)
 {
 	size_t len;
 
@@ -328,7 +328,7 @@ cstring cstring_left(cstring src, size_t n)
 		return NULL;
 	}
 
-	cstring_ncopy(dest, src->data, n);
+	cstring_nset(dest, src->data, n);
 	return dest;
 }
 
@@ -354,7 +354,7 @@ cstring cstring_right(cstring src, size_t n)
 	if (cb > n)
 		s += cb - n;
 
-	cstring_copy(dest, s);
+	cstring_set(dest, s);
 	return dest;
 }
 
@@ -522,7 +522,7 @@ int main(void)
 		s = cstring_new();
 		assert(s != NULL);
 
-		rc = cstring_copy(s, "Hello");
+		rc = cstring_set(s, "Hello");
 		assert(rc == 1);
 
 		rc = cstring_compare(s, "Hello");
@@ -562,7 +562,7 @@ int main(void)
 		assert(rc == 0);
 
 		/* Test cstring_left() */
-		cstring_copy(s, "hello, world");
+		cstring_set(s, "hello, world");
 		dest = cstring_left(s, 5);
 		rc = cstring_compare(dest, "hello");
 		assert(rc == 0);
@@ -575,7 +575,7 @@ int main(void)
 		cstring_free(dest);
 
 		/* cstring_right() */
-		cstring_copy(s, "hello, world");
+		cstring_set(s, "hello, world");
 		dest = cstring_right(s, 5);
 		rc = cstring_compare(dest, "world");
 		assert(rc == 0);
@@ -587,7 +587,7 @@ int main(void)
 		cstring_free(dest);
 
 		/* cstring_substring */
-		cstring_copy(s, "hello, world");
+		cstring_set(s, "hello, world");
 		dest = cstring_substring(s, 0, 5);
 		rc = cstring_compare(dest, "hello");
 		assert(rc == 0);
@@ -604,13 +604,13 @@ int main(void)
 		cstring_free(dest);
 
 		/* cstring_reverse */
-		cstring_copy(s, "hello, world");
+		cstring_set(s, "hello, world");
 		cstring_reverse(s);
 		rc = cstring_compare(s, "dlrow ,olleh");
 		assert(rc == 0);
 		/* cstring_strip */
 
-		cstring_copy(s, "  a b c d e f	");
+		cstring_set(s, "  a b c d e f	");
 		cstring_strip(s);
 		rc = cstring_compare(s, "a b c d e f");
 		assert(rc == 0);

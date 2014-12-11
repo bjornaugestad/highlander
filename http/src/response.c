@@ -404,7 +404,7 @@ static int create_cookie_string(cookie c, cstring str)
 	if ((s = cookie_get_name(c)) == NULL)
 		return 0;
 
-	if (!cstring_copy(str, "Set-Cookie: "))
+	if (!cstring_set(str, "Set-Cookie: "))
 		return 0;
 
 	if (!cstring_concat(str, s))
@@ -811,7 +811,7 @@ int response_set_etag(http_response response, const char* value)
 	assert(NULL != response);
 	assert(NULL != value);
 
-	if (!cstring_copy(response->etag, value))
+	if (!cstring_set(response->etag, value))
 		return 0;
 
 	response_set_flag(response, ETAG);
@@ -823,7 +823,7 @@ int response_set_location(http_response response, const char* value)
 	assert(NULL != response);
 	assert(NULL != value);
 
-	if (!cstring_copy(response->location, value))
+	if (!cstring_set(response->location, value))
 		return 0;
 
 	response_set_flag(response, LOCATION);
@@ -835,7 +835,7 @@ int response_set_proxy_authenticate(http_response response, const char* value)
 	assert(NULL != response);
 	assert(NULL != value);
 
-	if (!cstring_copy(response->proxy_authenticate, value))
+	if (!cstring_set(response->proxy_authenticate, value))
 		return 0;
 
 	response_set_flag(response, PROXY_AUTHENTICATE);
@@ -857,7 +857,7 @@ int response_set_server(http_response response, const char* value)
 	assert(NULL != response);
 	assert(NULL != value);
 
-	if (!cstring_copy(response->server, value))
+	if (!cstring_set(response->server, value))
 		return 0;
 
 	response_set_flag(response, SERVER);
@@ -869,7 +869,7 @@ int response_set_vary(http_response response, const char* value)
 	assert(NULL != response);
 	assert(NULL != value);
 
-	if (!cstring_copy(response->vary, value))
+	if (!cstring_set(response->vary, value))
 		return 0;
 
 	response_set_flag(response, VARY);
@@ -881,7 +881,7 @@ int response_set_www_authenticate(http_response response, const char* value)
 	assert(NULL != response);
 	assert(NULL != value);
 
-	if (!cstring_copy(response->www_authenticate, value))
+	if (!cstring_set(response->www_authenticate, value))
 		return 0;
 
 	response_set_flag(response, WWW_AUTHENTICATE);
@@ -1018,7 +1018,7 @@ int response_send_file(http_response p, const char *path, const char* ctype, met
 		return set_os_error(e, errno);
 
 	response_set_content_length(p, (size_t)st.st_size);
-	if (cstring_copy(p->path, path)) {
+	if (cstring_set(p->path, path)) {
 		p->send_file = 1;
 		return 1;
 	}

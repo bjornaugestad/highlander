@@ -73,28 +73,28 @@ int html_menu_set_text(html_menu m, const char* s)
 {
 	assert(m != NULL);
 	assert(s != NULL);
-	return cstring_copy(m->text, s);
+	return cstring_set(m->text, s);
 }
 
 int html_menu_set_image(html_menu m, const char* s)
 {
 	assert(m != NULL);
 	assert(s != NULL);
-	return cstring_copy(m->image, s);
+	return cstring_set(m->image, s);
 }
 
 int html_menu_set_hover_image(html_menu m, const char* s)
 {
 	assert(m != NULL);
 	assert(s != NULL);
-	return cstring_copy(m->hover_image, s);
+	return cstring_set(m->hover_image, s);
 }
 
 int html_menu_set_link(html_menu m, const char* s)
 {
 	assert(m != NULL);
 	assert(s != NULL);
-	return cstring_copy(m->link, s);
+	return cstring_set(m->link, s);
 }
 
 int html_menu_add_menu(html_menu m, html_menu submenu)

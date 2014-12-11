@@ -121,7 +121,7 @@ man_MANS=\
 	cstring.3\
 	cstring_charcat.3\
 	cstring_concat.3\
-	cstring_copy.3\
+	cstring_set.3\
 	cstring_extend.3\
 	cstring_left.3\
 	cstring_length.3\

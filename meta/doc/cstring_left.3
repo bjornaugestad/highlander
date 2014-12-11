@@ -39,7 +39,7 @@ Both functions return NULL if an error occurs, else a valid cstring. Remember to
 .Sh EXAMPLE
 .Bd -literal
 cstring h, w, s = cstring_new();
-cstring_copy(s, "Hello, World");
+cstring_set(s, "Hello, World");
 
 h = cstring_left(s, 5); /* h will contain "Hello" */
 w = cstring_right(s, 5); /* w will contain "World" */

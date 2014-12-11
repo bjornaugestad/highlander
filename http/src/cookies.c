@@ -78,7 +78,7 @@ int cookie_set_name(cookie c, const char *s)
 	assert(NULL != c);
 	assert(NULL != s);
 
-	return cstring_copy(c->name, s);
+	return cstring_set(c->name, s);
 }
 
 int cookie_set_value(cookie c, const char *s)
@@ -86,7 +86,7 @@ int cookie_set_value(cookie c, const char *s)
 	assert(NULL != c);
 	assert(NULL != s);
 
-	return cstring_copy(c->value, s);
+	return cstring_set(c->value, s);
 }
 
 int cookie_set_comment(cookie c, const char *s)
@@ -94,7 +94,7 @@ int cookie_set_comment(cookie c, const char *s)
 	assert(NULL != c);
 	assert(NULL != s);
 
-	return cstring_copy(c->comment, s);
+	return cstring_set(c->comment, s);
 }
 
 int cookie_set_domain(cookie c, const char *s)
@@ -102,7 +102,7 @@ int cookie_set_domain(cookie c, const char *s)
 	assert(NULL != c);
 	assert(NULL != s);
 
-	return cstring_copy(c->domain, s);
+	return cstring_set(c->domain, s);
 }
 
 int cookie_set_path(cookie c, const char *s)
@@ -110,7 +110,7 @@ int cookie_set_path(cookie c, const char *s)
 	assert(NULL != c);
 	assert(NULL != s);
 
-	return cstring_copy(c->path, s);
+	return cstring_set(c->path, s);
 }
 
 void cookie_set_version(cookie c, int v)
@@ -324,7 +324,7 @@ static int parse_new_cookie_name(cookie c, const char *input, meta_error e)
 	if ((str = cstring_new()) == NULL)
 		return set_os_error(e, errno);
 
-	if (!cstring_ncopy(str, s, (size_t) (s2 - s + 1))) {
+	if (!cstring_nset(str, s, (size_t) (s2 - s + 1))) {
 		cstring_free(str);
 		return set_os_error(e, errno);
 	}
@@ -342,7 +342,7 @@ static int parse_new_cookie_name(cookie c, const char *input, meta_error e)
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 	}
 
-	if (!cstring_ncopy(str, s, (size_t)(s2 - s + 1))) {
+	if (!cstring_nset(str, s, (size_t)(s2 - s + 1))) {
 		cstring_free(str);
 		return set_os_error(e, errno);
 	}
@@ -472,7 +472,7 @@ int parse_old_cookie(http_request req, const char *input, meta_error e)
 	}
 
 	input++; /* Skip '=' */
-	if (!cstring_copy(value, input))
+	if (!cstring_set(value, input))
 		goto memerr;
 
 	if ((c = cookie_new()) == NULL)

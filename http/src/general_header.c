@@ -248,7 +248,7 @@ int general_header_set_connection(general_header gh, const char* value)
 	assert(NULL != gh);
 	assert(NULL != value);
 
-	if (!cstring_copy(gh->connection, value))
+	if (!cstring_set(gh->connection, value))
 		return 0;
 
 	general_header_set_flag(gh, GENERAL_HEADER_CONNECTION_SET);
@@ -260,7 +260,7 @@ int general_header_set_pragma(general_header gh, const char* value)
 	assert(NULL !=	gh);
 	assert(NULL != value);
 
-	if (!cstring_copy(gh->pragma, value))
+	if (!cstring_set(gh->pragma, value))
 		return 0;
 
 	general_header_set_flag(gh, GENERAL_HEADER_PRAGMA_SET);
@@ -272,7 +272,7 @@ int general_header_set_trailer(general_header gh, const char* value)
 	assert(NULL != gh);
 	assert(NULL != value);
 
-	if (!cstring_copy(gh->trailer, value))
+	if (!cstring_set(gh->trailer, value))
 		return 0;
 
 	general_header_set_flag(gh, GENERAL_HEADER_TRAILER_SET);
@@ -284,7 +284,7 @@ int general_header_set_transfer_encoding(general_header gh, const char* value)
 	assert(NULL != gh);
 	assert(NULL != value);
 
-	if (!cstring_copy(gh->transfer_encoding, value))
+	if (!cstring_set(gh->transfer_encoding, value))
 		return 0;
 
 	general_header_set_flag(gh, GENERAL_HEADER_TRANSFER_ENCODING_SET);
@@ -296,7 +296,7 @@ int general_header_set_upgrade(general_header gh, const char* value)
 	assert(NULL != gh);
 	assert(NULL != value);
 
-	if (!cstring_copy(gh->upgrade, value))
+	if (!cstring_set(gh->upgrade, value))
 		return 0;
 
 	general_header_set_flag(gh, GENERAL_HEADER_UPGRADE_SET);
@@ -308,7 +308,7 @@ int general_header_set_via(general_header gh, const char* value)
 	assert(NULL != gh);
 	assert(NULL != value);
 
-	if (!cstring_copy(gh->via, value))
+	if (!cstring_set(gh->via, value))
 		return 0;
 
 	general_header_set_flag(gh, GENERAL_HEADER_VIA_SET);
@@ -320,7 +320,7 @@ int general_header_set_warning(general_header gh, const char* value)
 	assert(NULL != gh);
 	assert(NULL != value);
 
-	if (!cstring_copy(gh->warning, value))
+	if (!cstring_set(gh->warning, value))
 		return 0;
 
 	general_header_set_flag(gh, GENERAL_HEADER_WARNING_SET);

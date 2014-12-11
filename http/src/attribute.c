@@ -67,10 +67,10 @@ page_attribute attribute_dup(page_attribute a)
 	if ((p = attribute_new()) == NULL)
 		return NULL;
 
-	if (!cstring_copy(p->language, c_str(a->language))
-	|| !cstring_copy(p->charset, c_str(a->charset))
-	|| !cstring_copy(p->encoding, c_str(a->encoding))
-	|| !cstring_copy(p->media_type, c_str(a->media_type))) {
+	if (!cstring_set(p->language, c_str(a->language))
+	|| !cstring_set(p->charset, c_str(a->charset))
+	|| !cstring_set(p->encoding, c_str(a->encoding))
+	|| !cstring_set(p->media_type, c_str(a->media_type))) {
 		attribute_free(p);
 		return NULL;
 	}
@@ -80,17 +80,17 @@ page_attribute attribute_dup(page_attribute a)
 
 int attribute_set_media_type(page_attribute a, const char* value)
 {
-	return cstring_copy(a->media_type, value);
+	return cstring_set(a->media_type, value);
 }
 
 int attribute_set_language(page_attribute a, const char* value)
 {
-	return cstring_copy(a->language, value);
+	return cstring_set(a->language, value);
 }
 
 int attribute_set_charset(page_attribute a, const char* value)
 {
-	return cstring_copy(a->charset, value);
+	return cstring_set(a->charset, value);
 }
 
 int attribute_set_authorization(page_attribute a, const char* value)
@@ -102,7 +102,7 @@ int attribute_set_authorization(page_attribute a, const char* value)
 
 int attribute_set_encoding(page_attribute a, const char* value)
 {
-	return cstring_copy(a->encoding, value);
+	return cstring_set(a->encoding, value);
 }
 
 const char* attribute_get_media_type(page_attribute a)

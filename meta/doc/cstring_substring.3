@@ -45,7 +45,7 @@ returned cstring using cstring_free().
 .Sh EXAMPLE
 .Bd -literal
 cstring x, s = cstring_new();
-cstring_copy(s, "Hello, world");
+cstring_set(s, "Hello, world");
 x = cstring_substring(s, 1, 4); /* x now contains "ell" */
 ...
 cstring_free(x);

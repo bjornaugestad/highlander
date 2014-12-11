@@ -88,7 +88,7 @@ process process_new(const char *appname)
 	else if ((p->rootdir = cstring_new()) == NULL
 	|| (p->appname = cstring_new()) == NULL
 	|| (p->username = cstring_new()) == NULL
-	|| !cstring_copy(p->appname, appname)) {
+	|| !cstring_set(p->appname, appname)) {
 		cstring_free(p->appname);
 		cstring_free(p->username);
 		cstring_free(p->rootdir);
@@ -118,7 +118,7 @@ int process_set_rootdir(process p, const char *path)
 	assert(p != NULL);
 	assert(path != NULL);
 
-	return cstring_copy(p->rootdir, path);
+	return cstring_set(p->rootdir, path);
 }
 
 int process_set_username(process p, const char *username)
@@ -126,7 +126,7 @@ int process_set_username(process p, const char *username)
 	assert(p != NULL);
 	assert(username != NULL);
 
-	return cstring_copy(p->username, username);
+	return cstring_set(p->username, username);
 }
 
 int process_add_object_to_start(
