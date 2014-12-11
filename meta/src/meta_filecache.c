@@ -38,12 +38,13 @@ fileinfo fileinfo_new(void)
 {
 	fileinfo p;
 
-	if ((p = malloc(sizeof *p)) != NULL) {
-		p->mimetype = NULL;
-		p->name = NULL;
-		p->alias = NULL;
-		p->contents = NULL;
-	}
+	if ((p = malloc(sizeof *p)) == NULL)
+		return NULL;
+		
+	p->mimetype = NULL;
+	p->name = NULL;
+	p->alias = NULL;
+	p->contents = NULL;
 
 	return p;
 }
@@ -160,11 +161,14 @@ int filecache_add(filecache fc, fileinfo finfo, int pin, unsigned long* pid)
 
 	if ((fd = open(fileinfo_name(finfo), O_RDONLY)) == -1)
 		goto err;
-	else if ((finfo->contents = malloc(finfo->st.st_size)) == NULL)
+
+	if ((finfo->contents = malloc(finfo->st.st_size)) == NULL)
 		goto err;
-	else if (read(fd, finfo->contents, (size_t)finfo->st.st_size) != (ssize_t)finfo->st.st_size)
+
+	if (read(fd, finfo->contents, (size_t)finfo->st.st_size) != (ssize_t)finfo->st.st_size)
 		goto err;
-	else if (close(fd) == -1)
+
+	if (close(fd) == -1)
 		goto err;
 
 	fd = -1;
@@ -179,6 +183,7 @@ int filecache_add(filecache fc, fileinfo finfo, int pin, unsigned long* pid)
 err:
 	if (fd != -1)
 		close(fd);
+
 	free(contents);
 	fileinfo_free(finfo);
 	return 0;
@@ -193,8 +198,12 @@ int filecache_invalidate(filecache fc)
 	stringmap_free(fc->filenames);
 	cache_free(fc->metacache, (dtor)fileinfo_free);
 
-	if ((fc->filenames = stringmap_new(fc->nelem)) == NULL
-	||	(fc->metacache = cache_new(fc->nelem, HOTLIST_SIZE, fc->bytes)) == NULL) {
+	if ((fc->filenames = stringmap_new(fc->nelem)) == NULL) {
+		pthread_rwlock_unlock(&fc->lock);
+		return 0;
+	}
+
+	if ((fc->metacache = cache_new(fc->nelem, HOTLIST_SIZE, fc->bytes)) == NULL) {
 		stringmap_free(fc->filenames);
 		fc->filenames = NULL;
 		fc->metacache = NULL;

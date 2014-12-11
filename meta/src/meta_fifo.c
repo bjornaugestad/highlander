@@ -57,18 +57,22 @@ fifo fifo_new(size_t size)
 	assert(size > 0);
 
 	if ((p = malloc(sizeof *p)) == NULL)
-		;
-	else if ((p->lock = wlock_new()) == NULL
-	||	(p->pelem = calloc(size, sizeof *p->pelem)) == NULL) {
+		return NULL;
+
+	if ((p->lock = wlock_new()) == NULL) {
+		free(p);
+		return NULL;
+	}
+
+	if ((p->pelem = calloc(size, sizeof *p->pelem)) == NULL) {
 		wlock_free(p->lock);
 		free(p);
-		p = NULL;
+		return NULL;
 	}
-	else {
-		p->size = size;
-		p->nelem = 0;
-		p->iwrite = p->iread = 0;
-	}
+
+	p->size = size;
+	p->nelem = 0;
+	p->iwrite = p->iread = 0;
 
 	return p;
 }
@@ -193,6 +197,7 @@ int fifo_wait_cond(fifo p)
 	assert(p != NULL);
 
 	fifo_lock(p);
+
 	if (!wlock_wait(p->lock)) {
 		fifo_unlock(p);
 		return 0;

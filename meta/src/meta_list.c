@@ -30,11 +30,12 @@ list list_new(void)
 {
 	list lst;
 
-	if ((lst = malloc(sizeof *lst)) != NULL) {
-		lst->next = NULL;
-		lst->prev = NULL;
-		lst->data = NULL;
-	}
+	if ((lst = malloc(sizeof *lst)) == NULL)
+		return NULL;
+		
+	lst->next = NULL;
+	lst->prev = NULL;
+	lst->data = NULL;
 
 	return lst;
 }
@@ -43,21 +44,22 @@ void list_free(list lst, void(*cleanup)(void*))
 {
 	list p;
 
-	if (lst != NULL) {
-		/* Free data for all items except the first. */
-		for (p = lst->next; p != NULL; p = p->next) {
-			if (cleanup != NULL)
-				cleanup(p->data);
-			else
-				free(p->data);
-		}
+	if (lst == NULL)
+		return;
 
-		/* Free the list itself */
-		while (lst) {
-			p = lst;
-			lst = lst->next;
-			free(p);
-		}
+	/* Free data for all items except the first. */
+	for (p = lst->next; p != NULL; p = p->next) {
+		if (cleanup != NULL)
+			cleanup(p->data);
+		else
+			free(p->data);
+	}
+
+	/* Free the list itself */
+	while (lst) {
+		p = lst;
+		lst = lst->next;
+		free(p);
 	}
 }
 
@@ -70,32 +72,32 @@ list list_add(list lst, void *data)
 	if (lst == NULL) {
 		if ((lst = list_new()) == NULL)
 			return NULL;
-		else
-			we_allocated_list = 1;
+
+		we_allocated_list = 1;
 	}
 
 	if ((node = calloc(1, sizeof *node)) == NULL) {
 		if (we_allocated_list)
 			list_free(lst, NULL);
+
 		return NULL;
 	}
-	else {
-		if (lst->data != NULL) {
-			/* We have a cached end */
-			node->prev = lst->data;
-			node->prev->next = node;
-		}
-		else {
-			/* This is the first item we add */
-			lst->next = node;
-			node->prev = lst;
-		}
 
-		node->data = data;
-
-		/* Cache the new item */
-		lst->data = node;
+	if (lst->data != NULL) {
+		/* We have a cached end */
+		node->prev = lst->data;
+		node->prev->next = node;
 	}
+	else {
+		/* This is the first item we add */
+		lst->next = node;
+		node->prev = lst;
+	}
+
+	node->data = data;
+
+	/* Cache the new item */
+	lst->data = node;
 
 	return lst;
 }
@@ -363,6 +365,7 @@ list sublist_copy(list src)
 list list_insert(list lst, void *data)
 {
 	int we_allocated_list = 0;
+
 	if (lst == NULL) {
 		lst = list_new();
 		we_allocated_list = 1;
@@ -400,7 +403,7 @@ int list_insert_before(list_iterator li, void *data)
 	assert(data != NULL);
 
 	if ((new = calloc(1, sizeof *new)) == NULL)
-		return ENOMEM;
+		return 0;
 
 	curr = li.node;
 	new->data = data;
@@ -408,7 +411,7 @@ int list_insert_before(list_iterator li, void *data)
 	new->prev = curr->prev;
 	curr->prev->next = new;
 	curr->prev = new;
-	return 0;
+	return 1;
 }
 
 int list_insert_after(list_iterator li, void *data)
@@ -419,7 +422,7 @@ int list_insert_after(list_iterator li, void *data)
 	assert(data != NULL);
 
 	if ((new = calloc(1, sizeof *new)) == NULL)
-		return ENOMEM;
+		return 0;
 
 	curr = li.node;
 	new->data = data;
@@ -429,7 +432,7 @@ int list_insert_after(list_iterator li, void *data)
 		curr->next->prev = new;
 
 	curr->next = new;
-	return 0;
+	return 1;
 }
 
 void list_sort(list lst, int(*func)(const void *p1, const void *p2))
@@ -481,8 +484,8 @@ int list_last(list_iterator li)
 	li = list_next(li);
 	if (list_end(li))
 		return 1;
-	else
-		return 0;
+
+	return 0;
 }
 
 list list_copy(list lst, void*(*copier)(const void*), dtor dtor_fn)
@@ -500,7 +503,8 @@ list list_copy(list lst, void*(*copier)(const void*), dtor dtor_fn)
 				list_free(new, dtor_fn);
 				return NULL;
 			}
-			else if (list_add(new, new_data) == NULL) {
+
+			if (list_add(new, new_data) == NULL) {
 				list_free(new, dtor_fn);
 				return NULL;
 			}
@@ -685,7 +689,8 @@ int main(void)
 	for (li = list_first(b); !list_end(li); li = list_next(li)) {
 		if ((node = list_get(li)) == NULL)
 			return77("Could not get node from list");
-		else if (node->value < 500)
+
+		if (node->value < 500)
 			return77("Incorrect value, should be >= 500");
 	}
 	sublist_free(b);
@@ -701,7 +706,8 @@ int main(void)
 		size_t* pi;
 		if ((pi = list_get(li)) == NULL)
 			return77("Could not get node from list");
-		else if (*pi != i)
+
+		if (*pi != i)
 			return77("Incorrect value for adapted list");
 		i++;
 	}
@@ -712,6 +718,7 @@ int main(void)
 	 */
 	if ((node = malloc(sizeof *node)) == NULL)
 		return77("Could not alloc mem");
+
 	node->value = 0xbeef;
 	if (list_insert(a, node) == NULL)
 		return77("Could not insert node");
@@ -720,13 +727,15 @@ int main(void)
 	node = list_get(li);
 	if (node->value != 0xbeef)
 		return77("Incorrect value for inserted node");
+
 	list_delete(a, li, item_dtor);
 
 	/* Now we get items using a zero based index */
 	for (i = 0; i < nelem; i++) {
 		if ((node = list_get_item(a, i)) == NULL)
 			return77("Could not get node by index");
-		else if (node->value != i)
+
+		if (node->value != i)
 			return77("Incorrect value for indexed node");
 	}
 
@@ -758,14 +767,15 @@ int main(void)
 	/* Now copy a to b, then merge a and b. */
 	if ((b = list_copy(a, item_dup, item_dtor)) == NULL)
 		return77("list_copy failed");
-	else if ((b = list_merge(b, a)) == NULL)
+
+	if ((b = list_merge(b, a)) == NULL)
 		return77("list_merge failed");
-	else if (list_size(b) != nelem * 2)
+
+	if (list_size(b) != nelem * 2)
 		return77("Incorrect number of items in list");
-	else {
-		/* Remember that list_merge() freed list a */
-		a = b;
-	}
+
+	/* Remember that list_merge() freed list a */
+	a = b;
 
 	list_sort(a, item_cmp);
 	i = list_count(a, (int(*)(void*))item_bottom_half);
@@ -805,7 +815,7 @@ int main(void)
 		return77("List has incorrect size. Expected 1, got %zu.", list_size(a));
 
 	li = list_first(a);
-	if (list_insert_before(li, strdup("bar")) != 0)
+	if (!list_insert_before(li, strdup("bar")))
 		return77("Could not add 'bar' before 'foo'");
 
 	if (list_size(a) != 2)
@@ -819,7 +829,7 @@ int main(void)
 
 	// Now insert baz after bar, so that the list will have three
 	// items: bar, baz, foo
-	if (list_insert_after(li, strdup("baz")))
+	if (!list_insert_after(li, strdup("baz")))
 		return77("Unable to add baz");
 
 	if (list_size(a) != 3)

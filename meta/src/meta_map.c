@@ -94,14 +94,14 @@ map map_new(void(*freefunc)(void *arg))
 	map m;
 
 	if ((m = calloc(1, sizeof *m)) == NULL)
-		;
-	else if ((m->lst = list_new()) == NULL) {
-		free(m);
-		m = NULL;
-	}
-	else
-		m->freefunc = freefunc;
+		return NULL;
 
+	if ((m->lst = list_new()) == NULL) {
+		free(m);
+		return NULL;
+	}
+
+	m->freefunc = freefunc;
 	return m;
 }
 
@@ -129,9 +129,7 @@ map_find(map m, const char *key)
 	list_iterator i;
 
 	for (i = list_first(m->lst); !list_end(i); i = list_next(i)) {
-		struct pair *p;
-
-		p = list_get(i);
+		struct pair *p = list_get(i);
 
 		if (strcmp(key, p->key) == 0)
 			return p;
@@ -143,7 +141,7 @@ map_find(map m, const char *key)
 int map_set(map m, const char *key, void *value)
 {
 	struct pair *p, *i;
-
+	list tmp;
 
 	if ((i = map_find(m, key)) != NULL) {
 		free(i->value);
@@ -151,35 +149,43 @@ int map_set(map m, const char *key, void *value)
 
 		return 0;
 	}
-	else if ((p = malloc(sizeof *p)) == NULL)
+
+	if ((p = malloc(sizeof *p)) == NULL)
 		return 0;
-	else if ((p->key = malloc(strlen(key) + 1)) == NULL)  {
+
+	if ((p->key = malloc(strlen(key) + 1)) == NULL)  {
 		free(p);
 		return 0;
 	}
-	else {
-		strcpy(p->key, key);
-		p->value = value;
-		return list_add(m->lst, p) != NULL;
+
+	strcpy(p->key, key);
+	p->value = value;
+
+	tmp = list_add(m->lst, p);
+	if(tmp == NULL) {
+		free(p->key);
+		free(p);
 	}
+	
+	return tmp != NULL;
 }
 
 int map_exists(map m, const char *key)
 {
 	if (map_find(m, key))
 		return 1;
-	else
-		return 0;
+
+	return 0;
 }
 
 void *map_get(map m, const char *key)
 {
 	struct pair *p;
 
-	if ((p = map_find(m, key)) != NULL)
-		return p->value;
-	else
+	if ((p = map_find(m, key)) == NULL)
 		return NULL;
+		
+	return p->value;
 }
 
 int map_foreach(map m, void *args, int(*f)(void *args, char *key, void *data))

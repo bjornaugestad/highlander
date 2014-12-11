@@ -190,9 +190,9 @@ static inline int conn_getc(connection conn)
 	assert(membuf_canread(conn->readbuf) > 0);
 
 	if (membuf_read(conn->readbuf, &c, 1) == 1)
-		return (int)c;
-	else
-		return EOF;
+		return c;
+
+	return EOF;
 }
 
 connection connection_new(
@@ -410,17 +410,17 @@ int connection_write(connection conn, const void *buf, size_t count)
  * We can either report an IP to the tcp_server or the tcp_server
  * can scan its connections for bad guys.
  */
-static ssize_t read_from_socket(connection conn, void *pbuf, size_t count)
+static ssize_t read_from_socket(connection conn, void *buf, size_t count)
 {
 	ssize_t nread;
 
 	assert(conn != NULL);
-	assert(pbuf != NULL);
+	assert(buf != NULL);
 	assert(readbuf_empty(conn));
 
 	nread = sock_read(
 		conn->sock,
-		pbuf,
+		buf,
 		count,
 		conn->timeout_reads,
 		conn->retries_reads);
@@ -433,7 +433,6 @@ static ssize_t read_from_socket(connection conn, void *pbuf, size_t count)
 
 ssize_t connection_read(connection conn, void *buf, size_t count)
 {
-	int success = 1;
 	size_t ncopied;
 	ssize_t nread;
 
@@ -464,7 +463,7 @@ ssize_t connection_read(connection conn, void *buf, size_t count)
 	 * Fill the read buffer by reading data from the socket.
 	 * Then copy data from the read buffer to buf.
 	 */
-	if ((success = fill_read_buffer(conn)) == 0)
+	if (!fill_read_buffer(conn))
 		return 0;
 
 	if (!readbuf_contains_atleast(conn, count)) {

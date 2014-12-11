@@ -77,22 +77,24 @@ cache cache_new(size_t nelem, size_t hotlist_nelem, size_t cb)
 
 	assert(cb > 0);
 
-	if ((c = malloc(sizeof *c)) != NULL
-	&& (c->hashtable = calloc(nelem, sizeof *c->hashtable)) != NULL
-	&& (c->hotlist = calloc(hotlist_nelem, sizeof *c->hotlist)) != NULL) {
+	if ((c = malloc(sizeof *c)) == NULL)
+		return NULL;
 
-		c->nelem = nelem;
-		c->max_bytes = cb;
-		c->current_bytes = 0;
-		c->hotlist_nelem = hotlist_nelem;
-	}
-	else {
-		if (c != NULL)
-			free(c->hashtable);
-
+	if ((c->hashtable = calloc(nelem, sizeof *c->hashtable)) == NULL) {
 		free(c);
-		c = NULL;
+		return NULL;
 	}
+		
+	if ((c->hotlist = calloc(hotlist_nelem, sizeof *c->hotlist)) == NULL) {
+		free(c->hashtable);
+		free(c);
+		return NULL;
+	}
+
+	c->nelem = nelem;
+	c->max_bytes = cb;
+	c->current_bytes = 0;
+	c->hotlist_nelem = hotlist_nelem;
 
 	return c;
 }
@@ -116,36 +118,37 @@ static void cache_entry_free(struct cache_entry* p)
  */
 void cache_free(cache c, dtor cleanup)
 {
+	size_t i;
+
 	if (cleanup == NULL)
 		cleanup = free;
 
-	if (c != NULL) {
-		size_t i;
+	if (c == NULL)
+		return NULL;
 
-		for (i = 0; i < c->nelem; i++) {
-			list lst = c->hashtable[i];
-			if (lst != NULL) {
-				if (cleanup != NULL) {
-					list_iterator li;
+	for (i = 0; i < c->nelem; i++) {
+		list lst = c->hashtable[i];
+		if (lst != NULL) {
+			if (cleanup != NULL) {
+				list_iterator li;
 
-					for (li = list_first(lst); !list_end(li); li = list_next(li)) {
-						struct cache_entry* p = list_get(li);
-						assert(p != NULL);
-						assert(p->data != NULL);
+				for (li = list_first(lst); !list_end(li); li = list_next(li)) {
+					struct cache_entry* p = list_get(li);
+					assert(p != NULL);
+					assert(p->data != NULL);
 
-						cleanup(p->data);
-						p->data = NULL;
-					}
+					cleanup(p->data);
+					p->data = NULL;
 				}
-
-				list_free(lst, (dtor)cache_entry_free);
 			}
-		}
 
-		free(c->hotlist);
-		free(c->hashtable);
-		free(c);
+			list_free(lst, (dtor)cache_entry_free);
+		}
 	}
+
+	free(c->hotlist);
+	free(c->hashtable);
+	free(c);
 }
 
 #if 0
@@ -383,14 +386,13 @@ int cache_remove(cache c, size_t id)
 		errno = ENOENT;
 		return 0;
 	}
-	else {
-		assert(c->hashtable[id % c->nelem] != NULL);
-		assert(cache_exists(c, id));
 
-		list_delete(c->hashtable[id % c->nelem], i, (dtor)cache_entry_free);
-		remove_from_hotlist(c, id);
-		return 1;
-	}
+	assert(c->hashtable[id % c->nelem] != NULL);
+	assert(cache_exists(c, id));
+
+	list_delete(c->hashtable[id % c->nelem], i, (dtor)cache_entry_free);
+	remove_from_hotlist(c, id);
+	return 1;
 }
 
 #ifdef CHECK_CACHE

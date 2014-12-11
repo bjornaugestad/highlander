@@ -212,14 +212,16 @@ static int write_pid(process p, pid_t pid)
 
 	if ((f = fopen(filename, "w")) == NULL)
 		return 0;
-	else if (fprintf(f, "%lu", (unsigned long)pid) <= 0) {
+
+	if (fprintf(f, "%lu", (unsigned long)pid) <= 0) {
 		fclose(f);
 		return 0;
 	}
-	else if (fclose(f))
+
+	if (fclose(f))
 		return 0;
-	else
-		return 1;
+
+	return 1;
 }
 
 static void *shutdown_thread(void *arg)

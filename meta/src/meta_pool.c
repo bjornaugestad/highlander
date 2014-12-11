@@ -58,16 +58,16 @@ pool pool_new(size_t size)
 	assert(size > 0); /* No point in zero-sized pools */
 
 	if ((p = calloc(1, sizeof *p)) == NULL)
-		;
-	else if ((p->pdata = calloc(size, sizeof *p->pdata)) == NULL) {
+		return NULL;
+
+	if ((p->pdata = calloc(size, sizeof *p->pdata)) == NULL) {
 		free(p);
-		p = NULL;
+		return NULL;
 	}
-	else {
-		pthread_mutex_init(&p->mutex, NULL);
-		p->size = size;
-		p->nelem = 0;
-	}
+
+	pthread_mutex_init(&p->mutex, NULL);
+	p->size = size;
+	p->nelem = 0;
 
 	return p;
 }
@@ -77,21 +77,22 @@ void pool_free(pool p, dtor free_fn)
 	size_t i;
 
 
-	if (p != NULL) {
-		/* Free entries if we have a dtor and the entry is not NULL */
-		if (free_fn != NULL) {
-			assert(p->pdata != NULL);
-			assert(p->size > 0);
+	if (p == NULL)
+		return;
+		
+	/* Free entries if we have a dtor and the entry is not NULL */
+	if (free_fn != NULL) {
+		assert(p->pdata != NULL);
+		assert(p->size > 0);
 
-			for (i = 0; i < p->nelem; i++)
-				if (p->pdata[i] != NULL)
-					free_fn(p->pdata[i]);
-		}
-
-		free(p->pdata);
-		pthread_mutex_destroy(&p->mutex);
-		free(p);
+		for (i = 0; i < p->nelem; i++)
+			if (p->pdata[i] != NULL)
+				free_fn(p->pdata[i]);
 	}
+
+	free(p->pdata);
+	pthread_mutex_destroy(&p->mutex);
+	free(p);
 }
 
 void pool_add(pool p, void *resource)
@@ -121,6 +122,7 @@ void *pool_get(pool p)
 		if (p->pdata[i] != NULL) {
 			resource = p->pdata[i];
 			p->pdata[i] = NULL;
+
 #ifdef WITH_VALGRIND
 			VALGRIND_MAKE_MEM_UNDEFINED(resource, p->size);
 #endif
@@ -136,8 +138,6 @@ void *pool_get(pool p)
 	 */
 	assert(i != p->nelem);
 	assert(NULL != resource);
-	if (resource == NULL) /* Release version paranoia */
-		abort();
 
 	return resource;
 }

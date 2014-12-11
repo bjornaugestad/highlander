@@ -21,7 +21,6 @@
 #include <pthread.h>
 #include <assert.h>
 
-
 #include <meta_slotbuf.h>
 
 struct slotbuf_tag {
@@ -38,17 +37,18 @@ slotbuf slotbuf_new(size_t size, int can_overwrite, dtor pfn)
 
 	assert(size > 0);
 
-	if ((p = malloc(sizeof *p)) == NULL
-	||	(p->data = calloc(size, sizeof *p->data)) == NULL) {
+	if ((p = malloc(sizeof *p)) == NULL)
+		return NULL;
+
+	if ((p->data = calloc(size, sizeof *p->data)) == NULL) {
 		free(p);
-		p = NULL;
+		return NULL;
 	}
-	else {
-		p->can_overwrite = can_overwrite;
-		p->size = size;
-		pthread_mutex_init(&p->lock, NULL);
-		p->pfn = pfn;
-	}
+
+	p->can_overwrite = can_overwrite;
+	p->size = size;
+	pthread_mutex_init(&p->lock, NULL);
+	p->pfn = pfn;
 
 	return p;
 }
@@ -72,13 +72,13 @@ int slotbuf_set(slotbuf p, size_t i, void *value)
 {
 	size_t idx;
 	assert(p != NULL);
-	assert(value != NULL);
 
 	idx = i % p->size;
 	if (p->data[idx] != NULL) {
 		if (!p->can_overwrite)
 			return 0;
-		else if (p->pfn != NULL)
+
+		if (p->pfn != NULL)
 			p->pfn(p->data[idx]);
 	}
 
@@ -104,6 +104,7 @@ size_t slotbuf_nelem(slotbuf p)
 	size_t i, n;
 
 	assert(p != NULL);
+
 	for (i = n = 0; i < p->size; i++)
 		if (p->data[i] != NULL)
 			n++;
@@ -142,3 +143,26 @@ void slotbuf_unlock(slotbuf p)
 	if (pthread_mutex_unlock(&p->lock))
 		abort();
 }
+
+#ifdef CHECK_SLOTBUF
+
+int main(void)
+{
+	size_t i, n = 1024;
+	slotbuf p = slotbuf_new(10, 1, 0);
+	void *v;
+
+	for (i = 0; i < n; i++) {
+		if (!slotbuf_set(p, i, (void*)i))
+			return 1;
+
+		v = slotbuf_get(p, i);
+		if (v != (void*)i)
+			return 1;
+	}
+
+	slotbuf_free(p);
+	return 0;
+}
+#endif
+

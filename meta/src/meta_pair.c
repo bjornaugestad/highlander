@@ -61,15 +61,15 @@ pair pair_new(size_t nelem)
 	assert(nelem > 0);
 
 	if ((p = malloc(sizeof *p)) == NULL)
-		;
-	else if ((p->element = calloc(nelem, sizeof *p->element)) == NULL) {
+		return NULL;
+
+	if ((p->element = calloc(nelem, sizeof *p->element)) == NULL) {
 		free(p);
-		p = NULL;
+		return NULL;
 	}
-	else {
-		p->used = 0;
-		p->nelem = nelem;
-	}
+
+	p->used = 0;
+	p->nelem = nelem;
 
 	return p;
 }
@@ -96,13 +96,12 @@ static int pair_extend(pair p, size_t cElementsToAdd)
 	assert(p != NULL);
 
 	new = realloc(p->element, sizeof *p->element * (p->nelem + cElementsToAdd));
-	if (new != NULL) {
-		p->element = new;
-		p->nelem += cElementsToAdd;
-		return 1;
-	}
-	else
+	if (new == NULL)
 		return 0;
+
+	p->element = new;
+	p->nelem += cElementsToAdd;
+	return 1;
 }
 
 size_t pair_size(pair p)
@@ -127,8 +126,8 @@ const char *pair_get(pair p, const char *name)
 
 	if (!pair_find(p, name, &i))
 		return NULL;
-	else
-		return p->element[i].value;
+
+	return p->element[i].value;
 }
 
 
@@ -162,25 +161,26 @@ int pair_set(pair p, const char *name, const char *value)
 int pair_add(pair p, const char *name, const char *value)
 {
 	struct element* new; /* Just a helper to beautify the code */
+	size_t namelen, valuelen;
 
 	/* Resize when needed */
-	if (p->used == p->nelem) {
-		if (!pair_extend(p, p->nelem * 2))
-			return 0;
-	}
+	if (p->used == p->nelem && !pair_extend(p, p->nelem * 2))
+		return 0;
 
 	/* Assign the helper */
 	new = &p->element[p->used];
-	if ((new->name = malloc(strlen(name) + 1)) == NULL)
+	namelen = strlen(name) + 1;
+	valuelen = strlen(value) + 1;
+	if ((new->name = malloc(namelen)) == NULL)
 		return 0;
 
-	if ((new->value = malloc(strlen(value) + 1)) == NULL) {
+	if ((new->value = malloc(valuelen)) == NULL) {
 		free(new->name);
 		return 0;
 	}
 
-	strcpy(new->name, name);
-	strcpy(new->value, value);
+	memcpy(new->name, name, namelen);
+	memcpy(new->value, value, valuelen);
 	p->used++;
 	return 1;
 }

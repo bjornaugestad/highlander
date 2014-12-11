@@ -1,0 +1,52 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th slotbuf 3
+.Sh NAME
+.Nm slotbuf
+.Nd A slotbuf ADT
+.Sh SYNOPSIS
+.Fd #include <meta_slotbuf.h>
+.Fo "slotbuf slotbuf_new"
+.Fa "size_t size"
+.Fa "int can_overwrite"
+.Fa "dtor pfn"
+.Fc
+.Fo "void slotbuf_free"
+.Fa "slotbuf p"
+.Fc
+.Fo "int slotbuf_set"
+.Fa "slotbuf p"
+.Fa "size_t i"
+.Fa "void *value"
+.Fc
+.Fo "void *slotbuf_get"
+.Fa "slotbuf p"
+.Fa "size_t i"
+.Fc
+.Fo "size_t slotbuf_nelem"
+.Fa "slotbuf p"
+.Fc
+.Fo "void *slotbuf_peek"
+.Fa "slotbuf p"
+.Fa "size_t i"
+.Fc
+.Fo "int slotbuf_has_data"
+.Fa "slotbuf p"
+.Fa "size_t i"
+.Fc
+.Fo "void slotbuf_lock"
+.Fa "slotbuf p"
+.Fc
+.Fo "void slotbuf_unlock"
+.Fa "slotbuf p"
+.Fc
+.Sh DESCRIPTION
+A slot buffer stores data in 'slots'. A slot buffer contains one or
+more slots. A slot buffer is similar to an array, except that a slot's
+index has a fixed range. That range is i % nslots.
+.Pp
+The slot buffer is intended to store data which have short life span,
+e.g. the last n buffers received from somewhere. 
+
+

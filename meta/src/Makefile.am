@@ -108,9 +108,11 @@ TESTS=\
 	miscfunc_check\
 	tsb_check\
 	pair_check\
+	slotbuf_check\
 	tcp_server_check
 
 check_PROGRAMS=\
+	slotbuf_check\
 	sampler_check\
 	list_check\
 	bitset_check\
@@ -189,6 +191,9 @@ sampler_check_SOURCES=meta_sampler.c meta_common.c
 sampler_check_CFLAGS=-DCHECK_SAMPLER $(AM_CFLAGS)
 sampler_check_LDADD=-lpthread
 sampler_check_LDFLAGS=-ggdb -O0
+
+slotbuf_check_SOURCES=meta_slotbuf.c  meta_common.c
+slotbuf_check_CFLAGS=-DCHECK_SLOTBUF $(AM_CFLAGS)
 
 
 LDADD=-lpthread

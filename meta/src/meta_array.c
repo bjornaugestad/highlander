@@ -39,16 +39,16 @@ array array_new(size_t nmemb, int can_grow)
 	assert(nmemb > 0);
 
 	if ((p = calloc(1, sizeof *p)) == NULL)
-		;
-	else if ((p->elements = calloc(nmemb, sizeof *p->elements)) == NULL) {
+		return NULL;
+
+	if ((p->elements = calloc(nmemb, sizeof *p->elements)) == NULL) {
 		free(p);
-		p = NULL;
+		return NULL;
 	}
-	else {
-		p->can_grow = can_grow;
-		p->nused = 0;
-		p->nallocated = nmemb;
-	}
+
+	p->can_grow = can_grow;
+	p->nused = 0;
+	p->nallocated = nmemb;
 
 	return p;
 }
@@ -79,8 +79,8 @@ void *array_get(array a, size_t ielem)
 
 	if (ielem >= a->nused)
 		return NULL;
-	else
-		return a->elements[ielem];
+	
+	return a->elements[ielem];
 }
 
 int array_extend(array a, size_t nmemb)

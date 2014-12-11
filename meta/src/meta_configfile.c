@@ -216,14 +216,14 @@ int configfile_get_string(configfile cf, const char *name, char *value, size_t c
 		errno = ENOENT;
 		return 0;
 	}
-	else if (strlen(pnv->value) + 1 > cb) {
+
+	if (strlen(pnv->value) + 1 > cb) {
 		errno = ENOSPC;
 		return 0;
 	}
-	else {
-		strcpy(value, pnv->value);
-		return 1;
-	}
+
+	strcpy(value, pnv->value);
+	return 1;
 }
 
 int configfile_get_long(configfile cf, const char *name, long *value)
@@ -241,10 +241,11 @@ int configfile_get_long(configfile cf, const char *name, long *value)
 	*value = strtol(sz, NULL, 10);
 	if (*value == LONG_MIN || *value == LONG_MAX)
 		return 0;
-	else if (*value == 0 && errno == EINVAL)
+
+	if (*value == 0 && errno == EINVAL)
 		return 0;
-	else
-		return 1;
+
+	return 1;
 }
 
 int configfile_get_ulong(configfile cf, const char *name, unsigned long *value)
@@ -262,10 +263,11 @@ int configfile_get_ulong(configfile cf, const char *name, unsigned long *value)
 	*value = strtol(sz, NULL, 10);
 	if (*value == ULONG_MAX)
 		return 0;
-	else if (*value == 0 && errno == EINVAL)
+
+	if (*value == 0 && errno == EINVAL)
 		return 0;
-	else
-		return 1;
+
+	return 1;
 }
 
 
@@ -284,11 +286,11 @@ int configfile_get_uint(configfile cf, const char *name, unsigned int *value)
 		errno = EINVAL;
 		return 0;
 	}
-	else {
-		*value = (unsigned int)tmp;
-		return 1;
-	}
+
+	*value = (unsigned int)tmp;
+	return 1;
 }
+
 int configfile_get_int(configfile cf, const char *name, int *value)
 {
 	long tmp;
@@ -304,10 +306,9 @@ int configfile_get_int(configfile cf, const char *name, int *value)
 		errno = EINVAL;
 		return 0;
 	}
-	else {
-		*value = (int)tmp;
-		return 1;
-	}
+
+	*value = (int)tmp;
+	return 1;
 }
 
 void configfile_free(configfile cf)

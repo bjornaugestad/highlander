@@ -31,15 +31,16 @@ membuf membuf_new(size_t size)
 
 	assert(size > 0);
 
-	if ((p = malloc(sizeof *p)) == NULL
-	|| (p->data = malloc(size)) == NULL) {
+	if ((p = malloc(sizeof *p)) == NULL)
+		return NULL;
+
+	if ((p->data = malloc(size)) == NULL) {
 		free(p);
-		p = NULL;
+		return NULL;
 	}
-	else {
-		p->size = size;
-		p->written = p->read = 0;
-	}
+
+	p->size = size;
+	p->written = p->read = 0;
 
 	return p;
 }

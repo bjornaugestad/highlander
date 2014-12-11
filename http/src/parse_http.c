@@ -22,11 +22,7 @@
 #include <assert.h>
 #include <string.h>
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
-#include <meta_misc.h>
+#include <meta_common.h>
 
 #include "internals.h"
 
@@ -95,6 +91,7 @@ int parse_request_headerfield(
 		return parse_request_header(idx, req, value, e);
 
 	/* We have an unknown fieldname if we reach this point */
+	debug("%s: unknown header field: %s\n", __func__, name);
 	return 1; /* Silently ignore the unknown field */
 }
 

@@ -43,13 +43,13 @@ int string2size_t(const char *s, size_t *val)
 
 	*val = 0;
 	while (*s) {
-		if (isdigit((int)*s))
-			*val = (*val * 10) + (*s - '0');
-		else
+		if (!isdigit((int)*s))
 			return 0;
 
+		*val = (*val * 10) + (*s - '0');
 		s++;
 	}
+
 	return 1;
 }
 
@@ -94,6 +94,7 @@ int get_word_count(const char *s)
 		if (*s == ' ') {
 			if (!last_was_space)
 				n++;
+
 			last_was_space = 1;
 		}
 		else
@@ -191,9 +192,9 @@ int get_extension(const char *src, char *dest, size_t destsize)
 		errno = ENOSPC;
 		return 0;
 	}
-	else if (found) {
+
+	if (found)
 		memmove(dest, &dest[i + 1], destsize - i);
-	}
 	else
 		*dest = '\0';
 
