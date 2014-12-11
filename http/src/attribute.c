@@ -78,17 +78,17 @@ page_attribute attribute_dup(page_attribute a)
 	return p;
 }
 
-int attribute_set_media_type(page_attribute a, const char* value)
+status_t attribute_set_media_type(page_attribute a, const char* value)
 {
 	return cstring_set(a->media_type, value);
 }
 
-int attribute_set_language(page_attribute a, const char* value)
+status_t attribute_set_language(page_attribute a, const char* value)
 {
 	return cstring_set(a->language, value);
 }
 
-int attribute_set_charset(page_attribute a, const char* value)
+status_t attribute_set_charset(page_attribute a, const char* value)
 {
 	return cstring_set(a->charset, value);
 }
@@ -100,7 +100,7 @@ int attribute_set_authorization(page_attribute a, const char* value)
 	return 0;
 }
 
-int attribute_set_encoding(page_attribute a, const char* value)
+status_t attribute_set_encoding(page_attribute a, const char* value)
 {
 	return cstring_set(a->encoding, value);
 }

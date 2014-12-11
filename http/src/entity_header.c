@@ -424,7 +424,7 @@ static inline int send_content_length(entity_header eh, connection conn)
 
 int entity_header_send_fields(entity_header eh, connection c)
 {
-	int success = 1;
+	int xsuccess = 1;
 	size_t i, n;
 
 	static const struct {
@@ -446,11 +446,11 @@ int entity_header_send_fields(entity_header eh, connection c)
 	n = sizeof fields / sizeof *fields;
 	for (i = 0; i < n; i++) {
 		if (entity_header_flag_is_set(eh, fields[i].flag))
-			if ((success = fields[i].func(eh, c)) == 0)
+			if ((xsuccess = fields[i].func(eh, c)) == 0)
 				break;
 	}
 
-	return success;
+	return xsuccess;
 
 }
 

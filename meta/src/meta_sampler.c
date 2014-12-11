@@ -422,35 +422,28 @@ int sampler_last(sampler s, size_t eid, size_t from, size_t to, long long* pval)
 static inline int
 aggregate_any(sampler s, size_t eid, size_t from, size_t to, int aggval, long long* pval)
 {
-	int success = 0;
-
 	switch (aggval) {
 		case SAMPLER_AGG_MIN:
-			success = sampler_min(s, eid, from, to, pval);
-			break;
+			return sampler_min(s, eid, from, to, pval);
 
 		case SAMPLER_AGG_MAX:
-			success = sampler_max(s, eid, from, to, pval);
-			break;
+			return sampler_max(s, eid, from, to, pval);
 
 		case SAMPLER_AGG_AVG:
-			success = sampler_avg(s, eid, from, to, pval);
-			break;
+			return sampler_avg(s, eid, from, to, pval);
 
 		case SAMPLER_AGG_FIRST:
-			success = sampler_first(s, eid, from, to, pval);
-			break;
+			return sampler_first(s, eid, from, to, pval);
 
 		case SAMPLER_AGG_LAST:
-			success = sampler_last(s, eid, from, to, pval);
-			break;
+			return sampler_last(s, eid, from, to, pval);
 
 		default:
 			assert(0 && "Unknown aggregate type");
 			break;
 	}
 
-	return success;
+	return 0;
 }
 
 int sampler_aggregate(

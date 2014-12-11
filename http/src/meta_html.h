@@ -65,8 +65,8 @@ typedef struct html_template_tag* html_template;
 html_buffer html_buffer_new(void);
 void html_buffer_free(html_buffer b);
 void html_buffer_set_template(html_buffer b, html_template t);
-int html_add(html_buffer b, const char* s);
-int html_printf(html_buffer b, size_t cb, const char* fmt, ...);
+status_t html_add(html_buffer b, const char* s);
+status_t html_printf(html_buffer b, size_t cb, const char* fmt, ...);
 
 /* Sends the generated html to the client and will return the
  * appropriate returncode (e.g. 200 OK) to the client as well.
@@ -74,115 +74,115 @@ int html_printf(html_buffer b, size_t cb, const char* fmt, ...);
  */
 int html_done(html_buffer b, http_response response, int returncode);
 
-int html_anchor(html_buffer b, const char* url, const char* text);
-int html_address(html_buffer b, const char* s);
-int html_address_start(html_buffer b);
-int html_address_end(html_buffer b);
-int html_base(html_buffer b, const char* url);
-int html_big(html_buffer b, const char* s);
-int html_blockquote_start(html_buffer b, const char* url);
-int html_blockquote_end(html_buffer b);
-int html_body_start(html_buffer b);
-int html_body_end(html_buffer b);
-int html_bold(html_buffer b, const char* s);
-int html_br(html_buffer b);
-int html_button(html_buffer b, const char* name, const char* type, const char* value, const char* onfocus, const char* onblur);
+status_t html_anchor(html_buffer b, const char* url, const char* text);
+status_t html_address(html_buffer b, const char* s);
+status_t html_address_start(html_buffer b);
+status_t html_address_end(html_buffer b);
+status_t html_base(html_buffer b, const char* url);
+status_t html_big(html_buffer b, const char* s);
+status_t html_blockquote_start(html_buffer b, const char* url);
+status_t html_blockquote_end(html_buffer b);
+status_t html_body_start(html_buffer b);
+status_t html_body_end(html_buffer b);
+status_t html_bold(html_buffer b, const char* s);
+status_t html_br(html_buffer b);
+status_t html_button(html_buffer b, const char* name, const char* type, const char* value, const char* onfocus, const char* onblur);
 
-int html_table_start(html_buffer b, size_t ncol);
-int html_table_end(html_buffer b);
-int html_th(html_buffer b, const char* s);
-int html_td(html_buffer b, const char* s);
-int html_tr_start(html_buffer b);
-int html_tr_end(html_buffer b);
-int html_strong(html_buffer b, const char* s);
-int html_italic(html_buffer b, const char* s);
-int html_slant(html_buffer b, const char* s);
-int html_em(html_buffer b, const char* s);
-int html_strong(html_buffer b, const char* s);
-int html_dfn(html_buffer b, const char* s);
-int html_code(html_buffer b, const char* s);
-int html_samp(html_buffer b, const char* s);
-int html_kbd(html_buffer b, const char* s);
-int html_var(html_buffer b, const char* s);
-int html_cite(html_buffer b, const char* s);
-int html_abbr(html_buffer b, const char* s);
-int html_acronym(html_buffer b, const char* s);
-int html_small(html_buffer b, const char* s);
+status_t html_table_start(html_buffer b, size_t ncol);
+status_t html_table_end(html_buffer b);
+status_t html_th(html_buffer b, const char* s);
+status_t html_td(html_buffer b, const char* s);
+status_t html_tr_start(html_buffer b);
+status_t html_tr_end(html_buffer b);
+status_t html_strong(html_buffer b, const char* s);
+status_t html_italic(html_buffer b, const char* s);
+status_t html_slant(html_buffer b, const char* s);
+status_t html_em(html_buffer b, const char* s);
+status_t html_strong(html_buffer b, const char* s);
+status_t html_dfn(html_buffer b, const char* s);
+status_t html_code(html_buffer b, const char* s);
+status_t html_samp(html_buffer b, const char* s);
+status_t html_kbd(html_buffer b, const char* s);
+status_t html_var(html_buffer b, const char* s);
+status_t html_cite(html_buffer b, const char* s);
+status_t html_abbr(html_buffer b, const char* s);
+status_t html_acronym(html_buffer b, const char* s);
+status_t html_small(html_buffer b, const char* s);
 
 /* Lists */
 /*@{*/
-int html_dl_start(html_buffer b);
-int html_dl_end(html_buffer b);
-int html_dt(html_buffer b, const char* s);
-int html_dd(html_buffer b, const char* s);
+status_t html_dl_start(html_buffer b);
+status_t html_dl_end(html_buffer b);
+status_t html_dt(html_buffer b, const char* s);
+status_t html_dd(html_buffer b, const char* s);
 
-int html_ol_start(html_buffer b);
-int html_ol_end(html_buffer b);
+status_t html_ol_start(html_buffer b);
+status_t html_ol_end(html_buffer b);
 
-int html_ul_start(html_buffer b);
-int html_ul_end(html_buffer b);
+status_t html_ul_start(html_buffer b);
+status_t html_ul_end(html_buffer b);
 
-int html_li(html_buffer b, const char* s);
+status_t html_li(html_buffer b, const char* s);
 
 /*@}*/
 
-int html_del(html_buffer b, const char* s);
-int html_ins(html_buffer b, const char* s);
+status_t html_del(html_buffer b, const char* s);
+status_t html_ins(html_buffer b, const char* s);
 
-int html_p(html_buffer b, const char* s);
-int html_p_start(html_buffer b);
-int html_p_end(html_buffer b);
+status_t html_p(html_buffer b, const char* s);
+status_t html_p_start(html_buffer b);
+status_t html_p_end(html_buffer b);
 
 /* Headings */
 /*@{*/
-int html_h1(html_buffer b, const char* s);
-int html_h2(html_buffer b, const char* s);
-int html_h3(html_buffer b, const char* s);
-int html_h4(html_buffer b, const char* s);
-int html_h5(html_buffer b, const char* s);
-int html_h6(html_buffer b, const char* s);
+status_t html_h1(html_buffer b, const char* s);
+status_t html_h2(html_buffer b, const char* s);
+status_t html_h3(html_buffer b, const char* s);
+status_t html_h4(html_buffer b, const char* s);
+status_t html_h5(html_buffer b, const char* s);
+status_t html_h6(html_buffer b, const char* s);
 /*@}*/
 
-int html_head_start(html_buffer b);
-int html_head_end(html_buffer b);
-int html_title(html_buffer b, const char* s);
+status_t html_head_start(html_buffer b);
+status_t html_head_end(html_buffer b);
+status_t html_title(html_buffer b, const char* s);
 
-int html_hr(html_buffer b);
-int html_html_start(html_buffer b);
-int html_html_end(html_buffer b);
+status_t html_hr(html_buffer b);
+status_t html_html_start(html_buffer b);
+status_t html_html_end(html_buffer b);
 
-int html_img(html_buffer b, const char* url, const char* alt, size_t height, size_t width);
+status_t html_img(html_buffer b, const char* url, const char* alt, size_t height, size_t width);
 
-int html_label(html_buffer b, const char* _for, const char* text);
-int html_meta(html_buffer b, const char* s);
-int html_q(html_buffer b, const char* s);
-int html_samp(html_buffer b, const char* s);
-int html_sub(html_buffer b, const char* s);
-int html_sup(html_buffer b, const char* s);
+status_t html_label(html_buffer b, const char* _for, const char* text);
+status_t html_meta(html_buffer b, const char* s);
+status_t html_q(html_buffer b, const char* s);
+status_t html_samp(html_buffer b, const char* s);
+status_t html_sub(html_buffer b, const char* s);
+status_t html_sup(html_buffer b, const char* s);
 
 /* Combo boxes */
 /*@{*/
-int html_select_start(html_buffer b);
-int html_select_end(html_buffer b);
-int html_option(html_buffer b, int selected, const char* value, const char* text);
-int html_optgroup_start(html_buffer b, const char* label);
-int html_optgroup_end(html_buffer b);
+status_t html_select_start(html_buffer b);
+status_t html_select_end(html_buffer b);
+status_t html_option(html_buffer b, int selected, const char* value, const char* text);
+status_t html_optgroup_start(html_buffer b, const char* label);
+status_t html_optgroup_end(html_buffer b);
 /*@}*/
 
-int html_style_start(html_buffer b, const char* type);
-int html_style_end(html_buffer b);
-int html_tt(html_buffer b, const char* s);
+status_t html_style_start(html_buffer b, const char* type);
+status_t html_style_end(html_buffer b);
+status_t html_tt(html_buffer b, const char* s);
 
 
 /* Menu functions */
 html_menu html_menu_new(void);
 void html_menu_free(html_menu m);
 
-int html_menu_set_text(html_menu m, const char* s);
-int html_menu_set_image(html_menu m, const char* s);
-int html_menu_set_hover_image(html_menu m, const char* s);
-int html_menu_set_link(html_menu m, const char* s);
-int html_menu_add_menu(html_menu m, html_menu submenu);
+status_t html_menu_set_text(html_menu m, const char* s);
+status_t html_menu_set_image(html_menu m, const char* s);
+status_t html_menu_set_hover_image(html_menu m, const char* s);
+status_t html_menu_set_link(html_menu m, const char* s);
+status_t html_menu_add_menu(html_menu m, html_menu submenu);
 
 const char* html_menu_get_text(html_menu m);
 const char* html_menu_get_image(html_menu m);

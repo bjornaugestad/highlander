@@ -1330,15 +1330,15 @@ static int request_send_fields(http_request r, connection c)
 		#endif
 	};
 
-	int success = 1;
+	int xsuccess = 1;
 	size_t i, nelem = sizeof fields / sizeof *fields;
 	for (i = 0; i < nelem; i++) {
 		if (request_flag_is_set(r, fields[i].flag))
-			if ((success = fields[i].func(r, c)) == 0)
+			if ((xsuccess = fields[i].func(r, c)) == 0)
 				break;
 	}
 
-	return success;
+	return xsuccess;
 }
 
 

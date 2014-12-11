@@ -39,10 +39,10 @@ struct dirinfo {
     path_t name;
 };
 
-static int show_directory(http_response page, const path_t abspath, const char *uripath);
+static status_t show_directory(http_response page, const path_t abspath, const char *uripath);
 static list read_directory(const path_t abspath);
-static int add_html_header(http_response page, const char *path);
-static int add_html_footer(http_response page);
+static status_t add_html_header(http_response page, const char *path);
+static status_t add_html_footer(http_response page);
 
 /**
  * Creates a full path from root+relative path.
@@ -197,7 +197,7 @@ static int sort_directory(const void *p1, const void *p2)
     return strcmp(s1->name, s2->name);
 }
 
-static int show_directory_as_html(http_response page, list lst, const char *uri)
+static status_t show_directory_as_html(http_response page, list lst, const char *uri)
 {
     list_iterator i;
     struct tm t;
@@ -265,21 +265,20 @@ static void dirinfo_dtor(void *node)
     }
 }
 
-/* Return 1 on success and 0 on error */
-int show_directory(http_response page, const path_t abspath, const char *uri)
+status_t show_directory(http_response page, const path_t abspath, const char *uri)
 {
     list lst;
-    int success = 1;
+    status_t status;
 
     if ( (lst = read_directory(abspath)) == NULL)
-        success = 0;
+        status = failure;
     else {
         list_sort(lst, sort_directory);
-        success = show_directory_as_html(page, lst, uri);
+        status = show_directory_as_html(page, lst, uri);
     }
 
     list_free(lst, dirinfo_dtor);
-    return success;
+    return status;
 }
 
 static int concat_paths(char* dest, size_t cb, const char* p1, const char* p2)
@@ -416,7 +415,7 @@ list read_directory(const path_t abspath)
 }
 
 /* Returns 1 on success, 0 on failure */
-int add_html_header(http_response page, const char *uri)
+status_t add_html_header(http_response page, const char *uri)
 {
     const char *header =
         "<html>\n"
@@ -440,7 +439,7 @@ int add_html_header(http_response page, const char *uri)
 }
 
 /* Returns 1 on success, 0 on failure */
-int add_html_footer(http_response page)
+status_t add_html_footer(http_response page)
 {
     static const char *footer = 
         "</table>\n"

@@ -20,6 +20,8 @@
 #ifndef META_PROCESS_H
 #define META_PROCESS_H
 
+#include <meta_common.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -31,8 +33,8 @@ void process_free(process p);
 
 int process_shutting_down(process p);
 
-int process_set_rootdir(process p, const char *path);
-int process_set_username(process p, const char *username);
+status_t process_set_rootdir(process p, const char *path);
+status_t process_set_username(process p, const char *username);
 
 int process_add_object_to_start(
 	process p,

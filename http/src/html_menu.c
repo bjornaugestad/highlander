@@ -69,40 +69,40 @@ void html_menu_free(html_menu m)
 	}
 }
 
-int html_menu_set_text(html_menu m, const char* s)
+status_t html_menu_set_text(html_menu m, const char* s)
 {
 	assert(m != NULL);
 	assert(s != NULL);
 	return cstring_set(m->text, s);
 }
 
-int html_menu_set_image(html_menu m, const char* s)
+status_t html_menu_set_image(html_menu m, const char* s)
 {
 	assert(m != NULL);
 	assert(s != NULL);
 	return cstring_set(m->image, s);
 }
 
-int html_menu_set_hover_image(html_menu m, const char* s)
+status_t html_menu_set_hover_image(html_menu m, const char* s)
 {
 	assert(m != NULL);
 	assert(s != NULL);
 	return cstring_set(m->hover_image, s);
 }
 
-int html_menu_set_link(html_menu m, const char* s)
+status_t html_menu_set_link(html_menu m, const char* s)
 {
 	assert(m != NULL);
 	assert(s != NULL);
 	return cstring_set(m->link, s);
 }
 
-int html_menu_add_menu(html_menu m, html_menu submenu)
+status_t html_menu_add_menu(html_menu m, html_menu submenu)
 {
 	assert(m != NULL);
 	assert(submenu != NULL);
 
-	return list_add(m->items, submenu) != NULL ? 1 : 0;
+	return list_add(m->items, submenu) != NULL ? success : failure;
 }
 
 const char* html_menu_get_text(html_menu m)

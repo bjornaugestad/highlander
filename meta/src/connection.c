@@ -281,27 +281,27 @@ void connection_assign_write_buffer(connection conn, membuf buf)
 
 int connection_flush(connection conn)
 {
-	int success = 1;
+	int xsuccess = 1;
 	size_t count;
 
 	assert(conn != NULL);
 
 	count = membuf_canread(conn->writebuf);
 	if (count > 0) {
-		success = sock_write(
+		xsuccess = sock_write(
 			conn->sock,
 			membuf_data(conn->writebuf),
 			count,
 			conn->timeout_writes,
 			conn->retries_writes);
 
-		if (success) {
+		if (xsuccess) {
 			conn->outgoing_bytes += count;
 			membuf_reset(conn->writebuf);
 		}
 	}
 
-	return success;
+	return xsuccess;
 }
 
 int connection_close(connection conn)
@@ -325,23 +325,23 @@ int connection_close(connection conn)
 
 int connection_getc(connection conn, int *pc)
 {
-	int success = 1;
+	int xsuccess = 1;
 
 	assert(conn != NULL);
 	assert(pc != NULL);
 
 	/* Fill buffer if empty */
 	if (readbuf_empty(conn))
-		success = fill_read_buffer(conn);
+		xsuccess = fill_read_buffer(conn);
 
 	/* Get one character from buffer */
-	if (success) {
+	if (xsuccess) {
 		*pc = conn_getc(conn);
 		if (*pc == EOF)
-			success = 0;
+			xsuccess = 0;
 	}
 
-	return success;
+	return xsuccess;
 }
 
 static inline int
@@ -364,22 +364,22 @@ write_to_socket(connection conn, const char *buf, size_t count)
  */
 int connection_write(connection conn, const void *buf, size_t count)
 {
-	int success = 1;
+	int xsuccess = 1;
 
 	assert(conn != NULL);
 	assert(buf != NULL);
 
 	if (!writebuf_has_room_for(conn, count))
-		success = connection_flush(conn);
+		xsuccess = connection_flush(conn);
 
-	if (!success)
+	if (!xsuccess)
 		;
 	else if (writebuf_has_room_for(conn, count))
 		add_to_writebuf(conn, buf, count);
-	else if ((success = write_to_socket(conn, buf, count)))
+	else if ((xsuccess = write_to_socket(conn, buf, count)))
 		conn->outgoing_bytes += count;
 
-	return success;
+	return xsuccess;
 }
 
 
@@ -573,14 +573,14 @@ int connection_puts(connection conn, const char *s)
 
 int connection_gets(connection conn, char *dest, size_t destsize)
 {
-	int success = 1, c;
+	int xsuccess = 1, c;
 	size_t i = 0;
 
 	assert(conn != NULL);
 	assert(dest != NULL);
 	assert(destsize > 0);
 
-	while (i < destsize && (success = connection_getc(conn, &c))) {
+	while (i < destsize && (xsuccess = connection_getc(conn, &c))) {
 		*dest++ = c;
 		i++;
 
@@ -588,10 +588,10 @@ int connection_gets(connection conn, char *dest, size_t destsize)
 			break;
 	}
 
-	if (success && i < destsize)
+	if (xsuccess && i < destsize)
 		*dest = '\0';
 
-	return success;
+	return xsuccess;
 }
 
 int connection_write_big_buffer(
@@ -601,15 +601,15 @@ int connection_write_big_buffer(
 	int timeout,
 	int nretries)
 {
-	int success;
+	int xsuccess;
 
 	assert(conn != NULL);
 	assert(buf != NULL);
 	assert(timeout >= 0);
 	assert(nretries >= 0);
 
-	if ((success = connection_flush(conn)))
-		success = sock_write(conn->sock, buf, count, timeout, nretries);
+	if ((xsuccess = connection_flush(conn)))
+		xsuccess = sock_write(conn->sock, buf, count, timeout, nretries);
 
-	return success;
+	return xsuccess;
 }

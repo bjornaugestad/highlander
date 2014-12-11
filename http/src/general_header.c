@@ -830,7 +830,7 @@ static inline int send_cachecontrol(general_header gh, connection conn)
 
 int general_header_send_fields(general_header gh, connection c)
 {
-	int success = 1;
+	int xsuccess = 1;
 	size_t i, nelem;
 
 	static const struct {
@@ -851,7 +851,7 @@ int general_header_send_fields(general_header gh, connection c)
 	nelem = sizeof fields / sizeof *fields;
 	for (i = 0; i < nelem; i++) {
 		if (general_header_flag_is_set(gh, fields[i].flag))
-			if ((success = fields[i].func(gh, c)) == 0)
+			if ((xsuccess = fields[i].func(gh, c)) == 0)
 				break;
 	}
 
@@ -862,10 +862,10 @@ int general_header_send_fields(general_header gh, connection c)
 	 * fields are set, we send the Cache-Control field along with
 	 * all appropriate values.
 	 */
-	if (success && cachecontrol_field_set(gh))
-		success = send_cachecontrol(gh, c);
+	if (xsuccess && cachecontrol_field_set(gh))
+		xsuccess = send_cachecontrol(gh, c);
 
-	return success;
+	return xsuccess;
 }
 
 /* General header handlers */

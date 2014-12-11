@@ -142,6 +142,6 @@ int add_page_end(http_response page, const char* msg)
     response_add(page, html);
     if (msg != NULL && *msg != '\0')
         response_js_messagebox(page, msg);
-    return response_add(page, tail);
+	return response_add(page, tail) == success ? 1 : 0;
 }
 

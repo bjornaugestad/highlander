@@ -193,11 +193,11 @@ time_t request_get_if_modified_since(http_request r);
 /* Cookies */
 cookie cookie_new(void);
 
-int	 cookie_set_name(cookie c, const char* s);
-int	 cookie_set_value(cookie c, const char* s);
-int	 cookie_set_comment(cookie c, const char* s);
-int	 cookie_set_domain(cookie c, const char* s);
-int	 cookie_set_path(cookie c, const char* s);
+status_t	 cookie_set_name(cookie c, const char* s);
+status_t	 cookie_set_value(cookie c, const char* s);
+status_t	 cookie_set_comment(cookie c, const char* s);
+status_t	 cookie_set_domain(cookie c, const char* s);
+status_t	 cookie_set_path(cookie c, const char* s);
 int	 cookie_set_max_age(cookie c, int value);
 void cookie_set_version(cookie c, int value);
 void cookie_set_secure(cookie c, int value);
@@ -328,10 +328,10 @@ int response_set_content_range(http_response response, const char* value);
 int response_set_content_type(http_response response, const char* value);
 void response_set_expires(http_response response, time_t value);
 void response_set_last_modified(http_response response, time_t value);
-int response_add(http_response response, const char* src);
-int response_add_char(http_response response, int c);
-int response_add_end(http_response response, const char* start, const char* end);
-int response_printf(http_response response, size_t size, const char* format, ...)
+status_t response_add(http_response response, const char* src);
+status_t response_add_char(http_response response, int c);
+status_t response_add_end(http_response response, const char* start, const char* end);
+status_t response_printf(http_response response, size_t size, const char* format, ...)
 	__attribute__ ((format(printf, 3, 4)));
 
 void response_set_content_buffer(http_response response, void* src, size_t n);
@@ -339,7 +339,7 @@ void response_set_allocated_content_buffer(http_response response, void* src, si
 
 /* Add embedded, client side javascript, this is highly experimental so beware and enjoy the bugs */
 /* messagebox() adds code to display text in a message box */
-int response_js_messagebox(http_response response, const char* text);
+status_t response_js_messagebox(http_response response, const char* text);
 
 int response_send_file(http_response response, const char *path, const char* type, meta_error e);
 
@@ -351,20 +351,20 @@ int response_receive(http_response r, connection c, size_t max_content, meta_err
  * Some formatting functions to ease the generation of HTML.
  * The html module is still not ready so we just add some utility functions here.
  */
-int response_br(http_response response);
-int response_hr(http_response response);
-int response_href(http_response response, const char* ref, const char* text);
-int response_p (http_response response, const char* s);
-int response_h1(http_response response, const char* s);
-int response_h2(http_response response, const char* s);
-int response_h3(http_response response, const char* s);
-int response_h4(http_response response, const char* s);
-int response_h5(http_response response, const char* s);
-int response_h6(http_response response, const char* s);
-int response_h7(http_response response, const char* s);
-int response_h8(http_response response, const char* s);
-int response_h9(http_response response, const char* s);
-int response_td(http_response response, const char* text);
+status_t response_br(http_response response);
+status_t response_hr(http_response response);
+status_t response_href(http_response response, const char* ref, const char* text);
+status_t response_p (http_response response, const char* s);
+status_t response_h1(http_response response, const char* s);
+status_t response_h2(http_response response, const char* s);
+status_t response_h3(http_response response, const char* s);
+status_t response_h4(http_response response, const char* s);
+status_t response_h5(http_response response, const char* s);
+status_t response_h6(http_response response, const char* s);
+status_t response_h7(http_response response, const char* s);
+status_t response_h8(http_response response, const char* s);
+status_t response_h9(http_response response, const char* s);
+status_t response_td(http_response response, const char* text);
 
 #define a2p(a, b)	response_add(a, b)
 
@@ -372,11 +372,11 @@ int response_td(http_response response, const char* text);
 page_attribute attribute_new(void);
 void attribute_free(page_attribute a);
 
-int attribute_set_media_type(page_attribute a, const char* value);
-int attribute_set_language(page_attribute a, const char* value);
-int attribute_set_charset(page_attribute a, const char* value);
+status_t attribute_set_media_type(page_attribute a, const char* value);
+status_t attribute_set_language(page_attribute a, const char* value);
+status_t attribute_set_charset(page_attribute a, const char* value);
 int attribute_set_authorization(page_attribute a, const char* value);
-int attribute_set_encoding(page_attribute a, const char* value);
+status_t attribute_set_encoding(page_attribute a, const char* value);
 
 const char*	attribute_get_language(page_attribute a);
 const char*	attribute_get_charset(page_attribute a);

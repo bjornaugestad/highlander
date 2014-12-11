@@ -66,7 +66,6 @@ void die_perror(const char *fmt, ...)
 	__attribute__ ((noreturn));
 
 
-
 /*
  * Debugging: Do we need it? Well, it's handy, at least in debug
  * builds. Let's utilize vararg macros and strip debug info from
@@ -82,6 +81,23 @@ void meta_enable_debug_output(void);
 void meta_disable_debug_output(void);
 
 #endif
+
+/*
+ * We want a distinct type to indicate success or failure,
+ * instead of fiddling with true/false, 1/0, 0/-1 or 
+ * other constructs. Therefoer we create a silly but useful type
+ * named status_t, which is a pointer to a metastatus struct.
+ * Since pointers are type-safe and cannot be implicitly converted
+ * to integers, it's harder to mix status types(return values)
+ * with integers. That's our goal too. We do NOT want to use
+ * true/false/stdbool.h because the standard bool type mixes too easily
+ * with int.
+ * 20141211 boa
+ */
+typedef struct metastatus *status_t;
+#define success ((status_t)1)
+#define failure ((status_t)0)
+
 
 #ifdef __cplusplus
 }

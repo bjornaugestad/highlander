@@ -113,7 +113,7 @@ void process_free(process p)
 	}
 }
 
-int process_set_rootdir(process p, const char *path)
+status_t process_set_rootdir(process p, const char *path)
 {
 	assert(p != NULL);
 	assert(path != NULL);
@@ -121,7 +121,7 @@ int process_set_rootdir(process p, const char *path)
 	return cstring_set(p->rootdir, path);
 }
 
-int process_set_username(process p, const char *username)
+status_t process_set_username(process p, const char *username)
 {
 	assert(p != NULL);
 	assert(username != NULL);
@@ -169,7 +169,7 @@ int process_add_object_to_start(
 static int set_signals_to_block(void)
 {
 	sigset_t block;
-	int success = 0;
+	int xsuccess = 0;
 
 	errno = 0;
 	if (SIG_ERR == signal(SIGPIPE, SIG_IGN))
@@ -181,12 +181,12 @@ static int set_signals_to_block(void)
 	else if (pthread_sigmask(SIG_BLOCK, &block, NULL))
 		debug("%s: pthread_sigmask failed\n", __func__);
 	else
-		success = 1;
+		xsuccess = 1;
 
-	if (!success && errno == 0)
+	if (!xsuccess && errno == 0)
 		errno = EINVAL;
 
-	return success;
+	return xsuccess;
 }
 
 int process_shutting_down(process p)

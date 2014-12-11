@@ -71,7 +71,7 @@ const char* dynamic_get_uri(dynamic_page p)
 	return c_str(p->uri);
 }
 
-int dynamic_set_uri(dynamic_page p, const char* value)
+status_t dynamic_set_uri(dynamic_page p, const char* value)
 {
 	assert(NULL != p);
 	assert(NULL != value);

@@ -73,7 +73,7 @@ void cookie_free(cookie p)
 	}
 }
 
-int cookie_set_name(cookie c, const char *s)
+status_t cookie_set_name(cookie c, const char *s)
 {
 	assert(NULL != c);
 	assert(NULL != s);
@@ -81,7 +81,7 @@ int cookie_set_name(cookie c, const char *s)
 	return cstring_set(c->name, s);
 }
 
-int cookie_set_value(cookie c, const char *s)
+status_t cookie_set_value(cookie c, const char *s)
 {
 	assert(NULL != c);
 	assert(NULL != s);
@@ -89,7 +89,7 @@ int cookie_set_value(cookie c, const char *s)
 	return cstring_set(c->value, s);
 }
 
-int cookie_set_comment(cookie c, const char *s)
+status_t cookie_set_comment(cookie c, const char *s)
 {
 	assert(NULL != c);
 	assert(NULL != s);
@@ -97,7 +97,7 @@ int cookie_set_comment(cookie c, const char *s)
 	return cstring_set(c->comment, s);
 }
 
-int cookie_set_domain(cookie c, const char *s)
+status_t cookie_set_domain(cookie c, const char *s)
 {
 	assert(NULL != c);
 	assert(NULL != s);
@@ -105,7 +105,7 @@ int cookie_set_domain(cookie c, const char *s)
 	return cstring_set(c->domain, s);
 }
 
-int cookie_set_path(cookie c, const char *s)
+status_t cookie_set_path(cookie c, const char *s)
 {
 	assert(NULL != c);
 	assert(NULL != s);
@@ -279,7 +279,7 @@ static int parse_cookie_attr(
 	cookie c,
 	const char *input,
 	const char *look_for,
-	int (*set_attr)(cookie, const char*),
+	status_t (*set_attr)(cookie, const char*),
 	meta_error e)
 {
 	cstring str;

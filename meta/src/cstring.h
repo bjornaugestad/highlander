@@ -25,6 +25,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <meta_common.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -45,26 +47,26 @@ typedef struct cstring_tag* cstring;
 
 cstring cstring_new(void);
 cstring cstring_dup(const char *src);
-int cstring_multinew(cstring *pstr, size_t nelem);
-int cstring_extend(cstring s, size_t size);
+status_t cstring_multinew(cstring *pstr, size_t nelem);
+status_t cstring_extend(cstring s, size_t size);
 
 
-int cstring_copy(cstring dest, const cstring src);
+status_t cstring_copy(cstring dest, const cstring src);
 
-int cstring_set(cstring dest, const char *src);
-int cstring_nset(cstring dest, const char *src, size_t n);
-int cstring_charcat(cstring dest, int c);
+status_t cstring_set(cstring dest, const char *src);
+status_t cstring_nset(cstring dest, const char *src, size_t n);
+status_t cstring_charcat(cstring dest, int c);
 
-int cstring_concat(cstring dest, const char *src);
-int cstring_concat2(cstring dest, const char *src1, const char *src2);
-int cstring_concat3(cstring dest, const char *src1, const char *src2, const char *src3);
+status_t cstring_concat(cstring dest, const char *src);
+status_t cstring_concat2(cstring dest, const char *src1, const char *src2);
+status_t cstring_concat3(cstring dest, const char *src1, const char *src2, const char *src3);
 
-int cstring_pcat(cstring dest, const char *start, const char *end);
+status_t cstring_pcat(cstring dest, const char *start, const char *end);
 
-int cstring_printf(cstring dest, size_t needs_max, const char *fmt, ...)
+status_t cstring_printf(cstring dest, size_t needs_max, const char *fmt, ...)
 	__attribute__((format(printf, 3, 4)));
 
-int cstring_vprintf(cstring dest, size_t needs_max, const char *fmt, va_list ap);
+status_t cstring_vprintf(cstring dest, size_t needs_max, const char *fmt, va_list ap);
 
 cstring cstring_left(cstring src, size_t n);
 cstring cstring_right(cstring src, size_t n);

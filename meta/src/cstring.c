@@ -40,7 +40,7 @@ static inline int has_room_for(cstring s, size_t n)
 	return n <= freespace;
 }
 
-int cstring_extend(cstring s, size_t size)
+status_t cstring_extend(cstring s, size_t size)
 {
 	size_t bytes_needed, newsize;
 	char *data;
@@ -61,18 +61,17 @@ int cstring_extend(cstring s, size_t size)
 		}
 
 		if ((data = realloc(s->data, newsize)) == NULL)
-			return 0;
-		else {
-			s->data = data;
-			s->size = newsize;
-		}
+			return failure;
+
+		s->data = data;
+		s->size = newsize;
 	}
 
 	assert(s->len == strlen(s->data));
-	return 1;
+	return success;
 }
 
-int cstring_vprintf(
+status_t cstring_vprintf(
 	cstring dest,
 	size_t needs_max,
 	const char *fmt,
@@ -90,7 +89,7 @@ int cstring_vprintf(
 	assert(dest->len == strlen(dest->data));
 
 	if (!has_room_for(dest, needs_max) && !cstring_extend(dest, needs_max))
-		return 0;
+		return failure;
 
 	/* We append the new data, therefore the & */
 	i = vsnprintf(&dest->data[dest->len], needs_max, fmt, ap);
@@ -101,25 +100,25 @@ int cstring_vprintf(
 	dest->len += i;
 
 	assert(dest->len == strlen(dest->data));
-	return 1;
+	return success;
 }
 
-int cstring_printf(cstring dest, size_t needs_max, const char *fmt, ...)
+status_t cstring_printf(cstring dest, size_t needs_max, const char *fmt, ...)
 {
-	int success;
+	status_t status;
 	va_list ap;
 
 	assert(NULL != dest);
 	assert(NULL != fmt);
 
 	va_start(ap, fmt);
-	success = cstring_vprintf(dest, needs_max, fmt, ap);
+	status = cstring_vprintf(dest, needs_max, fmt, ap);
 	va_end(ap);
 
-	return success;
+	return status;
 }
 
-int cstring_pcat(cstring dest, const char *start, const char *end)
+status_t cstring_pcat(cstring dest, const char *start, const char *end)
 {
 	ptrdiff_t cb;
 
@@ -130,17 +129,17 @@ int cstring_pcat(cstring dest, const char *start, const char *end)
 
 	cb = end - start;
 	if (!has_room_for(dest, cb) && !cstring_extend(dest, cb))
-		return 0;
+		return failure;
 
 	memcpy(&dest->data[dest->len], start, cb);
 	dest->len += cb;
 	dest->data[dest->len] = '\0';
 
 	assert(dest->len == strlen(dest->data));
-	return 1;
+	return success;
 }
 
-int cstring_concat(cstring dest, const char *src)
+status_t cstring_concat(cstring dest, const char *src)
 {
 	size_t cb;
 
@@ -149,28 +148,28 @@ int cstring_concat(cstring dest, const char *src)
 
 	cb = strlen(src);
 	if (!has_room_for(dest, cb) && !cstring_extend(dest, cb))
-		return 0;
+		return failure;
 
 	/* Now add the string to the dest */
 	strcat(&dest->data[dest->len], src);
 	dest->len += cb;
 
 	assert(dest->len == strlen(dest->data));
-	return 1;
+	return success;
 }
 
-int cstring_charcat(cstring dest, int c)
+status_t cstring_charcat(cstring dest, int c)
 {
 	assert(NULL != dest);
 
 	if (!has_room_for(dest, 1) && !cstring_extend(dest, 1))
-		return 0;
+		return failure;
 
 	dest->data[dest->len++] = c;
 	dest->data[dest->len] = '\0';
 
 	assert(dest->len == strlen(dest->data));
-	return 1;
+	return success;
 }
 
 cstring cstring_new(void)
@@ -209,7 +208,7 @@ cstring cstring_dup(const char *src)
 	return dest;
 }
 
-int cstring_copy(cstring dest, const cstring src)
+status_t cstring_copy(cstring dest, const cstring src)
 {
 	assert(dest != NULL);
 	assert(src != NULL);
@@ -217,7 +216,7 @@ int cstring_copy(cstring dest, const cstring src)
 	return cstring_set(dest, src->data);
 }
 
-int cstring_set(cstring dest, const char *src)
+status_t cstring_set(cstring dest, const char *src)
 {
 	size_t n;
 
@@ -228,16 +227,16 @@ int cstring_set(cstring dest, const char *src)
 	cstring_recycle(dest);
 	n = strlen(src);
 	if (!has_room_for(dest, n) && !cstring_extend(dest, n))
-		return 0;
+		return failure;
 
 	strcpy(dest->data, src);
 	dest->len += n;
 
 	assert(dest->len == strlen(dest->data));
-	return 1;
+	return success;
 }
 
-int cstring_nset(cstring dest, const char *src, const size_t cch)
+status_t cstring_nset(cstring dest, const char *src, const size_t cch)
 {
 	size_t len;
 
@@ -251,29 +250,29 @@ int cstring_nset(cstring dest, const char *src, const size_t cch)
 		len = cch;
 
 	if (!has_room_for(dest, len) && !cstring_extend(dest, len))
-		return 0;
+		return failure;
 
 	strncpy(dest->data, src, len);
 	dest->data[len] = '\0';
 	dest->len = len;
 
 	assert(dest->len == strlen(dest->data));
-	return 1;
+	return success;
 }
 
-int cstring_concat2(cstring dest, const char *s1, const char *s2)
+status_t cstring_concat2(cstring dest, const char *s1, const char *s2)
 {
 	assert(NULL != dest);
 	assert(NULL != s1);
 	assert(NULL != s2);
 
 	if (cstring_concat(dest, s1) && cstring_concat(dest, s2))
-		return 1;
+		return success;
 
-	return 0;
+	return failure;
 }
 
-int cstring_concat3(
+status_t cstring_concat3(
 	cstring dest,
 	const char *s1,
 	const char *s2,
@@ -287,12 +286,12 @@ int cstring_concat3(
 	if (cstring_concat(dest, s1)
 	&& cstring_concat(dest, s2)
 	&& cstring_concat(dest, s3))
-		return 1;
+		return success;
 
-	return 0;
+	return failure;
 }
 
-int cstring_multinew(cstring* pstr, size_t nelem)
+status_t cstring_multinew(cstring* pstr, size_t nelem)
 {
 	size_t i;
 
@@ -304,11 +303,11 @@ int cstring_multinew(cstring* pstr, size_t nelem)
 			while (i-- > 0)
 				cstring_free(pstr[i]);
 
-			return 0;
+			return failure;
 		}
 	}
 
-	return 1;
+	return success;
 }
 
 /* Free multiple cstrings with one call */

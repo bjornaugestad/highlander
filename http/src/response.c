@@ -301,7 +301,7 @@ static int send_accept_ranges(connection conn, http_response p)
 
 static int response_send_header_fields(http_response p, connection conn)
 {
-	int success = 1;
+	int xsuccess = 1;
 	size_t i, cFields;
 
 	static const struct {
@@ -333,18 +333,18 @@ static int response_send_header_fields(http_response p, connection conn)
 	entity_header_send_fields(p->entity_header, conn);
 
 
-	if (success) {
+	if (xsuccess) {
 		cFields = sizeof(fields) / sizeof(fields[0]);
 		for (i = 0; i < cFields; i++) {
 			if (response_flag_isset(p, fields[i].flag)) {
-				success = (*fields[i].func)(conn, p);
-				if (!success)
+				xsuccess = (*fields[i].func)(conn, p);
+				if (!xsuccess)
 					break;
 			}
 		}
 	}
 
-	return success;
+	return xsuccess;
 }
 
 /* return 1 if string needs to be quoted, 0 if not */
@@ -368,22 +368,22 @@ static int need_quote(const char* s)
  * since most browsers/servers are written in C and
  * C programmers tend to escape stuff.
  */
-static int strcat_quoted(cstring dest, const char* s)
+static status_t strcat_quoted(cstring dest, const char* s)
 {
 	assert(NULL != s);
 	assert(NULL != dest);
 
 	if (!cstring_charcat(dest, '\''))
-		return 0;
+		return failure;
 
 	while (*s) {
 		if (*s == '\'') {
 			if (!cstring_charcat(dest, '\\'))
-				return 0;
+				return failure;
 		}
 
 		if (!cstring_charcat(dest, *s))
-			return 0;
+			return failure;
 
 		s++;
 	}
@@ -394,21 +394,20 @@ static int strcat_quoted(cstring dest, const char* s)
 /*
  * Creates a string consisting of the misc elements in a cookie.
  * String must have been new'ed.
- * Returns 0 on errors.
  */
-static int create_cookie_string(cookie c, cstring str)
+static status_t create_cookie_string(cookie c, cstring str)
 {
 	const char* s;
 	int v;
 
 	if ((s = cookie_get_name(c)) == NULL)
-		return 0;
+		return failure;
 
 	if (!cstring_set(str, "Set-Cookie: "))
-		return 0;
+		return failure;
 
 	if (!cstring_concat(str, s))
-		return 0;
+		return failure;
 
 	/* Now get value and append. Remember to quote value if needed
 	 * NOTE: Netscape chokes, acc. to rfc2109, on quotes.
@@ -417,39 +416,39 @@ static int create_cookie_string(cookie c, cstring str)
 	s = cookie_get_value(c);
 	if (s) {
 		if (!cstring_charcat(str, '='))
-			return 0;
+			return failure;
 
 		if (need_quote(c_str(str)) && !strcat_quoted(str, s))
-			return 0;
+			return failure;
 
 		if (!cstring_concat(str, s))
-			return 0;
+			return failure;
 	}
 
 	v = cookie_get_version(c);
 	if (!cstring_printf(str, 20, ";Version=%d", v))
-		return 0;
+		return failure;
 
 	v = cookie_get_max_age(c);
 	if (v != MAX_AGE_NOT_SET
 	&& !cstring_printf(str, 20, ";Max-Age=%d", v))
-		return 0;
+		return failure;
 
 	v = cookie_get_secure(c);
 	if (!cstring_printf(str, 20, ";Secure=%d", v))
-		return 0;
+		return failure;
 
 	s = cookie_get_domain(c);
 	if (s != NULL && !cstring_concat2(str, ";Domain=", s))
-		return 0;
+		return failure;
 
 	s = cookie_get_comment(c);
 	if (s != NULL && !cstring_concat2(str, ";Comment=", s))
-		return 0;
+		return failure;
 
 	s = cookie_get_path(c);
 	if (s != NULL && !cstring_concat2(str, ";Path=", s))
-		return 0;
+		return failure;
 
 	return cstring_concat(str, "\r\n");
 }
@@ -536,7 +535,7 @@ static int response_send_header(
 	return 1;
 }
 
-int response_add(const http_response p, const char* value)
+status_t response_add(const http_response p, const char* value)
 {
 	assert(NULL != p);
 	assert(NULL != value);
@@ -544,13 +543,13 @@ int response_add(const http_response p, const char* value)
 	return cstring_concat(p->entity, value);
 }
 
-int response_add_char(http_response p, int c)
+status_t response_add_char(http_response p, int c)
 {
 	assert(NULL != p);
 	return cstring_charcat(p->entity, c);
 }
 
-int response_add_end(http_response response, const char* start, const char* end)
+status_t response_add_end(http_response response, const char* start, const char* end)
 {
 	return cstring_pcat(response->entity, start, end);
 }
@@ -576,19 +575,19 @@ void response_free(http_response p)
 	}
 }
 
-int response_printf(http_response page, const size_t needs_max, const char* fmt, ...)
+status_t response_printf(http_response page, const size_t needs_max, const char* fmt, ...)
 {
-	int success;
+	status_t status;
 	va_list ap;
 
 	assert(NULL != page);
 	assert(NULL != fmt);
 
 	va_start (ap, fmt);
-	success = cstring_vprintf(page->entity, needs_max, fmt, ap);
+	status = cstring_vprintf(page->entity, needs_max, fmt, ap);
 	va_end(ap);
 
-	return success;
+	return status;
 }
 
 
@@ -1033,7 +1032,7 @@ int response_send_file(http_response p, const char *path, const char* ctype, met
  */
 static int send_entire_file(connection conn, const char *path, size_t *pcb)
 {
-	int fd, success = 1;
+	int fd, xsuccess = 1;
 	char buf[8192];
 	ssize_t cbRead;
 
@@ -1077,23 +1076,23 @@ fallback:
 	while ((cbRead = read(fd, buf, sizeof buf)) > 0) {
 		*pcb += (size_t)cbRead;
 		if (!connection_write(conn, buf, (size_t)cbRead))
-			success = 0;
+			xsuccess = 0;
 		else if (!connection_flush(conn))
-			success = 0;
+			xsuccess = 0;
 
-		if (!success)
+		if (!xsuccess)
 			break;
 	}
 
 	close(fd);
-	return success;
+	return xsuccess;
 }
 
 
 static int
 response_send_entity(http_response r, connection conn, size_t *pcb)
 {
-	int success = 1;
+	int xsuccess = 1;
 
 	if (r->content_buffer_in_use) {
 		size_t cb = response_get_content_length(r);
@@ -1102,7 +1101,7 @@ response_send_entity(http_response r, connection conn, size_t *pcb)
 			int timeout = 1;
 			int retries = cb / 1024;
 
-			success = connection_write_big_buffer(
+			xsuccess = connection_write_big_buffer(
 				conn,
 				r->content_buffer,
 				cb,
@@ -1110,14 +1109,14 @@ response_send_entity(http_response r, connection conn, size_t *pcb)
 				retries);
 		}
 		else
-			success = connection_write(conn, r->content_buffer, cb);
+			xsuccess = connection_write(conn, r->content_buffer, cb);
 
 		if (r->content_free_when_done) {
 			free((void*)r->content_buffer);
 			r->content_buffer = NULL;
 		}
 
-		if (!success)
+		if (!xsuccess)
 			return 0;
 	}
 	else if (r->send_file) {
@@ -1182,7 +1181,7 @@ static int http_send_content(int status)
  */
 size_t response_send(http_response r, connection c, meta_error e)
 {
-	int success = 0;
+	int xsuccess = 0;
 	size_t cb = 0;
 
 	/* NOTE: 20060103
@@ -1223,9 +1222,9 @@ size_t response_send(http_response r, connection c, meta_error e)
 	else if (!response_send_entity(r, c, &cb))
 		set_tcpip_error(e, errno);
 	else
-		success = 1;
+		xsuccess = 1;
 
-	return success;
+	return xsuccess;
 }
 
 const char* response_get_connection(http_response response)
@@ -1234,24 +1233,24 @@ const char* response_get_connection(http_response response)
 	return general_header_get_connection(response->general_header);
 }
 
-int response_td(http_response page, const char* text)
+status_t response_td(http_response page, const char* text)
 {
 	return cstring_concat3(page->entity, "<td>", text, "</td>\n");
 }
 
-int response_br(http_response response)
+status_t response_br(http_response response)
 {
 	assert(response != NULL);
 	return cstring_concat(response->entity, "<br>");
 }
 
-int response_hr(http_response response)
+status_t response_hr(http_response response)
 {
 	assert(response != NULL);
 	return cstring_concat(response->entity, "<hr>");
 }
 
-int response_href(http_response response, const char* ref, const char* text)
+status_t response_href(http_response response, const char* ref, const char* text)
 {
 	size_t cb;
 	const char* fmt = "<a href=\"%s\">%s</a>";
@@ -1267,7 +1266,7 @@ int response_href(http_response response, const char* ref, const char* text)
 	return cstring_printf(response->entity, cb, fmt, ref, text);
 }
 
-int response_p (http_response response, const char* s)
+status_t response_p (http_response response, const char* s)
 {
 	assert(response != NULL);
 	assert(s != NULL);
@@ -1275,7 +1274,7 @@ int response_p (http_response response, const char* s)
 	return cstring_concat3(response->entity, "<p>", s, "</p>\n");
 }
 
-int response_h1(http_response response, const char* s)
+status_t response_h1(http_response response, const char* s)
 {
 	assert(response != NULL);
 	assert(s != NULL);
@@ -1283,7 +1282,7 @@ int response_h1(http_response response, const char* s)
 	return cstring_concat3(response->entity, "<h1>", s, "</h1>\n");
 }
 
-int response_h2(http_response response, const char* s)
+status_t response_h2(http_response response, const char* s)
 {
 	assert(response != NULL);
 	assert(s != NULL);
@@ -1291,7 +1290,7 @@ int response_h2(http_response response, const char* s)
 	return cstring_concat3(response->entity, "<h2>", s, "</h2>\n");
 }
 
-int response_h3(http_response response, const char* s)
+status_t response_h3(http_response response, const char* s)
 {
 	assert(response != NULL);
 	assert(s != NULL);
@@ -1299,7 +1298,7 @@ int response_h3(http_response response, const char* s)
 	return cstring_concat3(response->entity, "<h3>", s, "</h3>\n");
 }
 
-int response_h4(http_response response, const char* s)
+status_t response_h4(http_response response, const char* s)
 {
 	assert(response != NULL);
 	assert(s != NULL);
@@ -1307,7 +1306,7 @@ int response_h4(http_response response, const char* s)
 	return cstring_concat3(response->entity, "<h4>", s, "</h4>\n");
 }
 
-int response_h5(http_response response, const char* s)
+status_t response_h5(http_response response, const char* s)
 {
 	assert(response != NULL);
 	assert(s != NULL);
@@ -1315,7 +1314,7 @@ int response_h5(http_response response, const char* s)
 	return cstring_concat3(response->entity, "<h5>", s, "</h5>\n");
 }
 
-int response_h6(http_response response, const char* s)
+status_t response_h6(http_response response, const char* s)
 {
 	assert(response != NULL);
 	assert(s != NULL);
@@ -1323,7 +1322,7 @@ int response_h6(http_response response, const char* s)
 	return cstring_concat3(response->entity, "<h6>", s, "</h6>\n");
 }
 
-int response_h7(http_response response, const char* s)
+status_t response_h7(http_response response, const char* s)
 {
 	assert(response != NULL);
 	assert(s != NULL);
@@ -1331,7 +1330,7 @@ int response_h7(http_response response, const char* s)
 	return cstring_concat3(response->entity, "<h7>", s, "</h7>\n");
 }
 
-int response_h8(http_response response, const char* s)
+status_t response_h8(http_response response, const char* s)
 {
 	assert(response != NULL);
 	assert(s != NULL);
@@ -1339,7 +1338,7 @@ int response_h8(http_response response, const char* s)
 	return cstring_concat3(response->entity, "<h8>", s, "</h8>\n");
 }
 
-int response_h9(http_response response, const char* s)
+status_t response_h9(http_response response, const char* s)
 {
 	assert(response != NULL);
 	assert(s != NULL);
@@ -1349,7 +1348,7 @@ int response_h9(http_response response, const char* s)
 	return cstring_concat3(response->entity, "<h9>", s, "</h9>\n");
 }
 
-int response_js_messagebox(http_response response, const char* text)
+status_t response_js_messagebox(http_response response, const char* text)
 {
 	const char* start = "<script language=\"javascript\">\nalert(\"";
 	const char* end = "\");\n</script>\n";
