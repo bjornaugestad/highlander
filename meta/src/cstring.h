@@ -49,6 +49,8 @@ int cstring_multinew(cstring *pstr, size_t nelem);
 int cstring_extend(cstring s, size_t size);
 
 
+int cstring_copy(cstring dest, const cstring src);
+
 int cstring_set(cstring dest, const char *src);
 int cstring_nset(cstring dest, const char *src, size_t n);
 int cstring_charcat(cstring dest, int c);

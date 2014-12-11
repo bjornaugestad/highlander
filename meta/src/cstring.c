@@ -194,7 +194,7 @@ cstring cstring_new(void)
 
 cstring cstring_dup(const char *src)
 {
-	cstring dest = NULL;
+	cstring dest;
 
 	assert(src != NULL);
 
@@ -207,6 +207,14 @@ cstring cstring_dup(const char *src)
 	}
 
 	return dest;
+}
+
+int cstring_copy(cstring dest, const cstring src)
+{
+	assert(dest != NULL);
+	assert(src != NULL);
+
+	return cstring_set(dest, src->data);
 }
 
 int cstring_set(cstring dest, const char *src)
