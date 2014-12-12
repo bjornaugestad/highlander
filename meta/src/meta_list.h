@@ -59,12 +59,13 @@ typedef struct list_iterator_tag {
  */
 typedef bool (*listfunc)(void *arg, void*data);
 
-list list_new(void);
+list list_new(void) __attribute__((malloc));
 void list_free(list lst, dtor free_fn);
 
 list list_copy(list lst, void*(*copier)(const void*), dtor dtor_fn);
 list list_add(list lst, void *data);
 list list_insert(list lst, void *data);
+
 status_t list_insert_before(list_iterator li, void *data)
 	__attribute__((warn_unused_result));
 

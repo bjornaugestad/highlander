@@ -69,7 +69,7 @@ struct membuf_tag {
 
 
 /* Creates a new membuf buffer. The buffer will have room for \e size bytes. */
-membuf membuf_new(size_t size);
+membuf membuf_new(size_t size) __attribute__((malloc));
 
 /* Frees a membuf buffer.  */
 void membuf_free(membuf m);

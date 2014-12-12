@@ -54,7 +54,8 @@ typedef struct slotbuf_tag *slotbuf;
  * Creates a new slotbuf. If can_overwrite == 0, then we cannot
  * assign new values to a slot that hasn't been read.
  */
-slotbuf slotbuf_new(size_t size, int can_overwrite, dtor fn);
+slotbuf slotbuf_new(size_t size, int can_overwrite, dtor fn) 
+	__attribute__((malloc));
 
 /*
  * Frees  the slotbuf and slot entries if a destructor is provided.

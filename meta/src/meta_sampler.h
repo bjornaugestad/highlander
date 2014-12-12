@@ -109,7 +109,7 @@ typedef struct sampler_tag* sampler;
  * Create a new sampler object. Remember that your entity id's must
  * be zero-based and contigous.
  */
-sampler sampler_new(size_t entities, size_t values);
+sampler sampler_new(size_t entities, size_t values) __attribute__((malloc));
 void	sampler_free(sampler s);
 
 /* Duplicate a sampler object. Remember to free it. */

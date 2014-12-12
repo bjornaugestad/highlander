@@ -29,12 +29,14 @@ extern "C" {
 
 typedef struct configfile_tag* configfile;
 
-configfile configfile_read(const char *path);
+configfile configfile_read(const char *path)
+	__attribute__((malloc));
 
 bool configfile_exists(configfile cf, const char *name);
 
 status_t configfile_get_string(configfile cf, const char *name,
-	char *value, size_t cb) __attribute__((warn_unused_result));
+	char *value, size_t cb) 
+	__attribute__((warn_unused_result));
 
 status_t configfile_get_long(configfile cf, const char *name, long *value)
 	__attribute__((warn_unused_result));
@@ -47,7 +49,8 @@ status_t configfile_get_int(configfile cf, const char *name, int *value)
 	__attribute__((warn_unused_result));
 
 status_t configfile_get_uint(configfile cf, const char *name, 
-	unsigned int *value) __attribute__((warn_unused_result));
+	unsigned int *value) 
+	__attribute__((warn_unused_result));
 
 
 void configfile_free(configfile cf);

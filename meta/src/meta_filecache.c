@@ -281,12 +281,12 @@ int filecache_foreach(filecache fc, int(*fn)(const char*s, void *arg), void *arg
 
 }
 
-int filecache_stat(filecache fc, const char *filename, struct stat* p)
+status_t filecache_stat(filecache fc, const char *filename, struct stat* p)
 {
 	unsigned long id;
 	void *pst = NULL;
 	size_t cb;
-	int rc = 0;
+	status_t rc = failure;
 
 	assert(fc != NULL);
 	assert(filename != NULL);
@@ -294,9 +294,9 @@ int filecache_stat(filecache fc, const char *filename, struct stat* p)
 	pthread_rwlock_rdlock(&fc->lock);
 
 	if (stringmap_get_id(fc->filenames, filename, &id)) {
-		if (cache_get(fc->metacache, id, (void*)&pst, &cb)) {
+		if (cache_get(fc->metacache, id, &pst, &cb)) {
 			*p = *fileinfo_stat(pst);
-			rc = 1;
+			rc = success;
 		}
 	}
 

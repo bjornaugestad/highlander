@@ -80,8 +80,8 @@ struct filecache_tag {
 	size_t bytes;
 };
 
-fileinfo fileinfo_new(void);
-void	 fileinfo_free(fileinfo p);
+fileinfo fileinfo_new(void) __attribute__((malloc));
+void fileinfo_free(fileinfo p);
 
 const struct stat* fileinfo_stat(fileinfo p);
 const char *fileinfo_name(fileinfo p);
@@ -111,7 +111,8 @@ status_t fileinfo_set_mimetype(fileinfo p, const char *s)
  * nelem is the number of elements in the hash table(s),
  * and not the max number of elements in the cache.
  */
-filecache filecache_new(size_t nelem, size_t bytes);
+filecache filecache_new(size_t nelem, size_t bytes)
+	__attribute__((malloc));
 
 /*
  * Frees a filecache previously created with filecache_new()
@@ -167,8 +168,13 @@ double filecache_hitratio(filecache fc);
 /*
  * Gets a file from the cache.
  */
-status_t filecache_get(filecache fc, const char *filename, void** pdata, size_t* pcb);
-status_t filecache_get_mime_type(filecache fc, const char *filename, char mime[], size_t cb);
+status_t filecache_get(filecache fc, const char *filename,
+	void** pdata, size_t* pcb)
+	__attribute__((warn_unused_result));
+
+status_t filecache_get_mime_type(filecache fc, const char *filename,
+	char mime[], size_t cb)
+	__attribute__((warn_unused_result));
 
 
 /* Returns 1 if a file exists, 0 if not */
@@ -178,7 +184,8 @@ int filecache_exists(filecache fc, const char *filename);
  * Return a pointer to a struct stat object from the time we added
  * the file to the filecache, or NULL if the file isn't found.
  */
-int filecache_stat(filecache fc, const char *filename, struct stat* p);
+status_t filecache_stat(filecache fc, const char *filename, struct stat* p)
+	__attribute__((warn_unused_result));
 
 
 /* Call fn once for each element in the filecache, providing name of file

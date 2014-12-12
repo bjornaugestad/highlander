@@ -32,12 +32,12 @@ extern "C" {
 typedef struct tcp_server_tag* tcp_server;
 
 /* Creation and destruction */
-tcp_server tcp_server_new(void);
+tcp_server tcp_server_new(void) __attribute__((malloc));
 status_t tcp_server_init(tcp_server srv);
 void tcp_server_free(tcp_server srv);
 
 /* Basic access control */
-status_t	 tcp_server_allow_clients(tcp_server srv, const char *filter);
+status_t tcp_server_allow_clients(tcp_server srv, const char *filter);
 void tcp_server_clear_client_filter(tcp_server srv);
 
 /* resource management */

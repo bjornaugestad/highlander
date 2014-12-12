@@ -359,10 +359,15 @@ tcp_server_recycle_connection(void *vse, void *vconn)
 	rb = connection_reclaim_read_buffer(conn);
 	wb = connection_reclaim_write_buffer(conn);
 
-	membuf_reset(rb);
-	membuf_reset(wb);
-	pool_recycle(srv->read_buffers, rb);
-	pool_recycle(srv->write_buffers, wb);
+	if (rb != NULL) {
+		membuf_reset(rb);
+		pool_recycle(srv->read_buffers, rb);
+	}
+
+	if (wb != NULL) {
+		membuf_reset(wb);
+		pool_recycle(srv->write_buffers, wb);
+	}
 
 	connection_recycle(conn);
 	pool_recycle(srv->connections, conn);
@@ -549,16 +554,9 @@ static status_t accept_new_connections(tcp_server srv, meta_socket sock)
 			 *	'dump' a 503 on the socket and then close it?
 			 */
 
-			/* NOTE: At this point the connection has not been assigned
-			 * any read/write buffers. We therefore cannot close
-			 * the connection using connection_close(), but must instead
-			 * just discard the connection.
-			 * UPDATE 20080102: When testing on Snoopy the code
-			 * breaks in recycle_connection, a function too stupid
-			 * to know that no read/write buffers has been assigned.
-			 * Rework this. boa
-			 */
-			connection_discard(conn);
+			if (!connection_close(conn))
+				warning("Could not flush and close connection");
+
 			tcp_server_recycle_connection(srv, conn);
 		}
 	}

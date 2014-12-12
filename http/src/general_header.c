@@ -135,9 +135,6 @@ response:cache-extension
  */
 
 typedef unsigned long flagtype;
-static int general_header_flag_is_set(general_header gh, flagtype flag);
-static void general_header_set_flag(general_header gh, flagtype flag);
-static void general_header_clear_flags(general_header gh);
 #define GENERAL_HEADER_DATE_SET					( 0x01)
 #define GENERAL_HEADER_TRAILER_SET				( 0x02)
 #define GENERAL_HEADER_TRANSFER_ENCODING_SET	( 0x04)
@@ -189,6 +186,32 @@ struct general_header_tag {
 	cstring warning;			/* v1.1 §14.46 */
 };
 
+static bool general_header_flag_is_set(general_header gh, flagtype flag)
+{
+	assert(NULL != gh);
+	assert(flag > 0);
+
+	return gh->flags & flag ? true : false;
+}
+
+static void general_header_set_flag(general_header gh, flagtype flag)
+{
+	assert(NULL != gh);
+	assert(flag > 0);
+
+	gh->flags |= flag;
+}
+
+static void general_header_clear_flags(general_header gh)
+{
+	assert(NULL != gh);
+	gh->flags = 0;
+}
+
+void general_header_recycle(general_header p)
+{
+	general_header_clear_flags(p);
+}
 
 void general_header_free(general_header p)
 {
@@ -229,10 +252,6 @@ general_header general_header_new(void)
 	return p;
 }
 
-void general_header_recycle(general_header p)
-{
-	general_header_clear_flags(p);
-}
 
 void general_header_set_date(general_header gh, time_t value)
 {
@@ -407,35 +426,13 @@ void general_header_set_proxy_revalidate(general_header gh)
 	general_header_set_flag(gh, GENERAL_HEADER_PROXY_REVALIDATE_SET);
 }
 
-static int general_header_flag_is_set(general_header gh, flagtype flag)
-{
-	assert(NULL != gh);
-	assert(flag > 0);
-
-	return gh->flags & flag ? 1 : 0;
-}
-
-static void general_header_set_flag(general_header gh, flagtype flag)
-{
-	assert(NULL != gh);
-	assert(flag > 0);
-
-	gh->flags |= flag;
-}
-
-static void general_header_clear_flags(general_header gh)
-{
-	assert(NULL != gh);
-	gh->flags = 0;
-}
-
-int general_header_get_no_cache(general_header gh)
+bool general_header_get_no_cache(general_header gh)
 {
 	assert(gh != NULL);
 	return general_header_flag_is_set(gh, GENERAL_HEADER_NO_CACHE_SET);
 }
 
-int general_header_get_no_store(general_header gh)
+bool general_header_get_no_store(general_header gh)
 {
 	assert(gh != NULL);
 	return general_header_flag_is_set(gh, GENERAL_HEADER_NO_STORE_SET);
@@ -469,37 +466,37 @@ int general_header_get_min_fresh(general_header gh)
 	return gh->min_fresh;
 }
 
-int general_header_get_public(general_header gh)
+bool general_header_get_public(general_header gh)
 {
 	assert(gh != NULL);
 	return general_header_flag_is_set(gh, GENERAL_HEADER_PUBLIC_SET);
 }
 
-int general_header_get_private(general_header gh)
+bool general_header_get_private(general_header gh)
 {
 	assert(gh != NULL);
 	return general_header_flag_is_set(gh, GENERAL_HEADER_PRIVATE_SET);
 }
 
-int general_header_get_must_revalidate(general_header gh)
+bool general_header_get_must_revalidate(general_header gh)
 {
 	assert(gh != NULL);
 	return general_header_flag_is_set(gh, GENERAL_HEADER_MUST_REVALIDATE_SET);
 }
 
-int general_header_get_proxy_revalidate(general_header gh)
+bool general_header_get_proxy_revalidate(general_header gh)
 {
 	assert(gh != NULL);
 	return general_header_flag_is_set(gh, GENERAL_HEADER_PROXY_REVALIDATE_SET);
 }
 
-int general_header_get_no_transform(general_header gh)
+bool general_header_get_no_transform(general_header gh)
 {
 	assert(gh != NULL);
 	return general_header_flag_is_set(gh, GENERAL_HEADER_NO_TRANSFORM_SET);
 }
 
-int general_header_get_only_if_cached(general_header gh)
+bool general_header_get_only_if_cached(general_header gh)
 {
 	assert(gh != NULL);
 	return general_header_flag_is_set(gh, GENERAL_HEADER_ONLY_IF_CACHED_SET);

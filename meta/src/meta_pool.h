@@ -31,7 +31,7 @@ extern "C" {
 
 typedef struct pool_tag* pool;
 
-pool pool_new(size_t nelem);
+pool pool_new(size_t nelem) __attribute__((malloc));
 void pool_free(pool p, dtor cleanup);
 
 void  pool_add(pool p, void *resource);

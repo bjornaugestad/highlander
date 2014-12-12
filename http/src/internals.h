@@ -177,18 +177,18 @@ status_t general_header_set_upgrade(general_header gh, const char *value);
 status_t general_header_set_via(general_header gh, const char *value);
 status_t general_header_set_warning(general_header gh, const char *value);
 
-int general_header_get_no_cache(general_header gh);
-int general_header_get_no_store(general_header gh);
+bool general_header_get_no_cache(general_header gh);
+bool general_header_get_no_store(general_header gh);
 int general_header_get_max_age(general_header gh);
 int general_header_get_s_maxage(general_header gh);
 int general_header_get_max_stale(general_header gh);
 int general_header_get_min_fresh(general_header gh);
-int general_header_get_no_transform(general_header gh);
-int general_header_get_only_if_cached(general_header gh);
-int general_header_get_public(general_header gh);
-int general_header_get_private(general_header gh);
-int general_header_get_must_revalidate(general_header gh);
-int general_header_get_proxy_revalidate(general_header gh);
+bool general_header_get_no_transform(general_header gh);
+bool general_header_get_only_if_cached(general_header gh);
+bool general_header_get_public(general_header gh);
+bool general_header_get_private(general_header gh);
+bool general_header_get_must_revalidate(general_header gh);
+bool general_header_get_proxy_revalidate(general_header gh);
 
 
 time_t general_header_get_date(general_header gh);
@@ -294,7 +294,9 @@ int find_request_header(const char* name);
 status_t parse_request_header(int idx, http_request req, const char* value, meta_error e);
 
 int find_response_header(const char* name);
-status_t parse_response_header(int idx, http_response req, const char* value, meta_error e);
+status_t parse_response_header(int idx, http_response req,
+	const char* value, meta_error e)
+	__attribute__((warn_unused_result));
 
 /* Function prototypes for handler functions */
 status_t parse_cookie(http_request r, const char* s, meta_error e)

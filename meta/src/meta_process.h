@@ -28,7 +28,7 @@ extern "C" {
 
 typedef struct process_tag* process;
 
-process process_new(const char *appname);
+process process_new(const char *appname) __attribute__((malloc));
 void process_free(process p);
 
 int process_shutting_down(process p);

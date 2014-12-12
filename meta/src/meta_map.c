@@ -123,8 +123,7 @@ void map_free(map m)
 	free(m);
 }
 
-static struct pair*
-map_find(map m, const char *key)
+static struct pair* map_find(map m, const char *key)
 {
 	list_iterator i;
 
@@ -165,17 +164,18 @@ status_t map_set(map m, const char *key, void *value)
 	if(tmp == NULL) {
 		free(p->key);
 		free(p);
+		return failure;
 	}
 	
-	return tmp != NULL ? success : failure;
+	return success;
 }
 
-int map_exists(map m, const char *key)
+bool map_exists(map m, const char *key)
 {
 	if (map_find(m, key))
-		return 1;
+		return true;
 
-	return 0;
+	return false;
 }
 
 void *map_get(map m, const char *key)

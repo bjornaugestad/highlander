@@ -339,14 +339,13 @@ meta_socket create_server_socket(int unix_socket, const char *host, int port)
 	if ((p = sock_socket(unix_socket)) == NULL)
 		return NULL;
 
-	if (!sock_set_reuseaddr(p)
-	|| !sock_bind(p, host, port)
-	|| !sock_listen(p, 100)) {
-		sock_close(p);
-		return NULL;
-	}
+	if (sock_set_reuseaddr(p)
+	&& sock_bind(p, host, port)
+	&& sock_listen(p, 100))
+		return p;
 
-	return p;
+	sock_close(p);
+	return NULL;
 }
 
 meta_socket create_client_socket(const char *host, int port)

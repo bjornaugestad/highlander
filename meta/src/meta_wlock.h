@@ -26,7 +26,10 @@ extern "C" {
 
 typedef struct wlock_tag* wlock;
 
-wlock wlock_new(void) __attribute__((warn_unused_result));
+wlock wlock_new(void)
+	__attribute__((malloc))
+	__attribute__((warn_unused_result));
+
 void wlock_free(wlock p);
 
 status_t wlock_lock(wlock p) __attribute__((warn_unused_result));

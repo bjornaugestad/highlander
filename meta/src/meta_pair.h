@@ -33,7 +33,7 @@ extern "C" {
  * COMMENT: This is a map, not a "pair". The adt really needs to be renamed some day.
  */
 typedef struct pair_tag* pair;
-pair pair_new(size_t nelem);
+pair pair_new(size_t nelem) __attribute__((malloc));
 void pair_free(pair p);
 
 status_t pair_add(pair p, const char *name, const char *value)

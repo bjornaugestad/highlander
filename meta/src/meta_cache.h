@@ -25,7 +25,9 @@
 
 typedef struct cache_tag* cache;
 
-cache cache_new(size_t nelem, size_t hotlist_nelem, size_t cb);
+cache cache_new(size_t nelem, size_t hotlist_nelem, size_t cb)
+	__attribute__((malloc));
+
 void cache_free(cache c, dtor cleanup);
 int cache_exists(cache c, size_t id);
 

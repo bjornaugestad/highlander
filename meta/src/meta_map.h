@@ -25,6 +25,7 @@ extern "C" {
 #endif
 
 #include <meta_common.h>
+
 /*
  * @file
  * I need a way to associate some value with a name, also known as a map.
@@ -46,7 +47,7 @@ typedef struct map_iterator_tag {
  * of freeing the value argument. If it is NULL, no memory will
  * be freed.
  */
-map map_new(dtor free_fn);
+map map_new(dtor free_fn) __attribute__((malloc));
 
 /*
  * Deletes a map.
@@ -63,9 +64,9 @@ status_t map_set(map m, const char *key, void *value)
 	__attribute__((warn_unused_result));
 
 /*
- * Returns 1 if key exists in map, 0 if not.
+ * Returns true if key exists in map, false if not.
  */
-int map_exists(map m, const char *key);
+bool map_exists(map m, const char *key);
 
 void *map_get(map m, const char *key);
 

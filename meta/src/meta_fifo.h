@@ -28,12 +28,18 @@ extern "C" {
 
 typedef struct fifo_tag* fifo;
 
-fifo fifo_new(size_t size) __attribute__((warn_unused_result));
+fifo fifo_new(size_t size) 
+	__attribute__((warn_unused_result))
+	__attribute__((malloc));
+
 void fifo_free(fifo p, dtor dtor_fn);
 
-status_t fifo_lock(fifo p) __attribute__((warn_unused_result));
+status_t fifo_lock(fifo p) 
+	__attribute__((warn_unused_result));
+
 status_t fifo_unlock(fifo p);
-status_t fifo_add(fifo p, void *data) __attribute__((warn_unused_result));
+status_t fifo_add(fifo p, void *data) 
+	__attribute__((warn_unused_result));
 
 size_t fifo_nelem(fifo p);
 size_t fifo_free_slot_count(fifo p);
@@ -41,10 +47,17 @@ size_t fifo_free_slot_count(fifo p);
 void *fifo_get(fifo p);
 void *fifo_peek(fifo p, size_t i);
 
-status_t fifo_write_signal(fifo p, void *data) __attribute__((warn_unused_result));
-status_t fifo_wait_cond(fifo p) __attribute__((warn_unused_result));
-status_t fifo_wake(fifo p) __attribute__((warn_unused_result));
-status_t fifo_signal(fifo p) __attribute__((warn_unused_result));
+status_t fifo_write_signal(fifo p, void *data) 
+	__attribute__((warn_unused_result));
+
+status_t fifo_wait_cond(fifo p) 
+	__attribute__((warn_unused_result));
+
+status_t fifo_wake(fifo p) 
+	__attribute__((warn_unused_result));
+
+status_t fifo_signal(fifo p) 
+	__attribute__((warn_unused_result));
 
 #ifdef __cplusplus
 }

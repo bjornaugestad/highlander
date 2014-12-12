@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -146,7 +147,6 @@ add_to_writebuf(connection conn, const void *buf, size_t count)
 
 	nwritten = membuf_write(conn->writebuf, buf, count);
 	assert(count == nwritten);
-
 }
 
 static inline size_t
@@ -155,31 +155,31 @@ copy_from_readbuf(connection conn, void *buf, size_t count)
 	return membuf_read(conn->readbuf, buf, count);
 }
 
-static inline int
+static inline bool
 readbuf_contains_atleast(connection conn, size_t count)
 {
 	size_t n = membuf_canread(conn->readbuf);
-	return (n >= count) ? 1 : 0;
+	return n >= count;
 }
 
-static inline int
+static inline bool
 readbuf_contains_data(connection conn)
 {
 	size_t count = membuf_canread(conn->readbuf);
-	return count != 0 ? 1 : 0;
+	return count != 0;
 }
 
-static inline int
+static inline bool
 readbuf_empty(connection conn)
 {
 	return readbuf_contains_data(conn) == 0;
 }
 
-static inline int
+static inline bool
 writebuf_has_room_for(connection conn, size_t count)
 {
 	size_t n = membuf_canwrite(conn->writebuf);
-	return n >= count ? 1 : 0;
+	return n >= count;
 }
 
 static inline int conn_getc(connection conn)
@@ -242,7 +242,6 @@ membuf connection_reclaim_read_buffer(connection conn)
 	membuf mb;
 
 	assert(conn != NULL);
-	assert(conn->readbuf != NULL); /* Don't reclaim twice */
 
 	mb = conn->readbuf;
 	conn->readbuf = NULL;
@@ -253,7 +252,6 @@ membuf connection_reclaim_write_buffer(connection conn)
 {
 	membuf mb;
 	assert(conn != NULL);
-	assert(conn->writebuf != NULL);
 
 	mb = conn->writebuf;
 	conn->writebuf = NULL;
@@ -330,15 +328,13 @@ status_t connection_getc(connection conn, int *pc)
 	assert(pc != NULL);
 
 	/* Fill buffer if empty */
-	if (readbuf_empty(conn))
-		status = fill_read_buffer(conn);
+	if (readbuf_empty(conn) && !fill_read_buffer(conn))
+		return failure;
 
 	/* Get one character from buffer */
-	if (status) {
-		*pc = conn_getc(conn);
-		if (*pc == EOF)
-			status = failure;
-	}
+	*pc = conn_getc(conn);
+	if (*pc == EOF)
+		status = failure;
 
 	return status;
 }
@@ -359,7 +355,6 @@ write_to_socket(connection conn, const char *buf, size_t count)
  * First of all we flush the buffer if there isn't room for the
  * incoming data. If the buffer still has no room for the incoming
  * data, we write the data directly to the socket.
- * We return 0 for errors and 1 for success.
  */
 status_t connection_write(connection conn, const void *buf, size_t count)
 {
@@ -368,15 +363,15 @@ status_t connection_write(connection conn, const void *buf, size_t count)
 	assert(conn != NULL);
 	assert(buf != NULL);
 
-	if (!writebuf_has_room_for(conn, count))
-		status = connection_flush(conn);
-
-	if (!status)
+	if (!writebuf_has_room_for(conn, count) && !connection_flush(conn))
 		return failure;
 
-	if (writebuf_has_room_for(conn, count))
+	if (writebuf_has_room_for(conn, count)) {
 		add_to_writebuf(conn, buf, count);
-	else if ((status = write_to_socket(conn, buf, count)))
+		return success;
+	}
+
+	if ((status = write_to_socket(conn, buf, count)))
 		conn->outgoing_bytes += count;
 
 	return status;
@@ -410,23 +405,17 @@ status_t connection_write(connection conn, const void *buf, size_t count)
  * We can either report an IP to the tcp_server or the tcp_server
  * can scan its connections for bad guys.
  */
-static ssize_t read_from_socket(connection conn, void *buf, size_t count)
+static ssize_t read_from_socket(connection p, void *buf, size_t count)
 {
 	ssize_t nread;
 
-	assert(conn != NULL);
+	assert(p != NULL);
 	assert(buf != NULL);
-	assert(readbuf_empty(conn));
+	assert(readbuf_empty(p));
 
-	nread = sock_read(
-		conn->sock,
-		buf,
-		count,
-		conn->timeout_reads,
-		conn->retries_reads);
-
+	nread = sock_read(p->sock, buf, count, p->timeout_reads, p->retries_reads);
 	if (nread > 0)
-		conn->incoming_bytes += nread;
+		p->incoming_bytes += nread;
 
 	return nread;
 }

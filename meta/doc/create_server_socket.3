@@ -14,5 +14,14 @@
 .Fc
 .Sh DESCRIPTION
 .Nm
+Creates a server socket.
+This function calls socket(), sets some socket options,
+binds the socket to a host/port and calls listen with a
+backlog of 100.
+.Pp 
+If unix_socket is 1, then the function will create a Unix socket,
+else it will create a regular AF_INET socket.
+.Pp
+A server socket is ready to accept connections.
 .Sh AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

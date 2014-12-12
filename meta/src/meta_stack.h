@@ -31,7 +31,7 @@ typedef struct stack_tag* stack;
 /*
  * Creates a new stack.
  */
-stack stack_new(void);
+stack stack_new(void) __attribute__((malloc));
 
 /*
  * Frees an existing stack.
