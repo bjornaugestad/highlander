@@ -20,6 +20,7 @@
 #ifndef META_LIST_H
 #define META_LIST_H
 
+#include <stdbool.h>
 #include <meta_common.h>
 
 #ifdef __cplusplus
@@ -56,7 +57,7 @@ typedef struct list_iterator_tag {
  * list_foreach, list_foreach_reversed and
  * list_foreach_sep.
  */
-typedef int (*listfunc)(void *arg, void*data);
+typedef bool (*listfunc)(void *arg, void*data);
 
 list list_new(void);
 void list_free(list lst, dtor free_fn);
@@ -103,14 +104,14 @@ static inline list_iterator list_next(list_iterator i)
 	return i;
 }
 
-int list_last(list_iterator li);
+bool list_last(list_iterator li);
 
 void *list_get_item(list lst, size_t idx);
 
-int list_foreach(list lst, void *args, listfunc f);
-int list_foreach_reversed(list lst, void *arg, listfunc f);
-int list_foreach_sep(list lst, void *arg, listfunc f, int(*sep)(void*arg));
-int list_dual_foreach(list lst, void *arg1, void *arg2, int(*dual)(void *a1, void *a2, void *data));
+bool list_foreach(list lst, void *args, listfunc f);
+bool list_foreach_reversed(list lst, void *arg, listfunc f);
+bool list_foreach_sep(list lst, void *arg, listfunc f, bool(*sep)(void*arg));
+bool list_dual_foreach(list lst, void *arg1, void *arg2, bool(*dual)(void *a1, void *a2, void *data));
 
 list list_merge(list dest, list src);
 void list_sort(list lst, int(*func)(const void *p1, const void *p2));

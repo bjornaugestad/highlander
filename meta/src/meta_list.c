@@ -168,7 +168,7 @@ list_iterator list_find(
 	return i;
 }
 
-int list_foreach(list lst, void *args, int(*f)(void *args, void *data))
+bool list_foreach(list lst, void *args, bool(*f)(void *args, void *data))
 {
 	list node;
 
@@ -183,11 +183,11 @@ int list_foreach(list lst, void *args, int(*f)(void *args, void *data))
 	return 1;
 }
 
-int list_dual_foreach(
+bool list_dual_foreach(
 	list lst,
 	void *arg1,
 	void *arg2,
-	int(*dual)(void *a1, void *a2, void *data))
+	bool(*dual)(void *a1, void *a2, void *data))
 {
 	list node;
 	if (lst->next != NULL) {
@@ -200,10 +200,10 @@ int list_dual_foreach(
 	return 1;
 }
 
-int list_foreach_reversed(
+bool list_foreach_reversed(
 	list lst,
 	void *args,
-	int(*f)(void *args, void *data))
+	bool(*f)(void *args, void *data))
 {
 	list node;
 
@@ -301,26 +301,26 @@ list list_merge(list dest, list src)
 }
 
 
-int list_foreach_sep(
+bool list_foreach_sep(
 	list lst,
 	void *args,
-	int(*f)(void *arg, void *data),
-	int(*sep)(void*arg))
+	bool(*f)(void *arg, void *data),
+	bool(*sep)(void*arg))
 {
 	list node;
 
 	for (node = lst->next; node != NULL; node = node->next) {
-		if (f(args, node->data) == 0)
-			return 0;
+		if (!f(args, node->data))
+			return false;
 
 		/* Call sep if more items in the list */
 		if (node->next != NULL) {
-			if (sep(args) == 0)
-				return 0;
+			if (!sep(args))
+				return false;
 		}
 	}
 
-	return 1;
+	return true;
 }
 
 list sublist_adaptor(list src, void *(*adaptor)(void*))
@@ -479,7 +479,7 @@ size_t list_count(list lst, int (*include_node)(void*))
 	return count;
 }
 
-int list_last(list_iterator li)
+bool list_last(list_iterator li)
 {
 	li = list_next(li);
 	if (list_end(li))
@@ -571,17 +571,17 @@ static void *item_adapt_value(struct item* p)
 	return &p->value;
 }
 
-static int item_foreach(void *arg, void *item)
+static bool item_foreach(void *arg, void *item)
 {
 	assert(arg == NULL);
 	assert(item != NULL);
 	(void)arg;
 	(void)item;
 
-	return 1;
+	return true;
 }
 
-static int item_foreach2(void *arg1, void *arg2, void *item)
+static bool item_foreach2(void *arg1, void *arg2, void *item)
 {
 	assert(arg1 == NULL);
 	assert(arg2 == NULL);
@@ -591,15 +591,15 @@ static int item_foreach2(void *arg1, void *arg2, void *item)
 	(void)arg2;
 	(void)item;
 
-	return 1;
+	return true;
 }
 
-static int item_sep(void *arg)
+static bool item_sep(void *arg)
 {
 	assert(arg == NULL);
 	(void)arg;
 
-	return 1;
+	return true;
 }
 
 static void return77(const char *fmt, ...)
