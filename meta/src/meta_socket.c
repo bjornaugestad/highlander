@@ -230,7 +230,7 @@ ssize_t sock_read(
  * created a socket with a specific protocol family,
  * and here we bind it to the PF specified in the services...
  */
-static int sock_bind_inet(meta_socket p, const char *hostname, int port)
+static status_t sock_bind_inet(meta_socket p, const char *hostname, int port)
 {
 	struct hostent* host = NULL;
 	struct sockaddr_in my_addr;
@@ -244,7 +244,7 @@ static int sock_bind_inet(meta_socket p, const char *hostname, int port)
 	if (hostname != NULL) {
 		if ((host = gethostbyname(hostname)) ==NULL) {
 			errno = h_errno; /* OBSOLETE? */
-			return 0;
+			return failure;
 		}
 	}
 
@@ -261,12 +261,12 @@ static int sock_bind_inet(meta_socket p, const char *hostname, int port)
 	}
 
 	if (bind(p->fd, (struct sockaddr *)&my_addr, cb) == -1)
-		return 0;
+		return failure;
 
-	return 1;
+	return success;
 }
 
-static int sock_bind_unix(meta_socket p, const char *path)
+static status_t sock_bind_unix(meta_socket p, const char *path)
 {
 	struct sockaddr_un my_addr;
 	socklen_t cb = (socklen_t)sizeof(my_addr);
@@ -289,12 +289,12 @@ static int sock_bind_unix(meta_socket p, const char *path)
 		strcpy(my_addr.sun_path + 1, path);
 
 	if (bind(p->fd, (struct sockaddr *)&my_addr, cb) == -1)
-		return 0;
+		return failure;
 
-	return 1;
+	return success;
 }
 
-int sock_bind(meta_socket p, const char *hostname, int port)
+status_t sock_bind(meta_socket p, const char *hostname, int port)
 {
 	assert(p != NULL);
 
@@ -357,7 +357,7 @@ meta_socket create_client_socket(const char *host, int port)
 
 	if ((phost = gethostbyname(host)) == NULL) {
 		errno = h_errno; /* OBSOLETE? */
-		return 0;
+		return NULL;
 	}
 
 	/* Create a socket structure */
@@ -392,7 +392,7 @@ status_t sock_set_nonblock(meta_socket p)
 
 	flags = fcntl(p->fd, F_GETFL);
 	if (flags == -1)
-		return 0;
+		return failure;
 
 	flags |= O_NONBLOCK;
 	if (fcntl(p->fd, F_SETFL, flags) == -1)

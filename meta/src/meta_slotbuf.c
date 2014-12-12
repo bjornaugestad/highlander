@@ -68,7 +68,7 @@ void slotbuf_free(slotbuf p)
 	}
 }
 
-int slotbuf_set(slotbuf p, size_t i, void *value)
+status_t slotbuf_set(slotbuf p, size_t i, void *value)
 {
 	size_t idx;
 	assert(p != NULL);
@@ -76,14 +76,14 @@ int slotbuf_set(slotbuf p, size_t i, void *value)
 	idx = i % p->size;
 	if (p->data[idx] != NULL) {
 		if (!p->can_overwrite)
-			return 0;
+			return failure;
 
 		if (p->pfn != NULL)
 			p->pfn(p->data[idx]);
 	}
 
 	p->data[idx] = value;
-	return 1;
+	return success;
 }
 
 void *slotbuf_get(slotbuf p, size_t i)

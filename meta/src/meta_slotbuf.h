@@ -65,7 +65,7 @@ void slotbuf_free(slotbuf p);
  * Assigns a new value to slot i. Returns 1 on succes and 0 if a slot
  * had a value and can_overwrite is 0.
  */
-int slotbuf_set(slotbuf p, size_t i, void *value);
+status_t slotbuf_set(slotbuf p, size_t i, void *value);
 
 /*
  * Returns the data in slot i, if any. Will clear the slot.

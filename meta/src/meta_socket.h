@@ -70,7 +70,7 @@ status_t wait_for_writability(meta_socket p, int timeout);
  */
 status_t sock_write(meta_socket p, const char *s, size_t count, int timeout, int retries);
 
-int sock_bind(meta_socket p, const char *hostname, int port);
+status_t sock_bind(meta_socket p, const char *hostname, int port);
 
 /*
  * Sets the socket to be nonblocking.
