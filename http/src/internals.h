@@ -297,9 +297,15 @@ int find_response_header(const char* name);
 status_t parse_response_header(int idx, http_response req, const char* value, meta_error e);
 
 /* Function prototypes for handler functions */
-status_t parse_cookie(http_request r, const char* s, meta_error e);
-status_t parse_new_cookie(http_request r, const char* s, meta_error e);
-status_t parse_old_cookie(http_request r, const char* s, meta_error e);
+status_t parse_cookie(http_request r, const char* s, meta_error e)
+	__attribute__((warn_unused_result));
+
+status_t parse_new_cookie(http_request r, const char* s, meta_error e)
+	__attribute__((warn_unused_result));
+
+status_t parse_old_cookie(http_request r, const char* s, meta_error e)
+	__attribute__((warn_unused_result));
+
 status_t cookie_dump(cookie c,  void *file);
 
 #ifdef __cplusplus
