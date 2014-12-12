@@ -20,6 +20,9 @@
 #ifndef META_STRINGMAP_H
 #define META_STRINGMAP_H
 
+#include <stdbool.h>
+
+#include <meta_common.h>
 #include <meta_list.h>
 
 /*
@@ -42,19 +45,19 @@ stringmap stringmap_new(size_t nelem);
 void stringmap_free(stringmap sm);
 
 /* Adds a new item to the stringmap */
-int stringmap_add(stringmap sm, const char *s, unsigned long* pid);
+status_t stringmap_add(stringmap sm, const char *s, unsigned long* pid);
 
 /* Returns 1 if the string exists, else 0 */
-int stringmap_exists(stringmap sm, const char *s);
+bool stringmap_exists(stringmap sm, const char *s);
 
 /*
  * Remove all entries from the stringmap, the stringmap itself is reusable.
  * Good to have if you want to refresh the cache.
  */
-int stringmap_invalidate(stringmap sm);
+status_t stringmap_invalidate(stringmap sm);
 
 /* Get id for a given string. Returns 1 if the string exists, else 0 */
-int stringmap_get_id(stringmap sm, const char *s, unsigned long* pid);
+status_t stringmap_get_id(stringmap sm, const char *s, unsigned long* pid);
 
 /*
  * Walk the stringmap, calling the callback function once for

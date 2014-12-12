@@ -111,7 +111,7 @@ static int get_name_and_value(char *line, char *name, char *value)
 	return 1;
 }
 
-static int add(configfile cf, const char *name, const char *value)
+static status_t add(configfile cf, const char *name, const char *value)
 {
 	char *n = NULL, *v = NULL;
 
@@ -120,14 +120,14 @@ static int add(configfile cf, const char *name, const char *value)
 	assert(value != NULL);
 
 	if (cf->used >= MAX_DIRECTIVES)
-		return 0;
+		return failure;
 
 	if ((n = malloc(strlen(name) + 1)) == NULL
 	||	(v = malloc(strlen(value) + 1)) == NULL
 	||	(cf->values[cf->used] = malloc(sizeof(struct nameval))) == NULL) {
 		free(n);
 		free(v);
-		return 0;
+		return failure;
 	}
 
 	strcpy(n, name);
@@ -135,46 +135,46 @@ static int add(configfile cf, const char *name, const char *value)
 	cf->values[cf->used]->name = n;
 	cf->values[cf->used]->value = v;
 	cf->used++;
-	return 1;
+	return success;
 }
 
 
 configfile configfile_read(const char *path)
 {
-	FILE *f;
 	char line[2048];
 	char name[2048];
 	char value[2048];
-	configfile p;
+
+	FILE *f = NULL;
+	configfile p = NULL;
 
 	if ((f = fopen(path, "r")) == NULL)
 		return NULL;
 
-	if ((p = calloc(1, sizeof *p)) == NULL) {
-		fclose(f);
-		return NULL;
-	}
+	if ((p = calloc(1, sizeof *p)) == NULL)
+		goto err;
 
 	p->used = 0;
 	while (fgets(line, (int)sizeof(line), f)) {
 		int i = get_name_and_value(line, name, value);
-		if (i == -1) {
-			fclose(f);
-			configfile_free(p);
-			errno = EINVAL;
-			return NULL;
-		}
-		else if (i == 1) {
-			if (!add(p, name, value)) {
-				fclose(f);
-				configfile_free(p);
-				return NULL;
-			}
-		}
+		if (i == -1)
+			goto err;
+
+		if (i == 1 && !add(p, name, value))
+			goto err;
 	}
 
 	fclose(f);
 	return p;
+
+err:
+	if (f) 
+		fclose(f);
+
+	if (p)
+		configfile_free(p);
+	
+	return NULL;
 }
 
 static struct nameval* find(configfile cf, const char *name)
@@ -192,15 +192,15 @@ static struct nameval* find(configfile cf, const char *name)
 	return NULL;
 }
 
-int configfile_exists(configfile cf, const char *name)
+bool configfile_exists(configfile cf, const char *name)
 {
 	assert(cf != NULL);
 	assert(name != NULL);
 
 	if (find(cf, name) != NULL)
-		return 1;
+		return true;
 
-	return 0;
+	return false;
 }
 
 status_t configfile_get_string(configfile cf, const char *name, char *value, size_t cb)

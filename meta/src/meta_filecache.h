@@ -26,6 +26,7 @@
 
 #include <meta_stringmap.h>
 #include <meta_cache.h>
+#include <meta_common.h>
 
 /*
  * TODO:
@@ -135,7 +136,7 @@ void filecache_free(filecache fc);
  * a non-issue for most. We save a call to stat() by requiring this.
  *
  */
-int filecache_add(filecache fc, fileinfo finfo, int pin, unsigned long* pid);
+status_t filecache_add(filecache fc, fileinfo finfo, int pin, unsigned long* pid);
 
 
 /* Return the stringmap member.

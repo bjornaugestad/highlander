@@ -37,7 +37,7 @@ static inline unsigned long hash(const unsigned char *str)
 	return hashval;
 }
 
-/* This is what we store in the hash table .
+/* This is what we store in the hash table.
  * s is the original string, hashval the computed hash value
  * and id is the unique id of the entry.
  */
@@ -126,10 +126,9 @@ void stringmap_free(stringmap sm)
 	}
 }
 
-int stringmap_invalidate(stringmap sm)
+status_t stringmap_invalidate(stringmap sm)
 {
 	size_t i;
-	int rc = 0;
 
 	assert(sm != NULL);
 
@@ -138,12 +137,11 @@ int stringmap_invalidate(stringmap sm)
 			list_free(sm->hashtable[i], entry_free);
 	}
 
-	return rc;
+	return success;
 }
 
 /* Locate an existing entry and return a list and iterator to it */
-static inline int
-sm_locate(stringmap sm, const char *s, list* plist, list_iterator* pi)
+static bool sm_locate(stringmap sm, const char *s, list* plist, list_iterator* pi)
 {
 	unsigned long hashval;
 	size_t hid;
@@ -167,10 +165,10 @@ sm_locate(stringmap sm, const char *s, list* plist, list_iterator* pi)
 	return 0;
 }
 
-int stringmap_add(stringmap sm, const char *s, unsigned long* pid)
+status_t stringmap_add(stringmap sm, const char *s, unsigned long* pid)
 {
 	struct entry *e = NULL;
-	size_t hid;
+	size_t n, hid;
 	list lst;
 	list_iterator i;
 
@@ -183,19 +181,19 @@ int stringmap_add(stringmap sm, const char *s, unsigned long* pid)
 	if (sm_locate(sm, s, &lst, &i)) {
 		e = list_get(i);
 
-		/* Item already exist. Do not add it, but return 1
-		 * to indicate success.  */
+		/* Item already exist. Do not add it. */
 		*pid = e->id;
-		return 1;
+		return success;
 	}
 
 	if ((e = malloc(sizeof *e)) == NULL)
 		goto err;
 
-	if ((e->s = malloc(strlen(s) + 1)) == NULL)
+	n = strlen(s) + 1;
+	if ((e->s = malloc(n)) == NULL)
 		goto err;
 
-	strcpy(e->s, s);
+	memcpy(e->s, s, n);
 	e->hashval = hash((const unsigned char*)e->s);
 	*pid = e->id = ++sm->last_id;
 
@@ -209,7 +207,7 @@ int stringmap_add(stringmap sm, const char *s, unsigned long* pid)
 	if (list_add(sm->hashtable[hid], e) == NULL)
 		goto err;
 
-	return 1;
+	return success;
 
 err:
 	if (e) {
@@ -217,11 +215,10 @@ err:
 		free(e);
 	}
 
-	return 0;
+	return failure;
 }
 
-
-int stringmap_exists(stringmap sm, const char *s)
+bool stringmap_exists(stringmap sm, const char *s)
 {
 	list lst;
 	list_iterator i;
@@ -233,7 +230,7 @@ int stringmap_exists(stringmap sm, const char *s)
 	return sm_locate(sm, s, &lst, &i);
 }
 
-int stringmap_get_id(stringmap sm, const char *s, unsigned long* pid)
+status_t stringmap_get_id(stringmap sm, const char *s, unsigned long* pid)
 {
 	list lst;
 	list_iterator i;
@@ -244,11 +241,11 @@ int stringmap_get_id(stringmap sm, const char *s, unsigned long* pid)
 	assert(strlen(s) > 0);
 
 	if (!sm_locate(sm, s, &lst, &i))
-		return 0;
+		return failure;
 
 	e = list_get(i);
 	*pid = e->id;
-	return 1;
+	return success;
 }
 
 stringmap stringmap_subset(stringmap sm1, stringmap sm2)
@@ -268,10 +265,9 @@ stringmap stringmap_subset(stringmap sm1, stringmap sm2)
 			for (li = list_first(sm1->hashtable[i]); !list_end(li); li = list_next(li)) {
 				struct entry* p = list_get(li);
 				assert(p != NULL);
-				if (!stringmap_exists(sm2, p->s)) {
-					if (!stringmap_add(sm, p->s, &id))
-						goto err;
-				}
+				if (!stringmap_exists(sm2, p->s) 
+				&& !stringmap_add(sm, p->s, &id))
+					goto err;
 			}
 		}
 	}
@@ -299,10 +295,11 @@ list stringmap_tolist(stringmap sm)
 
 			for (li = list_first(sm->hashtable[i]); !list_end(li); li = list_next(li)) {
 				struct entry* p =  list_get(li);
-				if ((s = malloc(strlen(p->s) + 1)) == NULL)
+				size_t n = strlen(p->s) + 1;
+				if ((s = malloc(n)) == NULL)
 					goto err;
 
-				strcpy(s, p->s);
+				memcpy(s, p->s, n);
 				if (!list_add(lst, s))
 					goto err;
 			}

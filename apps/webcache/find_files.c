@@ -68,20 +68,20 @@ list find_new_files(const char* directories, cstring* patterns, size_t npatterns
 
     if ( (lst = list_new()) == NULL)
         goto err;
-    else if (!walk_all_directories(directories, patterns, npatterns, lst, 1))
+
+    if (!walk_all_directories(directories, patterns, npatterns, lst, 1))
         goto err;
-    else {
-        /* Now see if all files are int the cache */
-        i = list_first(lst); 
-        while (!list_end(i)) {
-            fileinfo fi = list_get(i);
-            assert(fi != NULL);
-            if (filecache_exists(g_filecache, fileinfo_alias(fi)))  
-                i = list_delete(lst, i, (dtor)fileinfo_free);
-            else 
-                i = list_next(i);
-        }
-    }
+
+	/* Now see if all files are int the cache */
+	i = list_first(lst); 
+	while (!list_end(i)) {
+		fileinfo fi = list_get(i);
+		assert(fi != NULL);
+		if (filecache_exists(g_filecache, fileinfo_alias(fi)))  
+			i = list_delete(lst, i, (dtor)fileinfo_free);
+		else 
+			i = list_next(i);
+	}
 
     return lst;
 
@@ -100,29 +100,29 @@ list find_modified_files(const char* directories, cstring* patterns, size_t npat
 
     if ( (lst = list_new()) == NULL)
         goto err;
-    else if (!walk_all_directories(directories, patterns, npatterns, lst, 1))
+
+    if (!walk_all_directories(directories, patterns, npatterns, lst, 1))
         goto err;
-    else {
-        /* Now see if all files are int the cache */
-        i = list_first(lst); 
-        while (!list_end(i)) {
-            fileinfo fi = list_get(i);
-            assert(fi != NULL);
 
-            diskfile = fileinfo_stat(fi);
-            assert(diskfile != NULL);
+	/* Now see if all files are int the cache */
+	i = list_first(lst); 
+	while (!list_end(i)) {
+		fileinfo fi = list_get(i);
+		assert(fi != NULL);
 
-            if (!filecache_stat(g_filecache, fileinfo_alias(fi), &cachefile)
-            || cachefile.st_mtime == diskfile->st_mtime)  {
-                verbose(3, "File %s is not modified\n", fileinfo_alias(fi));
-                i = list_delete(lst, i, (dtor)fileinfo_free);
-            }
-            else  {
-                verbose(2, "File %s is modified\n", fileinfo_alias(fi));
-                i = list_next(i);
-            }
-        }
-    }
+		diskfile = fileinfo_stat(fi);
+		assert(diskfile != NULL);
+
+		if (!filecache_stat(g_filecache, fileinfo_alias(fi), &cachefile)
+		|| cachefile.st_mtime == diskfile->st_mtime)  {
+			verbose(3, "File %s is not modified\n", fileinfo_alias(fi));
+			i = list_delete(lst, i, (dtor)fileinfo_free);
+		}
+		else  {
+			verbose(2, "File %s is modified\n", fileinfo_alias(fi));
+			i = list_next(i);
+		}
+	}
 
     return lst;
 
@@ -149,9 +149,11 @@ list find_deleted_files(const char* directories, cstring* patterns, size_t npatt
 
     if ( (diskfiles = list_new()) == NULL)
         goto err;
-    else if (!walk_all_directories(directories, patterns, npatterns, diskfiles, 0))
+
+    if (!walk_all_directories(directories, patterns, npatterns, diskfiles, 0))
         goto err;
-    else if ((nfiles = list_size(diskfiles)) == 0) {
+
+    if ((nfiles = list_size(diskfiles)) == 0) {
         /* Found no files at all. Not exactly an internal server error,
          * so we return an empty list. 
          */
@@ -159,7 +161,8 @@ list find_deleted_files(const char* directories, cstring* patterns, size_t npatt
         return list_new();
 
     }
-    else if ((sm = stringmap_new(nfiles)) == NULL)
+
+    if ((sm = stringmap_new(nfiles)) == NULL)
         goto err;
 
     /* Convert fileinfo to a stringmap */
@@ -197,28 +200,31 @@ err:
 }
 
 
-int walk_all_directories(const char* directories, cstring* patterns, size_t npatterns, list lst, int get_mimetype)
+status_t walk_all_directories(const char* directories, cstring* patterns, size_t npatterns, list lst, int get_mimetype)
 {
     cstring *pstr;
     size_t i, nelem;
+	status_t rc = success;
     
     /* Split the directories argument and then walk each element in the path */
     if ( (nelem = cstring_split(&pstr, directories, " \t")) == 0)
-        return 0;
+        return failure;
 
     /* Now walk the tree(s) */
     for (i = 0; i < nelem; i++) {
         const char* rootdir = c_str(pstr[i]);
-        if (!find_files(rootdir, rootdir, patterns, npatterns, lst, get_mimetype))
-            return 0;
+        if (!find_files(rootdir, rootdir, patterns, npatterns, lst, get_mimetype)) {
+			rc = failure;
+			break;
+		}
     }
 
     cstring_multifree(pstr, nelem);
     free(pstr);
-    return 1;
+    return rc;
 }
 
-static int get_basename(const char *name, const char *suffix, char *dest, size_t destsize)
+static void get_basename(const char *name, const char *suffix, char *dest, size_t destsize)
 {
 	char *s;
 	size_t i;
@@ -239,7 +245,7 @@ static int get_basename(const char *name, const char *suffix, char *dest, size_t
 
 	/* Locate the suffix, if any */
 	if (suffix == NULL || (s = strstr(dest, suffix)) == NULL)
-		return 1;
+		return;
 
 	/* Be sure that the suffix actually is a suffix.
 	 * We do not want to remove .tar.gz from foo.tar.gz
@@ -249,8 +255,6 @@ static int get_basename(const char *name, const char *suffix, char *dest, size_t
 	i = strlen(suffix);
 	if (s[i] == '\0')
 		*s = '\0';
-
-	return 1;
 }
 
 /*
@@ -279,6 +283,7 @@ static int handle_one_file(
     cb = strlen(path) + 1;
     if ( (base = malloc(cb)) == NULL)
         goto err;
+
     get_basename(path, NULL, base, cb);
 
     /* See if filename matches patterns */
@@ -306,10 +311,10 @@ static int handle_one_file(
                 /* Stop checking patterns */
                 break; 
             }
-            else { /* Crapola, out of memory */
-                fileinfo_free(fi);
-                goto err;
-            }
+
+            /* Crapola, out of memory */
+            fileinfo_free(fi);
+            goto err;
         }
     }
 
@@ -346,7 +351,7 @@ err:
  *
  * lst is where we append our data. 
  */
-int find_files(
+status_t find_files(
     const char* rootdir,
     const char* dirname,
     cstring* patterns,
@@ -355,7 +360,7 @@ int find_files(
     int get_mimetype)
 {
     DIR *d = NULL;
-    int rc = 0; 
+    status_t rc = failure; 
 
     /* Buffers used for string/path manipulation */
     char *path = NULL;
@@ -367,7 +372,7 @@ int find_files(
 
     /* We return error(0) for anything but permission errors */
     if ( (d = opendir(dirname)) == NULL)
-        return errno == EACCES ? 1 : 0;
+        return errno == EACCES ? success : failure;
 
     while (readdir_r(d, (struct dirent*)debuff, &de) == 0 && de != NULL) {
         /* We do not walk parent or current directory */
@@ -376,7 +381,7 @@ int find_files(
 
         /* Compute the number of bytes needed for path */
         cb = strlen(dirname) + 1 + strlen(de->d_name) + 1;
-        free(path); path = NULL;
+        free(path);
         if ( (path = malloc(cb)) == NULL)
             goto err;
 
@@ -401,7 +406,7 @@ int find_files(
     }
 
     /* Indicate success and fallthrough to cleanup */
-    rc = 1; 
+    rc = success; 
 
 err:
     if (d != NULL)

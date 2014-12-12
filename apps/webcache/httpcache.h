@@ -6,6 +6,9 @@
 #include <highlander.h>
 #include <cstring.h>
 
+
+#include <meta_common.h>
+
 /* This is a Common include file for all modules */
 
 
@@ -27,9 +30,9 @@ list find_modified_files(const char* directories, cstring* patterns, size_t npat
 list find_new_files(const char* directories, cstring* patterns, size_t npatterns);
 list find_deleted_files(const char* directories, cstring* patterns, size_t npatterns);
 
-int walk_all_directories(const char* directories, cstring* patterns, size_t npatterns, list lst, int get_mimetype);
+status_t walk_all_directories(const char* directories, cstring* patterns, size_t npatterns, list lst, int get_mimetype);
 
-int find_files(const char* rootdir, const char* dirname, cstring* patterns, size_t npatterns, list lst, int get_mimetype);
+status_t find_files(const char* rootdir, const char* dirname, cstring* patterns, size_t npatterns, list lst, int get_mimetype);
 
 /* HTML Utility functions */
 int add_page_start(http_response page, int pageid);

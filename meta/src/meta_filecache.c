@@ -72,6 +72,7 @@ void fileinfo_set_stat(fileinfo p, const struct stat* pst)
 {
 	assert(p != NULL);
 	assert(pst != NULL);
+
 	p->st = *pst;
 }
 
@@ -156,9 +157,10 @@ void filecache_free(filecache fc)
 	}
 }
 
-int filecache_add(filecache fc, fileinfo finfo, int pin, unsigned long* pid)
+status_t filecache_add(filecache fc, fileinfo finfo, int pin, unsigned long* pid)
 {
-	int rc, fd = -1;
+	int fd = -1;
+	status_t rc;
 
 	char *contents = NULL;
 
@@ -181,11 +183,14 @@ int filecache_add(filecache fc, fileinfo finfo, int pin, unsigned long* pid)
 	fd = -1;
 
 	pthread_rwlock_wrlock(&fc->lock);
-	rc = stringmap_add(fc->filenames, fileinfo_alias(finfo), pid)
-		&& cache_add(fc->metacache, *pid, finfo, sizeof *finfo, pin) ;
+	rc = stringmap_add(fc->filenames, fileinfo_alias(finfo), pid);
+
+	if (rc == success)
+		rc = cache_add(fc->metacache, *pid, finfo, sizeof *finfo, pin);
+
 	pthread_rwlock_unlock(&fc->lock);
 	if (rc)
-		return 1;
+		return success;
 
 err:
 	if (fd != -1)
@@ -193,7 +198,7 @@ err:
 
 	free(contents);
 	fileinfo_free(finfo);
-	return 0;
+	return failure;
 }
 
 

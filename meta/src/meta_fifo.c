@@ -182,7 +182,7 @@ status_t fifo_write_signal(fifo p, void *data)
 		return failure;
 
 	if (!fifo_add(p, data)) {
-		(void)fifo_unlock(p);
+		fifo_unlock(p);
 		return failure;
 	}
 
@@ -193,7 +193,6 @@ status_t fifo_write_signal(fifo p, void *data)
 		return failure;
 
 	return success;
-
 }
 
 status_t fifo_wait_cond(fifo p)
@@ -204,7 +203,7 @@ status_t fifo_wait_cond(fifo p)
 		return failure;
 
 	if (!wlock_wait(p->lock)) {
-		(void)fifo_unlock(p);
+		fifo_unlock(p);
 		return failure;
 	}
 
@@ -213,7 +212,7 @@ status_t fifo_wait_cond(fifo p)
 	 */
 	if (fifo_nelem(p) == 0) {
 		errno = ENOENT;
-		(void)fifo_unlock(p);
+		fifo_unlock(p);
 		return failure;
 	}
 

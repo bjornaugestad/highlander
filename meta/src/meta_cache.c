@@ -182,7 +182,7 @@ static int on_hotlist(cache c, size_t id)
 /*
  * Check that we have room for the entry or free items if needed.
  */
-static int make_space(cache c, size_t cb)
+static status_t make_space(cache c, size_t cb)
 {
 	struct cache_entry* p;
 	size_t hid;
@@ -193,13 +193,13 @@ static int make_space(cache c, size_t cb)
 	/* Can the item fit at all? */
 	if (cb > c->max_bytes) {
 		errno = ENOSPC;
-		return 0;
+		return failure;
 	}
 
 	for (;;) {
 		/* Do we have space? */
 		if (c->current_bytes + cb <= c->max_bytes)
-			return 1;
+			return success;
 
 		/* Locate an item to remove from the cache.
 		 * We just pick one of the lists by random
@@ -214,16 +214,17 @@ static int make_space(cache c, size_t cb)
 		/* Iterate through the list and delete an item */
 		for (i =list_first(c->hashtable[hid]); !list_end(i); i = list_next(i)) {
 			p = list_get(i);
+
 			if (!on_hotlist(c, p->id) && !p->pinned) {
 				if (!cache_remove(c, p->id))
-					return 0;
+					return failure;
 			}
 		}
 	}
 
 	/* We failed to free enough objects */
 	errno = ENOSPC;
-	return 0;
+	return failure;
 }
 
 
@@ -249,7 +250,7 @@ status_t cache_add(cache c, size_t id, void *data, size_t cb, int pin)
 	if (cache_exists(c, id)) {
 		/* Hmm, duplicate. We don't like that (for now) */
 		free(p);
-		assert(0);
+		abort();
 	}
 
 	if (c->hashtable[hid] == NULL
@@ -436,7 +437,7 @@ int main(void)
 		void *xdata;
 		size_t cb;
 
-		rc = cache_get(c, i, (void*)&xdata, &cb);
+		rc = cache_get(c, i, &xdata, &cb);
 		assert(rc && "Could not find item");
 
 		sprintf(buf, "streng %lu", (unsigned long)i);
@@ -454,7 +455,7 @@ int main(void)
 		void *xdata;
 		size_t cb;
 
-		rc = cache_get(c, rand() % nelem, (void*)&xdata, &cb);
+		rc = cache_get(c, rand() % nelem, &xdata, &cb);
 		assert(rc && "rand:Could not find item");
 	}
 
