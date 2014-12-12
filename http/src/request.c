@@ -1547,6 +1547,7 @@ static status_t read_posted_content(
 {
 	void *buf;
 	size_t content_len;
+	ssize_t nread;
 
 	content_len = request_get_content_length(req);
 	if (content_len == 0)
@@ -1558,12 +1559,12 @@ static status_t read_posted_content(
 	if ((buf = malloc(content_len)) == NULL)
 		return set_os_error(e, errno);
 
-	if (!connection_read(conn, buf, content_len)) {
+	if ((nread = connection_read(conn, buf, content_len)) == -1) {
 		free(buf);
 		return set_tcpip_error(e, errno);
 	}
 
-	if (!request_set_entity(req, buf, content_len)) {
+	if (!request_set_entity(req, buf, nread)) {
 		free(buf);
 		return set_os_error(e, ENOSPC);
 	}

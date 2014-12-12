@@ -442,41 +442,35 @@ ssize_t connection_read(connection conn, void *buf, size_t count)
 	assert(conn != NULL);
 	assert(buf != NULL);
 
+	/* First copy data from the read buffer.
+	 * Were all bytes copied from buf? If so, return. */
 	ncopied = copy_from_readbuf(conn, buf, count);
-
-	/* Were all bytes copied from cache? If so, return. */
 	if (ncopied == count)
 		return ncopied;
 
 	count -= ncopied;
 	cbuf += ncopied;
 
-	/* Read from socket if buffer is too small anyway */
+	/* If the buffer can't hold the number of bytes we're
+	 * trying to read, there's no point in filling it. Therefore
+	 * we read directly from the socket if buffer is too small. */
 	if (membuf_size(conn->readbuf) < count) {
 		if ((nread = read_from_socket(conn, cbuf, count)) == -1)
 			return -1;
 
+		/* Return read count */
 		return nread + ncopied;
 	}
 
-	/*
-	 * Fill the read buffer by reading data from the socket.
-	 * Then copy data from the read buffer to buf.
-	 */
+	/* If we end up here, we must first fill the read buffer
+	 * and then read from it. */
 	if (!fill_read_buffer(conn))
-		return 0;
+		return -1;
 
-	if (!readbuf_contains_atleast(conn, count)) {
-		errno = EAGAIN;
-		return 0;
-	}
-
-	if (copy_from_readbuf(conn, cbuf, count) != count) {
-		errno = EAGAIN;
-		return 0;
-	}
-
-	return 1;
+	/* Now read as much as possible from the buffer, and 
+	 * return count, or possible short count, to our caller. */
+	nread = copy_from_readbuf(conn, cbuf, count);
+	return ncopied + nread;
 }
 
 void *connection_arg2(connection conn)

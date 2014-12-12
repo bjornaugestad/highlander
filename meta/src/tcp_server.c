@@ -532,7 +532,12 @@ static int accept_new_connections(tcp_server srv, meta_socket sock)
 
 status_t tcp_server_get_root_resources(tcp_server srv)
 {
-	srv->sock = create_server_socket(srv->unix_socket, c_str(srv->host), srv->port);
+	const char *hostname = NULL;
+
+	if (srv->host != NULL)
+		hostname = c_str(srv->host);
+
+	srv->sock = create_server_socket(srv->unix_socket, hostname, srv->port);
 	if (srv->sock == NULL)
 		return failure;
 
