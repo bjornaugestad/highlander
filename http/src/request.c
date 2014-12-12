@@ -667,17 +667,17 @@ err:
 	return NULL;
 }
 
-int request_accepts_media_type(http_request r, const char *val)
+bool request_accepts_media_type(http_request r, const char *val)
 {
 	/* We accept if request has no opinion */
 	if (!request_flag_is_set(r, REQUEST_ACCEPT_SET))
-		return 1;
+		return true;
 
 	/* The client accepts a media type if we find it */
-	return strstr(c_str(r->accept), val) == NULL ? 0 : 1;
+	return strstr(c_str(r->accept), val) == NULL ? false : true;
 }
 
-int request_accepts_language(http_request r, const char *val)
+bool request_accepts_language(http_request r, const char *val)
 {
 	/* We do not want to mix e.g. "en" and "den" so check every one */
 	char buf[CCH_LANGUAGE_MAX + 1];
@@ -686,14 +686,14 @@ int request_accepts_language(http_request r, const char *val)
 
 	/* We accept the language if request has no opinion */
 	if (!request_flag_is_set(r, REQUEST_ACCEPT_LANGUAGE_SET))
-		return 1;
+		return true;
 
 	for (i = 0;; i++) {
 		if (!get_word_from_string(s, buf, sizeof buf, i))
-			return 0; /* No more words in string. */
+			return false; /* No more words in string. */
 
 		if (0 == strcmp(buf, val))
-			return 1;
+			return true;
 	}
 }
 
@@ -840,7 +840,7 @@ size_t request_get_field_valuelen(http_request request, size_t idx)
 	return cb;
 }
 
-int request_get_field_name(http_request request, size_t i, char *s, size_t cb)
+status_t request_get_field_name(http_request request, size_t i, char *dest, size_t destsize)
 {
 	const char *start;
 	size_t fieldlen;
@@ -851,22 +851,22 @@ int request_get_field_name(http_request request, size_t i, char *s, size_t cb)
 	start = get_field_start(request->entity_buf, request_get_content_length(request), i);
 
 	if (start == NULL)
-		return 0;
+		return failure;
 
 	if ((fieldlen = request_get_field_namelen(request, i)) == 0)
-		return 0;
+		return failure;
 
-	if (cb < fieldlen)
-		fieldlen = cb;
+	if (destsize < fieldlen)
+		fieldlen = destsize;
 
 	while (fieldlen--)
-		*s++ = *start++;
+		*dest++ = *start++;
 
-	*s = '\0';
-	return 1;
+	*dest = '\0';
+	return success;
 }
 
-int request_get_field_value(http_request request, size_t i, char *s, size_t cb)
+status_t request_get_field_value(http_request request, size_t i, char *dest, size_t destsize)
 {
 	const char *start;
 	size_t namelen, valuelen;
@@ -879,29 +879,29 @@ int request_get_field_value(http_request request, size_t i, char *s, size_t cb)
 	valuelen = request_get_field_valuelen(request, i);
 
 	if (namelen == 0 || valuelen == 0)
-		return 0;
+		return failure;
 
 	start += namelen;
 	assert(*start == '=');
 	start++; /* Skip '=' */
 
-	rfc1738_decode(s, cb, start, valuelen);
+	rfc1738_decode(dest, destsize, start, valuelen);
 
 	/* So far so good. We have a copy. Replace the + with space */
-	while (*s != '\0') {
-		if (*s == '+')
-			*s = ' ';
+	while (*dest != '\0') {
+		if (*dest == '+')
+			*dest = ' ';
 
-		s++;
+		dest++;
 	}
 
-	return 1;
+	return success;
 }
 
 /* Just iterate on fieldcount and look for the correct name. Then
  * copy the value and return.
  */
-int request_get_field_value_by_name(http_request request, const char *name, char *value, size_t cb)
+status_t request_get_field_value_by_name(http_request request, const char *name, char *value, size_t cb)
 {
 	size_t i, fieldcount;
 
@@ -911,19 +911,19 @@ int request_get_field_value_by_name(http_request request, const char *name, char
 	assert(cb != 0);
 
 	if ((fieldcount = request_get_field_count(request)) == 0)
-		return 0;
+		return failure;
 
 	for (i = 0; i < fieldcount; i++) {
 		char sz[10240];
 
 		if (!request_get_field_name(request, i, sz, sizeof(sz) - 1))
-			return 0;
+			return failure;
 
 		if (strcmp(sz, name) == 0)
 			return request_get_field_value(request, i, value, cb);
 	}
 
-	return 0; /* Name not found */
+	return failure; /* Name not found */
 }
 
 time_t request_get_if_modified_since(http_request r)
@@ -932,8 +932,8 @@ time_t request_get_if_modified_since(http_request r)
 
 	if (request_flag_is_set(r, REQUEST_IF_MODIFIED_SINCE_SET))
 		return r->if_modified_since;
-	else
-		return (time_t)-1;
+
+	return (time_t)-1;
 }
 
 general_header request_get_general_header(http_request r)
@@ -1098,8 +1098,7 @@ static status_t parse_if_unmodified_since(http_request req, const char* value, m
 	if ((d = parse_rfc822_date(value)) == (time_t)-1)
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
-	request_set_if_unmodified_since(req, d);
-	return success;
+	return request_set_if_unmodified_since(req, d);
 }
 
 static status_t parse_range(http_request req, const char* value, meta_error e)
@@ -1564,6 +1563,12 @@ static status_t read_posted_content(
 		return set_tcpip_error(e, errno);
 	}
 
+	/* Short reads are not acceptable here */
+	if ((size_t)nread != content_len) {
+		free(buf);
+		return set_tcpip_error(e, EINVAL);
+	}
+
 	if (!request_set_entity(req, buf, nread)) {
 		free(buf);
 		return set_os_error(e, ENOSPC);
@@ -1701,7 +1706,7 @@ read_request_header_fields(connection conn, http_request request, meta_error e)
 	for (;;) {
 		char buf[CCH_FIELDNAME_MAX + CCH_FIELDVALUE_MAX + 10];
 
-		if ((!read_line(conn, buf, sizeof buf, e)))
+		if (!read_line(conn, buf, sizeof buf, e))
 			return failure;
 
 		/*
@@ -1712,14 +1717,8 @@ read_request_header_fields(connection conn, http_request request, meta_error e)
 		if (strlen(buf) == 0)
 			return success;
 
-		if (!parse_one_field(conn, request, buf, e)) {
-			if (is_app_error(e)
-			&& get_error_code(e) == EFS_UNKNOWN_HEADER_FIELD)
-				/* Someone sent us stuff we didn't understand. Just ignore it */
-				;
-			else
-				return failure;
-		}
+		if (!parse_one_field(conn, request, buf, e))
+			return failure;
 	}
 }
 
@@ -1893,13 +1892,20 @@ static status_t set_uri_params(http_request request, char* s, meta_error e)
 	return success;
 }
 
+static inline int uri_has_params(const char* uri)
+{
+	return strchr(uri, '?') != NULL;
+}
+
 static status_t set_uri_and_params(http_request request, char* uri, meta_error e)
 {
 	char *s;
 
+	assert(uri_has_params(uri));
+
 	/* Look for parameters */
-	if ((s = strchr(uri, '?')) == NULL)
-		return set_app_error(e, EFS_INTERNAL);
+	s = strchr(uri, '?');
+	assert(s != NULL);
 
 	/* Cut here to terminate uri */
 	*s = '\0';
@@ -1911,14 +1917,8 @@ static status_t set_uri_and_params(http_request request, char* uri, meta_error e
 
 	if (strlen(s) == 0) /* Someone gave us just a URI and a ? */
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
-	else
-		return set_uri_params(request, s, e);
-}
 
-
-static inline int fUriHasParams(const char* uri)
-{
-	return strchr(uri, '?') != NULL;
+	return set_uri_params(request, s, e);
 }
 
 static status_t
@@ -1935,7 +1935,7 @@ parse_request_uri(const char* line, http_request request, meta_error e)
 	if (!get_word_from_string(line, uri, sizeof uri, 1))
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
-	if (fUriHasParams(uri))
+	if (uri_has_params(uri))
 		return set_uri_and_params(request, uri, e);
 
 	if (!request_set_uri(request, uri))
@@ -1965,7 +1965,7 @@ parse_request_version(const char* line, http_request request, meta_error e)
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
 	if (!get_word_from_string(line, strVersion, sizeof strVersion, 2))
-		return set_app_error(e, EFS_INTERNAL);
+		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
 	if ((version = get_version(strVersion)) == VERSION_UNKNOWN)
 		return set_http_error(e, HTTP_505_HTTP_VERSION_NOT_SUPPORTED);

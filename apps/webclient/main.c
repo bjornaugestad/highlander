@@ -135,9 +135,10 @@ void* threadfunc(void* arg)
 	/* Populate the request object and then send it to the server */
 	request_set_method(request, METHOD_GET);
 	request_set_version(request, VERSION_11);
-	request_set_host(request, g_hostname);
-	request_set_uri(request, g_uri);
-	request_set_user_agent(request, "My test program");
+	if (!request_set_host(request, g_hostname)
+	|| !request_set_uri(request, g_uri)
+	|| !request_set_user_agent(request, "My test program"))
+		die("Could not set request properties.");
 
 	for(int i = 0; i < g_nrequests; i++) {
 		verbose(1, "Sending request for uri %s\n", g_uri);

@@ -33,9 +33,6 @@ extern "C" {
 
 #define UNUSED(x)	(void)x
 
-#define EFS_INTERNAL		8	/* Internal server error */
-#define EFS_UNKNOWN_HEADER_FIELD 1000
-
 /*
  * Params are here parameters to the uri
  */
@@ -103,7 +100,8 @@ void http_server_recycle_response(http_server srv, http_response response);
 void http_server_add_logentry(http_server srv, connection conn, http_request req, int sc, size_t cb);
 
 /* Handles the default page */
-int http_server_has_default_page_handler(http_server s);
+bool http_server_has_default_page_handler(http_server s);
+
 status_t http_server_run_default_page_handler(connection conn, http_server s, http_request request, http_response response, meta_error e);
 status_t http_send_field(connection conn, const char* name, cstring value);
 status_t http_send_date(connection conn, const char* name, time_t value);
@@ -124,7 +122,7 @@ void dynamic_free(dynamic_page p);
 void dynamic_set_handler(dynamic_page p, PAGE_FUNCTION func);
 status_t dynamic_set_uri(dynamic_page p, const char *value);
 int dynamic_run(dynamic_page p, const http_request, http_response);
-int dynamic_set_attributes(dynamic_page p, page_attribute a);
+status_t dynamic_set_attributes(dynamic_page p, page_attribute a);
 page_attribute dynamic_get_attributes(dynamic_page p);
 const char*	dynamic_get_uri(dynamic_page p);
 

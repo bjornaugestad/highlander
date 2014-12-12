@@ -93,13 +93,13 @@ int dynamic_run(dynamic_page p, const http_request req, http_response response)
 	return (*p->handler)(req, response);
 }
 
-int dynamic_set_attributes(dynamic_page p, page_attribute a)
+status_t dynamic_set_attributes(dynamic_page p, page_attribute a)
 {
 	attribute_free(p->attr);
 	if ((p->attr = attribute_dup(a)) == NULL)
-		return 0;
+		return failure;
 
-	return 1;
+	return success;
 }
 
 page_attribute dynamic_get_attributes(dynamic_page p)

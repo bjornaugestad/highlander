@@ -91,8 +91,9 @@ static int handle_requests(const http_request req, http_response page)
     }
     else if (stat(abspath, &st)) {
         size_t cb = strlen(uri) + strlen(abspath) + 100;
-        response_printf(page, cb, "%s(%s): Not found", uri, abspath);
         rc = HTTP_404_NOT_FOUND;
+        if (!response_printf(page, cb, "%s(%s): Not found", uri, abspath))
+			rc = HTTP_500_INTERNAL_SERVER_ERROR;
     }
     else if (S_ISDIR(st.st_mode)) {
         if (show_directory(page, abspath, &uri[1]))  /* Remove leading / */
@@ -162,9 +163,12 @@ int main(int argc, char *argv[])
         perror("http_server_alloc");
         exit(EXIT_FAILURE);
     }
-    http_server_add_page(g_server, "/folder.gif", show_folder_gif, NULL);
-    http_server_add_page(g_server, "/document.png", show_document_png, NULL);
-    http_server_add_page(g_server, "/about.html", show_about_html, NULL);
+
+    if (!http_server_add_page(g_server, "/folder.gif", show_folder_gif, NULL)
+    || !http_server_add_page(g_server, "/document.png", show_document_png, NULL)
+    || !http_server_add_page(g_server, "/about.html", show_about_html, NULL))
+		die("Could not add pages to web server.");
+
     http_server_set_default_page_handler(g_server, handle_requests);
 
     if (!http_server_start_via_process(p, g_server)) {
@@ -206,23 +210,26 @@ static status_t show_directory_as_html(http_response page, list lst, const char 
     list_iterator i;
     struct tm t;
     int cb;
+	status_t ok;
 
     assert(lst != NULL);
 
     if (lst == NULL)
-        return 0;
+        return failure;
 
     /* Modify uri if we point to root directory */
     if (strlen(uri) == 0)
         uri = "/";
 
     if (!add_html_header(page, uri))
-        return 0;
+        return failure;
 
     for (i = list_first(lst); !list_end(i); i = list_next(i)) {
         path_t _link = { '\0' }, encoded_link = { '\0' };
         struct dirinfo *p = list_get(i);
-        a2p(page, "<tr>\n");
+
+        if (!response_add(page, "<tr>\n"))
+			return failure;
 
         /* Create _link, which is uri + name */
         cb = snprintf(_link, sizeof _link, "%s%s%s",
@@ -231,30 +238,37 @@ static status_t show_directory_as_html(http_response page, list lst, const char 
             p->name);
 
         if (cb > (int)sizeof _link)
-            return 0;
+            return failure;
 
         if (!rfc1738_encode_string(encoded_link, sizeof encoded_link, _link))
-            return 0;
+            return failure;
 
         if (S_ISDIR(p->st.st_mode))
-            response_add(page, "<td><img align='middle' border=0 src='/folder.gif'>");
+            ok = response_add(page, "<td><img align='middle' border=0 src='/folder.gif'>");
         else
-            response_add(page, "<td><img align='middle' border=0 src='/document.png'>");
+            ok = response_add(page, "<td><img align='middle' border=0 src='/document.png'>");
+
+		if (!ok)
+			return failure;
 
         /* How many bytes do we need to print this? */
-        if ( (cb = snprintf(NULL, 0, "<a href='%s'>%s</a></td>\n", encoded_link, p->name)) < 0)
-            return 0;
+        cb = snprintf(NULL, 0, "<a href='%s'>%s</a></td>\n", encoded_link, p->name);
 
-        response_printf(page, cb + 4, "<a href='%s'>%s</a></td>\n", encoded_link, p->name);
-        response_printf(page, 100, "<td align='right'>%lu</td>", p->st.st_size);
+        if (!response_printf(page, cb + 4, "<a href='%s'>%s</a></td>\n", encoded_link, p->name)
+		|| !response_printf(page, 100, "<td align='right'>%lu</td>", p->st.st_size))
+			return failure;
+			
 
         if (gmtime_r(&p->st.st_mtime, &t) != NULL) {
             char sz[1024];
+
             strftime(sz, sizeof(sz), "%d/%m/%Y %H:%M:%S GMT", &t);
-            response_td(page, sz);
+            if (!response_td(page, sz))
+				return failure;
         }
 
-        response_add(page, "</tr>\n");
+        if (!response_add(page, "</tr>\n"))
+			return failure;
     }
 
     return add_html_footer(page);

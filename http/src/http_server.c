@@ -886,7 +886,7 @@ status_t http_server_free_root_resources(http_server s)
 	return success;
 }
 
-int http_server_has_default_page_handler(http_server s)
+bool http_server_has_default_page_handler(http_server s)
 {
 	assert(s != NULL);
 	return s->default_handler != NULL;

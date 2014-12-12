@@ -718,10 +718,9 @@ void html_buffer_set_template(html_buffer b, html_template t)
 
 int html_done(html_buffer b, http_response response, int returncode)
 {
-	int rc;
+	status_t rc;
 
 	rc = html_template_send(b->template, response, "fix later", c_str(b->buffer));
 	html_buffer_free(b);
-	return rc == 1 ? returncode : HTTP_500_INTERNAL_SERVER_ERROR;
+	return rc == success ? returncode : HTTP_500_INTERNAL_SERVER_ERROR;
 }
-

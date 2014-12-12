@@ -224,7 +224,7 @@ int html_template_add_user_section(html_template t);
 
 int html_template_repository_add(const char* name, html_template t);
 html_buffer html_template_repository_use(const char* name);
-int html_template_send(
+status_t html_template_send(
     html_template t,
     http_response response,
     const char* headcode,

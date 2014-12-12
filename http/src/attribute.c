@@ -93,11 +93,11 @@ status_t attribute_set_charset(page_attribute a, const char* value)
 	return cstring_set(a->charset, value);
 }
 
-int attribute_set_authorization(page_attribute a, const char* value)
+status_t attribute_set_authorization(page_attribute a, const char* value)
 {
 	UNUSED(a);
 	UNUSED(value);
-	return 0;
+	return success;
 }
 
 status_t attribute_set_encoding(page_attribute a, const char* value)

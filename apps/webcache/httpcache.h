@@ -30,18 +30,28 @@ list find_modified_files(const char* directories, cstring* patterns, size_t npat
 list find_new_files(const char* directories, cstring* patterns, size_t npatterns);
 list find_deleted_files(const char* directories, cstring* patterns, size_t npatterns);
 
-status_t walk_all_directories(const char* directories, cstring* patterns, size_t npatterns, list lst, int get_mimetype);
+status_t walk_all_directories(const char* directories, cstring* patterns, size_t npatterns, list lst, int get_mimetype)
+	__attribute__((warn_unused_result));
 
-status_t find_files(const char* rootdir, const char* dirname, cstring* patterns, size_t npatterns, list lst, int get_mimetype);
+
+status_t find_files(const char* rootdir, const char* dirname, cstring* patterns, size_t npatterns, list lst, int get_mimetype)
+	__attribute__((warn_unused_result));
+
 
 /* HTML Utility functions */
-int add_page_start(http_response page, int pageid);
+status_t add_page_start(http_response page, int pageid)
+	__attribute__((warn_unused_result));
+
 
 /* Adds </body>opt_msg</html> where opt_msg is a string which will
  * be shown in a message box if opt_msg != NULL.
  */
-int add_page_end(http_response page, const char* opt_msg);
-int show_file_list(http_response page, const char* desc, list lst);
+status_t add_page_end(http_response page, const char* opt_msg)
+	__attribute__((warn_unused_result));
+
+status_t show_file_list(http_response page, const char* desc, list lst)
+	__attribute__((warn_unused_result));
+
 
 /* Callback function for the normal requests */
 int handle_requests(const http_request req, http_response page);

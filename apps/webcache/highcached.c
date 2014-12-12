@@ -215,23 +215,28 @@ static void configure_admin_server(http_server s, const char* configfilename)
 
     if ( (cf = configfile_read(configfilename)) == NULL) 
         die_perror("%s", configfilename);
-    else if (!configfile_get_int(cf, "admin_port", &port))
+
+    if (!configfile_get_int(cf, "admin_port", &port))
         die_perror("admin_port");
-    else if (!configfile_get_string(cf, "admin_host", host, sizeof host))
+
+    if (!configfile_get_string(cf, "admin_host", host, sizeof host))
         die("admin_host is missing from the configuration file %s", configfilename);
 
     http_server_set_port(s, port);
     http_server_set_host(s, host);
-    http_server_alloc(s);
-    http_server_add_page(s, "/", handle_main, NULL);
-    http_server_add_page(s, "/index.html", handle_main, NULL);
-    http_server_add_page(s, "/stats", show_stats, NULL);
-    http_server_add_page(s, "/configuration", show_configuration, NULL);
-    http_server_add_page(s, "/disk", show_disk, NULL);
-    http_server_add_page(s, "/cache", show_cache, NULL);
-    http_server_add_page(s, "/about", show_about, NULL);
-    http_server_add_page(s, "/webcache_logo.gif", show_webcache_logo_gif, NULL);
-    http_server_add_page(s, "/webcache_styles.css", show_webcache_styles_css, NULL);
+    if (!http_server_alloc(s))
+		die("Could not allocate memory for admin server");
+
+    if (!http_server_add_page(s, "/", handle_main, NULL)
+    || !http_server_add_page(s, "/index.html", handle_main, NULL)
+    || !http_server_add_page(s, "/stats", show_stats, NULL)
+    || !http_server_add_page(s, "/configuration", show_configuration, NULL)
+    || !http_server_add_page(s, "/disk", show_disk, NULL)
+    || !http_server_add_page(s, "/cache", show_cache, NULL)
+    || !http_server_add_page(s, "/about", show_about, NULL)
+    || !http_server_add_page(s, "/webcache_logo.gif", show_webcache_logo_gif, NULL)
+    || !http_server_add_page(s, "/webcache_styles.css", show_webcache_styles_css, NULL))
+		die("Coult not add pages to the admin server.");
 
     configfile_free(cf);
 }
@@ -249,8 +254,10 @@ int handle_main(http_request req, http_response page)
 
     (void)req;
 
-    add_page_start(page, PAGE_MAIN);
-    response_add(page, html);
-    add_page_end(page, NULL);
-    return 0;
+    if (add_page_start(page, PAGE_MAIN) 
+	&& response_add(page, html)
+    && add_page_end(page, NULL))
+		return 0;
+
+	return HTTP_500_INTERNAL_SERVER_ERROR;
 }

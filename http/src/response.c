@@ -455,33 +455,28 @@ static status_t create_cookie_string(cookie c, cstring str)
 
 static status_t send_cookie(cookie c, connection conn, meta_error e)
 {
-	const char* s;
-	cstring str;
-	size_t cb;
+	cstring s;
+	size_t count;
 
 	assert(NULL != c);
 	assert(NULL != conn);
 
-	/* A cookie with no name ? */
-	if ((s = cookie_get_name(c)) == NULL)
-		return set_app_error(e, EFS_INTERNAL);
-
-	if ((str = cstring_new()) == NULL)
+	if ((s = cstring_new()) == NULL)
 		return set_os_error(e, ENOMEM);
 
-	if (!create_cookie_string(c, str)) {
-		cstring_free(str);
+	if (!create_cookie_string(c, s)) {
+		cstring_free(s);
 		return set_os_error(e, ENOMEM);
 	}
 
-	cb = cstring_length(str);
-	if (!connection_write(conn, c_str(str), cb)) {
+	count = cstring_length(s);
+	if (!connection_write(conn, c_str(s), count)) {
 		set_tcpip_error(e, errno);
-		cstring_free(str);
+		cstring_free(s);
 		return failure;
 	}
 
-	cstring_free(str);
+	cstring_free(s);
 	return success;
 }
 
@@ -840,14 +835,13 @@ status_t response_set_proxy_authenticate(http_response response, const char* val
 	return success;
 }
 
-status_t response_set_retry_after(http_response response, time_t value)
+void response_set_retry_after(http_response response, time_t value)
 {
 	assert(NULL != response);
 	assert(value);
 
 	response->retry_after = value;
 	response_set_flag(response, RETRY_AFTER);
-	return success;
 }
 
 status_t response_set_server(http_response response, const char* value)
@@ -904,11 +898,10 @@ status_t response_set_content_language(http_response response, const char* value
 	return entity_header_set_content_language(response->entity_header, value, e);
 }
 
-status_t response_set_content_length(http_response response, size_t value)
+void response_set_content_length(http_response response, size_t value)
 {
 	assert(NULL != response);
 	entity_header_set_content_length(response->entity_header, value);
-	return success;
 }
 
 status_t response_set_content_location(http_response response, const char* value)
@@ -962,7 +955,9 @@ void response_recycle(http_response p)
 	cstring_recycle(p->entity);
 	cstring_recycle(p->path);
 	response_clear_flags(p);
-	response_set_content_type(p, "text/html");
+	if (!response_set_content_type(p, "text/html"))
+		warning("Probably out of memory\n");
+
 	#if 0
 	if (p->content_buffer_in_use && p->content_free_when_done) {
 		free(p->content_buffer);
@@ -1167,22 +1162,17 @@ static int http_send_content(int status)
 #endif
 
 /*
- * Returns 0 and sets e to the proper HTTP error code if a http error was sent
- * back to the user. Returns a tcpip_error in e if a tcp/ip error occurs, even
- * if the response originally was a http error. This is done so that we can
- * detect and handle disconnects or other tcp/ip issues when sending responses
- * back to the client.
- * Also note that this function will write to the logfile since this function
- * is the only function able to tell the size of the returned data effectively.
+ * Returns failure and sets e to the proper HTTP error code if a http error 
+ * was sent back to the user. Returns a tcpip_error in e if a tcp/ip error 
+ * occurs, even if the response originally was a http error.
+ * This is done so that we can detect and handle disconnects or
+ * other tcp/ip issues when sending responses back to the client.
  *
  * First we send the HTTP status code, then the HTTP header fields, and last
  * but not least, the entity itself.
  */
-size_t response_send(http_response r, connection c, meta_error e)
+status_t response_send(http_response r, connection c, meta_error e, size_t *pcb)
 {
-	int xsuccess = 0;
-	size_t cb = 0;
-
 	/* NOTE: 20060103
 	 * I have rewritten lots of stuff today and added general_header
 	 * and entity_header members. Due to that change, we need to double
@@ -1197,8 +1187,9 @@ size_t response_send(http_response r, connection c, meta_error e)
 
 
 	if (!send_status_code(c, r->status, r->version))
-		set_tcpip_error(e, errno);
-	else if (r->status != HTTP_200_OK && r->status != HTTP_404_NOT_FOUND) {
+		return set_tcpip_error(e, errno);
+
+	if (r->status != HTTP_200_OK && r->status != HTTP_404_NOT_FOUND) {
 		/* NOTE: Fix this later. Other statuses than 200 should also return
 		 * headers and content. It's done this way now since I'm in the
 		 * middle of a rather big rewrite...
@@ -1215,15 +1206,16 @@ size_t response_send(http_response r, connection c, meta_error e)
 		 * I've added the line below as a Q&D fix.
 		 */
 		response_send_header(r, c, e);
+		return failure;
 	}
-	else if (!response_send_header(r, c, e))
-		;
-	else if (!response_send_entity(r, c, &cb))
-		set_tcpip_error(e, errno);
-	else
-		xsuccess = 1;
 
-	return xsuccess;
+	if (!response_send_header(r, c, e))
+		return failure;
+
+	if (!response_send_entity(r, c, pcb))
+		return set_tcpip_error(e, errno);
+
+	return success;
 }
 
 const char* response_get_connection(http_response response)
@@ -1609,15 +1601,14 @@ status_t response_receive(
 	ssize_t nread;
 
 	if (!read_response_status_line(response, conn, e))
-		return 0;
+		return failure;
 
 	/* Now read and parse all fields (if any) */
 	if (!read_response_header_fields(conn, response, e))
 		return failure;
 
 	/* Now we hopefully have a content-length field. See if we can read
-	 * it or if it is too big
-	 */
+	 * it or if it is too big. */
 	if (entity_header_content_length_isset(eh)) {
 		contentlen = entity_header_get_content_length(eh);
 		if (contentlen == 0)
@@ -1628,8 +1619,7 @@ status_t response_receive(
 	}
 	else {
 		/* No content length, then we MUST deal with a version 1.0 server.
-		 * Read until max_contentlen is reached or socket is closed.
-		 */
+		 * Read until max_contentlen is reached or socket is closed.  */
 		contentlen = max_contentlen;
 	}
 

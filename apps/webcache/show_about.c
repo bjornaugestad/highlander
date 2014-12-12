@@ -22,11 +22,15 @@ int show_about(http_request req, http_response page)
 
 
     (void)req;
-    add_page_start(page, PAGE_ABOUT);
+    if (!add_page_start(page, PAGE_ABOUT))
+		return HTTP_500_INTERNAL_SERVER_ERROR;
 
+    if (!response_add(page, html))
+		return HTTP_500_INTERNAL_SERVER_ERROR;
 
-    response_add(page, html);
-    add_page_end(page, NULL);
+    if (!add_page_end(page, NULL))
+		return HTTP_500_INTERNAL_SERVER_ERROR;
+
     return 0;
 }
 

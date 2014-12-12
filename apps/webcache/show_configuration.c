@@ -6,31 +6,49 @@ extern const char* g_configfile;
 
 int show_configuration(http_request req, http_response page)
 {
-    FILE* f;
+    FILE* f = NULL;
+
     const char* nofile =
         " I was unable to open the configuration file. Maybe I was configured"
-        " to change either user or root directory at startup? If so, the file is most likely"
+        " to change either user or root directory at startup? If so,"
+		" the file is most likely"
         " present, but unreadable for this process. No reason to worry, though."
         ;
 
     (void)req;
-    add_page_start(page, PAGE_CONFIGFILE);
+    if (!add_page_start(page, PAGE_CONFIGFILE))
+		goto err;
 
     if ( (f = fopen(g_configfile, "r")) == NULL) {
-        response_p(page, nofile);
+        if (!response_p(page, nofile))
+			goto err;
     }
     else {
         char line[1024];
-        response_add(page, "<pre>");
+
+        if (!response_add(page, "<pre>"))
+			goto err;
+
         while (fgets(line, sizeof line, f) != NULL) {
-            response_add(page, line);
+            if (!response_add(page, line))
+				goto err;
         }
 
-        response_add(page, "</pre>");
+        if (!response_add(page, "</pre>"))
+			goto err;
+			
         fclose(f);
     }
 
-    add_page_end(page, NULL);
+    if (!add_page_end(page, NULL))
+		goto err;
+
     return 0;
+
+err:
+	if (f)
+		fclose(f);
+
+	return HTTP_500_INTERNAL_SERVER_ERROR;
 }
 

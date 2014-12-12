@@ -21,20 +21,23 @@ int show_disk(http_request req, http_response page)
     const char* action;
     int rc = 0;
 
-    add_page_start(page, PAGE_DISK);
+    if (!add_page_start(page, PAGE_DISK))
+		goto err;
 
-    response_href(page, "/disk?a=new", "Show new files in disk\n");
-    response_br(page);
-    response_href(page, "/disk?a=modified", "Show modified files in disk\n");
-    response_br(page);
-    response_href(page, "/disk?a=deleted", "Show files deleted from disk\n");
-    response_br(page);
-    response_href(page, "/disk?a=summary", "Show summary of changes\n");
-    response_br(page);
+    if (!response_href(page, "/disk?a=new", "Show new files in disk\n")
+    || !response_br(page)
+    || !response_href(page, "/disk?a=modified", "Show modified files in disk\n")
+    || !response_br(page)
+    || !response_href(page, "/disk?a=deleted", "Show files deleted from disk\n")
+    || !response_br(page)
+    || !response_href(page, "/disk?a=summary", "Show summary of changes\n")
+    || !response_br(page))
+		goto err;
     
     if ( (action = request_get_parameter_value(req, "a")) == NULL) {
         /* No action */
-        add_page_end(page, NULL);
+        if (!add_page_end(page, NULL))
+			goto err;
     }
     else if (strcmp(action, "deleted") == 0) {
         rc = show_deleted_files(req, page);
@@ -50,10 +53,15 @@ int show_disk(http_request req, http_response page)
     }
     else {
         /* No action */
-        add_page_end(page, NULL);
+        if (!add_page_end(page, NULL))
+			goto err;
     }
 
     return rc;
+
+err:
+	warning("Running out of memory?\n");
+	return 0;
 }
 
 static int show_deleted_files(http_request req, http_response page)
@@ -73,30 +81,35 @@ static int show_deleted_files(http_request req, http_response page)
     const char* no_files = "No files have been deleted since the cache was loaded";
 
     (void)req;
-    if ( (deleted = find_deleted_files(g_dirs, g_patterns, g_npatterns)) == NULL)
+    if ((deleted = find_deleted_files(g_dirs, g_patterns, g_npatterns)) == NULL)
         goto cleanup;
-    else if ((filist = list_new()) == NULL)
+
+    if ((filist = list_new()) == NULL)
         goto cleanup;
-    else {
-        for (li = list_first(deleted); !list_end(li); li = list_next(li)) {
-            fileinfo fi;
-            const char* s = list_get(li);
-            assert(s != NULL);
 
-            if ( (fi = filecache_fileinfo(g_filecache, s)) == NULL)
-                goto cleanup;
-            else if (list_add(filist, fi) == NULL)
-                goto cleanup;
-        }
+	for (li = list_first(deleted); !list_end(li); li = list_next(li)) {
+		fileinfo fi;
+		const char* s = list_get(li);
+		assert(s != NULL);
 
-        if (list_size(filist) > 0) 
-            show_file_list(page, desc, filist);
-        else 
-            msg = no_files;
+		if ( (fi = filecache_fileinfo(g_filecache, s)) == NULL)
+			goto cleanup;
 
-        add_page_end(page, msg);
-        rc = HTTP_200_OK;
-    }
+		if (list_add(filist, fi) == NULL)
+			goto cleanup;
+	}
+
+	if (list_size(filist) > 0) {
+		if (!show_file_list(page, desc, filist))
+			goto cleanup;
+	}
+	else 
+		msg = no_files;
+
+	if (!add_page_end(page, msg))
+		goto cleanup;
+
+	rc = HTTP_200_OK;
 
 cleanup:
     list_free(deleted, NULL);
@@ -121,15 +134,16 @@ static int show_new_files(http_request req, http_response page)
     (void)req;
     if ( (files = find_new_files(g_dirs, g_patterns, g_npatterns)) == NULL)
         goto cleanup;
-    else {
-        if (list_size(files) == 0) 
-            msg = no_files;
-        else if (!show_file_list(page, desc, files))
-            goto cleanup;
 
-        add_page_end(page, msg);
-        rc = HTTP_200_OK;
-    }
+	if (list_size(files) == 0) 
+		msg = no_files;
+	else if (!show_file_list(page, desc, files))
+		goto cleanup;
+
+	if (!add_page_end(page, msg))
+		goto cleanup;
+
+	rc = HTTP_200_OK;
 
 cleanup:
     list_free(files, (dtor)fileinfo_free);
@@ -158,10 +172,12 @@ static int show_modified_files(http_request req, http_response page)
     else {
         if (list_size(files) == 0) 
             msg = no_files;
-        else 
-            show_file_list(page, desc, files);
+        else if (!show_file_list(page, desc, files))
+			goto cleanup;
 
-        add_page_end(page, msg);
+        if (!add_page_end(page, msg))
+			goto cleanup;
+
         rc = HTTP_200_OK;
     }
 
@@ -179,24 +195,27 @@ static int show_file_summary(http_request req, http_response page)
 
     (void)req;
 
-    if ( (mod = find_modified_files(g_dirs, g_patterns, g_npatterns)) == NULL)
+    if ((mod = find_modified_files(g_dirs, g_patterns, g_npatterns)) == NULL)
         goto cleanup;
-    else if ((new = find_new_files(g_dirs, g_patterns, g_npatterns)) == NULL)
+
+    if ((new = find_new_files(g_dirs, g_patterns, g_npatterns)) == NULL)
         goto cleanup;
-    else if ((del = find_deleted_files(g_dirs, g_patterns, g_npatterns)) == NULL)
+
+    if ((del = find_deleted_files(g_dirs, g_patterns, g_npatterns)) == NULL)
         goto cleanup;
 
     ndel = list_size(del);
     nmod = list_size(mod);
     nnew = list_size(new);
 
-    response_add(page, "<table columns=2><th>Text</th><th>Count</th>\n");
-    response_printf(page, 100, "<tr><td>New files</td><td>%zu</td>\n", nnew);
-    response_printf(page, 100, "<tr><td>Modified files</td><td>%zu</td>\n", nmod);
-    response_printf(page, 100, "<tr><td>Deleted files</td><td>%zu</td>\n", ndel);
-    response_add(page, "</table>");
-    add_page_end(page, NULL);
-    rc = HTTP_200_OK;
+    if (response_add(page, "<table columns=2><th>Text</th><th>Count</th>\n")
+    && response_printf(page, 100, "<tr><td>New files</td><td>%zu</td>\n", nnew)
+    && response_printf(page, 100, "<tr><td>Modified files</td><td>%zu</td>\n", nmod)
+    && response_printf(page, 100, "<tr><td>Deleted files</td><td>%zu</td>\n", ndel)
+    && response_add(page, "</table>")
+	&& add_page_end(page, NULL))
+		rc = HTTP_200_OK;
+
     /* Fallthrough is indended */
 
 cleanup:

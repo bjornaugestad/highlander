@@ -352,7 +352,10 @@ void create_implementations(const char* filename, FILE *f)
 		name);
 	fprintf(f, "{\n");
 	fprintf(f, "\t(void)request;\n");
-	fprintf(f, "\tresponse_set_content_type(response, \"%s\");\n", g_content_type);
+	fprintf(f, "\tif (!response_set_content_type(response, \"%s\"))\n", g_content_type);
+	fprintf(f, "\t\treturn HTTP_500_INTERNAL_SERVER_ERROR;\n");
+	fprintf(f, "\n");
+
 	fprintf(f, "\tresponse_set_content_buffer(response, (void*)x%s, sizeof(x%s));\n",
 		name, name);
 	fprintf(f,"\treturn 0;\n");

@@ -266,7 +266,7 @@ static int semantic_error(http_request request)
 
 void* serviceConnection(void* psa)
 {
-	status_t status;
+	status_t ok;
 	connection conn;
 	http_server srv;
 	http_request request;
@@ -279,8 +279,8 @@ void* serviceConnection(void* psa)
 	request_set_defered_read(request, http_server_get_defered_read(srv));
 	response = http_server_get_response(srv);
 
-	status = serviceConnection2(srv, conn, request, response, e);
-	if (!status && is_tcpip_error(e))
+	ok = serviceConnection2(srv, conn, request, response, e);
+	if (!ok && is_tcpip_error(e))
 		connection_discard(conn);
 	else if (!connection_close(conn)) 
 		warning("Could not close connection\n");
@@ -289,7 +289,7 @@ void* serviceConnection(void* psa)
 	http_server_recycle_response(srv, response);
 
 	meta_error_free(e);
-	return (void*)(intptr_t)status;
+	return (void*)(intptr_t)ok;
 }
 
 static status_t serviceConnection2(
@@ -342,15 +342,20 @@ static status_t serviceConnection2(
 		else {
 			/* We didn't find the page */
 			response_set_status(response, HTTP_404_NOT_FOUND);
-			response_set_connection(response, "close");
+			if (!response_set_connection(response, "close"))
+				goto gameover;
 		}
 
 		if (error) {
 			if (is_protocol_error(e)) {
 				status = get_error_code(e);
 				response_set_status(response, status);
-				response_set_connection(response, "close");
-				cbSent = response_send(response, conn, e);
+				if (!response_set_connection(response, "close"))
+					goto gameover;
+
+				if (!response_send(response, conn, e, &cbSent))
+					cbSent = 0;
+
 				http_server_add_logentry(srv, conn, request, status, cbSent);
 			}
 
@@ -366,9 +371,12 @@ static status_t serviceConnection2(
 		if (request_get_version(request) != VERSION_11
 		&& !connection_is_persistent(conn)
 		&& strlen(response_get_connection(response)) == 0)
-			response_set_connection(response, "close");
+			if (!response_set_connection(response, "close"))
+				goto gameover;
 
-		cbSent = response_send(response, conn, e);
+		if (!response_send(response, conn, e, &cbSent))	
+			cbSent = 0;
+
 		http_server_add_logentry(srv, conn, request, response_get_status(response), cbSent);
 		if (cbSent == 0)
 			return failure;
@@ -401,6 +409,10 @@ static status_t serviceConnection2(
 
 	/* Shutdown detected */
 	return success;
+
+
+gameover:
+	return failure;
 }
 
 int http_status_code(int error)

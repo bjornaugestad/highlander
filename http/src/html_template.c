@@ -134,7 +134,7 @@ int html_template_add_user_section(html_template t)
  * Here we create the html page based on the template layout.
  */
 
-int html_template_send(
+status_t html_template_send(
 	html_template t,
 	http_response response,
 	const char* headcode,
@@ -157,14 +157,14 @@ int html_template_send(
 		}
 		else if ((t->rendered_menu = cstring_new()) == NULL) {
 			pthread_mutex_unlock(&t->menulock);
-			return 0;
+			return failure;
 		}
 		else if (!html_menu_render(t->menu, t->rendered_menu)) {
 			/* Error rendering menu */
 			cstring_free(t->rendered_menu);
 			t->rendered_menu = NULL;
 			pthread_mutex_unlock(&t->menulock);
-			return 0;
+			return failure;
 		}
 		else {
 			/* Menu rendered ok. Unlock and continue */
@@ -176,9 +176,11 @@ int html_template_send(
 
 	i = 0;
 	while ((identifier = strchr(s, '%')) != NULL) {
+		status_t rc;
+
 		/* Print everything from s to (identifier - 1) */
 		if (!response_add_end(response, s, identifier))
-			return 0;
+			return failure;
 
 		identifier++; /* Skip the % */
 
@@ -188,31 +190,39 @@ int html_template_send(
 
 			case 'S':
 				if ((sect = list_get_item(t->sections, i++)) == NULL)
-					return 0;
+					return failure;
 
 				sectname = html_section_get_name(sect);
 				if (strcmp(sectname, "user") == 0)
-					response_add(response, usercode);
+					rc = response_add(response, usercode);
 				else
-					response_add(response, html_section_get_code(sect));
+					rc = response_add(response, html_section_get_code(sect));
+				
+				if (rc != success)
+					return failure;
+
 				break;
 
 			case 'H':
-				response_add(response, headcode);
+				if (!response_add(response, headcode))
+					return failure;
 				break;
 
 			case 'M':
-				if (t->menu != NULL) {
-					if (!response_add(response, c_str(t->rendered_menu))) {
-						return 0;
-					}
-				}
+				if (t->menu != NULL
+				&& !response_add(response, c_str(t->rendered_menu)))
+					return failure;
+
 				break;
 
 			default:
 				/* Just add the unknown character  as well as the % */
-				response_add_char(response, '%');
-				response_add_char(response, *identifier);
+				if (!response_add_char(response, '%'))
+					return failure;
+
+				if (!response_add_char(response, *identifier))
+					return failure;
+
 				break;
 		}
 
@@ -224,6 +234,5 @@ int html_template_send(
 	}
 
 	/* Add the rest of the string */
-	response_add(response, s);
-	return 1;
+	return response_add(response, s);
 }
