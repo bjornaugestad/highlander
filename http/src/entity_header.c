@@ -231,66 +231,66 @@ status_t entity_header_set_content_range(entity_header eh, const char* value)
 	return success;
 }
 
-int entity_header_content_type_is(entity_header eh, const char* val)
+bool entity_header_content_type_is(entity_header eh, const char* val)
 {
 	return !cstring_compare(eh->content_type, val);
 }
 
-int entity_header_allow_isset(entity_header eh)
+bool entity_header_allow_isset(entity_header eh)
 {
 	assert(eh != NULL);
 	return entity_header_flag_is_set(eh, ENTITY_HEADER_ALLOW_SET);
 }
 
-int entity_header_content_encoding_isset(entity_header eh)
+bool entity_header_content_encoding_isset(entity_header eh)
 {
 	assert(eh != NULL);
 	return entity_header_flag_is_set(eh, ENTITY_HEADER_CONTENT_ENCODING_SET);
 }
 
-int entity_header_content_language_isset(entity_header eh)
+bool entity_header_content_language_isset(entity_header eh)
 {
 	assert(eh != NULL);
 	return entity_header_flag_is_set(eh, ENTITY_HEADER_CONTENT_LANGUAGE_SET);
 }
 
-int entity_header_content_length_isset(entity_header eh)
+bool entity_header_content_length_isset(entity_header eh)
 {
 	assert(eh != NULL);
 	return entity_header_flag_is_set(eh, ENTITY_HEADER_CONTENT_LENGTH_SET);
 }
 
-int entity_header_content_location_isset(entity_header eh)
+bool entity_header_content_location_isset(entity_header eh)
 {
 	assert(eh != NULL);
 	return entity_header_flag_is_set(eh, ENTITY_HEADER_CONTENT_LOCATION_SET);
 }
 
-int entity_header_content_md5_isset(entity_header eh)
+bool entity_header_content_md5_isset(entity_header eh)
 {
 	assert(eh != NULL);
 	return entity_header_flag_is_set(eh, ENTITY_HEADER_CONTENT_MD5_SET);
 }
 
-int entity_header_content_range_isset(entity_header eh)
+bool entity_header_content_range_isset(entity_header eh)
 {
 	assert(eh != NULL);
 	return entity_header_flag_is_set(eh, ENTITY_HEADER_CONTENT_RANGE_SET);
 }
 
-int entity_header_content_type_isset(entity_header eh)
+bool entity_header_content_type_isset(entity_header eh)
 {
 	assert(eh != NULL);
 	return entity_header_flag_is_set(eh, ENTITY_HEADER_CONTENT_TYPE_SET);
 }
 
-int entity_header_expires_isset(entity_header eh)
+bool entity_header_expires_isset(entity_header eh)
 {
 	assert(eh != NULL);
 	return entity_header_flag_is_set(eh, ENTITY_HEADER_EXPIRES_SET);
 }
 
-int entity_header_last_modified_isset(entity_header eh)
+bool entity_header_last_modified_isset(entity_header eh)
 {
 	assert(eh != NULL);
 	return entity_header_flag_is_set(eh, ENTITY_HEADER_LAST_MODIFIED_SET);

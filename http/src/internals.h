@@ -200,21 +200,21 @@ const char* general_header_get_via(general_header gh);
 const char* general_header_get_warning(general_header gh);
 
 /* Tests if a property is set or not. Use it before calling the _get() functions */
-int general_header_no_cache_isset(general_header gh);
-int general_header_no_store_isset(general_header gh);
-int general_header_max_age_isset(general_header gh);
-int general_header_connection_isset(general_header gh);
-int general_header_pragma_isset(general_header gh);
-int general_header_max_stale_isset(general_header gh);
-int general_header_min_fresh_isset(general_header gh);
-int general_header_no_transform_isset(general_header gh);
-int general_header_only_if_cached_isset(general_header gh);
-int general_header_date_isset(general_header gh);
-int general_header_trailer_isset(general_header gh);
-int general_header_transfer_encoding_isset(general_header gh);
-int general_header_upgrade_isset(general_header gh);
-int general_header_via_isset(general_header gh);
-int general_header_warning_isset(general_header gh);
+bool general_header_no_cache_isset(general_header gh);
+bool general_header_no_store_isset(general_header gh);
+bool general_header_max_age_isset(general_header gh);
+bool general_header_connection_isset(general_header gh);
+bool general_header_pragma_isset(general_header gh);
+bool general_header_max_stale_isset(general_header gh);
+bool general_header_min_fresh_isset(general_header gh);
+bool general_header_no_transform_isset(general_header gh);
+bool general_header_only_if_cached_isset(general_header gh);
+bool general_header_date_isset(general_header gh);
+bool general_header_trailer_isset(general_header gh);
+bool general_header_transfer_encoding_isset(general_header gh);
+bool general_header_upgrade_isset(general_header gh);
+bool general_header_via_isset(general_header gh);
+bool general_header_warning_isset(general_header gh);
 
 
 entity_header entity_header_new(void);
@@ -233,7 +233,7 @@ status_t entity_header_set_content_type(entity_header eh, const char *value);
 void entity_header_set_expires(entity_header eh, time_t value);
 void entity_header_set_last_modified(entity_header eh, time_t value);
 
-int entity_header_content_type_is(entity_header eh, const char* val);
+bool entity_header_content_type_is(entity_header eh, const char* val);
 
 const char* entity_header_get_allow(entity_header eh);
 const char* entity_header_get_content_encoding(entity_header eh);
@@ -246,16 +246,16 @@ const char* entity_header_get_content_type(entity_header eh);
 time_t entity_header_get_expires(entity_header eh);
 time_t entity_header_get_last_modified(entity_header eh);
 
-int entity_header_allow_isset(entity_header eh);
-int entity_header_content_encoding_isset(entity_header eh);
-int entity_header_content_language_isset(entity_header eh);
-int entity_header_content_length_isset(entity_header eh);
-int entity_header_content_location_isset(entity_header eh);
-int entity_header_content_md5_isset(entity_header eh);
-int entity_header_content_range_isset(entity_header eh);
-int entity_header_content_type_isset(entity_header eh);
-int entity_header_expires_isset(entity_header eh);
-int entity_header_last_modified_isset(entity_header eh);
+bool entity_header_allow_isset(entity_header eh);
+bool entity_header_content_encoding_isset(entity_header eh);
+bool entity_header_content_language_isset(entity_header eh);
+bool entity_header_content_length_isset(entity_header eh);
+bool entity_header_content_location_isset(entity_header eh);
+bool entity_header_content_md5_isset(entity_header eh);
+bool entity_header_content_range_isset(entity_header eh);
+bool entity_header_content_type_isset(entity_header eh);
+bool entity_header_expires_isset(entity_header eh);
+bool entity_header_last_modified_isset(entity_header eh);
 
 void request_set_connection(http_request req, connection c);
 status_t parse_request_headerfield(

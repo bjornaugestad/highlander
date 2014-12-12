@@ -556,91 +556,91 @@ const char* general_header_get_warning(general_header gh)
 	return c_str(gh->warning);
 }
 
-int general_header_no_cache_isset(general_header gh)
+bool general_header_no_cache_isset(general_header gh)
 {
 	assert(gh != NULL);
 	return general_header_flag_is_set(gh, GENERAL_HEADER_NO_CACHE_SET);
 }
 
-int general_header_no_store_isset(general_header gh)
+bool general_header_no_store_isset(general_header gh)
 {
 	assert(gh != NULL);
 	return general_header_flag_is_set(gh, GENERAL_HEADER_NO_STORE_SET);
 }
 
-int general_header_max_age_isset(general_header gh)
+bool general_header_max_age_isset(general_header gh)
 {
 	assert(gh != NULL);
 	return general_header_flag_is_set(gh, GENERAL_HEADER_MAX_AGE_SET);
 }
 
-int general_header_connection_isset(general_header gh)
+bool general_header_connection_isset(general_header gh)
 {
 	assert(gh != NULL);
 	return general_header_flag_is_set(gh, GENERAL_HEADER_CONNECTION_SET);
 }
 
-int general_header_pragma_isset(general_header gh)
+bool general_header_pragma_isset(general_header gh)
 {
 	assert(gh != NULL);
 	return general_header_flag_is_set(gh, GENERAL_HEADER_PRAGMA_SET);
 }
 
-int general_header_max_stale_isset(general_header gh)
+bool general_header_max_stale_isset(general_header gh)
 {
 	assert(gh != NULL);
 	return general_header_flag_is_set(gh, GENERAL_HEADER_MAX_STALE_SET);
 }
 
-int general_header_min_fresh_isset(general_header gh)
+bool general_header_min_fresh_isset(general_header gh)
 {
 	assert(gh != NULL);
 	return general_header_flag_is_set(gh, GENERAL_HEADER_MIN_FRESH_SET);
 }
 
-int general_header_no_transform_isset(general_header gh)
+bool general_header_no_transform_isset(general_header gh)
 {
 	assert(gh != NULL);
 	return general_header_flag_is_set(gh, GENERAL_HEADER_NO_TRANSFORM_SET);
 }
 
-int general_header_only_if_cached_isset(general_header gh)
+bool general_header_only_if_cached_isset(general_header gh)
 {
 	assert(gh != NULL);
 	return general_header_flag_is_set(gh, GENERAL_HEADER_ONLY_IF_CACHED_SET);
 }
 
-int general_header_date_isset(general_header gh)
+bool general_header_date_isset(general_header gh)
 {
 	assert(gh != NULL);
 	return general_header_flag_is_set(gh, GENERAL_HEADER_DATE_SET);
 }
 
-int general_header_trailer_isset(general_header gh)
+bool general_header_trailer_isset(general_header gh)
 {
 	assert(gh != NULL);
 	return general_header_flag_is_set(gh, GENERAL_HEADER_TRAILER_SET);
 }
 
-int general_header_transfer_encoding_isset(general_header gh)
+bool general_header_transfer_encoding_isset(general_header gh)
 {
 	assert(gh != NULL);
 	return general_header_flag_is_set(gh, GENERAL_HEADER_TRANSFER_ENCODING_SET);
 }
 
-int general_header_upgrade_isset(general_header gh)
+bool general_header_upgrade_isset(general_header gh)
 {
 	assert(gh != NULL);
 	return general_header_flag_is_set(gh, GENERAL_HEADER_UPGRADE_SET);
 }
 
-int general_header_via_isset(general_header gh)
+bool general_header_via_isset(general_header gh)
 {
 	assert(gh != NULL);
 	return general_header_flag_is_set(gh, GENERAL_HEADER_VIA_SET);
 }
 
-int general_header_warning_isset(general_header gh)
+bool general_header_warning_isset(general_header gh)
 {
 	assert(gh != NULL);
 	return general_header_flag_is_set(gh, GENERAL_HEADER_WARNING_SET);
