@@ -306,7 +306,7 @@ status_t connection_flush(connection conn)
 
 status_t connection_close(connection conn)
 {
-	status_t rc, flush_success, close_success;
+	status_t flush_success, close_success;
 
 	assert(conn != NULL);
 
@@ -314,13 +314,12 @@ status_t connection_close(connection conn)
 	close_success = sock_close(conn->sock);
 
 	if (!flush_success)
-		rc = failure;
-	else if (!close_success)
-		rc = failure;
-	else
-		rc = success;
+		return failure;
 
-	return rc;
+	if (!close_success)
+		return failure;
+
+	return success;
 }
 
 status_t connection_getc(connection conn, int *pc)

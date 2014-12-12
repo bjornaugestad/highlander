@@ -209,7 +209,7 @@ threadpool threadpool_new(
 	return p;
 }
 
-int threadpool_add_work(
+status_t threadpool_add_work(
 	threadpool pool,
 
 	void (*initfn)(void*, void*),
@@ -229,7 +229,7 @@ int threadpool_add_work(
 
 	if ((err = pthread_mutex_lock(&pool->queue_lock))) {
 		errno = err;
-		return 0;
+		return failure;
 	}
 
 	/* Check for available space and what to do if full */
@@ -239,7 +239,7 @@ int threadpool_add_work(
 			pthread_mutex_unlock(&pool->queue_lock);
 			atomic_ulong_inc(&pool->sum_discarded);
 			errno = ENOSPC;
-			return 0;
+			return failure;
 		}
 		else {
 			atomic_ulong_inc(&pool->sum_blocked);
@@ -250,7 +250,7 @@ int threadpool_add_work(
 	while (queue_full(pool) && !pool->shutdown && !pool->queue_closed) {
 		if ((err = pthread_cond_wait(&pool->queue_not_full, &pool->queue_lock))) {
 			errno = err;
-			return 0;
+			return failure;
 		}
 	}
 
@@ -262,13 +262,13 @@ int threadpool_add_work(
 	if (pool->shutdown || pool->queue_closed) {
 		pthread_mutex_unlock(&pool->queue_lock);
 		errno = EINVAL;
-		return 0;
+		return failure;
 	}
 
 	/* Now add a new entry to the queue */
 	if ((wp = malloc(sizeof *wp)) == NULL) {
 		pthread_mutex_unlock(&pool->queue_lock);
-		return 0;
+		return failure;
 	}
 
 	wp->initfn = initfn;
@@ -292,7 +292,7 @@ int threadpool_add_work(
 	pool->cur_queue_size++;
 	pthread_mutex_unlock(&pool->queue_lock);
 	atomic_ulong_inc(&pool->sum_work_added);
-	return 1;
+	return success;
 }
 
 int threadpool_destroy(threadpool pool, unsigned int finish)

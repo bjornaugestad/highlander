@@ -69,33 +69,33 @@ void ticker_free(ticker t)
 	free(t);
 }
 
-int ticker_add_action(ticker t, void(*pfn)(void*), void *arg)
+status_t ticker_add_action(ticker t, void(*pfn)(void*), void *arg)
 {
 	struct action *pa;
 
 	if ((pa = malloc(sizeof *pa)) == NULL)
-		return 0;
+		return failure;
 
 	pa->pfn = pfn;
 	pa->arg = arg;
 
 	if (list_add(t->actions, pa))
-		return 1;
+		return success;
 		
 	free(pa);
-	return 0;
+	return failure;
 }
 
-int ticker_start(ticker t)
+status_t ticker_start(ticker t)
 {
 	t->running = 1;
 	t->stop = 0;
 	if (pthread_create(&t->id, NULL, tickerfn, t)) {
 		t->running = 0;
-		return 0;
+		return failure;
 	}
 
-	return 1;
+	return success;
 }
 
 void ticker_stop(ticker t)

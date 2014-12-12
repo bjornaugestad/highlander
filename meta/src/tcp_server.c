@@ -182,7 +182,7 @@ void tcp_server_free(tcp_server srv)
 	}
 }
 
-int tcp_server_init(tcp_server srv)
+status_t tcp_server_init(tcp_server srv)
 {
 	size_t i, conncount, bufcount;
 
@@ -214,10 +214,10 @@ int tcp_server_init(tcp_server srv)
 			srv->retries_writes,
 			srv->service_arg);
 
-		if (c != NULL)
-			pool_add(srv->connections, c);
-		else
+		if (c == NULL)
 			goto err;
+
+		pool_add(srv->connections, c);
 	}
 
 	/* Only worker threads can use read/write buffers */
@@ -237,7 +237,7 @@ int tcp_server_init(tcp_server srv)
 		pool_add(srv->write_buffers, wb);
 	}
 
-	return 1;
+	return success;
 
 
 err:
@@ -251,7 +251,7 @@ err:
 	srv->connections = NULL;
 	srv->read_buffers = NULL;
 	srv->write_buffers = NULL;
-	return 0;
+	return failure;
 }
 
 void tcp_server_set_unix_socket(tcp_server s)
@@ -276,7 +276,7 @@ void tcp_server_set_writebuf_size(tcp_server s, size_t size)
 	s->writebuf_size = size;
 }
 
-int tcp_server_allow_clients(tcp_server srv, const char *filter)
+status_t tcp_server_allow_clients(tcp_server srv, const char *filter)
 {
 	int err, flags = REG_NOSUB;
 
@@ -288,11 +288,11 @@ int tcp_server_allow_clients(tcp_server srv, const char *filter)
 
 	if ((err = regcomp(&srv->allowed_clients, filter, flags)) != 0) {
 		errno = err;
-		return 0;
+		return failure;
 	}
 
 	srv->pattern_compiled = 1;
-	return 1;
+	return success;
 }
 
 void tcp_server_clear_client_filter(tcp_server srv)
@@ -364,7 +364,7 @@ static connection tcp_server_get_connection(tcp_server srv)
 
 static int accept_new_connections(tcp_server srv, meta_socket sock)
 {
-	int rc;
+	status_t rc;
 	meta_socket newsock;
 	socklen_t cbAddr;
 	struct sockaddr_in addr;

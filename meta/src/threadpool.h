@@ -49,7 +49,7 @@ threadpool threadpool_new(
  * This function sets errno to ENOSPC if the work queue is full and
  * the pool is set to not block.
  */
-int threadpool_add_work(
+status_t threadpool_add_work(
 	threadpool tp,
 	void (*initialize)(void*, void*),
 	void *initialize_arg,
