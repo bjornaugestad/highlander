@@ -134,8 +134,7 @@ void *pool_get(pool p)
 	assert(!error);
 
 	/* It is not legal to return NULL, we must always
-	 * have enough resources.
-	 */
+	 * have enough resources. */
 	assert(i != p->nelem);
 	assert(NULL != resource);
 
@@ -161,8 +160,7 @@ void pool_recycle(pool p, void *resource)
 	}
 
 	/* If the resource wasnt' released, someone released more objects
-	 * than they got. This is something we discourage by asserting. :-)
-	 */
+	 * than they got. This is something we discourage by asserting. :-) */
 	assert(i < p->nelem);
 
 	error = pthread_mutex_unlock(&p->mutex);

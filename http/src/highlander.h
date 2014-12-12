@@ -134,7 +134,9 @@ void http_server_trace(http_server s, int level);
 void http_server_set_defered_read(http_server s, int flag);
 int http_server_get_defered_read(http_server s);
 
-int   http_server_set_documentroot(http_server s, const char* docroot);
+status_t http_server_set_documentroot(http_server s, const char* docroot)
+	__attribute__((warn_unused_result));
+	
 void   http_server_set_post_limit(http_server s, size_t cb);
 size_t http_server_get_post_limit(http_server s);
 const char* http_server_get_documentroot(http_server s);

@@ -35,17 +35,6 @@
 #include <meta_misc.h>
 #include "internals.h"
 
-/* Local helper functions */
-
-static int http_server_alloc_page_structs(http_server s);
-static int http_server_alloc_request_pool(http_server s);
-static int http_server_alloc_response_pool(http_server s);
-
-static void http_server_free_page_structs(http_server s);
-static void http_server_free_request_pool(http_server s);
-static void http_server_free_response_pool(http_server s);
-
-
 /*
  * NOTE:
  * Husk at vi kan ha URL requests som skal mappes direkte til
@@ -193,18 +182,21 @@ int http_server_get_defered_read(http_server s)
 	return s->defered_read;
 }
 
-int http_server_set_documentroot(http_server s, const char* docroot)
+status_t http_server_set_documentroot(http_server s, const char* docroot)
 {
+	size_t len;
+
 	assert(s != NULL);
 	assert(docroot != NULL);
 
-	if (strlen(docroot) + 1 > sizeof s->documentroot) {
+	len = strlen(docroot) + 1;
+	if (len > sizeof s->documentroot) {
 		errno = ENOSPC;
-		return 0;
+		return failure;
 	}
 
-	strcpy(s->documentroot, docroot);
-	return 1;
+	memcpy(s->documentroot, docroot, len);
+	return success;
 }
 
 const char* http_server_get_documentroot(http_server s)
@@ -241,6 +233,31 @@ void http_server_set_logrotate(http_server s, int logrotate)
 	pthread_mutex_unlock(&s->logfile_lock);
 }
 
+static void http_server_free_page_structs(http_server s)
+{
+	size_t i;
+
+	for (i = 0; i < s->npages; i++)
+		dynamic_free(s->pages[i]);
+
+	free(s->pages);
+}
+
+static void http_server_free_request_pool(http_server srv)
+{
+	assert(srv != NULL);
+
+	pool_free(srv->requests, (dtor)request_free);
+	srv->requests = NULL;
+}
+
+static void http_server_free_response_pool(http_server srv)
+{
+	assert(srv != NULL);
+
+	pool_free(srv->responses, (dtor)response_free);
+	srv->responses = NULL;
+}
 
 void http_server_free(http_server s)
 {
@@ -261,29 +278,72 @@ void http_server_free(http_server s)
 	}
 }
 
-static int http_server_alloc_page_structs(http_server s)
+static status_t http_server_alloc_page_structs(http_server s)
 {
 	if ((s->pages = calloc(s->max_pages, sizeof *s->pages)) == NULL)
-		return 0;
+		return failure;
 
-	return 1;
-}
-
-static void http_server_free_page_structs(http_server s)
-{
-	size_t i;
-
-	for (i = 0; i < s->npages; i++)
-		dynamic_free(s->pages[i]);
-
-	free(s->pages);
-
+	return success;
 }
 
 void http_server_set_default_page_handler(http_server s, PAGE_FUNCTION pf)
 {
 	assert(s != NULL);
 	s->default_handler = pf;
+}
+
+static status_t http_server_alloc_request_pool(http_server srv)
+{
+	size_t i;
+	http_request r;
+
+	assert(srv != NULL);
+	assert(srv->requests == NULL);
+
+	srv->requests = pool_new(srv->worker_threads);
+	if (NULL == srv->requests)
+		return failure;
+
+	/* Allocate each request object */
+	for (i = 0; i < srv->worker_threads; i++) {
+		if ((r = request_new()) == NULL) {
+			/* Free any prev. allocated */
+			pool_free(srv->requests, (dtor)request_free);
+			srv->requests = NULL;
+			return failure;
+		}
+
+		pool_add(srv->requests, r);
+	}
+
+	return success;
+}
+
+static status_t http_server_alloc_response_pool(http_server srv)
+{
+	size_t i;
+	http_response r;
+
+	assert(srv != NULL);
+	assert(srv->responses == NULL);
+
+	/* Allocate main pointer */
+	if ((srv->responses = pool_new(srv->worker_threads)) == NULL)
+		return failure;
+
+	/* Allocate each response object */
+	for (i = 0; i < srv->worker_threads; i++) {
+		if ((r = response_new()) == NULL) {
+			/* Free any prev. allocated */
+			pool_free(srv->responses, (dtor)response_free);
+			srv->responses = NULL;
+			return failure;
+		}
+
+		pool_add(srv->responses, r);
+	}
+
+	return success;
 }
 
 status_t http_server_alloc(http_server s)
@@ -517,76 +577,6 @@ int http_server_shutting_down(http_server srv)
 	return srv->shutting_down;
 }
 
-
-static int http_server_alloc_request_pool(http_server srv)
-{
-	size_t i;
-	http_request r;
-
-	assert(srv != NULL);
-	assert(srv->requests == NULL);
-
-	srv->requests = pool_new(srv->worker_threads);
-	if (NULL == srv->requests)
-		return 0;
-
-	/* Allocate each request object */
-	for (i = 0; i < srv->worker_threads; i++) {
-		if ((r = request_new()) == NULL) {
-			/* Free any prev. allocated */
-			pool_free(srv->requests, (dtor)request_free);
-			srv->requests = NULL;
-			return 0;
-		}
-
-		pool_add(srv->requests, r);
-	}
-
-	return 1;
-}
-
-static int http_server_alloc_response_pool(http_server srv)
-{
-	size_t i;
-	http_response r;
-
-	assert(srv != NULL);
-	assert(srv->responses == NULL);
-
-	/* Allocate main pointer */
-	if ((srv->responses = pool_new(srv->worker_threads)) == NULL)
-		return 0;
-
-	/* Allocate each response object */
-	for (i = 0; i < srv->worker_threads; i++) {
-		if ((r = response_new()) == NULL) {
-			/* Free any prev. allocated */
-			pool_free(srv->responses, (dtor)response_free);
-			srv->responses = NULL;
-			return 0;
-		}
-
-		pool_add(srv->responses, r);
-	}
-
-	return 1;
-}
-
-static void http_server_free_request_pool(http_server srv)
-{
-	assert(srv != NULL);
-
-	pool_free(srv->requests, (dtor)request_free);
-	srv->requests = NULL;
-}
-
-static void http_server_free_response_pool(http_server srv)
-{
-	assert(srv != NULL);
-
-	pool_free(srv->responses, (dtor)response_free);
-	srv->responses = NULL;
-}
 
 http_request http_server_get_request(http_server srv)
 {

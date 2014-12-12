@@ -18,6 +18,7 @@
  */
 
 #include <unistd.h>
+#include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -69,7 +70,7 @@ struct tcp_server_tag {
 	/* The work queue */
 	threadpool queue;
 
-	size_t worker_threads;
+	size_t nthreads;
 	size_t queue_size;
 	int block_when_full;
 
@@ -112,8 +113,50 @@ struct tcp_server_tag {
 
 };
 
-/* Local helper */
-static int client_can_connect(tcp_server srv, struct sockaddr_in* addr);
+/*
+ * Checks to see if the client can connect or not.
+ * A client can connect if
+ * a) The ip is listed in the allowed list.
+ * b) The list of allowed clients is empty.
+ *
+ * This is new stuff, so some notes.
+ * a) Allow DNS names or not?
+ *	  We do not want to be vulnerable to DNS spoofing attacks.
+ *	  At the same time we want easy configuration.
+ *	  Safety first, which means that we only match IP for now.
+ *	  DNS also means that we must do a getpeername(), which is slow.
+ *
+ * b) If the caller has set us up to do access control, we'll
+ *	  already have a precompiled regexp available. All we now
+ *	  have to do is to regexec.
+ */
+static bool client_can_connect(tcp_server srv, struct sockaddr_in* addr)
+{
+	int vaddr;
+	char sz[INET_ADDRSTRLEN + 1];
+
+	assert(srv != NULL);
+	assert(addr != NULL);
+
+	vaddr = addr->sin_addr.s_addr;
+	if (!srv->pattern_compiled) {
+		/* No permissions set. Allow all */
+		return true;
+	}
+
+	if (inet_ntop(AF_INET, &vaddr, sz, sizeof sz) == NULL) {
+		/* Crappy addr or internal error. Deny */
+		return false;
+	}
+
+	if (regexec(&srv->allowed_clients, sz, 0, NULL, 0) == REG_NOMATCH){
+		/* Not found in pattern */
+		return false;
+	}
+
+	return true;
+}
+
 
 tcp_server tcp_server_new(void)
 {
@@ -129,7 +172,7 @@ tcp_server tcp_server_new(void)
 		p->block_when_full = 0;
 
 		p->queue_size = 100;
-		p->worker_threads = 10;
+		p->nthreads = 10;
 		p->port = 2000;
 		p->sock = NULL;
 		p->pattern_compiled = 0;
@@ -184,7 +227,7 @@ void tcp_server_free(tcp_server srv)
 
 status_t tcp_server_init(tcp_server srv)
 {
-	size_t i, conncount, bufcount;
+	size_t i, count;
 
 	assert(srv != NULL);
 
@@ -194,19 +237,17 @@ status_t tcp_server_init(tcp_server srv)
 	assert(srv->read_buffers == NULL);
 	assert(srv->write_buffers == NULL);
 
-	if ((srv->queue = threadpool_new(srv->worker_threads, srv->queue_size, srv->block_when_full)) == NULL)
+	if ((srv->queue = threadpool_new(srv->nthreads, srv->queue_size, srv->block_when_full)) == NULL)
 		goto err;
 
-	/*
-	 * Every running worker thread use one connection.
-	 * Every queue entry use one connection
-	 * One extra is needed for the current connection
-	 */
-	conncount = srv->queue_size + srv->worker_threads + 1;
-	if ((srv->connections = pool_new(conncount)) == NULL)
+	/* Every running worker thread use one connection.
+	 * Every queue entry use one connection.
+	 * One extra is needed for the current connection */
+	count = srv->queue_size + srv->nthreads + 1;
+	if ((srv->connections = pool_new(count)) == NULL)
 		goto err;
 
-	for (i = 0; i < conncount; i++) {
+	for (i = 0; i < count; i++) {
 		connection c = connection_new(
 			srv->timeout_reads,
 			srv->timeout_writes,
@@ -221,12 +262,12 @@ status_t tcp_server_init(tcp_server srv)
 	}
 
 	/* Only worker threads can use read/write buffers */
-	bufcount = srv->worker_threads;
-	if ((srv->read_buffers = pool_new(bufcount)) == NULL
-	|| (srv->write_buffers = pool_new(bufcount)) == NULL)
+	count = srv->nthreads;
+	if ((srv->read_buffers = pool_new(count)) == NULL
+	|| (srv->write_buffers = pool_new(count)) == NULL)
 		goto err;
 
-	for (i = 0; i < bufcount; i++) {
+	for (i = 0; i < count; i++) {
 		membuf rb, wb;
 
 		if ((rb = membuf_new(srv->readbuf_size)) == NULL
@@ -239,9 +280,8 @@ status_t tcp_server_init(tcp_server srv)
 
 	return success;
 
-
 err:
-	/* Free all memory allocated by this function and then return 0 */
+	/* Free all memory allocated by this function and then return failure */
 	threadpool_destroy(srv->queue, 0);
 	pool_free(srv->connections, (dtor)connection_free);
 	pool_free(srv->read_buffers, NULL);
@@ -362,20 +402,20 @@ static connection tcp_server_get_connection(tcp_server srv)
 	return conn;
 }
 
-static int accept_new_connections(tcp_server srv, meta_socket sock)
+static status_t accept_new_connections(tcp_server srv, meta_socket sock)
 {
 	status_t rc;
 	meta_socket newsock;
-	socklen_t cbAddr;
+	socklen_t addrsize;
 	struct sockaddr_in addr;
-	connection pconn;
+	connection conn;
 
 	assert(NULL != srv);
 	assert(sock != NULL);
 
 	/* Make the socket non-blocking so that accept() won't block */
 	if (!sock_set_nonblock(sock))
-		return 0;
+		return failure;
 
 	while (!srv->shutting_down) {
 		if (!wait_for_data(sock, srv->timeout_accepts)) {
@@ -396,12 +436,13 @@ static int accept_new_connections(tcp_server srv, meta_socket sock)
 				atomic_ulong_inc(&srv->sum_poll_intr);
 				continue;
 			}
-			else if (errno == EAGAIN)  {
+
+			if (errno == EAGAIN)  {
 				atomic_ulong_inc(&srv->sum_poll_again);
 				continue;
 			}
-			else
-				return 0;
+
+			return failure;
 		}
 
 		/*
@@ -422,33 +463,27 @@ static int accept_new_connections(tcp_server srv, meta_socket sock)
 		 * to sizeof struct sockaddr_XX
 		 * Linux does not as it doesn't have that struct member.
 		 */
-		cbAddr = sizeof(addr);
-		newsock = sock_accept(sock, (struct sockaddr*)&addr, &cbAddr);
+		addrsize = sizeof addr;
+		newsock = sock_accept(sock, (struct sockaddr*)&addr, &addrsize);
 		if (newsock == NULL) {
 			switch (errno) {
-				/*
-				 * NOTE: EPROTO is not defined for freebsd, and Stevens
+				/* NOTE: EPROTO is not defined for freebsd, and Stevens
 				 * says, in UNP, vol. 1, page 424 that EPROTO should
-				 * be ignored. Hmm...
-				 */
+				 * be ignored. Hmm...  */
 #ifdef EPROTO
 				case EPROTO:
 #endif
 
-				/*
-				 * NOTE: ENONET does not exist under freebsd, and is
+				/* NOTE: ENONET does not exist under freebsd, and is
 				 * not even mentioned in UNP1. Alan Cox refers to
-				 * RFC1122 in a patch posted to news...
-				 */
+				 * RFC1122 in a patch posted to news... */
 #ifdef ENONET
 				case ENONET:
 #endif
 
-				/*
-				 * AIX specific stuff. Nmap causes accept to return
+				/* AIX specific stuff. Nmap causes accept to return
 				 * ENOTCONN, but oddly enough only on port 80.
-				 * Let's see if a retry helps.
-				 */
+				 * Let's see if a retry helps. */
 				case ENOTCONN:
 
 				case EAGAIN:
@@ -462,12 +497,14 @@ static int accept_new_connections(tcp_server srv, meta_socket sock)
 					continue;
 
 				default:
-					return errno;
+					return failure;
 			}
 		}
 
-		if (!sock_set_nonblock(newsock))
-			return 0;
+		if (!sock_set_nonblock(newsock)) {
+			sock_close(newsock);
+			return failure;
+		}
 
 		/* Check if the client is permitted to connect or not. */
 		if (!client_can_connect(srv, &addr)) {
@@ -477,21 +514,20 @@ static int accept_new_connections(tcp_server srv, meta_socket sock)
 		}
 
 		 /* Get a new, per-connection, struct containing data
-		  * unique to this connection.tcp_server_get_connection()
-		 * never returns NULL as enough connection resources has
-		 * been allocated already.
-		  */
-		 pconn = tcp_server_get_connection(srv);
+		  * unique to this connection. tcp_server_get_connection()
+		  * never returns NULL as enough connection resources has
+		  * been allocated already. */
+		 conn = tcp_server_get_connection(srv);
 
 		/* Start a thread to handle the connection with this client. */
-		connection_set_params(pconn, newsock, &addr);
+		connection_set_params(conn, newsock, &addr);
 
 		rc = threadpool_add_work(
 			srv->queue,
 			assign_rw_buffers,
 			srv,
 			srv->service_func,
-			pconn,
+			conn,
 			tcp_server_recycle_connection,
 			srv);
 
@@ -522,12 +558,12 @@ static int accept_new_connections(tcp_server srv, meta_socket sock)
 			 * to know that no read/write buffers has been assigned.
 			 * Rework this. boa
 			 */
-			connection_discard(pconn);
-			tcp_server_recycle_connection(srv, pconn);
+			connection_discard(conn);
+			tcp_server_recycle_connection(srv, conn);
 		}
 	}
 
-	return 1; /* Shutdown was requested */
+	return success; /* Shutdown was requested */
 }
 
 status_t tcp_server_get_root_resources(tcp_server srv)
@@ -584,12 +620,13 @@ void tcp_server_set_block_when_full(tcp_server srv, int block_when_full)
 void tcp_server_set_worker_threads(tcp_server srv, size_t count)
 {
 	assert(NULL != srv);
-	srv->worker_threads = count;
+	srv->nthreads = count;
 }
 
 void tcp_server_set_timeout(tcp_server srv, int reads, int writes, int accepts)
 {
 	assert(NULL != srv);
+
 	srv->timeout_writes = writes;
 	srv->timeout_reads = reads;
 	srv->timeout_accepts = accepts;
@@ -646,50 +683,6 @@ status_t tcp_server_set_hostname(tcp_server srv, const char *host)
 		return failure;
 
 	return success;
-}
-
-/*
- * Checks to see if the client can connect or not.
- * A client can connect if
- * a) The ip is listed in the allowed list.
- * b) The list of allowed clients is empty.
- *
- * This is new stuff, so some notes.
- * a) Allow DNS names or not?
- *	  We do not want to be vulnerable to DNS spoofing attacks.
- *	  At the same time we want easy configuration.
- *	  Safety first, which means that we only match IP for now.
- *	  DNS also means that we must do a getpeername(), which is slow.
- *
- * b) If the caller has set us up to do access control, we'll
- *	  already have a precompiled regexp available. All we now
- *	  have to do is to regexec.
- */
-static int client_can_connect(tcp_server srv, struct sockaddr_in* addr)
-{
-	int vaddr;
-	char sz[INET_ADDRSTRLEN + 1];
-
-	assert(srv != NULL);
-	assert(addr != NULL);
-
-	vaddr = addr->sin_addr.s_addr;
-	if (!srv->pattern_compiled) {
-		/* No permissions set. Allow all */
-		return 1;
-	}
-
-	if (inet_ntop(AF_INET, &vaddr, sz, sizeof sz) == NULL) {
-		/* Crappy addr or internal error. Deny */
-		return 0;
-	}
-
-	if (regexec(&srv->allowed_clients, sz, 0, NULL, 0) == REG_NOMATCH){
-		/* Not found in pattern */
-		return 0;
-	}
-
-	return 1;
 }
 
 status_t tcp_server_start_via_process(process p, tcp_server s)

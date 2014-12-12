@@ -27,19 +27,11 @@
 #include <string.h>
 #include <assert.h>
 
-#include <rfc1738.h>
 #include <meta_misc.h>
 
 #include "internals.h"
 
 /* Local helper functions */
-static status_t serviceConnection2(
-	http_server srv,
-	connection conn,
-	http_request req,
-	http_response response,
-	meta_error e);
-
 static int check_attributes(http_request request, page_attribute a)
 {
 	const char* page_val;
@@ -85,7 +77,7 @@ static int fs_can_run(http_server srv, http_request request, dynamic_page p)
  *	  something longer.
  */
 static status_t send_disk_file(
-	http_server s,
+	http_server srv,
 	connection conn,
 	http_request req,
 	http_response response,
@@ -96,10 +88,9 @@ static status_t send_disk_file(
 	char filename[CCH_URI_MAX + DOCUMENTROOT_MAX + 2];
 	struct stat st;
 	page_attribute a;
-	http_version v;
 	const char* content_type;
 
-	assert(s != NULL);
+	assert(srv != NULL);
 	assert(conn != NULL);
 	assert(req != NULL);
 	assert(response != NULL);
@@ -114,7 +105,7 @@ static status_t send_disk_file(
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
 	/* We need a valid documentroot */
-	if ((docroot = http_server_get_documentroot(s)) == NULL)
+	if ((docroot = http_server_get_documentroot(srv)) == NULL)
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
 	i = strlen(docroot);
@@ -154,9 +145,7 @@ static status_t send_disk_file(
 	/* We must check page_attributes even for files loaded from disk. */
 	/* NOTE: Trengs dette for HTTP 1.0 ?*/
 
-	v = request_get_version(req);
-	(void)v;
-	if ((a = http_server_get_default_attributes(s)) != NULL
+	if ((a = http_server_get_default_attributes(srv)) != NULL
 	&& !check_attributes(req, a)) {
 		response_set_status(response, HTTP_406_NOT_ACCEPTABLE);
 		return set_http_error(e, HTTP_406_NOT_ACCEPTABLE);
@@ -164,11 +153,10 @@ static status_t send_disk_file(
 
 	content_type = get_mime_type(filename);
 
-	/*
-	 * This function does not actually send the file, just stats it
+	/* This function does not actually send the file, just stats it
 	 * and stores the path. The contents will be sent later when
-	 * response_send_entity is called.
-	 */
+	 * response_send_entity is called. */
+	// TODO? set entitylen too? We need it when logging. boa20141212
 	if (!response_send_file(response, filename, content_type, e))
 		return 0;
 
@@ -202,17 +190,14 @@ status_t handle_dynamic(
 	 * have all autorization stuff needed to keep going.
 	 * boa 20080125.
 	 * PS: This comment is added because Tandberg wants me to add support
-	 * for RFC2617 HTTP Authentication
-	 */
+	 * for RFC2617 HTTP Authentication */
 	request_set_connection(req, conn);
 	response_set_version(response, version);
 	response_set_last_modified(response, time(NULL));
 
-	/*
-	 * Run the dynamic function. It is supposed to return 0 for OK,
+	/* Run the dynamic function. It is supposed to return 0 for OK,
 	 * but we accept any legal HTTP status code. Illegal status codes
-	 * are mapped to 500.
-	 */
+	 * are mapped to 500. */
 	if ((status = dynamic_run(p, req, response)))
 		status = http_status_code(status) ? status : HTTP_500_INTERNAL_SERVER_ERROR;
 	else
@@ -264,34 +249,6 @@ static int semantic_error(http_request request)
 }
 #endif
 
-void* serviceConnection(void* psa)
-{
-	status_t ok;
-	connection conn;
-	http_server srv;
-	http_request request;
-	http_response response;
-	meta_error e = meta_error_new();
-
-	conn = psa;
-	srv =  connection_arg2(conn);
-	request = http_server_get_request(srv);
-	request_set_defered_read(request, http_server_get_defered_read(srv));
-	response = http_server_get_response(srv);
-
-	ok = serviceConnection2(srv, conn, request, response, e);
-	if (!ok && is_tcpip_error(e))
-		connection_discard(conn);
-	else if (!connection_close(conn)) 
-		warning("Could not close connection\n");
-
-	http_server_recycle_request(srv, request);
-	http_server_recycle_response(srv, response);
-
-	meta_error_free(e);
-	return (void*)(intptr_t)ok;
-}
-
 static status_t serviceConnection2(
 	http_server srv,
 	connection conn,
@@ -312,8 +269,7 @@ static status_t serviceConnection2(
 		 * If not, what is the cause of the error? If it is a http
 		 * protocol error, we try to send a response back to the client
 		 * and close the connection. If it is anything else(tcp/ip, os)
-		 * we stop processing.
-		 */
+		 * we stop processing.  */
 		error = !request_receive(request, conn, max_posted_content, e);
 
 		/* So far, so good. We have a valid HTTP request.
@@ -325,36 +281,34 @@ static status_t serviceConnection2(
 		if (error)
 			;
 		else if ((dp = http_server_lookup(srv, request)) != NULL) {
-			if (!handle_dynamic(conn, srv, dp, request, response, e)) {
+			if (!handle_dynamic(conn, srv, dp, request, response, e))
 				error = 1;
-			}
 		}
 		else if (http_server_can_read_files(srv)) {
-			if (!send_disk_file(srv, conn, request, response, e)) {
+			if (!send_disk_file(srv, conn, request, response, e))
 				error = 1;
-			}
 		}
 		else if (http_server_has_default_page_handler(srv)) {
-			if (!http_server_run_default_page_handler(conn, srv, request, response, e)) {
+			if (!http_server_run_default_page_handler(conn, srv, request, response, e))
 				error = 1;
-			}
 		}
 		else {
 			/* We didn't find the page */
 			response_set_status(response, HTTP_404_NOT_FOUND);
 			if (!response_set_connection(response, "close"))
-				goto gameover;
+				return failure;
 		}
 
 		if (error) {
 			if (is_protocol_error(e)) {
 				status = get_error_code(e);
 				response_set_status(response, status);
+
 				if (!response_set_connection(response, "close"))
-					goto gameover;
+					return failure;
 
 				if (!response_send(response, conn, e, &cbSent))
-					cbSent = 0;
+					return failure;
 
 				http_server_add_logentry(srv, conn, request, status, cbSent);
 			}
@@ -362,20 +316,19 @@ static status_t serviceConnection2(
 			return failure;
 		}
 
-		/*
-		 * Some extra stuff for HTTP 1.0 clients. If client is 1.0
+		/* Some extra stuff for HTTP 1.0 clients. If client is 1.0
 		 * and connection_close() == 1 and connection header field
 		 * isn't set, then we set the connection flag to close.
-		 * Done so that 1.0 clients (Lynx) can detect closure.
-		 */
+		 * Done so that 1.0 clients (Lynx) can detect closure.  */
 		if (request_get_version(request) != VERSION_11
 		&& !connection_is_persistent(conn)
-		&& strlen(response_get_connection(response)) == 0)
+		&& strlen(response_get_connection(response)) == 0) {
 			if (!response_set_connection(response, "close"))
-				goto gameover;
+				return failure;
+		}
 
 		if (!response_send(response, conn, e, &cbSent))	
-			cbSent = 0;
+			return failure;
 
 		http_server_add_logentry(srv, conn, request, response_get_status(response), cbSent);
 		if (cbSent == 0)
@@ -409,10 +362,36 @@ static status_t serviceConnection2(
 
 	/* Shutdown detected */
 	return success;
+}
 
+void* serviceConnection(void* psa)
+{
+	connection conn = psa;
+	status_t ok;
+	http_server srv;
+	http_request request;
+	http_response response;
 
-gameover:
-	return failure;
+	meta_error e = meta_error_new();
+	if (e == NULL)
+		return NULL;
+
+	srv =  connection_arg2(conn);
+	request = http_server_get_request(srv);
+	request_set_defered_read(request, http_server_get_defered_read(srv));
+	response = http_server_get_response(srv);
+
+	ok = serviceConnection2(srv, conn, request, response, e);
+	if (!ok && is_tcpip_error(e))
+		connection_discard(conn);
+	else if (!connection_close(conn)) 
+		warning("Could not close connection\n");
+
+	http_server_recycle_request(srv, request);
+	http_server_recycle_response(srv, response);
+
+	meta_error_free(e);
+	return (void*)(intptr_t)ok;
 }
 
 int http_status_code(int error)
