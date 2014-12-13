@@ -121,7 +121,7 @@ void *slotbuf_peek(slotbuf p, size_t i)
 	return p->data[idx];
 }
 
-int slotbuf_has_data(slotbuf p, size_t i)
+bool slotbuf_has_data(slotbuf p, size_t i)
 {
 	size_t idx;
 	assert(p != NULL);

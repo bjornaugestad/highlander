@@ -31,7 +31,7 @@
 .Fa "slotbuf p"
 .Fa "size_t i"
 .Fc
-.Fo "int slotbuf_has_data"
+.Fo "bool slotbuf_has_data"
 .Fa "slotbuf p"
 .Fa "size_t i"
 .Fc
@@ -48,5 +48,61 @@ index has a fixed range. That range is i % nslots.
 .Pp
 The slot buffer is intended to store data which have short life span,
 e.g. the last n buffers received from somewhere. 
+.Pp
+The special thing is that the pointers can be indexed by any
+value, this adt will modify the index to fit within the size
+of the buffer.
+.Pp
+So what's the purpose of this adt? The idea is to have a general
+buffer/array with a fixed size and then be able to address
+entries in the buffer with a steadily increasing index, e.g. time
+or some counter without having to adjust for offsets.
+The set/get functions will compute the correct index like this:
+      actual_index = index % bufsize;
+.Pp
+The buffer comes in two flavors, one will allow you to overwrite
+entries without warnings and the other will not.
+.Pp
+The buffer is thread safe and we use external locking.
 
+.Nm slotbuf_new()
+creates a new slotbuf. If can_overwrite == 0, then we cannot
+assign new values to a slot that hasn't been read.
+.Pp
+.Nm slotbuf_free()
+frees a slotbuf object and all its entries if the dtor function
+isn't NULL. The dtor function is specified when the slotbuf object
+is created. 
+.Pp
+.Nm slotbuf_set()
+assigns a new value to the slot refered to by index i. This function
+will fail if the slot already has a value and that value cannot be
+overwritten. Remember that slotbuf_get() will clear the slot, i.e.,
+make the slot available for writing.
+.Pp
+If slots can be overwritten and a slot already has a value, then 
+slotbuf_set() will call the dtor function to free the slot's contents.
+
+.Nm slotbuf_get()
+returns a pointer to the data stored in a slot, and then makes the
+slot available for storing new data. Note that the function will 
+*not* free the data. The caller must free the data.
+
+.Nm slotbuf_nelem()
+returns the count of slots with data.
+
+.Nm slotbuf_peek()
+returns a pointer to the data in the slot, if any. Will neither
+free the data nor clear the slot.
+
+.Nm slotbuf_has_data()
+returns true if the slot contains data, NULL if not.
+
+.Nm slotbuf_lock()
+locks the slotbuf object. Note that if other threads don't bother
+to call lock/unlock, then they can access the object even if it's
+locked. Will call abort() on failure.
+
+.Nm slotbuf_unlock()
+unlocks the slotbuf object. Will call abort() on failure.
 
