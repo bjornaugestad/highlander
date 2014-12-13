@@ -66,30 +66,38 @@ void slotbuf_free(slotbuf p);
  * Assigns a new value to slot i. Returns 1 on succes and 0 if a slot
  * had a value and can_overwrite is 0.
  */
-status_t slotbuf_set(slotbuf p, size_t i, void *value);
+status_t slotbuf_set(slotbuf p, size_t i, void *value)
+	__attribute__((nonnull(1)));
 
 /*
  * Returns the data in slot i, if any. Will clear the slot.
  */
-void *slotbuf_get(slotbuf p, size_t i);
+void *slotbuf_get(slotbuf p, size_t i)
+	__attribute__((nonnull(1)));
 
 /*
  * Returns the data in slot i, if any. Does not clear the slot.
  */
-void *slotbuf_peek(slotbuf p, size_t i);
+void *slotbuf_peek(slotbuf p, size_t i)
+	__attribute__((nonnull(1)));
 
 /*
  * Returns 1 if data exists in the slot, else 0
  */
-int slotbuf_has_data(slotbuf p, size_t i);
+int slotbuf_has_data(slotbuf p, size_t i)
+	__attribute__((nonnull(1)));
 
 /*
  * Returns the number of elements in the slotbuf
  */
-size_t slotbuf_nelem(slotbuf p);
+size_t slotbuf_nelem(slotbuf p)
+	__attribute__((nonnull(1)));
 
-void slotbuf_lock(slotbuf p);
-void slotbuf_unlock(slotbuf p);
+void slotbuf_lock(slotbuf p)
+	__attribute__((nonnull(1)));
+
+void slotbuf_unlock(slotbuf p)
+	__attribute__((nonnull(1)));
 
 #ifdef __cplusplus
 }
