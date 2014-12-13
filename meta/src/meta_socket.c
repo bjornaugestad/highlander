@@ -354,6 +354,8 @@ meta_socket create_client_socket(const char *host, int port)
 	struct sockaddr_in sa;
 	meta_socket p;
 
+	assert(host != NULL);
+
 	if ((phost = gethostbyname(host)) == NULL) {
 		errno = h_errno; /* OBSOLETE? */
 		return NULL;
