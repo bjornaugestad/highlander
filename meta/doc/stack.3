@@ -1,0 +1,62 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th stack 3
+.Sh NAME
+.Nm stack
+.Nd A stack ADT
+.Sh SYNOPSIS
+.Fd #include <meta_stack.h>
+.Fo "stack stack_new"
+.Fa "void"
+.Fc
+.Fo "void stack_free"
+.Fa "stack s"
+.Fc
+.Fo "status_t stack_push"
+.Fa "stack s"
+.Fa "void *p"
+.Fc
+.Fo "void *stack_top"
+.Fa "stack s"
+.Fc
+.Fo "void stack_pop"
+.Fa "stack s"
+.Fc
+.Fo "size_t stack_nelem"
+.Fa "stack s"
+.Fc
+.Fo "void *stack_get"
+.Fa "stack s"
+.Fa "size_t i"
+.Fc
+.Sh DESCRIPTION
+.Nm stack_new()
+Creates a new stack.
+
+.Nm stack_free()
+Frees an existing stack.
+Items on the stack will not be freed.
+
+.Nm stack_push()
+Pushes a new item onto the stack.
+
+.Nm stack_top()
+Returns the top item on the stack. Will return NULL if the
+stack was empty. The debug version will abort() if the stack
+was empty.
+
+.Nm stack_pop()
+Removes the top item from the stack. This API
+is inspired, IIRC, from the C++ STL stack implementation.
+
+.Nm stack_nelem()
+returns the number of elements on the stack.
+
+.Nm stack_get()
+We sometimes need to inspect the stack without popping the items
+on it. This function returns the n'th element on the stack.
+Note that element 0 is the top element and element n is the last(bottom)
+element on the stack.
+This function returns NULL if there are no item matching the index
+

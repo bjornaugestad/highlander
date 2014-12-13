@@ -28,56 +28,29 @@ extern "C" {
 
 typedef struct stack_tag* stack;
 
-/*
- * Creates a new stack.
- */
-stack stack_new(void) __attribute__((malloc));
+stack stack_new(void) 
+	__attribute__((malloc));
 
-/*
- * Frees an existing stack.
- * Items on the stack will not be freed.
- */
 void stack_free(stack s);
 
+status_t stack_push(stack s, void *p) 
+	__attribute__((nonnull(1)))
+	__attribute__((warn_unused_result));
 
-/*
- * Pushes a new item onto the stack.
- * @param p Pointer to item to push. Cannot be NULL.
- * @return 1 if success, 0 if failure. Failure is ENOMEM.
- */
-status_t stack_push(stack s, void *p) __attribute__((warn_unused_result));
+void *stack_top(stack s)
+	__attribute__((nonnull(1)));
 
+void stack_pop(stack s)
+	__attribute__((nonnull(1)));
 
-/*
- * Returns the top item on the stack. Will return NULL if the
- * stack was empty. The debug version will abort() if the stack
- * was empty.
- */
-void *stack_top(stack s);
+size_t stack_nelem(stack s)
+	__attribute__((nonnull(1)));
 
-/*
- * Removes the top item from the stack. This API
- * is inspired, IIRC, from the C++ STL stack implementation.
- */
-void stack_pop(stack s);
-
-/*
- * Returns the number of elements on the stack.
- */
-size_t stack_nelem(stack s);
-
-/*
- * We sometimes need to inspect the stack without popping the items
- * on it. This function returns the n'th element on the stack.
- * Note that element 0 is the top element and element n is the last(bottom)
- * element on the stack.
- * This function returns NULL if there are no item matching the index
- */
-void *stack_get(stack s, size_t i);
+void *stack_get(stack s, size_t i)
+	__attribute__((nonnull(1)));
 
 #ifdef __cplusplus
 }
 #endif
-
 
 #endif
