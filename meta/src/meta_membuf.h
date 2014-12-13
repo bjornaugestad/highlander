@@ -80,13 +80,15 @@ void membuf_free(membuf m);
  * than the count parameter, it means that the buffer was too small to
  * store the data.
  */
-size_t membuf_write(membuf mb, const void *src, size_t count);
+size_t membuf_write(membuf mb, const void *src, size_t count)
+	__attribute__((nonnull(1, 2)));
 
 /*
  * Read up to count bytes from the buffer and place them in dest.
  * Returns the number of bytes read, or 0 if no data was available to read.
  */
-size_t membuf_read(membuf, void *dest, size_t count);
+size_t membuf_read(membuf, void *dest, size_t count)
+	__attribute__((nonnull(1, 2)));
 
 /*
  * Return the number of bytes available for reading from the membuf buffer.

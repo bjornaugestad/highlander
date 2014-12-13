@@ -28,16 +28,16 @@
 
 list list_new(void)
 {
-	list lst;
+	list p;
 
-	if ((lst = malloc(sizeof *lst)) == NULL)
+	if ((p = malloc(sizeof *p)) == NULL)
 		return NULL;
 		
-	lst->next = NULL;
-	lst->prev = NULL;
-	lst->data = NULL;
+	p->next = NULL;
+	p->prev = NULL;
+	p->data = NULL;
 
-	return lst;
+	return p;
 }
 
 void list_free(list lst, void(*cleanup)(void*))
@@ -70,8 +70,9 @@ list list_add(list lst, void *data)
 
 	/* Allocate new list if first param is NULL */
 	if (lst == NULL) {
-		if ((lst = list_new()) == NULL)
+		if ((lst = list_new()) == NULL) {
 			return NULL;
+		}
 
 		we_allocated_list = 1;
 	}
@@ -292,8 +293,9 @@ list list_merge(list dest, list src)
 
 	for (i = list_first(src); !list_end(i); i = list_next(i)) {
 		data = list_get(i);
-		if ((dest = list_add(dest, data)) == NULL)
+		if ((dest = list_add(dest, data)) == NULL) {
 			return NULL;
+		}
 	}
 
 	sublist_free(src);

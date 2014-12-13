@@ -32,24 +32,30 @@ typedef struct configfile_tag* configfile;
 configfile configfile_read(const char *path)
 	__attribute__((malloc));
 
-bool configfile_exists(configfile cf, const char *name);
+bool configfile_exists(configfile cf, const char *name)
+	__attribute__((nonnull(1, 2)));
 
 status_t configfile_get_string(configfile cf, const char *name,
-	char *value, size_t cb) 
+	char *value, size_t cb)
+	__attribute__((nonnull(1, 2, 3)))
 	__attribute__((warn_unused_result));
 
 status_t configfile_get_long(configfile cf, const char *name, long *value)
+	__attribute__((nonnull(1, 2, 3)))
 	__attribute__((warn_unused_result));
 
 status_t configfile_get_ulong(configfile cf, const char *name,
 	unsigned long *value)
+	__attribute__((nonnull(1, 2, 3)))
 	__attribute__((warn_unused_result));
 
 status_t configfile_get_int(configfile cf, const char *name, int *value)
+	__attribute__((nonnull(1, 2, 3)))
 	__attribute__((warn_unused_result));
 
 status_t configfile_get_uint(configfile cf, const char *name, 
 	unsigned int *value) 
+	__attribute__((nonnull(1, 2, 3)))
 	__attribute__((warn_unused_result));
 
 

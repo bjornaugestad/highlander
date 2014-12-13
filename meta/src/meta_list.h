@@ -63,8 +63,11 @@ list list_new(void) __attribute__((malloc));
 void list_free(list lst, dtor free_fn);
 
 list list_copy(list lst, void*(*copier)(const void*), dtor dtor_fn);
+
 list list_add(list lst, void *data);
-list list_insert(list lst, void *data);
+
+list list_insert(list lst, void *data)
+	__attribute__((nonnull(1))); // data can be NULL
 
 status_t list_insert_before(list_iterator li, void *data)
 	__attribute__((warn_unused_result));
@@ -72,11 +75,17 @@ status_t list_insert_before(list_iterator li, void *data)
 status_t list_insert_after(list_iterator li, void *data)
 	__attribute__((warn_unused_result));
 
-size_t list_size(list lst);
+size_t list_size(list lst)
+	__attribute__((nonnull(1)));
 
-list_iterator list_delete(list lst, list_iterator i, dtor dtor_fn);
-list_iterator list_remove_node(list lst, list_iterator i);
-list_iterator list_find(list lst, const void *data, int(*compar)(const void*, const void*));
+list_iterator list_delete(list lst, list_iterator i, dtor dtor_fn)
+	__attribute__((nonnull(1)));
+
+list_iterator list_remove_node(list lst, list_iterator i)
+	__attribute__((nonnull(1)));
+
+list_iterator list_find(list lst, const void *data, int(*compar)(const void*, const void*))
+	__attribute__((nonnull(1)));
 
 
 static inline list_iterator list_first(list lst)
@@ -107,24 +116,46 @@ static inline list_iterator list_next(list_iterator i)
 
 bool list_last(list_iterator li);
 
-void *list_get_item(list lst, size_t idx);
+void *list_get_item(list lst, size_t idx)
+	__attribute__((nonnull(1)));
 
-bool list_foreach(list lst, void *args, listfunc f);
-bool list_foreach_reversed(list lst, void *arg, listfunc f);
-bool list_foreach_sep(list lst, void *arg, listfunc f, bool(*sep)(void*arg));
-bool list_dual_foreach(list lst, void *arg1, void *arg2, bool(*dual)(void *a1, void *a2, void *data));
+bool list_foreach(list lst, void *args, listfunc f)
+	__attribute__((nonnull(1, 3)));
 
+bool list_foreach_reversed(list lst, void *arg, listfunc f)
+	__attribute__((nonnull(1, 3)));
+
+bool list_foreach_sep(list lst, void *arg, listfunc f, bool(*sep)(void*arg))
+	__attribute__((nonnull(1, 3, 4)));
+
+bool list_dual_foreach(list lst, void *arg1, void *arg2,
+	bool(*dual)(void *a1, void *a2, void *data))
+	__attribute__((nonnull(1)));
+
+// dest can be NULL. list_add() will create the list if needed.
 list list_merge(list dest, list src);
-void list_sort(list lst, int(*func)(const void *p1, const void *p2));
-size_t list_count(list lst, int (*include_node)(void*));
+
+void list_sort(list lst, int(*func)(const void *p1, const void *p2))
+	__attribute__((nonnull(1)));
+
+size_t list_count(list lst, int (*include_node)(void*))
+	__attribute__((nonnull(1)));
 
 /* Sublists */
-list sublist_copy(list lst);
-list sublist_adaptor(list lst, void *(*adaptor)(void*));
-list sublist_create(list lst, int (*include_node)(void*));
-list sublist_create_neg(list lst, int (*include_node)(void*));
+list sublist_copy(list lst)
+	__attribute__((nonnull(1)));
 
-void sublist_free(list lst);
+list sublist_adaptor(list lst, void *(*adaptor)(void*))
+	__attribute__((nonnull(1)));
+
+list sublist_create(list lst, int (*include_node)(void*))
+	__attribute__((nonnull(1)));
+
+list sublist_create_neg(list lst, int (*include_node)(void*))
+	__attribute__((nonnull(1)));
+
+void sublist_free(list lst)
+	__attribute__((nonnull(1)));
 
 #ifdef __cplusplus
 }

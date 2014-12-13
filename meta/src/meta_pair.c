@@ -45,6 +45,7 @@ struct pair_tag {
 static int pair_find(pair p, const char *name, size_t* pi)
 {
 	assert(p != NULL);
+	assert(name != NULL);
 
 	for (*pi = 0; *pi < p->used; (*pi)++) {
 		if (0 == strcmp(p->element[*pi].name, name))
@@ -78,7 +79,8 @@ void pair_free(pair p)
 {
 	size_t i;
 
-	assert(p != NULL);
+	if (p == NULL)
+		return;
 
 	for (i = 0; i < p->used; i++) {
 		free(p->element[i].name);
@@ -89,18 +91,18 @@ void pair_free(pair p)
 	free(p);
 }
 
-static status_t pair_extend(pair p, size_t cElementsToAdd)
+static status_t pair_extend(pair p, size_t addcount)
 {
 	struct element* new;
 
 	assert(p != NULL);
 
-	new = realloc(p->element, sizeof *p->element * (p->nelem + cElementsToAdd));
+	new = realloc(p->element, sizeof *p->element * (p->nelem + addcount));
 	if (new == NULL)
 		return failure;
 
 	p->element = new;
-	p->nelem += cElementsToAdd;
+	p->nelem += addcount;
 	return success;
 }
 
@@ -124,6 +126,9 @@ const char *pair_get(pair p, const char *name)
 {
 	size_t i;
 
+	assert(p != NULL);
+	assert(name != NULL);
+
 	if (!pair_find(p, name, &i))
 		return NULL;
 
@@ -135,6 +140,9 @@ const char *pair_get(pair p, const char *name)
 status_t pair_set(pair p, const char *name, const char *value)
 {
 	size_t i, oldlen, newlen;
+
+	assert(p != NULL);
+	assert(name != NULL);
 
 	if (!pair_find(p, name, &i))
 		return pair_add(p, name, value);
@@ -158,6 +166,9 @@ status_t pair_add(pair p, const char *name, const char *value)
 {
 	struct element* new; /* Just a helper to beautify the code */
 	size_t namelen, valuelen;
+
+	assert(p != NULL);
+	assert(name != NULL);
 
 	/* Resize when needed */
 	if (p->used == p->nelem && !pair_extend(p, p->nelem * 2))
@@ -185,6 +196,7 @@ const char *pair_get_name(pair p, size_t idx)
 {
 	assert(p != NULL);
 	assert(idx < p->used);
+
 	return p->element[idx].name;
 }
 
