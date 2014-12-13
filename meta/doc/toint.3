@@ -1,0 +1,42 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th meta_convert 3
+.Sh NAME
+.Nm meta_convert
+.Nd Conversion functions.
+.Sh SYNOPSIS
+.Fd #include <meta_convert.h>
+.Fo "status_t toint"
+.Fa "const char *src"
+.Fa "int *dest"
+.Fc
+.Fo "status_t touint"
+.Fa "const char *src"
+.Fa "unsigned int *dest"
+.Fc
+.Fo "status_t tolong"
+.Fa "const char *src"
+.Fa "long *dest"
+.Fc
+.Fo "status_t toulong"
+.Fa "const char *src"
+.Fa "unsigned long *dest"
+.Fc
+.Fo "status_t tofloat"
+.Fa "const char *src"
+.Fa "float *dest"
+.Fc
+.Fo "status_t todouble"
+.Fa "const char *src"
+.Fa "double *dest"
+.Fc
+.Sh DESCRIPTION
+All of these functions convert a string to a number. They all return success or
+failure, and errno can be inspected to find the cause of the failure, if any.
+.Pp
+All source strings must be complete numbers without trailing characters.
+Sources like "123asb" are not cool, neither are "123 " or "". We want numbers,
+nothing else.
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com

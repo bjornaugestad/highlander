@@ -30,6 +30,7 @@ include_HEADERS=\
 	meta_pair.h\
 	meta_error.h\
 	meta_wlock.h\
+	meta_convert.h\
 	threadpool.h
 
 libmeta_la_LDFLAGS=-release $(PACKAGE_VERSION) -version-info 0:0:0
@@ -62,6 +63,7 @@ libmeta_la_SOURCES=\
 	meta_cache.c\
 	meta_filecache.c\
 	meta_list.c\
+	meta_convert.c\
 	meta_stringmap.c
 
 libmetad_la_SOURCES=$(libmeta_la_SOURCES)
@@ -91,6 +93,7 @@ libmeta_a_CFLAGS+=-DWITH_VALGRIND=1
 endif
 
 TESTS=\
+	convert_check\
 	sampler_check\
 	bitset_check\
 	fifo_check\
@@ -111,6 +114,7 @@ TESTS=\
 	tcp_server_check
 
 check_PROGRAMS=\
+	convert_check\
 	slotbuf_check\
 	sampler_check\
 	list_check\
@@ -193,5 +197,7 @@ sampler_check_LDFLAGS=-ggdb -O0
 slotbuf_check_SOURCES=meta_slotbuf.c  meta_common.c
 slotbuf_check_CFLAGS=-DCHECK_SLOTBUF $(AM_CFLAGS)
 
+convert_check_SOURCES=meta_convert.c meta_common.c
+convert_check_CFLAGS=-DCHECK_CONVERT $(AM_CFLAGS)
 
 LDADD=-lpthread
