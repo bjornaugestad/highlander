@@ -9,7 +9,7 @@ man_MANS=\
 	cstring.3\
 	cstring_charcat.3\
 	cstring_concat.3\
-	cstring_set.3\
+	cstring_dup.3\
 	cstring_extend.3\
 	cstring_left.3\
 	cstring_length.3\
@@ -20,8 +20,9 @@ man_MANS=\
 	cstring_recycle.3\
 	cstring_reverse.3\
 	cstring_right.3\
-	cstring_strip.3\
+	cstring_set.3\
 	cstring_split.3\
+	cstring_strip.3\
 	cstring_substring.3\
 	cstring_upper.3\
 	cstring_vprintf.3\

@@ -1,0 +1,50 @@
+.Dd Nov 25, 2005
+.Os POSIX
+.Dt META
+.Th ticker 3
+.Sh NAME
+.Nm ticker
+.Nd A ticker ADT
+.Sh SYNOPSIS
+.Fd #include <meta_ticker.h>
+.Fo "ticker ticker_new"
+.Fa "int usec"
+.Fc
+.Fo "void ticker_free"
+.Fa "ticker t"
+.Fc
+.Fo "status_t ticker_add_action"
+.Fa "ticker t"
+.Fa "void(*pfn)(void*)"
+.Fa "void *arg"
+.Fc
+.Fo "status_t ticker_start"
+.Fa "ticker t"
+.Fc
+.Fo "void ticker_stop"
+.Fa "ticker t"
+.Fc
+.Sh DESCRIPTION
+A ticker is a thread which at certain intervals performs
+some caller defined actions.
+
+.Nm ticker_new()
+creates a ticker which wakes up every usec microseconds
+and then performs the actions it knows about. The ticker 
+function will start when ticker_start() is called.
+
+.Nm ticker_free()
+stops the ticker and then frees the ticker's memory.
+
+.Nm ticker_add_action()
+adds an action to be executed every tick. A ticker can
+perform any number of actions, and they will be performed
+in the order added.
+
+.Nm ticker_start()
+creates the ticker thread, which will execute its actions
+until stopped.
+
+.Nm ticker_stop()
+stoppes the ticker thread. The ticker can be restarted 
+by calling ticker_start().

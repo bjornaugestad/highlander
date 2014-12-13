@@ -20,54 +20,47 @@
 #ifndef THREADPOOL_H
 #define THREADPOOL_H
 
+
+#include <stdbool.h>
+#include <meta_common.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* Declaration of our threadpool ADT */
 typedef struct threadpool_tag* threadpool;
-
-/*
- * @file
- * Creates a new thread pool and returns zero if successful.
- * Returns an error code if not.
- */
 
 threadpool threadpool_new(
 	size_t num_worker_threads,
 	size_t max_queue_size,
-	int block_when_full);
+	bool block_when_full)
+	__attribute__((malloc));
 
-/*
- * Adds work to the queue. The work will be performed by the work_func,
- * After the work_func has been executed, the cleanup function will
- * be executed. This way you can pass e.g. allocated memory to work_func
- * and cleanup_func can free it.
- * Note that initialize function and the cleanup function takes 2 parameters,
- * cleanup_arg and work_arg, in that order.
- *
- * This function sets errno to ENOSPC if the work queue is full and
- * the pool is set to not block.
- */
 status_t threadpool_add_work(
 	threadpool tp,
-	void (*initialize)(void*, void*),
+	void (*initfn)(void*, void*),
 	void *initialize_arg,
 
-	void *(*work_func)(void*),
-	void *work_arg,
-	void (*cleanup_func)(void*, void*),
-	void *cleanup_arg);
+	void *(*workfn)(void*),
+	void *workarg,
+
+	void (*cleanupfn)(void*, void*),
+	void *cleanup_arg)
+	__attribute__((nonnull(1, 4, 5)));
 
 
-int threadpool_destroy(threadpool tp, unsigned int finish);
+status_t threadpool_destroy(threadpool tp, bool finish)
+	__attribute__((nonnull(1)))
+	__attribute__((warn_unused_result));
 
-/* Performance counters: Returns the number of work requests
- * successfully added, discarded or blocked since startup.
- */
-unsigned long threadpool_sum_blocked(threadpool p);
-unsigned long threadpool_sum_discarded(threadpool p);
-unsigned long threadpool_sum_added(threadpool p);
+unsigned long threadpool_sum_blocked(threadpool p)
+	__attribute__((nonnull(1)));
+
+unsigned long threadpool_sum_discarded(threadpool p)
+	__attribute__((nonnull(1)));
+
+unsigned long threadpool_sum_added(threadpool p)
+	__attribute__((nonnull(1)));
 
 #ifdef __cplusplus
 }

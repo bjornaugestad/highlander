@@ -55,7 +55,7 @@ struct threadpool_work {
 struct threadpool_tag {
 	size_t nthreads;
 	size_t max_queue_size;
-	int block_when_full;
+	bool block_when_full;
 
 	size_t cur_queue_size;
 	struct threadpool_work* queue_head;
@@ -71,8 +71,7 @@ struct threadpool_tag {
 	/* counters used to track and analyze the behaviour of the threadpool.
 	 * We count how many times we blocked due to full queue,
 	 * how many work request that's been added to the queue, how many
-	 * that's in the queue right now, and more...
-	 */
+	 * that's in the queue right now, and more...  */
 	atomic_ulong sum_work_added; /* Successfully added to queue */
 	atomic_ulong sum_blocked; /* How many times we blocked */
 	atomic_ulong sum_discarded; /* discarded due to queue full and no-block */
@@ -156,7 +155,7 @@ static void *threadpool_exec_thread(void *arg)
 threadpool threadpool_new(
 	size_t nthreads,
 	size_t max_queue_size,
-	int block_when_full)
+	bool block_when_full)
 {
 	int err;
 	size_t i;
@@ -198,7 +197,10 @@ threadpool threadpool_new(
 	for (i = 0; i < nthreads; i++) {
 		err = pthread_create(&p->threads[i], NULL, threadpool_exec_thread, p);
 		if (err) {
-			threadpool_destroy(p, 0);
+			if (!threadpool_destroy(p, 0))
+				warning("Unable to destroy thread pool\n");
+
+			return NULL;
 		}
 	}
 
@@ -295,24 +297,24 @@ status_t threadpool_add_work(
 	return success;
 }
 
-int threadpool_destroy(threadpool pool, unsigned int finish)
+status_t threadpool_destroy(threadpool pool, bool finish)
 {
 	size_t i;
 	int err;
 
 	if (pool == NULL)
-		return 1;
+		return success;
 
 	if ((err = pthread_mutex_lock(&pool->queue_lock))) {
 		errno = err;
-		return 0;
+		return failure;
 	}
 
 	if (pool->queue_closed || pool->shutdown) {
 		/* The queue is already closed */
 		pthread_mutex_unlock(&pool->queue_lock);
 		errno = EINVAL;
-		return 0;
+		return failure;
 	}
 
 	pool->queue_closed = 1;
@@ -323,7 +325,7 @@ int threadpool_destroy(threadpool pool, unsigned int finish)
 				/* Unable to condwait for the other threads to finish */
 				pthread_mutex_unlock(&pool->queue_lock);
 				errno = err;
-				return 0;
+				return failure;
 			}
 		}
 	}
@@ -331,23 +333,22 @@ int threadpool_destroy(threadpool pool, unsigned int finish)
 	pool->shutdown = 1;
 	if ((err = pthread_mutex_unlock(&pool->queue_lock))) {
 		errno = err;
-		return 0;
+		return failure;
 	}
 
 	/* Wake up any sleeping worker threads so that they
 	 * check the shutdown flag */
 	if ((err = pthread_cond_broadcast(&pool->queue_not_empty))) {
 		errno = err;
-		return 0;
+		return failure;
 	}
 
 	/* This is done to wake up any producers waiting for queue space.
 	 * Note that threadpool_add_work will fail as it tests for
-	 * the shutdown flag
-	 */
+	 * the shutdown flag. */
 	if ((err = pthread_cond_broadcast(&pool->queue_not_full))) {
 		errno = err;
-		return 0;
+		return failure;
 	}
 
 	/* Now wait for each thread to finish */
@@ -358,17 +359,15 @@ int threadpool_destroy(threadpool pool, unsigned int finish)
 
 		if ((err = pthread_join(pool->threads[i], NULL))) {
 			errno = err;
-			return 0;
+			return failure;
 		}
 	}
 
 	free(pool->threads);
 
-	/*
-	 * Free the queue. The queue should be empty since all the worker
+	/* Free the queue. The queue should be empty since all the worker
 	 * threads remove entries from here, still we free it. Never know
-	 * if a thread crashed.
-	 */
+	 * if a thread crashed. */
 	while (pool->queue_head != NULL) {
 		struct threadpool_work* wp = pool->queue_head;
 		pool->queue_head = pool->queue_head->next;
@@ -380,7 +379,7 @@ int threadpool_destroy(threadpool pool, unsigned int finish)
 	atomic_ulong_destroy(&pool->sum_blocked);
 	atomic_ulong_destroy(&pool->sum_discarded);
 	free(pool);
-	return 1;
+	return success;
 }
 
 unsigned long threadpool_sum_blocked(threadpool p)

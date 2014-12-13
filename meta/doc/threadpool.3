@@ -10,9 +10,9 @@
 .Fo "threadpool threadpool_new"
 .Fa "size_t num_worker_threads"
 .Fa "size_t max_queue_size"
-.Fa "int block_when_full"
+.Fa "bool block_when_full"
 .Fc
-.Fo "int threadpool_add_work"
+.Fo "status_t threadpool_add_work"
 .Fa "threadpool tp"
 .Fa "void (*initialize)(void*, void*)"
 .Fa "void *initialize_arg"
@@ -21,9 +21,9 @@
 .Fa "void (*cleanup_func)(void*, void*)"
 .Fa "void* cleanup_arg"
 .Fc
-.Fo "int threadpool_destroy"
+.Fo "status_t threadpool_destroy"
 .Fa "threadpool tp"
-.Fa "unsigned int finish"
+.Fa "bool finish"
 .Fc
 .Fo "unsigned long threadpool_sum_blocked"
 .Fa "threadpool p"
@@ -35,17 +35,57 @@
 .Fa "threadpool p"
 .Fc
 .Sh DESCRIPTION
-The threadpool ADT is a 
+The threadpool ADT implements a thread pool with a work queue. Users
+can add work to the queue, and the work will be performed when 
+a worker thread is free to perform it. 
+.Pp
+.Nm threadpool_create()
+creates a new thread pool. The pool will have num_worker_thread
+threads, which are the units performing the work. Typically, one
+wants many threads, but not too many. The exact number depends on
+your hardware and your application profile. One or two threads per
+core should be OK as we don't want our hardware to idle when we're
+heavily loaded.
+.Pp
+The queue size is the number of work items the queue can store. If
+the size is low, then the application will either block a lot or
+discard lots of requests. So the queue size should not be too low.
+.Pp
+On the other hand, if the queue size is huge, the application will
+use more memory and be more phrone to DoS attacks since it may be possible
+to flood the application with lots of work, effectively jamming it.
 .Pp
 .Nm threadpool_add_work()
 adds work to the queue. The work will be performed by the work_func,
 After the work_func has been executed, the cleanup function will
 be executed. This way you can pass e.g. allocated memory to work_func
 and cleanup_func can free it.
+.Pp
 Note that initialize function and the cleanup function takes 2 parameters,
 cleanup_arg and work_arg, in that order.
+.Pp
 This function sets errno to ENOSPC if the work queue is full and
 the pool is set to not block.
+
+.Nm threadpool_destroy()
+destroys a thread pool. This function will wake all threads and
+wait for them to finish, if instructed to do so.
+.Pp
+It will join each worker thread, and when
+they're all done, threadpool_destroy() will free all memory allocated.
+.Pp
+Check errno for possible reason if this function returns failure.
+
+.Nm threadpool_sum_blocked()
+returns the number of times a call to add_work() blocked because
+the queue was full.
+
+.Nm threadpool_sum_discarded()
+returns the number of times a call to add_work() failed because the
+queue was full and the thread pool was non-blocking. 
+
+.Nm threadpool_sum_added()
+returns the number of times work was successfully added to the queue.
  
 All
 .Sh AUTHOR

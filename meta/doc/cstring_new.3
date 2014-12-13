@@ -20,6 +20,9 @@
 .Fo "cstring cstring_dup"
 .Fa "const char *src"
 .Fc
+.Fo "cstring cstring_copy"
+.Fa "const cstring src"
+.Fc
 .Fo "void cstring_free"
 .Fa "cstring s"
 .Fc
@@ -45,6 +48,8 @@ returns a pointer to the new cstring, or NULL if an error occured.
 .Pp
 .Nm cstring_multinew()
 returns 1 if all the strings were created or 0 if an error occured.
+.Pp
+.Nm cstring_copy() creates a deep copy of a cstring object.
 .Sh EXAMPLE
 .Bd -literal
 cstring s, s1, s2, s3;
@@ -63,6 +68,12 @@ else
 cstring_free(s1);
 cstring_free(s2);
 cstring_free(s3);
+...
+s = cstring_dup("Hello, World");
+s1 = cstring_copy(s);
+cstring_free(s);
+cstring_free(s1);
+
 .Ed
 .Sh AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

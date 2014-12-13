@@ -201,7 +201,9 @@ void tcp_server_free(tcp_server srv)
 	if (srv != NULL) {
 		/* Terminate the session */
 		if (srv->queue != NULL) {
-			threadpool_destroy(srv->queue, 1);
+			if (!threadpool_destroy(srv->queue, 1))
+				warning("Unable to destroy thread pool\n");
+
 			srv->queue = NULL;
 		}
 
@@ -282,7 +284,9 @@ status_t tcp_server_init(tcp_server srv)
 
 err:
 	/* Free all memory allocated by this function and then return failure */
-	threadpool_destroy(srv->queue, 0);
+	if (!threadpool_destroy(srv->queue, 0))
+		warning("Unable to destroy thread pool\n");
+
 	pool_free(srv->connections, (dtor)connection_free);
 	pool_free(srv->read_buffers, NULL);
 	pool_free(srv->write_buffers, NULL);

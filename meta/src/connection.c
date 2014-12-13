@@ -358,8 +358,6 @@ write_to_socket(connection conn, const char *buf, size_t count)
  */
 status_t connection_write(connection conn, const void *buf, size_t count)
 {
-	status_t status = success;
-
 	assert(conn != NULL);
 	assert(buf != NULL);
 
@@ -371,10 +369,11 @@ status_t connection_write(connection conn, const void *buf, size_t count)
 		return success;
 	}
 
-	if ((status = write_to_socket(conn, buf, count)))
-		conn->outgoing_bytes += count;
+	if (!write_to_socket(conn, buf, count))
+		return failure;
 
-	return status;
+	conn->outgoing_bytes += count;
+	return success;
 }
 
 
