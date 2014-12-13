@@ -178,5 +178,22 @@ man_MANS=\
 	create_client_socket.3\
 	create_server_socket.3\
 	\
-	wlock.3
-
+	stack.3\
+	stack_free.3\
+	stack_get.3\
+	stack_nelem.3\
+	stack_new.3\
+	stack_pop.3\
+	stack_push.3\
+	stack_top.3\
+	\
+	ticker.3\
+	ticker_add_action.3\
+	ticker_free.3\
+	ticker_new.3\
+	ticker_start.3\
+	ticker_stop.3\
+	\
+	wlock.3\
+	wlock_free.3\
+	wlock_new.3

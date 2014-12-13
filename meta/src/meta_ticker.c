@@ -64,6 +64,9 @@ ticker ticker_new(int usec)
 
 void ticker_free(ticker t)
 {
+	if (t == NULL)
+		return;
+
 	ticker_stop(t);
 	list_free(t->actions, NULL);
 	free(t);
