@@ -396,11 +396,9 @@ http_request request_new(void)
 void request_free(http_request p)
 	__attribute__((nonnull(1)));
 
-/* returns 0 on memory errors, else 1 */
 status_t request_set_entity(http_request r, void *entity, size_t cb)
 	__attribute__((nonnull(1, 2)))
 	__attribute__((warn_unused_result));
-
 
 void request_set_version(http_request r, http_version version)
 	__attribute__((nonnull(1)));
@@ -408,9 +406,8 @@ void request_set_version(http_request r, http_version version)
 void request_recycle(http_request r)
 	__attribute__((nonnull(1)));
 
-/* @return 0 for success or error code for failure (ENOMEM) */
 status_t request_add_param(http_request r, const char *name, const char *value)
-	__attribute__((nonnull(1)))
+	__attribute__((nonnull(1, 2, 3)))
 	__attribute__((warn_unused_result));
 
 void request_set_method(http_request r, http_method method)

@@ -199,7 +199,8 @@ const char* general_header_get_upgrade(general_header gh);
 const char* general_header_get_via(general_header gh);
 const char* general_header_get_warning(general_header gh);
 
-/* Tests if a property is set or not. Use it before calling the _get() functions */
+/* Tests if a property is set or not. Use it before
+ * calling the _get() functions */
 bool general_header_no_cache_isset(general_header gh);
 bool general_header_no_store_isset(general_header gh);
 bool general_header_max_age_isset(general_header gh);

@@ -1281,82 +1281,6 @@ err:
 	return set_http_error(e, HTTP_503_SERVICE_UNAVAILABLE);
 }
 
-static status_t send_accept(http_request r, connection c);
-static status_t send_accept_charset(http_request r, connection c);
-static status_t send_accept_encoding(http_request r, connection c);
-static status_t send_accept_language(http_request r, connection c);
-static status_t send_authorization(http_request r, connection c);
-static status_t send_from(http_request r, connection c);
-static status_t send_referer(http_request r, connection c);
-static status_t send_user_agent(http_request r, connection c);
-static status_t send_max_forwards(http_request r, connection c);
-static status_t send_proxy_authorization(http_request r, connection c);
-static status_t send_range(http_request r, connection c);
-static status_t send_te(http_request r, connection c);
-static status_t send_expect(http_request r, connection c);
-static status_t send_host(http_request r, connection c);
-static status_t send_if_match(http_request r, connection c);
-static status_t send_if_none_match(http_request r, connection c);
-static status_t send_if_range(http_request r, connection c);
-static status_t send_if_modified_since(http_request r, connection c);
-static status_t send_if_unmodified_since(http_request r, connection c);
-
-/* V1.0 fields */
-#if 0 /* For now */
-static status_t send_pragma(http_request r, connection c);
-static status_t send_link(http_request r, connection c);
-static status_t send_mime_version(http_request r, connection c);
-static status_t send_title(http_request r, connection c);
-static status_t send_upgrade(http_request r, connection c);
-#endif
-
-static status_t request_send_fields(http_request r, connection c)
-{
-	static const struct {
-		flagtype flag;
-		status_t(*func)(http_request, connection);
-	} fields[] = {
-		{ REQUEST_ACCEPT_SET,				send_accept },
-		{ REQUEST_ACCEPT_CHARSET_SET,		send_accept_charset },
-		{ REQUEST_ACCEPT_ENCODING_SET,		send_accept_encoding },
-		{ REQUEST_ACCEPT_LANGUAGE_SET,		send_accept_language },
-		{ REQUEST_AUTHORIZATION_SET,		send_authorization },
-		{ REQUEST_EXPECT_SET,				send_expect },
-		{ REQUEST_FROM_SET,					send_from },
-		{ REQUEST_HOST_SET,					send_host },
-		{ REQUEST_IF_MATCH_SET,				send_if_match },
-		{ REQUEST_IF_NONE_MATCH_SET,		send_if_none_match },
-		{ REQUEST_IF_RANGE_SET,				send_if_range },
-		{ REQUEST_IF_MODIFIED_SINCE_SET,	send_if_modified_since },
-		{ REQUEST_IF_UNMODIFIED_SINCE_SET,	send_if_unmodified_since },
-		{ REQUEST_MAX_FORWARDS_SET,			send_max_forwards },
-		{ REQUEST_PROXY_AUTHORIZATION_SET,	send_proxy_authorization },
-		{ REQUEST_RANGE_SET,				send_range },
-		{ REQUEST_REFERER_SET,				send_referer },
-		{ REQUEST_TE_SET,					send_te },
-		{ REQUEST_USER_AGENT_SET,			send_user_agent },
-		#if 0
-		/* Version 1.0 */
-		{ REQUEST_LINK_SET,					send_link },
-		{ REQUEST_MIME_VERSION_SET,			send_mime_version },
-		{ REQUEST_TITLE_SET,				send_title },
-		{ REQUEST_UPGRADE_SET,				send_upgrade },
-		{ REQUEST_PRAGMA_SET,				send_pragma },
-		#endif
-	};
-
-	size_t i, nelem = sizeof fields / sizeof *fields;
-
-	for (i = 0; i < nelem; i++) {
-		if (request_flag_is_set(r, fields[i].flag))
-			if (!fields[i].func(r, c))
-				return failure;
-	}
-
-	return success;
-}
-
-
 static status_t send_accept(http_request r, connection c)
 {
 	assert(r != NULL);
@@ -1508,6 +1432,54 @@ static status_t send_if_unmodified_since(http_request r, connection c)
 
 	return http_send_date(c, "If-Unmodified-Since: ", r->if_unmodified_since);
 }
+
+static status_t request_send_fields(http_request r, connection c)
+{
+	static const struct {
+		flagtype flag;
+		status_t(*func)(http_request, connection);
+	} fields[] = {
+		{ REQUEST_ACCEPT_SET,				send_accept },
+		{ REQUEST_ACCEPT_CHARSET_SET,		send_accept_charset },
+		{ REQUEST_ACCEPT_ENCODING_SET,		send_accept_encoding },
+		{ REQUEST_ACCEPT_LANGUAGE_SET,		send_accept_language },
+		{ REQUEST_AUTHORIZATION_SET,		send_authorization },
+		{ REQUEST_EXPECT_SET,				send_expect },
+		{ REQUEST_FROM_SET,					send_from },
+		{ REQUEST_HOST_SET,					send_host },
+		{ REQUEST_IF_MATCH_SET,				send_if_match },
+		{ REQUEST_IF_NONE_MATCH_SET,		send_if_none_match },
+		{ REQUEST_IF_RANGE_SET,				send_if_range },
+		{ REQUEST_IF_MODIFIED_SINCE_SET,	send_if_modified_since },
+		{ REQUEST_IF_UNMODIFIED_SINCE_SET,	send_if_unmodified_since },
+		{ REQUEST_MAX_FORWARDS_SET,			send_max_forwards },
+		{ REQUEST_PROXY_AUTHORIZATION_SET,	send_proxy_authorization },
+		{ REQUEST_RANGE_SET,				send_range },
+		{ REQUEST_REFERER_SET,				send_referer },
+		{ REQUEST_TE_SET,					send_te },
+		{ REQUEST_USER_AGENT_SET,			send_user_agent },
+		#if 0
+		/* Version 1.0 */
+		{ REQUEST_LINK_SET,					send_link },
+		{ REQUEST_MIME_VERSION_SET,			send_mime_version },
+		{ REQUEST_TITLE_SET,				send_title },
+		{ REQUEST_UPGRADE_SET,				send_upgrade },
+		{ REQUEST_PRAGMA_SET,				send_pragma },
+		#endif
+	};
+
+	size_t i, nelem = sizeof fields / sizeof *fields;
+
+	for (i = 0; i < nelem; i++) {
+		if (request_flag_is_set(r, fields[i].flag))
+			if (!fields[i].func(r, c))
+				return failure;
+	}
+
+	return success;
+}
+
+
 
 status_t request_send(http_request r, connection c, meta_error e)
 {
