@@ -22,19 +22,14 @@ frees a list.
 is a pointer an optional cleanup function which is called once
 for each node in the list. If 
 .Fa dtor
-is NULL, then free() is called instead. Note that free() is not called
-if .
-.Fa dtor
-isn't NULL. This basically means that cleanup
-must call free() itself. The idea is that the caller function 
-provides either NULL or a destructor function for a 
-C object.
+is NULL, then the data will not be freed.
 .Sh EXAMPLE
 .Bd -literal
 /* The object we store in the list */
 struct foo {
 	char *name;
 };
+
 /* Destructor for foo */
 void foo_dtor(void* arg)
 {

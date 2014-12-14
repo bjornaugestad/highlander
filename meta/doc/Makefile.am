@@ -35,6 +35,7 @@ man_MANS=\
 	list_find.3\
 	list_first.3\
 	list_foreach.3\
+	list_free.3\
 	list_get.3\
 	list_get_item.3\
 	list_insert.3\

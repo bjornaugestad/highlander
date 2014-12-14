@@ -49,10 +49,8 @@ void list_free(list lst, void(*dtor)(void*))
 
 	/* Free data for all items except the first. */
 	for (p = lst->next; p != NULL; p = p->next) {
-		if (dtor != NULL)
+		if (dtor != 0)
 			dtor(p->data);
-		else
-			free(p->data);
 	}
 
 	/* Free the list itself */
