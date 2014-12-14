@@ -45,19 +45,19 @@ membuf membuf_new(size_t size)
 	return p;
 }
 
-void membuf_free(membuf p)
+void membuf_free(membuf this)
 {
-	if (p != NULL) {
-		free(p->data);
-		free(p);
+	if (this != NULL) {
+		free(this->data);
+		free(this);
 	}
 }
 
-size_t membuf_write(membuf p, const void *src, size_t count)
+size_t membuf_write(membuf this, const void *src, size_t count)
 {
 	size_t n;
 
-	assert(p != NULL);
+	assert(this != NULL);
 	assert(src != NULL);
 
 	/* Don't bother to write empty buffers */
@@ -68,56 +68,56 @@ size_t membuf_write(membuf p, const void *src, size_t count)
 	 * Decide how much we can write and reset the
 	 * buffer if needed (and possible).
 	 */
-	if (count > p->size - p->written) {
+	if (count > this->size - this->written) {
 		/*
 		 * Has all written bytes also been read?
 		 * If so, reset the buffer.
 		 */
-		if (p->written == p->read)
-			p->written = p->read = 0;
+		if (this->written == this->read)
+			this->written = this->read = 0;
 
 		/* Is there space available after reset ? */
-		if (count <= p->size - p->written)
+		if (count <= this->size - this->written)
 			n = count;
 		else
-			n = p->size - p->written;
+			n = this->size - this->written;
 	}
 	else
 		n = count;
 
 	/* Check that we didn't screw up above */
-	assert(n <= membuf_canwrite(p));
+	assert(n <= membuf_canwrite(this));
 
-	memcpy(&p->data[p->written], src, n);
-	p->written += n;
+	memcpy(&this->data[this->written], src, n);
+	this->written += n;
 
 	return n;
 }
 
-size_t membuf_read(membuf p, void *dest, size_t count)
+size_t membuf_read(membuf this, void *dest, size_t count)
 {
 	size_t navail;
 
-	assert(p != NULL);
+	assert(this != NULL);
 	assert(dest != NULL);
 	assert(count != 0);
-	assert(p->written >= p->read);
+	assert(this->written >= this->read);
 
-	navail = membuf_canread(p);
+	navail = membuf_canread(this);
 	if (navail < count)
 		count = navail;
 
 	if (count == 0)
 		return 0;
 
-	memcpy(dest, &p->data[p->read], count);
-	p->read += count;
+	memcpy(dest, &this->data[this->read], count);
+	this->read += count;
 
-	assert(p->read <= p->written);
+	assert(this->read <= this->written);
 
 	/* Reset offset counters if all bytes written also have been read */
-	if (p->written == p->read)
-		p->written = p->read = 0;
+	if (this->written == this->read)
+		this->written = this->read = 0;
 
 	return count;
 }

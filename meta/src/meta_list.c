@@ -40,7 +40,7 @@ list list_new(void)
 	return p;
 }
 
-void list_free(list lst, void(*cleanup)(void*))
+void list_free(list lst, void(*dtor)(void*))
 {
 	list p;
 
@@ -49,8 +49,8 @@ void list_free(list lst, void(*cleanup)(void*))
 
 	/* Free data for all items except the first. */
 	for (p = lst->next; p != NULL; p = p->next) {
-		if (cleanup != NULL)
-			cleanup(p->data);
+		if (dtor != NULL)
+			dtor(p->data);
 		else
 			free(p->data);
 	}
@@ -70,16 +70,15 @@ list list_add(list lst, void *data)
 
 	/* Allocate new list if first param is NULL */
 	if (lst == NULL) {
-		if ((lst = list_new()) == NULL) {
+		if ((lst = list_new()) == NULL)
 			return NULL;
-		}
 
 		we_allocated_list = 1;
 	}
 
 	if ((node = calloc(1, sizeof *node)) == NULL) {
 		if (we_allocated_list)
-			list_free(lst, NULL);
+			list_free(lst, free);
 
 		return NULL;
 	}
@@ -194,11 +193,11 @@ bool list_dual_foreach(
 	if (lst->next != NULL) {
 		for (node = lst->next; node != NULL; node = node->next) {
 			if (dual(arg1, arg2, node->data) == 0)
-				return 0;
+				return false;
 		}
 	}
 
-	return 1;
+	return true;
 }
 
 bool list_foreach_reversed(
@@ -212,11 +211,11 @@ bool list_foreach_reversed(
 	if (lst->data != NULL) {
 		for (node = lst->data; node != lst ; node = node->prev) {
 			if (f(args, node->data) == 0)
-				return 0;
+				return false;
 		}
 	}
 
-	return 1;
+	return true;
 }
 
 size_t list_size(list lst)
@@ -378,7 +377,7 @@ list list_insert(list lst, void *data)
 
 		if ((node = calloc(1, sizeof *node)) == NULL) {
 			if (we_allocated_list)
-				list_free(lst, NULL);
+				list_free(lst, free);
 
 			return NULL;
 		}
@@ -847,7 +846,7 @@ int main(void)
 	s = list_get_item(a, 2);
 	if (strcmp(s, "foo") != 0)
 		return77("Wrong value for item. Expected foo, got %s.", s);
-	list_free(a, NULL);
+	list_free(a, free);
 
 	// Now test adding with one item in the list.
 	a = list_new();
@@ -859,7 +858,7 @@ int main(void)
 	if (strcmp(s, "bar") != 0)
 		return77("Expected 'bar', got %s\n", s);
 
-	list_free(a, NULL);
+	list_free(a, free);
 	return 0;
 }
 

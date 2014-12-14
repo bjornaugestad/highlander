@@ -47,17 +47,17 @@ struct meta_socket_tag {
  * Sets the socket options we want on the main socket
  * Suitable for server sockets only.
  */
-static int sock_set_reuseaddr(meta_socket p)
+static int sock_set_reuseaddr(meta_socket this)
 {
 	int optval;
 	socklen_t optlen;
 
-	assert(p != NULL);
-	assert(p->fd >= 0);
+	assert(this != NULL);
+	assert(this->fd >= 0);
 
 	optval = 1;
 	optlen = (socklen_t)sizeof(optval);
-	if (setsockopt(p->fd, SOL_SOCKET, SO_REUSEADDR, &optval, optlen) == -1)
+	if (setsockopt(this->fd, SOL_SOCKET, SO_REUSEADDR, &optval, optlen) == -1)
 		return 0;
 
 	return 1;
@@ -71,18 +71,18 @@ static int sock_set_reuseaddr(meta_socket p)
  * error occured. It set errno to EAGAIN if a timeout occured, and
  * it maps POLLHUP and POLLERR to EPIPE, and POLLNVAL to EINVAL.
  */
-static status_t sock_poll_for(meta_socket p, int timeout, short poll_for)
+static status_t sock_poll_for(meta_socket this, int timeout, short poll_for)
 {
 	struct pollfd pfd;
 	int rc;
 	status_t status = failure;
 
-	assert(p != NULL);
-	assert(p->fd >= 0);
+	assert(this != NULL);
+	assert(this->fd >= 0);
 	assert(poll_for == POLLIN || poll_for == POLLOUT);
 	assert(timeout >= 0);
 
-	pfd.fd = p->fd;
+	pfd.fd = this->fd;
 	pfd.events = poll_for;
 
 	/* NOTE: poll is XPG4, not POSIX */
@@ -111,33 +111,33 @@ static status_t sock_poll_for(meta_socket p, int timeout, short poll_for)
 	return status;
 }
 
-status_t wait_for_writability(meta_socket p, int timeout)
+status_t wait_for_writability(meta_socket this, int timeout)
 {
-	assert(p != NULL);
+	assert(this != NULL);
 
-	return sock_poll_for(p, timeout, POLLOUT);
+	return sock_poll_for(this, timeout, POLLOUT);
 }
 
-status_t wait_for_data(meta_socket p, int timeout)
+status_t wait_for_data(meta_socket this, int timeout)
 {
-	assert(p != NULL);
+	assert(this != NULL);
 
-	return sock_poll_for(p, timeout, POLLIN);
+	return sock_poll_for(this, timeout, POLLIN);
 }
 
-status_t sock_write(meta_socket p, const char *buf, size_t count, int timeout, int nretries)
+status_t sock_write(meta_socket this, const char *buf, size_t count, int timeout, int nretries)
 {
 	ssize_t nwritten = 0;
 
-	assert(p != NULL);
-	assert(p->fd >= 0);
+	assert(this != NULL);
+	assert(this->fd >= 0);
 	assert(buf != NULL);
 	assert(timeout >= 0);
 	assert(nretries >= 0);
 
 
 	do {
-		if (!wait_for_writability(p, timeout)) {
+		if (!wait_for_writability(this, timeout)) {
 			if (errno != EAGAIN)
 				return 0;
 
@@ -145,7 +145,7 @@ status_t sock_write(meta_socket p, const char *buf, size_t count, int timeout, i
 			continue;
 		}
 
-		if ((nwritten = write(p->fd, buf, count)) == -1) {
+		if ((nwritten = write(this->fd, buf, count)) == -1) {
 			perror("write");
 			return failure;
 		}
@@ -176,7 +176,7 @@ status_t sock_write(meta_socket p, const char *buf, size_t count, int timeout, i
  *	get the second packet.
  */
 ssize_t sock_read(
-	meta_socket p,
+	meta_socket this,
 	char *dest,
 	size_t count,
 	int timeout,
@@ -184,8 +184,8 @@ ssize_t sock_read(
 {
 	ssize_t nread, nreadsum = 0;
 
-	assert(p != NULL);
-	assert(p->fd >= 0);
+	assert(this != NULL);
+	assert(this->fd >= 0);
 	assert(timeout >= 0);
 	assert(nretries >= 0);
 	assert(dest != NULL);
@@ -193,7 +193,7 @@ ssize_t sock_read(
 	do {
 		size_t cbToRead = count - nreadsum;
 
-		if (!wait_for_data(p, timeout)) {
+		if (!wait_for_data(this, timeout)) {
 			if (errno == EAGAIN) {
 				continue; // Try again.
 			}
@@ -206,7 +206,7 @@ ssize_t sock_read(
 		 * do know that the socket is non-blocking. Therefore, let's
 		 * spin-read until read() returns 0. 
 		 */
-		while ((nread = read(p->fd, &dest[nreadsum], cbToRead)) > 0) {
+		while ((nread = read(this->fd, &dest[nreadsum], cbToRead)) > 0) {
 			nreadsum += nread;
 			if (nreadsum == (ssize_t)count) {
 				return nreadsum; // we're done
@@ -230,15 +230,15 @@ ssize_t sock_read(
  * created a socket with a specific protocol family,
  * and here we bind it to the PF specified in the services...
  */
-static status_t sock_bind_inet(meta_socket p, const char *hostname, int port)
+static status_t sock_bind_inet(meta_socket this, const char *hostname, int port)
 {
 	struct hostent* host = NULL;
 	struct sockaddr_in my_addr;
 	socklen_t cb = (socklen_t)sizeof my_addr;
 
-	assert(p != NULL);
-	assert(!p->unix_socket);
-	assert(p->fd >= 0);
+	assert(this != NULL);
+	assert(!this->unix_socket);
+	assert(this->fd >= 0);
 	assert(port > 0);
 
 	if (hostname != NULL) {
@@ -260,20 +260,20 @@ static status_t sock_bind_inet(meta_socket p, const char *hostname, int port)
 		my_addr.sin_addr.s_addr = ((struct in_addr*)host->h_addr)->s_addr;
 	}
 
-	if (bind(p->fd, (struct sockaddr *)&my_addr, cb) == -1)
+	if (bind(this->fd, (struct sockaddr *)&my_addr, cb) == -1)
 		return failure;
 
 	return success;
 }
 
-static status_t sock_bind_unix(meta_socket p, const char *path)
+static status_t sock_bind_unix(meta_socket this, const char *path)
 {
 	struct sockaddr_un my_addr;
 	socklen_t cb = (socklen_t)sizeof(my_addr);
 
-	assert(p != NULL);
-	assert(p->unix_socket);
-	assert(p->fd >= 0);
+	assert(this != NULL);
+	assert(this->unix_socket);
+	assert(this->fd >= 0);
 	assert(path != NULL);
 	assert(strlen(path) > 0);
 
@@ -288,45 +288,45 @@ static status_t sock_bind_unix(meta_socket p, const char *path)
 	else
 		strcpy(my_addr.sun_path + 1, path);
 
-	if (bind(p->fd, (struct sockaddr *)&my_addr, cb) == -1)
+	if (bind(this->fd, (struct sockaddr *)&my_addr, cb) == -1)
 		return failure;
 
 	return success;
 }
 
-status_t sock_bind(meta_socket p, const char *hostname, int port)
+status_t sock_bind(meta_socket this, const char *hostname, int port)
 {
-	assert(p != NULL);
+	assert(this != NULL);
 
-	if (p->unix_socket)
-		return sock_bind_unix(p, hostname);
+	if (this->unix_socket)
+		return sock_bind_unix(this, hostname);
 	else
-		return sock_bind_inet(p, hostname, port);
+		return sock_bind_inet(this, hostname, port);
 }
 
 meta_socket sock_socket(int unix_socket)
 {
-	meta_socket p;
+	meta_socket this;
 	int af = unix_socket ? AF_UNIX : AF_INET;
 
-	if ((p = malloc(sizeof *p)) == NULL)
+	if ((this = malloc(sizeof *this)) == NULL)
 		return NULL;
 
-	if ((p->fd = socket(af, SOCK_STREAM, 0)) == -1) {
-		free(p);
+	if ((this->fd = socket(af, SOCK_STREAM, 0)) == -1) {
+		free(this);
 		return NULL;
 	}
 
-	p->unix_socket = unix_socket;
-	return p;
+	this->unix_socket = unix_socket;
+	return this;
 }
 
-status_t sock_listen(meta_socket p, int backlog)
+status_t sock_listen(meta_socket this, int backlog)
 {
-	assert(p != NULL);
-	assert(p->fd >= 0);
+	assert(this != NULL);
+	assert(this->fd >= 0);
 
-	if (listen(p->fd, backlog) == -1)
+	if (listen(this->fd, backlog) == -1)
 		return failure;
 
 	return success;
@@ -334,17 +334,17 @@ status_t sock_listen(meta_socket p, int backlog)
 
 meta_socket create_server_socket(int unix_socket, const char *host, int port)
 {
-	meta_socket p;
+	meta_socket this;
 
-	if ((p = sock_socket(unix_socket)) == NULL)
+	if ((this = sock_socket(unix_socket)) == NULL)
 		return NULL;
 
-	if (sock_set_reuseaddr(p)
-	&& sock_bind(p, host, port)
-	&& sock_listen(p, 100))
-		return p;
+	if (sock_set_reuseaddr(this)
+	&& sock_bind(this, host, port)
+	&& sock_listen(this, 100))
+		return this;
 
-	sock_close(p);
+	sock_close(this);
 	return NULL;
 }
 
@@ -352,7 +352,7 @@ meta_socket create_client_socket(const char *host, int port)
 {
 	struct hostent *phost;
 	struct sockaddr_in sa;
-	meta_socket p;
+	meta_socket this;
 
 	assert(host != NULL);
 
@@ -367,68 +367,68 @@ meta_socket create_client_socket(const char *host, int port)
 	sa.sin_port = htons(port);
 
 	/* Open a socket to the server */
-	if ((p = sock_socket(0)) == NULL)
+	if ((this = sock_socket(0)) == NULL)
 		return NULL;
 
 	/* Connect to the server. */
-	if (connect(p->fd, (struct sockaddr *) &sa, sizeof(sa)) == -1) {
-		sock_close(p);
+	if (connect(this->fd, (struct sockaddr *) &sa, sizeof(sa)) == -1) {
+		sock_close(this);
 		return NULL;
 	}
 
-	if (!sock_set_nonblock(p)) {
-		sock_close(p);
+	if (!sock_set_nonblock(this)) {
+		sock_close(this);
 		return NULL;
 	}
 
-	return p;
+	return this;
 }
 
-status_t sock_set_nonblock(meta_socket p)
+status_t sock_set_nonblock(meta_socket this)
 {
 	int flags;
 
-	assert(p != NULL);
-	assert(p->fd >= 0);
+	assert(this != NULL);
+	assert(this->fd >= 0);
 
-	flags = fcntl(p->fd, F_GETFL);
+	flags = fcntl(this->fd, F_GETFL);
 	if (flags == -1)
 		return failure;
 
 	flags |= O_NONBLOCK;
-	if (fcntl(p->fd, F_SETFL, flags) == -1)
+	if (fcntl(this->fd, F_SETFL, flags) == -1)
 		return failure;
 
 	return success;
 }
 
-status_t sock_clear_nonblock(meta_socket p)
+status_t sock_clear_nonblock(meta_socket this)
 {
 	int flags;
 
-	assert(p != NULL);
-	assert(p->fd >= 0);
+	assert(this != NULL);
+	assert(this->fd >= 0);
 
-	flags = fcntl(p->fd, F_GETFL);
+	flags = fcntl(this->fd, F_GETFL);
 	if (flags == -1)
 		return failure;
 
 	flags -= (flags & O_NONBLOCK);
-	if (fcntl(p->fd, F_SETFL, flags) == -1)
+	if (fcntl(this->fd, F_SETFL, flags) == -1)
 		return failure;
 
 	return success;
 }
 
-status_t sock_close(meta_socket p)
+status_t sock_close(meta_socket this)
 {
 	int fd;
 
-	assert(p != NULL);
-	assert(p->fd >= 0);
+	assert(this != NULL);
+	assert(this->fd >= 0);
 
-	fd = p->fd;
-	free(p);
+	fd = this->fd;
+	free(this);
 
 	/* shutdown() may return an error from time to time,
 	 * e.g. if the client already closed the socket. We then
@@ -444,24 +444,24 @@ status_t sock_close(meta_socket p)
 	return success;
 }
 
-meta_socket sock_accept(meta_socket p, struct sockaddr *addr, socklen_t *addrsize)
+meta_socket sock_accept(meta_socket this, struct sockaddr *addr, socklen_t *addrsize)
 {
-	meta_socket newsock;
+	meta_socket new;
 	int fd;
 
-	assert(p != NULL);
+	assert(this != NULL);
 	assert(addr != NULL);
 	assert(addrsize != NULL);
 
-	fd = accept(p->fd, addr, addrsize);
+	fd = accept(this->fd, addr, addrsize);
 	if (fd == -1)
 		return NULL;
 
-	if ((newsock = malloc(sizeof *newsock)) == NULL) {
+	if ((new = malloc(sizeof *new)) == NULL) {
 		close(fd);
 		return NULL;
 	}
 
-	newsock->fd = fd;
-	return newsock;
+	new->fd = fd;
+	return new;
 }

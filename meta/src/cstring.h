@@ -147,13 +147,13 @@ static inline void cstring_free(cstring s)
 	}
 }
 
-static inline int cstring_compare(cstring dest, const char *src)
+static inline int cstring_compare(cstring s, const char *str)
 {
-	assert(NULL != dest);
-	assert(NULL != src);
-	assert(NULL != dest->data);
+	assert(NULL != s);
+	assert(NULL != str);
+	assert(NULL != s->data);
 
-	return strcmp(dest->data, src);
+	return strcmp(s->data, str);
 }
 
 static inline void cstring_recycle(cstring s)

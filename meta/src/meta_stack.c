@@ -34,53 +34,53 @@ struct stack_tag {
 
 stack stack_new(void)
 {
-	stack s;
+	stack new;
 
-	if ((s = malloc(sizeof *s)) == NULL)
+	if ((new = malloc(sizeof *new)) == NULL)
 		return NULL;
 		
-	if ((s->lst = list_new()) == NULL) {
-		free(s);
+	if ((new->lst = list_new()) == NULL) {
+		free(new);
 		return NULL;
 	}
 
-	return s;
+	return new;
 }
 
 /*
  * We use sublist_free to free the list. This way
  * we don't free items in the list.
  */
-void stack_free(stack s)
+void stack_free(stack this)
 {
-	if (s != NULL) {
-		if (s->lst != NULL)
-			sublist_free(s->lst);
+	if (this != NULL) {
+		if (this->lst != NULL)
+			sublist_free(this->lst);
 
-		free(s);
+		free(this);
 	}
 }
 
-status_t stack_push(stack s, void *p)
+status_t stack_push(stack this, void *p)
 {
-	assert(s != NULL);
+	assert(this != NULL);
 	assert(p != NULL);
 
-	if (list_insert(s->lst, p) == NULL)
+	if (list_insert(this->lst, p) == NULL)
 		return failure;
 
 	return success;
 }
 
-void *stack_top(stack s)
+void *stack_top(stack this)
 {
 	void *top = NULL;
 	list_iterator i;
 
-	assert(s != NULL);
-	assert(list_size(s->lst) != 0);
+	assert(this != NULL);
+	assert(list_size(this->lst) != 0);
 
-	i = list_first(s->lst);
+	i = list_first(this->lst);
 	if (!list_end(i))
 		top = list_get(i);
 
@@ -88,30 +88,30 @@ void *stack_top(stack s)
 	return top;
 }
 
-void stack_pop(stack s)
+void stack_pop(stack this)
 {
 	list_iterator i;
 
-	assert(s != NULL);
-	assert(list_size(s->lst) != 0);
+	assert(this != NULL);
+	assert(list_size(this->lst) != 0);
 
-	i = list_first(s->lst);
+	i = list_first(this->lst);
 	if (!list_end(i))
-		list_remove_node(s->lst, i);
+		list_remove_node(this->lst, i);
 }
 
-size_t stack_nelem(stack s)
+size_t stack_nelem(stack this)
 {
-	assert(s != NULL);
+	assert(this != NULL);
 
-	return list_size(s->lst);
+	return list_size(this->lst);
 }
 
-void *stack_get(stack s, size_t i)
+void *stack_get(stack this, size_t i)
 {
-	assert(s != NULL);
+	assert(this != NULL);
 
-	return list_get_item(s->lst, i);
+	return list_get_item(this->lst, i);
 }
 
 #ifdef CHECK_STACK

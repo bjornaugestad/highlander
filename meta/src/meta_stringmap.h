@@ -75,10 +75,14 @@ int stringmap_foreach(stringmap sm, int(*fn)(const char*s, void *arg), void *arg
  *
  * Remember to free it after use.
  */
-stringmap stringmap_subset(stringmap sm1, stringmap sm2);
+stringmap stringmap_subset(stringmap sm1, stringmap sm2)
+	__attribute__((malloc))
+	__attribute__((nonnull(1, 2)));
 
 /* Convert a stringmap to a list. Strings will be copied  */
-list stringmap_tolist(stringmap sm);
+list stringmap_tolist(stringmap sm)
+	__attribute__((malloc))
+	__attribute__((nonnull(1)));
 
 
 #endif

@@ -68,7 +68,7 @@ void ticker_free(ticker t)
 		return;
 
 	ticker_stop(t);
-	list_free(t->actions, NULL);
+	list_free(t->actions, free);
 	free(t);
 }
 

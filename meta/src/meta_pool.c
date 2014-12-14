@@ -53,117 +53,117 @@ struct pool_tag {
 
 pool pool_new(size_t size)
 {
-	pool p;
+	pool new;
 
 	assert(size > 0); /* No point in zero-sized pools */
 
-	if ((p = calloc(1, sizeof *p)) == NULL)
+	if ((new = calloc(1, sizeof *new)) == NULL)
 		return NULL;
 
-	if ((p->pdata = calloc(size, sizeof *p->pdata)) == NULL) {
-		free(p);
+	if ((new->pdata = calloc(size, sizeof *new->pdata)) == NULL) {
+		free(new);
 		return NULL;
 	}
 
-	pthread_mutex_init(&p->mutex, NULL);
-	p->size = size;
-	p->nelem = 0;
+	pthread_mutex_init(&new->mutex, NULL);
+	new->size = size;
+	new->nelem = 0;
 
-	return p;
+	return new;
 }
 
-void pool_free(pool p, dtor free_fn)
+void pool_free(pool this, dtor free_fn)
 {
 	size_t i;
 
 
-	if (p == NULL)
+	if (this == NULL)
 		return;
 		
 	/* Free entries if we have a dtor and the entry is not NULL */
 	if (free_fn != NULL) {
-		assert(p->pdata != NULL);
-		assert(p->size > 0);
+		assert(this->pdata != NULL);
+		assert(this->size > 0);
 
-		for (i = 0; i < p->nelem; i++)
-			if (p->pdata[i] != NULL)
-				free_fn(p->pdata[i]);
+		for (i = 0; i < this->nelem; i++)
+			if (this->pdata[i] != NULL)
+				free_fn(this->pdata[i]);
 	}
 
-	free(p->pdata);
-	pthread_mutex_destroy(&p->mutex);
-	free(p);
+	free(this->pdata);
+	pthread_mutex_destroy(&this->mutex);
+	free(this);
 }
 
-void pool_add(pool p, void *resource)
+void pool_add(pool this, void *resource)
 {
-	assert(NULL != p);
+	assert(NULL != this);
 	assert(NULL != resource);
-	assert(p->nelem < p->size);
+	assert(this->nelem < this->size);
 
-	pthread_mutex_lock(&p->mutex);
-	p->pdata[p->nelem++] = resource;
-	pthread_mutex_unlock(&p->mutex);
+	pthread_mutex_lock(&this->mutex);
+	this->pdata[this->nelem++] = resource;
+	pthread_mutex_unlock(&this->mutex);
 }
 
-void *pool_get(pool p)
+void *pool_get(pool this)
 {
 	size_t i;
 	void *resource = NULL;
 	int error = 0;
 
-	assert(NULL != p);
+	assert(NULL != this);
 
-	error = pthread_mutex_lock(&p->mutex);
+	error = pthread_mutex_lock(&this->mutex);
 	assert(!error);
 
 	/* Find a free resource */
-	for (i = 0; i < p->nelem; i++) {
-		if (p->pdata[i] != NULL) {
-			resource = p->pdata[i];
-			p->pdata[i] = NULL;
+	for (i = 0; i < this->nelem; i++) {
+		if (this->pdata[i] != NULL) {
+			resource = this->pdata[i];
+			this->pdata[i] = NULL;
 
 #ifdef WITH_VALGRIND
-			VALGRIND_MAKE_MEM_UNDEFINED(resource, p->size);
+			VALGRIND_MAKE_MEM_UNDEFINED(resource, this->size);
 #endif
 			break;
 		}
 	}
 
-	error = pthread_mutex_unlock(&p->mutex);
+	error = pthread_mutex_unlock(&this->mutex);
 	assert(!error);
 
 	/* It is not legal to return NULL, we must always
 	 * have enough resources. */
-	assert(i != p->nelem);
+	assert(i != this->nelem);
 	assert(NULL != resource);
 
 	return resource;
 }
 
-void pool_recycle(pool p, void *resource)
+void pool_recycle(pool this, void *resource)
 {
 	size_t i;
 	int error = 0;
 
-	assert(NULL != p);
+	assert(NULL != this);
 	assert(NULL != resource);
 
-	error = pthread_mutex_lock(&p->mutex);
+	error = pthread_mutex_lock(&this->mutex);
 	assert(!error);
 
-	for (i = 0; i < p->nelem; i++) {
-		if (p->pdata[i] == NULL) {
-			p->pdata[i] = resource;
+	for (i = 0; i < this->nelem; i++) {
+		if (this->pdata[i] == NULL) {
+			this->pdata[i] = resource;
 			break;
 		}
 	}
 
 	/* If the resource wasnt' released, someone released more objects
 	 * than they got. This is something we discourage by asserting. :-) */
-	assert(i < p->nelem);
+	assert(i < this->nelem);
 
-	error = pthread_mutex_unlock(&p->mutex);
+	error = pthread_mutex_unlock(&this->mutex);
 	assert(!error);
 }
 
@@ -179,18 +179,17 @@ void pool_recycle(pool p, void *resource)
 
 static void *tfn(void *arg)
 {
-	pool p;
+	pool pool = arg;
 	size_t i, niter = NITER;
 	void *dummy;
 
-	p = arg;
-
 	for (i = 0; i < niter; i++) {
-		if ((dummy = pool_get(p)) == NULL) {
+		if ((dummy = pool_get(pool)) == NULL) {
 			fprintf(stderr, "Unable to get resource\n");
 			exit(77);
 		}
-		pool_recycle(p, dummy);
+
+		pool_recycle(pool, dummy);
 	}
 
 	return NULL;
@@ -199,28 +198,28 @@ static void *tfn(void *arg)
 
 int main(void)
 {
-	pool p;
+	pool pool;
 	pthread_t t1, t2;
 	size_t i;
 
-	if ((p = pool_new(NELEM)) == NULL)
+	if ((pool = pool_new(NELEM)) == NULL)
 		return 77;
 
 	/* Add some items to the pool */
 	for (i = 0; i < NELEM; i++) {
 		void *dummy = (void*)(i + 1);
-		pool_add(p, dummy);
+		pool_add(pool, dummy);
 	}
 
 	/* Start the threads */
-	pthread_create(&t1, NULL, tfn, p);
-	pthread_create(&t2, NULL, tfn, p);
+	pthread_create(&t1, NULL, tfn, pool);
+	pthread_create(&t2, NULL, tfn, pool);
 
 	/* Wait for the threads to finish */
 	pthread_join(t1, NULL);
 	pthread_join(t2, NULL);
 
-	pool_free(p, NULL);
+	pool_free(pool, NULL);
 	return 0;
 }
 #endif

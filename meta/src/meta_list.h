@@ -84,8 +84,9 @@ list_iterator list_delete(list lst, list_iterator i, dtor dtor_fn)
 list_iterator list_remove_node(list lst, list_iterator i)
 	__attribute__((nonnull(1)));
 
-list_iterator list_find(list lst, const void *data, int(*compar)(const void*, const void*))
-	__attribute__((nonnull(1)));
+list_iterator list_find(list lst, const void *data,
+	int(*compar)(const void*, const void*))
+	__attribute__((nonnull(1, 2, 3)));
 
 
 static inline list_iterator list_first(list lst)

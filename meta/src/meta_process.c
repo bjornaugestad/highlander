@@ -81,63 +81,63 @@ struct process_tag {
 
 process process_new(const char *appname)
 {
-	process p;
+	process new;
 
-	if ((p = calloc(1, sizeof *p)) == NULL)
+	if ((new = calloc(1, sizeof *new)) == NULL)
 		;
-	else if ((p->rootdir = cstring_new()) == NULL
-	|| (p->appname = cstring_new()) == NULL
-	|| (p->username = cstring_new()) == NULL
-	|| !cstring_set(p->appname, appname)) {
-		cstring_free(p->appname);
-		cstring_free(p->username);
-		cstring_free(p->rootdir);
-		free(p);
-		p = NULL;
+	else if ((new->rootdir = cstring_new()) == NULL
+	|| (new->appname = cstring_new()) == NULL
+	|| (new->username = cstring_new()) == NULL
+	|| !cstring_set(new->appname, appname)) {
+		cstring_free(new->appname);
+		cstring_free(new->username);
+		cstring_free(new->rootdir);
+		free(new);
+		new = NULL;
 	}
 	else {
-		p->objects_used = 0;
-		p->shutting_down = 0;
+		new->objects_used = 0;
+		new->shutting_down = 0;
 	}
 
-	return p;
+	return new;
 }
 
-void process_free(process p)
+void process_free(process this)
 {
-	if (p != NULL) {
-		cstring_free(p->appname);
-		cstring_free(p->username);
-		cstring_free(p->rootdir);
-		free(p);
+	if (this != NULL) {
+		cstring_free(this->appname);
+		cstring_free(this->username);
+		cstring_free(this->rootdir);
+		free(this);
 	}
 }
 
-status_t process_set_rootdir(process p, const char *path)
+status_t process_set_rootdir(process this, const char *path)
 {
-	assert(p != NULL);
+	assert(this != NULL);
 	assert(path != NULL);
 
-	return cstring_set(p->rootdir, path);
+	return cstring_set(this->rootdir, path);
 }
 
-status_t process_set_username(process p, const char *username)
+status_t process_set_username(process this, const char *username)
 {
-	assert(p != NULL);
+	assert(this != NULL);
 	assert(username != NULL);
 
-	return cstring_set(p->username, username);
+	return cstring_set(this->username, username);
 }
 
 status_t process_add_object_to_start(
-	process p,
+	process this,
 	void *object,
 	status_t do_func(void *),
 	status_t undo_func(void *),
 	status_t run_func(void *),
 	status_t shutdown_func(void *))
 {
-	assert(p != NULL);
+	assert(this != NULL);
 	assert(object != NULL);
 
 	/* We need either both the do/undo functions or none */
@@ -147,18 +147,18 @@ status_t process_add_object_to_start(
 	assert(run_func != NULL);
 	assert(shutdown_func != NULL);
 
-	if (p->objects_used == MAX_OBJECTS) {
+	if (this->objects_used == MAX_OBJECTS) {
 		errno = ENOSPC;
 		return failure;
 	}
 
-	p->objects[p->objects_used].object = object;
-	p->objects[p->objects_used].do_func = do_func;
-	p->objects[p->objects_used].undo_func = undo_func;
-	p->objects[p->objects_used].run_func = run_func;
-	p->objects[p->objects_used].shutdown_func = shutdown_func;
-	p->objects[p->objects_used].exitcode = -1;
-	p->objects_used++;
+	this->objects[this->objects_used].object = object;
+	this->objects[this->objects_used].do_func = do_func;
+	this->objects[this->objects_used].undo_func = undo_func;
+	this->objects[this->objects_used].run_func = run_func;
+	this->objects[this->objects_used].shutdown_func = shutdown_func;
+	this->objects[this->objects_used].exitcode = -1;
+	this->objects_used++;
 	return success;
 }
 
@@ -191,26 +191,26 @@ static int set_signals_to_block(void)
 	return xsuccess;
 }
 
-int process_shutting_down(process p)
+int process_shutting_down(process this)
 {
-	return p->shutting_down;
+	return this->shutting_down;
 }
 
 /*
  * Write the pid to /var/run/appname.pid
  * Return 1 on success, 0 on error.
  */
-static int write_pid(process p, pid_t pid)
+static int write_pid(process this, pid_t pid)
 {
 	FILE *f;
 	char filename[1024];
 
-	assert(p != NULL);
+	assert(this != NULL);
 
 	/* NOTE: Try to find a portable way of identifying the proper
 	 * directory to write this file in. AIX 4.3.3 has no /var/run.
 	 */
-	snprintf(filename, sizeof filename, "/var/run/%s.pid", c_str(p->appname));
+	snprintf(filename, sizeof filename, "/var/run/%s.pid", c_str(this->appname));
 
 	if ((f = fopen(filename, "w")) == NULL)
 		return 0;
@@ -230,11 +230,11 @@ static void *shutdown_thread(void *arg)
 {
 	sigset_t catch;
 	int caught;
-	process p;
+	process proc;
 	pid_t my_pid;
 	size_t i;
 
-	p = arg;
+	proc = arg;
 
 	/*
 	 * Since this is the thread to receive the signal,
@@ -242,7 +242,7 @@ static void *shutdown_thread(void *arg)
 	 * as each thread has its own pid.
 	 */
 	my_pid = getpid();
-	if (!write_pid(p, my_pid)) {
+	if (!write_pid(proc, my_pid)) {
 		warning("Unable to write pid %lu to the pid file.",
 			(unsigned long)my_pid);
 	}
@@ -252,18 +252,18 @@ static void *shutdown_thread(void *arg)
 
 	/* Wait, wait, wait for SIGTERM */
 	sigwait(&catch, &caught);
-	p->shutting_down = 1;
+	proc->shutting_down = 1;
 
 	/* Shut down all objects we handle */
-	for (i = 0; i < p->objects_used; i++) {
-		struct srv* s = &p->objects[i];
+	for (i = 0; i < proc->objects_used; i++) {
+		struct srv* s = &proc->objects[i];
 		s->shutdown_func(s->object);
 	}
 
 	return NULL;
 }
 
-static status_t handle_shutdown(process p)
+static status_t handle_shutdown(process this)
 {
 	int error;
 
@@ -274,7 +274,7 @@ static status_t handle_shutdown(process p)
 	}
 
 	/* start the shutdown thread */
-	if ((error = pthread_create(&p->sdt, NULL, shutdown_thread, p))) {
+	if ((error = pthread_create(&this->sdt, NULL, shutdown_thread, this))) {
 		debug("Could not create debug thread\n");
 		errno = error;
 		return failure;
@@ -309,13 +309,13 @@ static int start_one_object(struct srv* s)
  * The pointer to the failed object, failed, may be NULL. This
  * value means that the undo() function should be called for all objects.
  */
-static void undo(process p, struct srv* failed)
+static void undo(process this, struct srv* failed)
 {
 	size_t i;
 	struct srv *s;
 
-	for (i = 0; i < p->objects_used; i++) {
-		s = &p->objects[i];
+	for (i = 0; i < this->objects_used; i++) {
+		s = &this->objects[i];
 		if (s == failed)
 			return;
 
@@ -324,13 +324,13 @@ static void undo(process p, struct srv* failed)
 	}
 }
 
-static void shutdown_started_objects(process p, struct srv* failed)
+static void shutdown_started_objects(process this, struct srv* failed)
 {
 	size_t i;
 	struct srv *s;
 
-	for (i = 0; i < p->objects_used; i++) {
-		s = &p->objects[i];
+	for (i = 0; i < this->objects_used; i++) {
+		s = &this->objects[i];
 		if (s == failed)
 			return;
 
@@ -344,19 +344,19 @@ static void shutdown_started_objects(process p, struct srv* failed)
  * If we fail after the shutdown thread has started, we have to kill it.
  * That's done here.
  */
-static void shutdown_shutdown(process p)
+static void shutdown_shutdown(process this)
 {
-	pthread_kill(p->sdt, SIGTERM);
+	pthread_kill(this->sdt, SIGTERM);
 }
 
 
-status_t process_start(process p, int fork_and_close)
+status_t process_start(process this, int fork_and_close)
 {
 	size_t i;
 	struct srv *s;
 	int error;
 
-	assert(p != NULL);
+	assert(this != NULL);
 
 	if (fork_and_close) {
 		pid_t pid;
@@ -371,28 +371,28 @@ status_t process_start(process p, int fork_and_close)
 		fclose(stderr);
 	}
 
-	for (i = 0; i < p->objects_used; i++) {
-		s = &p->objects[i];
+	for (i = 0; i < this->objects_used; i++) {
+		s = &this->objects[i];
 		if (s->do_func != NULL && !s->do_func(s->object)) {
-			undo(p, s);
+			undo(this, s);
 			return failure;
 		}
 	}
 
 	/* Start shutdown thread before we do setuid() or chroot() to
 	 * be able to write to /var/run. */
-	if (!handle_shutdown(p)) {
-		undo(p, NULL);
+	if (!handle_shutdown(this)) {
+		undo(this, NULL);
 		return failure;
 	}
 
 	/* Set current directory and user id if supplied by the caller */
-	if (cstring_length(p->username) > 0) {
+	if (cstring_length(this->username) > 0) {
 		struct passwd* pw;
 		errno = 0;
-		if ((pw = getpwnam(c_str(p->username))) == NULL) {
-			shutdown_shutdown(p);
-			undo(p, NULL);
+		if ((pw = getpwnam(c_str(this->username))) == NULL) {
+			shutdown_shutdown(this);
+			undo(this, NULL);
 
 			/* Hmm, either the user didn't exist in /etc/passwd
 			 * or we didn't have permission to read it or we ran
@@ -408,11 +408,11 @@ status_t process_start(process p, int fork_and_close)
 		}
 
 		/* We must chroot before setuid() to be allowed to chroot. */
-		if (cstring_length(p->rootdir) > 0) {
-			if (chdir(c_str(p->rootdir)) || chroot(c_str(p->rootdir))) {
+		if (cstring_length(this->rootdir) > 0) {
+			if (chdir(c_str(this->rootdir)) || chroot(c_str(this->rootdir))) {
 				/* Hmm, unable to change directory. */
-				shutdown_shutdown(p);
-				undo(p, NULL);
+				shutdown_shutdown(this);
+				undo(this, NULL);
 				debug("Could not change root directory\n");
 				return failure;
 			}
@@ -424,34 +424,34 @@ status_t process_start(process p, int fork_and_close)
 			 * The safest thing to do is therefore to stop
 			 * the process.
 			 */
-			undo(p, NULL);
-			shutdown_shutdown(p);
+			undo(this, NULL);
+			shutdown_shutdown(this);
 			debug("Could not set uid\n");
 			return failure;
 		}
 	}
 	else {
 		/* Don't chroot() twice */
-		if (cstring_length(p->rootdir) > 0) {
-			if (chdir(c_str(p->rootdir)) || chroot(c_str(p->rootdir))) {
+		if (cstring_length(this->rootdir) > 0) {
+			if (chdir(c_str(this->rootdir)) || chroot(c_str(this->rootdir))) {
 				/* Hmm, unable to change directory. */
-				undo(p, NULL);
-				shutdown_shutdown(p);
+				undo(this, NULL);
+				shutdown_shutdown(this);
 				return failure;
 			}
 		}
 	}
 
 	/* Now start the server objects */
-	for (i = 0; i < p->objects_used; i++) {
-		s = &p->objects[i];
+	for (i = 0; i < this->objects_used; i++) {
+		s = &this->objects[i];
 		if ((error = start_one_object(s))) {
 			/* Hmm, we failed to start one object. Do not
 			 * start the rest of the objects. Call the shutdown
 			 * function for each object to tell it to stop running.
 			 */
-			shutdown_started_objects(p, s);
-			shutdown_shutdown(p);
+			shutdown_started_objects(this, s);
+			shutdown_shutdown(this);
 			return failure;
 		}
 	}
@@ -460,13 +460,13 @@ status_t process_start(process p, int fork_and_close)
 	return success;
 }
 
-status_t process_wait_for_shutdown(process p)
+status_t process_wait_for_shutdown(process this)
 {
 	size_t i;
 	int error;
 
-	assert(p != NULL);
-	if ((error = pthread_join(p->sdt, NULL))) {
+	assert(this != NULL);
+	if ((error = pthread_join(this->sdt, NULL))) {
 		errno = error;
 		return failure;
 	}
@@ -474,8 +474,8 @@ status_t process_wait_for_shutdown(process p)
 	/* Now that the shutdown thread has exited, it
 	 * is time to wait for the started objects.
 	 */
-	for (i = 0; i < p->objects_used; i++) {
-		struct srv* srv = &p->objects[i];
+	for (i = 0; i < this->objects_used; i++) {
+		struct srv* srv = &this->objects[i];
 		void *pfoo = &srv->exitcode;
 		if ((error = pthread_join(srv->tid, &pfoo))) {
 			errno = error;
@@ -486,15 +486,15 @@ status_t process_wait_for_shutdown(process p)
 	return success;
 }
 
-int process_get_exitcode(process p, void *object)
+int process_get_exitcode(process this, void *object)
 {
 	size_t i;
 
-	assert(p != NULL);
+	assert(this != NULL);
 	assert(object != NULL);
 
-	for (i = 0; i < p->objects_used; i++) {
-		struct srv* s = &p->objects[i];
+	for (i = 0; i < this->objects_used; i++) {
+		struct srv* s = &this->objects[i];
 		if (s->object == object)
 			return s->exitcode;
 	}

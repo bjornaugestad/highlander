@@ -65,17 +65,17 @@ struct stringmap_tag {
 	unsigned long last_id;
 };
 
-int stringmap_foreach(stringmap sm, int(*fn)(const char*s, void *arg), void *arg)
+int stringmap_foreach(stringmap this, int(*fn)(const char*s, void *arg), void *arg)
 {
 	int rc;
 	size_t i;
 
-	assert(sm != NULL);
+	assert(this != NULL);
 	assert(arg != NULL);
 
-	for (i = 0; i < sm->nelem; i++) {
-		if (sm->hashtable[i] != NULL) {
-			list lst = sm->hashtable[i];
+	for (i = 0; i < this->nelem; i++) {
+		if (this->hashtable[i] != NULL) {
+			list lst = this->hashtable[i];
 			list_iterator li;
 
 			for (li = list_first(lst); !list_end(li); li = list_next(li)) {
@@ -93,66 +93,66 @@ int stringmap_foreach(stringmap sm, int(*fn)(const char*s, void *arg), void *arg
 
 stringmap stringmap_new(size_t nelem)
 {
-	stringmap sm;
+	stringmap new;
 
 	assert(nelem > 0);
 
-	if ((sm = malloc(sizeof *sm)) == NULL)
+	if ((new = malloc(sizeof *new)) == NULL)
 		return NULL;
 
-	if ((sm->hashtable = calloc(nelem, sizeof *sm->hashtable)) == NULL) {
-		free(sm);
+	if ((new->hashtable = calloc(nelem, sizeof *new->hashtable)) == NULL) {
+		free(new);
 		return NULL;
 	}
 
-	sm->nelem = nelem;
-	sm->last_id = 0;
+	new->nelem = nelem;
+	new->last_id = 0;
 
-	return sm;
+	return new;
 }
 
-void stringmap_free(stringmap sm)
+void stringmap_free(stringmap this)
 {
 	size_t i;
 
-	if (sm != NULL) {
-		for (i = 0; i < sm->nelem; i++) {
-			if (sm->hashtable[i] != NULL)
-				list_free(sm->hashtable[i], entry_free);
+	if (this != NULL) {
+		for (i = 0; i < this->nelem; i++) {
+			if (this->hashtable[i] != NULL)
+				list_free(this->hashtable[i], entry_free);
 		}
 
-		free(sm->hashtable);
-		free(sm);
+		free(this->hashtable);
+		free(this);
 	}
 }
 
-status_t stringmap_invalidate(stringmap sm)
+status_t stringmap_invalidate(stringmap this)
 {
 	size_t i;
 
-	assert(sm != NULL);
+	assert(this != NULL);
 
-	for (i = 0; i < sm->nelem; i++) {
-		if (sm->hashtable[i] != NULL)
-			list_free(sm->hashtable[i], entry_free);
+	for (i = 0; i < this->nelem; i++) {
+		if (this->hashtable[i] != NULL)
+			list_free(this->hashtable[i], entry_free);
 	}
 
 	return success;
 }
 
 /* Locate an existing entry and return a list and iterator to it */
-static bool sm_locate(stringmap sm, const char *s, list* plist, list_iterator* pi)
+static bool sm_locate(stringmap this, const char *s, list* plist, list_iterator* pi)
 {
 	unsigned long hashval;
 	size_t hid;
 
-	assert(sm != NULL);
+	assert(this != NULL);
 	assert(s != NULL);
 	assert(strlen(s) > 0);
 
 	hashval = hash((const unsigned char*)s);
-	hid = hashval % sm->nelem;
-	*plist = sm->hashtable[hid];
+	hid = hashval % this->nelem;
+	*plist = this->hashtable[hid];
 
 	if (*plist != NULL) {
 		for (*pi = list_first(*plist); !list_end(*pi); *pi = list_next(*pi)) {
@@ -165,20 +165,20 @@ static bool sm_locate(stringmap sm, const char *s, list* plist, list_iterator* p
 	return 0;
 }
 
-status_t stringmap_add(stringmap sm, const char *s, unsigned long* pid)
+status_t stringmap_add(stringmap this, const char *s, unsigned long* pid)
 {
 	struct entry *e = NULL;
 	size_t n, hid;
 	list lst;
 	list_iterator i;
 
-	assert(sm != NULL);
+	assert(this != NULL);
 	assert(s != NULL);
 	assert(strlen(s) > 0);
 	assert(pid != NULL);
 
 
-	if (sm_locate(sm, s, &lst, &i)) {
+	if (sm_locate(this, s, &lst, &i)) {
 		e = list_get(i);
 
 		/* Item already exist. Do not add it. */
@@ -195,16 +195,16 @@ status_t stringmap_add(stringmap sm, const char *s, unsigned long* pid)
 
 	memcpy(e->s, s, n);
 	e->hashval = hash((const unsigned char*)e->s);
-	*pid = e->id = ++sm->last_id;
+	*pid = e->id = ++this->last_id;
 
 	/* Add it to the list */
-	hid = e->hashval % sm->nelem;
+	hid = e->hashval % this->nelem;
 
-	if (sm->hashtable[hid] == NULL
-	&& (sm->hashtable[hid] = list_new()) == NULL)
+	if (this->hashtable[hid] == NULL
+	&& (this->hashtable[hid] = list_new()) == NULL)
 		goto err;
 
-	if (list_add(sm->hashtable[hid], e) == NULL)
+	if (list_add(this->hashtable[hid], e) == NULL)
 		goto err;
 
 	return success;
@@ -218,29 +218,29 @@ err:
 	return failure;
 }
 
-bool stringmap_exists(stringmap sm, const char *s)
+bool stringmap_exists(stringmap this, const char *s)
 {
 	list lst;
 	list_iterator i;
 
-	assert(sm != NULL);
+	assert(this != NULL);
 	assert(s != NULL);
 	assert(strlen(s) > 0);
 
-	return sm_locate(sm, s, &lst, &i);
+	return sm_locate(this, s, &lst, &i);
 }
 
-status_t stringmap_get_id(stringmap sm, const char *s, unsigned long* pid)
+status_t stringmap_get_id(stringmap this, const char *s, unsigned long* pid)
 {
 	list lst;
 	list_iterator i;
 	struct entry* e;
 
-	assert(sm != NULL);
+	assert(this != NULL);
 	assert(s != NULL);
 	assert(strlen(s) > 0);
 
-	if (!sm_locate(sm, s, &lst, &i))
+	if (!sm_locate(this, s, &lst, &i))
 		return failure;
 
 	e = list_get(i);
@@ -280,20 +280,20 @@ err:
 
 }
 
-list stringmap_tolist(stringmap sm)
+list stringmap_tolist(stringmap this)
 {
 	list lst = NULL;
 	size_t i;
-	char *s;
+	char *s = NULL;
 
 	if ((lst = list_new()) == NULL)
 		return NULL;
 
-	for (i = 0; i < sm->nelem; i++) {
-		if (sm->hashtable[i] != NULL) {
+	for (i = 0; i < this->nelem; i++) {
+		if (this->hashtable[i] != NULL) {
 			list_iterator li;
 
-			for (li = list_first(sm->hashtable[i]); !list_end(li); li = list_next(li)) {
+			for (li = list_first(this->hashtable[i]); !list_end(li); li = list_next(li)) {
 				struct entry* p =  list_get(li);
 				size_t n = strlen(p->s) + 1;
 				if ((s = malloc(n)) == NULL)
@@ -310,7 +310,8 @@ list stringmap_tolist(stringmap sm)
 	return lst;
 
 err:
-	list_free(lst, NULL);
+	list_free(lst, free);
+	free(s);
 	return NULL;
 }
 

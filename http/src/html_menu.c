@@ -42,9 +42,13 @@ html_menu html_menu_new(void)
 	if ((m = malloc(sizeof *m)) == NULL)
 		return NULL;
 
-	if ((m->items = list_new()) == NULL
-	|| !cstring_multinew(arr, 4)) {
-		list_free(m->items, NULL);
+	if ((m->items = list_new()) == NULL) {
+		free(m);
+		return NULL;
+	}
+
+	if (!cstring_multinew(arr, 4)) {
+		list_free(m->items, free);
 		free(m);
 		return NULL;
 	}

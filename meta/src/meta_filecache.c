@@ -126,45 +126,45 @@ status_t fileinfo_set_mimetype(fileinfo p, const char *s)
 
 filecache filecache_new(size_t nelem, size_t bytes)
 {
-	filecache fc;
+	filecache new;
 
 	assert(nelem > 0);
 	assert(bytes > 0);
 
-	if ((fc = malloc(sizeof *fc)) == NULL
-	||	(fc->filenames = stringmap_new(nelem)) == NULL
-	||	(fc->metacache = cache_new(nelem, HOTLIST_SIZE, bytes)) == NULL) {
-		stringmap_free(fc->filenames);
-		free(fc);
-		fc = NULL;
+	if ((new = malloc(sizeof *new)) == NULL
+	||	(new->filenames = stringmap_new(nelem)) == NULL
+	||	(new->metacache = cache_new(nelem, HOTLIST_SIZE, bytes)) == NULL) {
+		stringmap_free(new->filenames);
+		free(new);
+		new = NULL;
 	}
 	else  {
-		pthread_rwlock_init(&fc->lock, NULL);
-		fc->nelem = nelem;
-		fc->bytes = bytes;
+		pthread_rwlock_init(&new->lock, NULL);
+		new->nelem = nelem;
+		new->bytes = bytes;
 	}
 
-	return fc;
+	return new;
 }
 
-void filecache_free(filecache fc)
+void filecache_free(filecache this)
 {
-	if (fc != NULL) {
-		cache_free(fc->metacache, (dtor)fileinfo_free);
-		stringmap_free(fc->filenames);
-		pthread_rwlock_destroy(&fc->lock);
-		free(fc);
+	if (this != NULL) {
+		cache_free(this->metacache, (dtor)fileinfo_free);
+		stringmap_free(this->filenames);
+		pthread_rwlock_destroy(&this->lock);
+		free(this);
 	}
 }
 
-status_t filecache_add(filecache fc, fileinfo finfo, int pin, unsigned long* pid)
+status_t filecache_add(filecache this, fileinfo finfo, int pin, unsigned long* pid)
 {
 	int fd = -1;
 	status_t rc;
 
 	char *contents = NULL;
 
-	assert(fc != NULL);
+	assert(this != NULL);
 	assert(finfo != NULL);
 	assert(finfo->contents == NULL);
 
@@ -182,13 +182,13 @@ status_t filecache_add(filecache fc, fileinfo finfo, int pin, unsigned long* pid
 
 	fd = -1;
 
-	pthread_rwlock_wrlock(&fc->lock);
-	rc = stringmap_add(fc->filenames, fileinfo_alias(finfo), pid);
+	pthread_rwlock_wrlock(&this->lock);
+	rc = stringmap_add(this->filenames, fileinfo_alias(finfo), pid);
 
 	if (rc == success)
-		rc = cache_add(fc->metacache, *pid, finfo, sizeof *finfo, pin);
+		rc = cache_add(this->metacache, *pid, finfo, sizeof *finfo, pin);
 
-	pthread_rwlock_unlock(&fc->lock);
+	pthread_rwlock_unlock(&this->lock);
 	if (rc)
 		return success;
 
@@ -202,59 +202,59 @@ err:
 }
 
 
-int filecache_invalidate(filecache fc)
+int filecache_invalidate(filecache this)
 {
 	int rc = 1;
 
-	pthread_rwlock_wrlock(&fc->lock);
-	stringmap_free(fc->filenames);
-	cache_free(fc->metacache, (dtor)fileinfo_free);
+	pthread_rwlock_wrlock(&this->lock);
+	stringmap_free(this->filenames);
+	cache_free(this->metacache, (dtor)fileinfo_free);
 
-	if ((fc->filenames = stringmap_new(fc->nelem)) == NULL) {
-		pthread_rwlock_unlock(&fc->lock);
+	if ((this->filenames = stringmap_new(this->nelem)) == NULL) {
+		pthread_rwlock_unlock(&this->lock);
 		return 0;
 	}
 
-	if ((fc->metacache = cache_new(fc->nelem, HOTLIST_SIZE, fc->bytes)) == NULL) {
-		stringmap_free(fc->filenames);
-		fc->filenames = NULL;
-		fc->metacache = NULL;
+	if ((this->metacache = cache_new(this->nelem, HOTLIST_SIZE, this->bytes)) == NULL) {
+		stringmap_free(this->filenames);
+		this->filenames = NULL;
+		this->metacache = NULL;
 	}
 
-	pthread_rwlock_unlock(&fc->lock);
+	pthread_rwlock_unlock(&this->lock);
 	return rc;
 }
 
-double filecache_hitratio(filecache fc)
+double filecache_hitratio(filecache this)
 {
-	(void)fc;
+	(void)this;
 	return 1.0;
 }
 
-int filecache_exists(filecache fc, const char *filename)
+int filecache_exists(filecache this, const char *filename)
 {
 	unsigned long id;
 	int rc = 0;
 
-	pthread_rwlock_rdlock(&fc->lock);
-	if (stringmap_get_id(fc->filenames, filename, &id))
+	pthread_rwlock_rdlock(&this->lock);
+	if (stringmap_get_id(this->filenames, filename, &id))
 		rc = 1;
 
-	pthread_rwlock_unlock(&fc->lock);
+	pthread_rwlock_unlock(&this->lock);
 
 	return rc;
 }
 
-status_t filecache_get(filecache fc, const char *filename, void** pdata, size_t* pcb)
+status_t filecache_get(filecache this, const char *filename, void** pdata, size_t* pcb)
 {
 	unsigned long id;
 	status_t rc = failure;
 	void *p;
 
-	pthread_rwlock_rdlock(&fc->lock);
+	pthread_rwlock_rdlock(&this->lock);
 
-	if (stringmap_get_id(fc->filenames, filename, &id)) {
-		rc = cache_get(fc->metacache, id, (void*)&p, pcb);
+	if (stringmap_get_id(this->filenames, filename, &id)) {
+		rc = cache_get(this->metacache, id, (void*)&p, pcb);
 		if (rc) {
 			fileinfo fi = p;
 			*pdata = fi->contents;
@@ -262,86 +262,86 @@ status_t filecache_get(filecache fc, const char *filename, void** pdata, size_t*
 		}
 	}
 
-	pthread_rwlock_unlock(&fc->lock);
+	pthread_rwlock_unlock(&this->lock);
 	return rc;
 }
 
-int filecache_foreach(filecache fc, int(*fn)(const char*s, void *arg), void *arg)
+int filecache_foreach(filecache this, int(*fn)(const char*s, void *arg), void *arg)
 {
 	int rc;
 
-	assert(fc != NULL);
+	assert(this != NULL);
 	assert(fn != NULL);
 
-	pthread_rwlock_rdlock(&fc->lock);
+	pthread_rwlock_rdlock(&this->lock);
 
-	rc = stringmap_foreach(fc->filenames, fn, arg);
-	pthread_rwlock_unlock(&fc->lock);
+	rc = stringmap_foreach(this->filenames, fn, arg);
+	pthread_rwlock_unlock(&this->lock);
 	return rc;
 
 }
 
-status_t filecache_stat(filecache fc, const char *filename, struct stat* p)
+status_t filecache_stat(filecache this, const char *filename, struct stat* p)
 {
 	unsigned long id;
 	void *pst = NULL;
 	size_t cb;
 	status_t rc = failure;
 
-	assert(fc != NULL);
+	assert(this != NULL);
 	assert(filename != NULL);
 
-	pthread_rwlock_rdlock(&fc->lock);
+	pthread_rwlock_rdlock(&this->lock);
 
-	if (stringmap_get_id(fc->filenames, filename, &id)) {
-		if (cache_get(fc->metacache, id, &pst, &cb)) {
+	if (stringmap_get_id(this->filenames, filename, &id)) {
+		if (cache_get(this->metacache, id, &pst, &cb)) {
 			*p = *fileinfo_stat(pst);
 			rc = success;
 		}
 	}
 
-	pthread_rwlock_unlock(&fc->lock);
+	pthread_rwlock_unlock(&this->lock);
 	return rc;
 }
 
-status_t filecache_get_mime_type(filecache fc, const char *filename, char mime[], size_t cb)
+status_t filecache_get_mime_type(filecache this, const char *filename, char mime[], size_t cb)
 {
 	unsigned long id;
 	void *p;
 	size_t cbptr;
 	status_t rc = failure;
 
-	pthread_rwlock_rdlock(&fc->lock);
+	pthread_rwlock_rdlock(&this->lock);
 
-	if (stringmap_get_id(fc->filenames, filename, &id)) {
-		if (cache_get(fc->metacache, id, (void*)&p, &cbptr)) {
+	if (stringmap_get_id(this->filenames, filename, &id)) {
+		if (cache_get(this->metacache, id, (void*)&p, &cbptr)) {
 			mime[0] = '\0';
 			strncat(mime, fileinfo_mimetype(p), cb - 1);
 			rc = success;
 		}
 	}
 
-	pthread_rwlock_unlock(&fc->lock);
+	pthread_rwlock_unlock(&this->lock);
 	return rc;
 }
 
-fileinfo filecache_fileinfo(filecache fc, const char *filename)
+fileinfo filecache_fileinfo(filecache this, const char *filename)
 {
 	unsigned long id;
 	void *pst = NULL;
 	size_t cb;
 	status_t rc = failure;
 
-	assert(fc != NULL);
+	assert(this != NULL);
 	assert(filename != NULL);
 
 
-	pthread_rwlock_rdlock(&fc->lock);
+	pthread_rwlock_rdlock(&this->lock);
 
-	if (stringmap_get_id(fc->filenames, filename, &id))
-		rc = cache_get(fc->metacache, id, (void*)&pst, &cb);
+	if (stringmap_get_id(this->filenames, filename, &id))
+		rc = cache_get(this->metacache, id, (void*)&pst, &cb);
 
-	pthread_rwlock_unlock(&fc->lock);
+	pthread_rwlock_unlock(&this->lock);
 
 	if (rc)
 		return pst;

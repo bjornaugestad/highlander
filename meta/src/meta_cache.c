@@ -133,12 +133,12 @@ void cache_free(cache c, dtor cleanup)
 				list_iterator li;
 
 				for (li = list_first(lst); !list_end(li); li = list_next(li)) {
-					struct cache_entry* p = list_get(li);
-					assert(p != NULL);
-					assert(p->data != NULL);
+					struct cache_entry* entry = list_get(li);
+					assert(entry != NULL);
+					assert(entry->data != NULL);
 
-					cleanup(p->data);
-					p->data = NULL;
+					cleanup(entry->data);
+					entry->data = NULL;
 				}
 			}
 
@@ -184,7 +184,7 @@ static int on_hotlist(cache c, size_t id)
  */
 static status_t make_space(cache c, size_t cb)
 {
-	struct cache_entry* p;
+	struct cache_entry* entry;
 	size_t hid;
 	list_iterator i;
 
@@ -213,10 +213,10 @@ static status_t make_space(cache c, size_t cb)
 
 		/* Iterate through the list and delete an item */
 		for (i =list_first(c->hashtable[hid]); !list_end(i); i = list_next(i)) {
-			p = list_get(i);
+			entry = list_get(i);
 
-			if (!on_hotlist(c, p->id) && !p->pinned) {
-				if (!cache_remove(c, p->id))
+			if (!on_hotlist(c, entry->id) && !entry->pinned) {
+				if (!cache_remove(c, entry->id))
 					return failure;
 			}
 		}
@@ -230,7 +230,7 @@ static status_t make_space(cache c, size_t cb)
 
 status_t cache_add(cache c, size_t id, void *data, size_t cb, int pin)
 {
-	struct cache_entry *p;
+	struct cache_entry *entry;
 	size_t hid = id % c->nelem;
 
 	assert(c != NULL);
@@ -239,28 +239,28 @@ status_t cache_add(cache c, size_t id, void *data, size_t cb, int pin)
 	if (!make_space(c, cb))
 		return failure;
 
-	if ((p = malloc(sizeof *p)) == NULL)
+	if ((entry = malloc(sizeof *entry)) == NULL)
 		return failure;
 
-	p->id = id;
-	p->data = data;
-	p->size = cb;
-	p->pinned = pin;
+	entry->id = id;
+	entry->data = data;
+	entry->size = cb;
+	entry->pinned = pin;
 
 	if (cache_exists(c, id)) {
 		/* Hmm, duplicate. We don't like that (for now) */
-		free(p);
+		free(entry);
 		abort();
 	}
 
 	if (c->hashtable[hid] == NULL
 	&& (c->hashtable[hid] = list_new()) == NULL) {
-		free(p);
+		free(entry);
 		return failure;
 	}
 
-	if (list_add(c->hashtable[hid], p) == NULL) {
-		free(p);
+	if (list_add(c->hashtable[hid], entry) == NULL) {
+		free(entry);
 		return failure;
 	}
 
@@ -304,7 +304,7 @@ static void add_to_hotlist(cache c, size_t id)
 
 static inline list_iterator find_entry(cache c, size_t id)
 {
-	struct cache_entry *p;
+	struct cache_entry *entry;
 	size_t hid;
 	list_iterator i;
 
@@ -316,10 +316,10 @@ static inline list_iterator find_entry(cache c, size_t id)
 		return i;
 
 	for (i = list_first(c->hashtable[hid]); !list_end(i); i = list_next(i)) {
-		p = list_get(i);
-		assert(p != NULL);
+		entry = list_get(i);
+		assert(entry != NULL);
 
-		if (p->id == id)
+		if (entry->id == id)
 			break;
 	}
 
@@ -338,7 +338,7 @@ int cache_exists(cache c, size_t id)
 
 status_t cache_get(cache c, size_t id, void** pdata, size_t* pcb)
 {
-	struct cache_entry *p;
+	struct cache_entry *entry;
 	list_iterator i;
 
 	assert(c != NULL);
@@ -349,10 +349,10 @@ status_t cache_get(cache c, size_t id, void** pdata, size_t* pcb)
 	if (list_end(i))
 		return failure;
 
-	p = list_get(i);
-	*pdata = p->data;
-	*pcb = p->size;
-	add_to_hotlist(c, p->id);
+	entry = list_get(i);
+	*pdata = entry->data;
+	*pcb = entry->size;
+	add_to_hotlist(c, entry->id);
 
 	return success;
 }

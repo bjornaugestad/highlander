@@ -193,7 +193,7 @@ list find_deleted_files(const char* directories, cstring* patterns, size_t npatt
 
 err:
     list_free(diskfiles, (dtor)fileinfo_free);
-    list_free(files, NULL);
+    list_free(files, free);
     stringmap_free(sm);
     stringmap_free(deleted);
     return NULL;

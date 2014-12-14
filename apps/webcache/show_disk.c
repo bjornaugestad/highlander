@@ -112,7 +112,7 @@ static int show_deleted_files(http_request req, http_response page)
 	rc = HTTP_200_OK;
 
 cleanup:
-    list_free(deleted, NULL);
+    list_free(deleted, free);
     sublist_free(filist);
 
     return rc;
@@ -220,7 +220,7 @@ static int show_file_summary(http_request req, http_response page)
 
 cleanup:
     list_free(mod, (dtor)fileinfo_free);
-    list_free(del, (dtor)NULL);
+    list_free(del, free);
     list_free(new, (dtor)fileinfo_free);
     return rc;
 }

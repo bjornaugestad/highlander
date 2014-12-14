@@ -41,12 +41,12 @@ struct map_tag {
 	void(*freefunc)(void *arg);
 };
 
-map_iterator map_first(map m)
+map_iterator map_first(map this)
 {
 	map_iterator mi;
 	list_iterator li;
 
-	li = list_first(m->lst);
+	li = list_first(this->lst);
 	mi.node = li.node;
 	return mi;
 }
@@ -91,43 +91,44 @@ void *map_value(map_iterator mi)
 
 map map_new(void(*freefunc)(void *arg))
 {
-	map m;
+	map new;
 
-	if ((m = calloc(1, sizeof *m)) == NULL)
+	if ((new = calloc(1, sizeof *new)) == NULL)
 		return NULL;
 
-	if ((m->lst = list_new()) == NULL) {
-		free(m);
+	if ((new->lst = list_new()) == NULL) {
+		free(new);
 		return NULL;
 	}
 
-	m->freefunc = freefunc;
-	return m;
+	new->freefunc = freefunc;
+	return new;
 }
 
-void map_free(map m)
+void map_free(map this)
 {
 	list_iterator i;
-	struct pair *p;
+	struct pair *entry;
 
-	if (m != NULL && m->lst != NULL) {
-		for (i = list_first(m->lst); !list_end(i); i = list_next(i)) {
-			p = list_get(i);
-			free(p->key);
-			if (m->freefunc != NULL)
-				m->freefunc(p->value);
-		}
+	if (this == NULL)
+		return;
+
+	for (i = list_first(this->lst); !list_end(i); i = list_next(i)) {
+		entry = list_get(i);
+		free(entry->key);
+		if (this->freefunc != 0)
+			this->freefunc(entry->value);
 	}
 
-	list_free(m->lst, NULL);
-	free(m);
+	list_free(this->lst, free);
+	free(this);
 }
 
-static struct pair* map_find(map m, const char *key)
+static struct pair* map_find(map this, const char *key)
 {
 	list_iterator i;
 
-	for (i = list_first(m->lst); !list_end(i); i = list_next(i)) {
+	for (i = list_first(this->lst); !list_end(i); i = list_next(i)) {
 		struct pair *p = list_get(i);
 
 		if (strcmp(key, p->key) == 0)
@@ -137,62 +138,66 @@ static struct pair* map_find(map m, const char *key)
 	return NULL;
 }
 
-status_t map_set(map m, const char *key, void *value)
+status_t map_set(map this, const char *key, void *value)
 {
-	struct pair *p, *i;
+	struct pair *entry;
 	list tmp;
+	size_t n;
 
-	if ((i = map_find(m, key)) != NULL) {
-		free(i->value);
-		i->value = value;
+	/* Update if key already exists. */
+	if ((entry = map_find(this, key)) != NULL) {
+		if (this->freefunc != 0)
+			this->freefunc(entry->value);
 
-		return 0;
+		entry->value = value;
+		return success;
 	}
 
-	if ((p = malloc(sizeof *p)) == NULL)
+	if ((entry = malloc(sizeof *entry)) == NULL)
 		return failure;
 
-	if ((p->key = malloc(strlen(key) + 1)) == NULL)  {
-		free(p);
+	n = strlen(key) + 1;
+	if ((entry->key = malloc(n)) == NULL)  {
+		free(entry);
 		return failure;
 	}
 
-	strcpy(p->key, key);
-	p->value = value;
+	memcpy(entry->key, key, n);
+	entry->value = value;
 
-	tmp = list_add(m->lst, p);
+	tmp = list_add(this->lst, entry);
 	if(tmp == NULL) {
-		free(p->key);
-		free(p);
+		free(entry->key);
+		free(entry);
 		return failure;
 	}
 	
 	return success;
 }
 
-bool map_exists(map m, const char *key)
+bool map_exists(map this, const char *key)
 {
-	if (map_find(m, key))
+	if (map_find(this, key))
 		return true;
 
 	return false;
 }
 
-void *map_get(map m, const char *key)
+void *map_get(map this, const char *key)
 {
-	struct pair *p;
+	struct pair *pair;
 
-	if ((p = map_find(m, key)) == NULL)
+	if ((pair = map_find(this, key)) == NULL)
 		return NULL;
 		
-	return p->value;
+	return pair->value;
 }
 
-int map_foreach(map m, void *args, int(*f)(void *args, char *key, void *data))
+int map_foreach(map this, void *args, int(*f)(void *args, char *key, void *data))
 {
 	list_iterator i;
 
-	for (i = list_first(m->lst); !list_end(i); i = list_next(i)) {
+	for (i = list_first(this->lst); !list_end(i); i = list_next(i)) {
 		struct pair *p;
 
 		p = list_get(i);
