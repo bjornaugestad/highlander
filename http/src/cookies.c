@@ -130,12 +130,11 @@ void cookie_set_secure(cookie c, int v)
 	c->secure = v;
 }
 
-int cookie_set_max_age(cookie c, int v)
+void cookie_set_max_age(cookie c, int v)
 {
 	assert(NULL != c);
 
 	c->max_age = v;
-	return 1;
 }
 
 const char *cookie_get_name(cookie c)

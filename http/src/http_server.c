@@ -622,7 +622,7 @@ void http_server_recycle_response(http_server srv, http_response response)
 	pool_recycle(srv->responses, response);
 }
 
-int http_server_set_default_page_attributes(http_server srv, page_attribute a)
+status_t http_server_set_default_page_attributes(http_server srv, page_attribute a)
 {
 	assert(srv != NULL);
 	assert(a != NULL);
@@ -634,9 +634,9 @@ int http_server_set_default_page_attributes(http_server srv, page_attribute a)
 	/* Copy new ones */
 	srv->default_attributes = attribute_dup(a);
 	if (NULL == srv->default_attributes)
-		return 0;
+		return failure;
 
-	return 1;
+	return success;
 }
 
 page_attribute http_server_get_default_attributes(http_server srv)
@@ -646,9 +646,9 @@ page_attribute http_server_get_default_attributes(http_server srv)
 	return srv->default_attributes;
 }
 
-int http_server_set_host(http_server srv, const char* host)
+status_t http_server_set_host(http_server srv, const char* host)
 {
-	size_t cb;
+	size_t n;
 
 	assert(srv != NULL);
 	assert(host != NULL);
@@ -656,35 +656,38 @@ int http_server_set_host(http_server srv, const char* host)
 	/* Free old version, if any */
 	free(srv->host);
 
-	cb = strlen(host) + 1;
-	srv->host = malloc(cb);
+	n = strlen(host) + 1;
+	srv->host = malloc(n);
 	if (NULL == srv->host)
-		return 0;
+		return failure;
 
-	strcpy(srv->host, host);
-	return 1;
+	memcpy(srv->host, host, n);
+	return success;
 }
 
-int http_server_set_logfile(http_server srv, const char *name)
+status_t http_server_set_logfile(http_server srv, const char *name)
 {
+	size_t n;
+
 	assert(srv != NULL);
 	assert(name != NULL);
 	assert(srv->logfile == NULL); /* Do not call twice */
 
-	if (strlen(name) + 1 > sizeof srv->logfile_name) {
+	n = strlen(name) + 1;
+	if (n > sizeof srv->logfile_name) {
 		errno = ENOSPC;
-		return 0;
+		return failure;
 	}
 
-	strcpy(srv->logfile_name, name);
+	memcpy(srv->logfile_name, name, n);
 	srv->logging = 1;
-	return 1;
+	return success;
 }
 
 /* Just a small helper, assumes that the logfile_lock is locked so
  * that we don't get MT conflicts.
  */
-static int rotate_if_needed(http_server s)
+static status_t rotate_if_needed(http_server s)
 {
 	char newname[LOGFILE_MAX + 102];
 	char datebuf[100];
@@ -696,17 +699,17 @@ static int rotate_if_needed(http_server s)
 
 	/* Is rotating disabled? */
 	if (s->logrotate == 0)
-		return 1;
+		return success;
 
 	/* Do we need to rotate? */
 	if (s->logfile_entries < s->logrotate)
-		return 1;
+		return success;
 
 	if ((now = time(NULL)) == (time_t)-1
 	|| localtime_r(&now, &tm_now) == NULL
 	|| !strftime(datebuf, sizeof datebuf, ".%Y%m%d%H%M%S", &tm_now)) {
 		warning("Could not get time");
-		return 0;
+		return failure;
 	}
 
 	strcpy(newname, s->logfile_name);
@@ -714,7 +717,7 @@ static int rotate_if_needed(http_server s)
 
 	if (fclose(s->logfile)) {
 		warning("Could not close logfile");
-		return 0;
+		return failure;
 	}
 
 	/* Now we move away the old file by renaming it and
@@ -727,17 +730,17 @@ static int rotate_if_needed(http_server s)
 			strcpy(err, "Unknown error");
 
 		warning("Could not rename logfile, error:%s\n", err);
-		return 0;
+		return failure;
 	}
 
 	/* Open the logfile. */
 	if ((s->logfile = fopen(s->logfile_name, "a")) == NULL) {
 		warning("Could not open logfile %s", s->logfile_name);
-		return 0;
+		return failure;
 	}
 
 	s->logfile_entries = 0;
-	return 1;
+	return success;
 }
 
 
@@ -937,6 +940,9 @@ status_t http_server_configure(http_server s, process p, const char* filename)
 	char docroot[10240] = { '\0' };
 
 	configfile cf;
+
+	assert(s != NULL);
+	assert(filename != NULL);
 
 	if ((cf = configfile_read(filename)) == NULL)
 		return failure;
