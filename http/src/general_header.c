@@ -643,6 +643,14 @@ bool general_header_warning_isset(general_header gh)
 	return general_header_flag_is_set(gh, GENERAL_HEADER_WARNING_SET);
 }
 
+bool general_header_is_chunked_message(general_header gh)
+{
+	if (!general_header_transfer_encoding_isset(gh))
+		return false;
+
+	return cstring_casecompare(gh->transfer_encoding, "chunked") == 0;
+}
+
 static inline status_t send_connection(general_header gh, connection conn)
 {
 	return http_send_field(conn, "Connection: ", gh->connection);

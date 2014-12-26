@@ -156,6 +156,17 @@ static inline int cstring_compare(cstring s, const char *str)
 	return strcmp(s->data, str);
 }
 
+static inline int cstring_casecompare(cstring s, const char *str)
+{
+	assert(NULL != s);
+	assert(NULL != str);
+	assert(NULL != s->data);
+
+	return strcasecmp(s->data, str);
+}
+
+
+
 static inline void cstring_recycle(cstring s)
 {
 	assert(NULL != s);

@@ -216,6 +216,7 @@ bool general_header_transfer_encoding_isset(general_header gh);
 bool general_header_upgrade_isset(general_header gh);
 bool general_header_via_isset(general_header gh);
 bool general_header_warning_isset(general_header gh);
+bool general_header_is_chunked_message(general_header gh);
 
 
 entity_header entity_header_new(void);

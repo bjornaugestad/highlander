@@ -139,7 +139,7 @@ status_t sock_write(meta_socket this, const char *buf, size_t count, int timeout
 	do {
 		if (!wait_for_writability(this, timeout)) {
 			if (errno != EAGAIN)
-				return 0;
+				return failure;
 
 			// We got EAGAIN, so retry.
 			continue;
