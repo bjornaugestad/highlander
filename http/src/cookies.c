@@ -541,7 +541,7 @@ int main(void)
 		if (!cookie_set_domain(c, domain)) return 77;
 		if (!cookie_set_path(c, path)) return 77;
 		if (!cookie_set_comment(c, comment)) return 77;
-		if (!cookie_set_max_age(c, max_age)) return 77;
+		cookie_set_max_age(c, max_age);
 		cookie_set_secure(c, secure);
 		cookie_set_version(c, version);
 

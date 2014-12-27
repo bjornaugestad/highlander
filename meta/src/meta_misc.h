@@ -38,6 +38,10 @@ status_t string2size_t(const char *s, size_t *val);
 
 void remove_trailing_newline(char *s);
 
+void trim(char *s);
+void ltrim(char *s);
+void rtrim(char *s);
+
 /*
  * Returns the # of words, separated by space, in the string.
  * "foo" is 1

@@ -131,6 +131,33 @@ status_t get_word_from_string(
 	return copy_word(src, dest, ' ', destsize);
 }
 
+void trim(char *s)
+{
+	ltrim(s);
+	rtrim(s);
+}
+
+void ltrim(char *s)
+{
+	char *org = s;
+
+	while(isspace(*s))
+		s++;
+
+	if (org != s)
+		memmove(org, s, strlen(s) + 1);
+}
+
+void rtrim(char *s)
+{
+	size_t n = strlen(s);
+
+	while (n-- > 0 && isspace(s[n]))
+		s[n] = '\0';
+}
+		
+
+
 status_t copy_word(
 	const char *src,
 	char dest[],
@@ -255,8 +282,92 @@ const char *get_mime_type(const char *filename)
 
 
 #ifdef CHECK_MISCFUNC
+
+static void check_trim(void)
+{
+	size_t i, n;
+	char buf[1024];
+
+	static const struct {
+		const char *in, *out;
+	} tests[] = {
+		{ "foo", "foo" },
+		{ "foo", "foo" },
+		{ "foo", "foo" },
+		{ "foo", "foo" },
+		{ "foo", "foo" },
+		{ "foo", "foo" },
+		{ "foo", "foo" },
+	};
+
+	n = sizeof tests / sizeof *tests;
+	for (i = 0; i < n; i++) {
+		strcpy(buf, tests[i].in);
+		trim(buf);
+		if (strcmp(buf, tests[i].out))
+			printf("Expected %s, got %s\n", tests[i].out, buf);
+	}
+}
+
+static void check_ltrim(void)
+{
+	size_t i, n;
+	char buf[1024];
+
+	static const struct {
+		const char *in, *out;
+	} tests[] = {
+		{ "foo", "foo" },
+		{ "foo", "foo" },
+		{ "foo", "foo" },
+		{ "foo", "foo" },
+		{ "foo", "foo" },
+		{ "foo", "foo" },
+		{ "foo", "foo" },
+	};
+
+	n = sizeof tests / sizeof *tests;
+	for (i = 0; i < n; i++) {
+		strcpy(buf, tests[i].in);
+		ltrim(buf);
+		if (strcmp(buf, tests[i].out))
+			printf("Expected %s, got %s\n", tests[i].out, buf);
+	}
+}
+
+static void check_rtrim(void)
+{
+	size_t i, n;
+	char buf[1024];
+
+	static const struct {
+		const char *in, *out;
+	} tests[] = {
+		{ "", "" },
+		{ "	", "" },
+		{ "foo", "foo" },
+		{ "foo ", "foo" },
+		{ "foo 	 ", "foo" },
+		{ " foo", " foo" },
+		{ "foo", "foo" },
+		{ "foo", "foo" },
+	};
+
+	n = sizeof tests / sizeof *tests;
+	for (i = 0; i < n; i++) {
+		strcpy(buf, tests[i].in);
+		rtrim(buf);
+		if (strcmp(buf, tests[i].out))
+			printf("Expected %s, got %s\n", tests[i].out, buf);
+	}
+}
+
+
 int main(void)
 {
+	check_trim();
+	check_ltrim();
+	check_rtrim();
 	return 0;
 }
 #endif

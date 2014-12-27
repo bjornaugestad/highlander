@@ -41,6 +41,7 @@
 
 #include <meta_list.h>
 #include <meta_misc.h>
+#include <meta_convert.h>
 
 #include "internals.h"
 /*
@@ -133,9 +134,9 @@ static void response_set_flag(http_response p, unsigned long flag)
 	p->flags |= flag;
 }
 
-static int response_flag_isset(http_response p, unsigned long flag)
+static bool response_flag_isset(http_response p, unsigned long flag)
 {
-	return (p->flags & flag) ? 1 : 0;
+	return p->flags & flag;
 }
 
 static void response_clear_flags(http_response p)
@@ -348,16 +349,16 @@ static status_t response_send_header_fields(http_response p, connection conn)
 }
 
 /* return 1 if string needs to be quoted, 0 if not */
-static int need_quote(const char* s)
+static bool need_quote(const char* s)
 {
 	while (*s != '\0') {
 		if (!isalnum(*s) && *s != '_')
-			return 1;
+			return true;
 
 		s++;
 	}
 
-	return 0;
+	return false;
 }
 
 /*
@@ -1589,12 +1590,94 @@ read_response_header_fields(connection conn, http_response response, meta_error 
 	}
 }
 
+static bool allws(char *s)
+{
+	while (isspace(*s))
+		s++;
+
+	return *s == '\0';
+}
+
+static status_t get_chunklen(connection conn, size_t *len)
+{
+	char buf[1024];
+
+	if (!connection_gets(conn, buf, sizeof buf))
+		return failure;
+
+	if (allws(buf) && !connection_gets(conn, buf, sizeof buf))
+		return failure;
+
+	ltrim(buf);
+	rtrim(buf);
+
+	return hextosize_t(buf, len);
+}
+
+
+
+/* Chunked responses start with a chunk length on a separate line,
+ * then the chunk follows. the last chunk length will be 0, indicating
+ * end of chunk.
+ *
+ * We may have to reallocate a bit here and there, since we don't know
+ * the total size up front.
+ */
+static status_t read_chunked_response(http_response this, connection conn,
+	size_t max_contentlen, meta_error e)
+{
+	size_t chunklen, ntotal = 0;
+	ssize_t nread;
+	char *content = NULL, *tmp;
+	
+	for (;;) {
+		if (!get_chunklen(conn, &chunklen))
+			return failure;
+
+		if (chunklen == 0)
+			break;
+
+		if (ntotal + chunklen > max_contentlen) {
+			free(content);
+			return set_app_error(e, ENOSPC);
+		}
+
+		// Make sure we have memory to read into
+		tmp = realloc(content, ntotal + chunklen);
+		if (tmp == NULL) {
+			free(content);
+			return set_os_error(e, ENOSPC);
+		}
+
+		content = tmp;
+
+		// Now read the chunk off the socket.
+		// Big chunks may cause timeout, so we loop
+		for(;;) {
+			nread = connection_read(conn, content + ntotal, chunklen);
+			if (nread < 0) {
+				free(content);
+				return failure;
+			}
+
+			ntotal += nread;
+			chunklen -= nread;
+			if (chunklen == 0)
+				break;
+		}
+	}
+
+	response_set_allocated_content_buffer(this, content, ntotal);
+	return success;
+}
+
 status_t response_receive(
 	http_response response,
 	connection conn,
 	size_t max_contentlen,
 	meta_error e)
 {
+	general_header gh = response_get_general_header(response);
 	entity_header eh = response_get_entity_header(response);
 	size_t contentlen;
 	void *content;
@@ -1616,6 +1699,9 @@ status_t response_receive(
 
 		if (contentlen > max_contentlen)
 			return set_app_error(e, ENOSPC);
+	}
+	else if (general_header_is_chunked_message(gh)) {
+		return read_chunked_response(response, conn, max_contentlen, e);
 	}
 	else {
 		/* No content length, then we MUST deal with a version 1.0 server.
