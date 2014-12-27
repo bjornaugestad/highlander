@@ -1358,7 +1358,7 @@ static status_t parse_age(http_response r, const char* value, meta_error e)
 	assert(r != NULL);
 	assert(value != NULL);
 
-	if ((v = strtoul(value, NULL, 10)) == 0)
+	if (!toulong(value, &v))
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
 
 	response_set_age(r, v);
@@ -1562,6 +1562,7 @@ static status_t read_response_status_line(http_response response, connection con
 static status_t
 read_response_header_fields(connection conn, http_response response, meta_error e)
 {
+
 	for (;;) {
 		char buf[CCH_FIELDNAME_MAX + CCH_FIELDVALUE_MAX + 10];
 		char name[CCH_FIELDNAME_MAX + 1];

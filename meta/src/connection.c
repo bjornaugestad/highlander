@@ -309,6 +309,8 @@ status_t connection_close(connection conn)
 
 status_t connection_getc(connection conn, int *pc)
 {
+	char c;
+
 	assert(conn != NULL);
 	assert(pc != NULL);
 
@@ -317,10 +319,11 @@ status_t connection_getc(connection conn, int *pc)
 		return failure;
 
 	/* Get one character from buffer */
-	if (membuf_read(conn->readbuf, pc, 1) == 1)
-		return success;
+	if (membuf_read(conn->readbuf, &c, 1) != 1)
+		return failure;
 
-	return failure;
+	*pc = c;
+	return success;
 }
 
 static inline status_t
