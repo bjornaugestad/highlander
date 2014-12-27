@@ -182,19 +182,6 @@ writebuf_has_room_for(connection conn, size_t count)
 	return n >= count;
 }
 
-static inline int conn_getc(connection conn)
-{
-	char c;
-
-	assert(NULL != conn);
-	assert(membuf_canread(conn->readbuf) > 0);
-
-	if (membuf_read(conn->readbuf, &c, 1) == 1)
-		return c;
-
-	return EOF;
-}
-
 connection connection_new(
 	int timeout_reads,
 	int timeout_writes,
@@ -322,8 +309,6 @@ status_t connection_close(connection conn)
 
 status_t connection_getc(connection conn, int *pc)
 {
-	status_t status = success;
-
 	assert(conn != NULL);
 	assert(pc != NULL);
 
@@ -332,11 +317,10 @@ status_t connection_getc(connection conn, int *pc)
 		return failure;
 
 	/* Get one character from buffer */
-	*pc = conn_getc(conn);
-	if (*pc == EOF)
-		status = failure;
+	if (membuf_read(conn->readbuf, pc, 1) == 1)
+		return success;
 
-	return status;
+	return failure;
 }
 
 static inline status_t
