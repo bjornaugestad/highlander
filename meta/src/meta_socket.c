@@ -215,10 +215,15 @@ ssize_t sock_read(
 			cbToRead = count - nreadsum;
 		}
 
+
 		if (nread == -1 && errno != EAGAIN) {
 			/* An error occured. Uncool. */
 			return -1;
 		}
+
+		if (nread == -1 && errno == EAGAIN)
+			nretries++; // Don't dec nretries
+
 	} while(nreadsum < (ssize_t)count && nretries--);
 
 	return nreadsum;

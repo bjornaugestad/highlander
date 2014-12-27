@@ -23,6 +23,11 @@ int g_print_header = 0;
 const char*g_hostname = NULL;
 int g_port = 0;
 const char *g_uri = "/";
+//
+// timeout is in ms. 
+int timeout_reads = 400, timeout_writes = 50;
+int nretries_read = 8, nretries_write = 4;
+
 
 static void die_meta_error(const char* context, meta_error e)
 {
@@ -42,7 +47,9 @@ static void show_help(void)
 	printf("   -t n thread count. Default is 1 threads.\n");
 	printf("   -r n request count. Default is 1 requests per thread.\n");
 	printf("   -H print response header\n");
-	printf("   -C print response contents\n");
+	printf("   -H print response header\n");
+	printf("   -T ms Timeout in millisecs\n");
+	printf("   -R n  Number of retries per read/write op\n");
 	printf("   -v Be verbose\n");
 }
 
@@ -50,7 +57,7 @@ void parse_commandline(int argc, char *argv[])
 {
 	int c;
 
-	while( (c = getopt(argc, argv, "vu:t:r:hCH")) != EOF) {
+	while( (c = getopt(argc, argv, "vu:t:r:hCHT:R:")) != EOF) {
 		switch(c) {
 			case 'v':
 				meta_verbose_level++;
@@ -58,6 +65,14 @@ void parse_commandline(int argc, char *argv[])
 
 			case 'u':
 				g_uri = optarg;
+				break;
+
+			case 'T':
+				timeout_reads = timeout_writes = atoi(optarg);
+				break;
+
+			case 'R':
+				nretries_read = nretries_write = atoi(optarg);
 				break;
 
 			case 't':
@@ -108,10 +123,6 @@ static void print_response_contents(http_response response)
 
 void* threadfunc(void* arg)
 {
-	// timeout is in ms. 
-	int timeout_reads = 400, timeout_writes = 50;
-	int nretries_read = 8, nretries_write = 4;
-
 	(void)arg;
 
 	http_request request = request_new();
