@@ -109,7 +109,7 @@ static void print_response_contents(http_response response)
 void* threadfunc(void* arg)
 {
 	// timeout is in ms. 
-	int timeout_reads = 200, timeout_writes = 50;
+	int timeout_reads = 400, timeout_writes = 50;
 	int nretries_read = 8, nretries_write = 4;
 
 	(void)arg;
