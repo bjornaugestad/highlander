@@ -21,6 +21,12 @@ status_t tolong(const char *s, long *dest)
 status_t toulong(const char *s, unsigned long *dest)
 	__attribute__((nonnull(1, 2)));
 
+status_t tosize_t(const char *s, size_t *dest)
+	__attribute__((nonnull(1, 2)));
+
+status_t hextosize_t(const char *s, size_t *dest)
+	__attribute__((nonnull(1, 2)));
+
 status_t tofloat(const char *s, float *dest)
 	__attribute__((nonnull(1, 2)));
 
@@ -30,6 +36,7 @@ status_t todouble(const char *s, double *dest)
 /* Check source */
 static inline bool isint(const char *s) { int d; return toint(s, &d) != failure;}
 static inline bool isuint(const char *s) { unsigned int d; return touint(s, &d) != failure;}
+static inline bool issize_t(const char *s) { size_t d; return tosize_t(s, &d) != failure;}
 static inline bool islong(const char *s) { long d; return tolong(s, &d) != failure;}
 static inline bool isulong(const char *s) { unsigned long d; return toulong(s, &d) != failure;}
 static inline bool isfloat(const char *s) { float d; return tofloat(s, &d) != failure;}
