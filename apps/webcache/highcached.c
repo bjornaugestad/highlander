@@ -223,7 +223,9 @@ static void configure_admin_server(http_server s, const char* configfilename)
         die("admin_host is missing from the configuration file %s", configfilename);
 
     http_server_set_port(s, port);
-    http_server_set_host(s, host);
+    if (!http_server_set_host(s, host))
+		die("Out of memory. That's odd...\n");
+
     if (!http_server_alloc(s))
 		die("Could not allocate memory for admin server");
 

@@ -594,6 +594,9 @@ static void create_mainfile(int argc, char *argv[], const char *filename)
 	"\thttp_server s;",
 	"\tprocess proc;",
 	"\tint fork_and_close = 0;",
+	"",
+	"\t// Bind and listen to host/port.",
+	"\tstatic const char *hostname = \"localhost\";",
 	"\tint portnumber = 2000;",
 	"",
 	"\t/* Silence the compiler */",
@@ -624,7 +627,7 @@ static void create_mainfile(int argc, char *argv[], const char *filename)
 	"\t\t\tdie(\"Could not set user name\\n\");",
 	"\t}",
 	"",
-	"\t/* Configuere some server values. Not needed, but makes it",
+	"\t/* Configure some server values. Not needed, but makes it",
 	"\t * to change values later. */",
 	"\thttp_server_set_worker_threads(s, 8);",
 	"\thttp_server_set_queue_size(s, 10);",
@@ -647,7 +650,9 @@ static void create_mainfile(int argc, char *argv[], const char *filename)
 	}
 
 	p(f, "\n");
-	p(f, "\thttp_server_set_host(s, \"localhost\");\n");
+	p(f, "\tif (!http_server_set_host(s, hostname))\n");
+	p(f, "\t\tdie(\"Out of memory.\\n\");\n");
+	p(f, "\n");
 	p(f, "\thttp_server_set_port(s, portnumber);\n");
 	p(f, "\n");
 	p(f, "\n");

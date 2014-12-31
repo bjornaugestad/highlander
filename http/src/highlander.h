@@ -155,7 +155,7 @@ status_t http_server_set_documentroot(http_server s, const char* docroot)
 	__attribute__((nonnull(1, 2)))
 	__attribute__((warn_unused_result));
 	
-void   http_server_set_post_limit(http_server s, size_t cb)
+void http_server_set_post_limit(http_server s, size_t cb)
 	__attribute__((nonnull(1)));
 
 size_t http_server_get_post_limit(http_server s)
@@ -172,11 +172,11 @@ status_t http_server_set_default_page_attributes(http_server s, page_attribute a
 	__attribute__((nonnull(1)));
 
 status_t http_server_set_host(http_server s, const char* name)
-	__attribute__((nonnull(1, 2)));
+	__attribute__((nonnull(1, 2)))
+	__attribute__((warn_unused_result));
 
 void http_server_set_port(http_server s, int n)
 	__attribute__((nonnull(1)));
-
 
 int http_server_get_timeout_write(http_server s)
 	__attribute__((nonnull(1)));
