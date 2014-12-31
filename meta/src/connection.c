@@ -365,15 +365,6 @@ status_t connection_write(connection conn, const void *buf, size_t count)
 
 
 /*
- * This function is used whenever we want to bypass the read buffer.
- * That's relevant e.g. when we read more than the size of the buffer
- * in one chunk. Doesn't happen very often, but it may happen.
- *
- * Anyway, this is the reason we do not update the conn->iReadUntil
- * in this function.
- */
-
-/*
  * Here is where we have to measure bps for incoming
  * data. All we have to do is to do a time(NULL) or clock() before
  * and after the call to sock_read(). Then we can compute
@@ -485,7 +476,7 @@ int connection_is_persistent(connection conn)
 struct sockaddr_in* connection_get_addr(connection conn)
 {
 	assert(conn != NULL);
-	return (struct sockaddr_in*)&conn->addr;
+	return &conn->addr;
 }
 
 void connection_free(connection conn)
