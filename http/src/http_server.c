@@ -1108,8 +1108,68 @@ unsigned long http_server_sum_denied_clients(http_server p)
 
 #ifdef CHECK_HTTP_SERVER
 
+static const char *html = "<html><head><title>hello</title></head><body>world</body></html>";
+static int pageserver(http_request req, http_response response)
+{
+	(void)req;
+	if (!response_add(response, html))
+		die("Could not add html code to response.\n");
+
+	return 200;
+}
+
+
+/* A common problem is that we screw up the read/buffering logic
+ * in the server. Therefore, we add a test which asserts that
+ * the response time never exceeds some sane limit. */
+static void * serverthread(void *arg)
+{
+	http_server srv = arg;
+
+	if (!http_server_alloc(srv))
+		die("Could not allocate resources.\n");
+
+	http_server_set_port(srv, 2000);
+
+	http_server_set_default_page_handler(srv, pageserver);
+
+	if (!http_server_get_root_resources(srv))
+		die("Could not get root resources\n");
+
+	if (!http_server_start(srv))
+		die("Could not start server:%s\n", strerror(errno));
+
+	sleep(srv->timeout_accept / 1000 + 1);
+
+	http_server_free(srv);
+}
+
+static void check_response_time(void)
+{
+	http_server srv = http_server_new();
+	pthread_t t;
+	int err;
+
+	if ((err = pthread_create(&t, NULL, serverthread, srv)))
+		die("Could not start server thread\n");
+
+	// Give server time to bind..
+	sleep(1);
+
+	// Now make a request
+
+	sleep(1);
+	if (!http_server_shutdown(srv))
+		die("Could not shutdown server.\n");
+
+
+	if (pthread_join(t, NULL))
+		die("Could not join server thread.\n");
+}
+
 int main(void)
 {
+	check_response_time();
 	return 0;
 }
 #endif
