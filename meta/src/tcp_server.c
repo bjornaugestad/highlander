@@ -21,6 +21,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <assert.h>
 #include <errno.h>
 #include <sys/socket.h>
@@ -540,7 +541,6 @@ static status_t accept_new_connections(tcp_server srv, meta_socket sock)
 			tcp_server_recycle_connection,
 			srv);
 
-
 		if (!rc) {
 			/* Could not add work to the queue */
 			/*
@@ -592,7 +592,7 @@ status_t tcp_server_start(tcp_server srv)
 		sock_close(srv->sock);
 		rc = failure;
 	}
-	else if (sock_close(srv->sock))
+	else if (!sock_close(srv->sock))
 		rc = failure;
 	else
 		rc = success;
@@ -640,22 +640,6 @@ void tcp_server_set_retries(tcp_server srv, int reads, int writes)
 	srv->retries_writes = writes;
 	srv->retries_reads = reads;
 }
-
-#if 0
-We no longer use this function, as we want callers to call tcp_server_shutdown
-instead.
-void tcp_server_set_shutdown_function(
-	tcp_server srv,
-	int(*func)(void*),
-	void *arg)
-{
-	assert(NULL != srv);
-	assert(NULL != func);
-
-	srv->shutting_down = func;
-	srv->shutdown_arg = arg;
-}
-#endif
 
 void tcp_server_set_service_function(
 	tcp_server srv,
