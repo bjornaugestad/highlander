@@ -62,11 +62,13 @@ libhighlander_la_CFLAGS+=-DWITH_VALGRIND=1
 endif
 
 TESTS=\
+	http_server_check\
 	attribute_check\
 	rfc1738_check\
 	cookie_check
 
 check_PROGRAMS=\
+	http_server_check\
 	attribute_check\
 	cookie_check\
 	rfc1738_check
@@ -87,4 +89,21 @@ cookie_check_LDFLAGS=-L$(top_srcdir)/meta/src
 rfc1738_check_SOURCES=rfc1738.c
 rfc1738_check_CFLAGS=-DCHECK_RFC1738 $(AM_CFLAGS)
 
-
+http_server_check_SOURCES=\
+	http_server.c\
+	request.c\
+	response.c\
+	general_header.c\
+	entity_header.c\
+	cookies.c\
+	parse_http.c\
+	parse_time.c\
+	highlander.c\
+	dynamic_page.c\
+	rfc1738.c\
+	send_status_code.c\
+	attribute.c
+http_server_check_CFLAGS=-DCHECK_HTTP_SERVER $(AM_CFLAGS)\
+	-I$(top_srcdir)/meta/src
+http_server_check_LDADD=-lmeta -lpthread
+http_server_check_LDFLAGS=-L$(top_srcdir)/meta/src

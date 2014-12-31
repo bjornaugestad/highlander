@@ -1105,3 +1105,11 @@ unsigned long http_server_sum_denied_clients(http_server p)
 	assert(p != NULL);
 	return tcp_server_sum_denied_clients(p->socket_engine);
 }
+
+#ifdef CHECK_HTTP_SERVER
+
+int main(void)
+{
+	return 0;
+}
+#endif
