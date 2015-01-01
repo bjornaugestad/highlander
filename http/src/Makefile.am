@@ -15,6 +15,7 @@ libhighlander_la_LDFLAGS=-release $(PACKAGE_VERSION) -version-info 0:0:0
 libhighlanderd_la_LDFLAGS=-release $(PACKAGE_VERSION) -version-info 0:0:0
 
 libhighlander_la_SOURCES=\
+	http.c\
 	rfc1738.c\
 	attribute.c\
 	cookies.c\
@@ -26,6 +27,7 @@ libhighlander_la_SOURCES=\
 	html_template.c\
 	html_template_repository.c\
 	http_server.c\
+	http_client.c\
 	parse_http.c\
 	parse_time.c\
 	request.c\
@@ -62,13 +64,14 @@ libhighlander_la_CFLAGS+=-DWITH_VALGRIND=1
 endif
 
 TESTS=\
-	http_server_check\
+	http_client_check\
 	attribute_check\
 	rfc1738_check\
 	cookie_check
 
 check_PROGRAMS=\
 	http_server_check\
+	http_client_check\
 	attribute_check\
 	cookie_check\
 	rfc1738_check
@@ -91,6 +94,7 @@ rfc1738_check_CFLAGS=-DCHECK_RFC1738 $(AM_CFLAGS)
 
 http_server_check_SOURCES=\
 	http_server.c\
+	http.c\
 	request.c\
 	response.c\
 	general_header.c\
@@ -107,3 +111,22 @@ http_server_check_CFLAGS=-DCHECK_HTTP_SERVER $(AM_CFLAGS)\
 	-I$(top_srcdir)/meta/src
 http_server_check_LDADD=-lmeta -lpthread
 http_server_check_LDFLAGS=-L$(top_srcdir)/meta/src
+
+http_client_check_SOURCES=\
+	http_client.c\
+	http.c\
+	request.c\
+	response.c\
+	general_header.c\
+	entity_header.c\
+	cookies.c\
+	parse_http.c\
+	parse_time.c\
+	dynamic_page.c\
+	rfc1738.c\
+	send_status_code.c\
+	attribute.c
+http_client_check_CFLAGS=-DCHECK_HTTP_CLIENT $(AM_CFLAGS)\
+	-I$(top_srcdir)/meta/src
+http_client_check_LDADD=-lmeta -lpthread
+http_client_check_LDFLAGS=-L$(top_srcdir)/meta/src

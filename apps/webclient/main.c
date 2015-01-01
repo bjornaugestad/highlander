@@ -114,10 +114,10 @@ void parse_commandline(int argc, char *argv[])
 
 static void print_response_contents(http_response response)
 {
-	size_t cb = response_get_content_length(response);
+	size_t n = 10, cb = response_get_content_length(response);
 	const char* s = response_get_entity(response);
 	
-	while(cb--)
+	while(n-- && cb--)
 		putchar(*s++);
 }
 

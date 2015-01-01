@@ -193,7 +193,6 @@ ssize_t sock_read(
 	do {
 		size_t cbToRead = count - nreadsum;
 
-		fprintf(stderr, "foo\n");
 		if (!wait_for_data(this, timeout)) {
 			if (errno == EAGAIN) {
 				continue; // Try again.

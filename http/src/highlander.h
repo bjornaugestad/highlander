@@ -86,6 +86,7 @@ enum http_method {METHOD_UNKNOWN, METHOD_GET, METHOD_HEAD, METHOD_POST};
 enum http_version {VERSION_UNKNOWN, VERSION_09, VERSION_10, VERSION_11};
 
 typedef struct http_server_tag*		http_server;
+typedef struct http_client_tag*		http_client;
 typedef struct http_request_tag*	http_request;
 typedef struct http_response_tag*	http_response;
 typedef enum http_method			http_method;
@@ -97,6 +98,38 @@ typedef struct general_header_tag*	general_header;
 typedef struct entity_header_tag*	entity_header;
 
 typedef int (*PAGE_FUNCTION)(http_request, http_response);
+
+// new stuff 20141231: We need a client ADT for better testing of the server
+http_client http_client_new(void);
+void http_client_free(http_client p);
+status_t http_client_connect(http_client this, const char *host, int port);
+status_t http_client_get(http_client this, const char *host, const char *uri);
+status_t http_client_post(http_client this, const char *host, const char *uri);
+int http_client_http_status(http_client this);
+http_response http_client_response(http_client this);
+status_t http_client_disconnect(http_client this);
+
+int http_client_get_timeout_write(http_client s)
+	__attribute__((nonnull(1)));
+
+int http_client_get_timeout_read(http_client srv)
+	__attribute__((nonnull(1)));
+
+int http_client_get_timeout_read(http_client s)
+	__attribute__((nonnull(1)));
+
+
+void http_client_set_timeout_write(http_client s, int millisec)
+	__attribute__((nonnull(1)));
+
+void http_client_set_timeout_read(http_client s, int millisec)
+	__attribute__((nonnull(1)));
+
+void http_client_set_retries_read(http_client s, int count)
+	__attribute__((nonnull(1)));
+
+void http_client_set_retries_write(http_client s, int count)
+	__attribute__((nonnull(1)));
 
 
 http_server http_server_new(void);
