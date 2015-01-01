@@ -145,15 +145,11 @@ status_t sock_write(meta_socket this, const char *buf, size_t count, int timeout
 			continue;
 		}
 
-		if ((nwritten = write(this->fd, buf, count)) == -1) {
-			perror("write");
+		if ((nwritten = write(this->fd, buf, count)) == -1)
 			return failure;
-		}
 
-		if (nwritten != (ssize_t)count) {
-			buf += nwritten;
-			count -= nwritten;
-		}
+		buf += nwritten;
+		count -= nwritten;
 	} while(count > 0 && nretries--);
 
 	/* If not able to write and no errors detected, we have a timeout */
