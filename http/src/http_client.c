@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <meta_socket.h>
 
 #include <highlander.h>
@@ -15,9 +16,6 @@ struct http_client_tag {
 	int timeout_reads, timeout_writes, nretries_read, nretries_write;
 };
 
-//meta_error e = meta_error_new();
-
-
 http_client http_client_new(void)
 {
 	http_client new;
@@ -31,10 +29,10 @@ http_client http_client_new(void)
 	if ((new->response = response_new()) == NULL)
 		goto memerr;
 
-	if ((new->readbuf = membuf_new(10 * 1014)) == NULL)
+	if ((new->readbuf = membuf_new(10 * 1024)) == NULL)
 		goto memerr;
 
-	if ((new->writebuf = membuf_new(10 * 1014)) == NULL)
+	if ((new->writebuf = membuf_new(10 * 1024)) == NULL)
 		goto memerr;
 
 	// Some default timeout and retry values. Later, 
@@ -42,6 +40,7 @@ http_client http_client_new(void)
 	// use set/get-functions.
 	new->timeout_reads = new->timeout_writes = 1000;
 	new->nretries_read = new->nretries_write = 5;
+
 	new->conn = connection_new(new->timeout_reads, new->timeout_writes,
 		new->nretries_read, new->nretries_write, NULL);
 	if (new->conn == NULL)

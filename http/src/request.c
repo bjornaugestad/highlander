@@ -19,6 +19,7 @@
 
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
@@ -1486,7 +1487,7 @@ status_t request_send(http_request r, connection c, meta_error e)
 	assert(r != NULL);
 	assert(c != NULL);
 	(void)e; /* for now, we may want to add semantic checks later */
-
+ 
 	if (!send_request_line(r, c, e))
 		return failure;
 

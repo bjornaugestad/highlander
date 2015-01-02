@@ -34,7 +34,7 @@ membuf membuf_new(size_t size)
 	if ((p = malloc(sizeof *p)) == NULL)
 		return NULL;
 
-	if ((p->data = malloc(size)) == NULL) {
+	if ((p->data = calloc(1, size)) == NULL) {
 		free(p);
 		return NULL;
 	}
@@ -52,6 +52,20 @@ void membuf_free(membuf this)
 		free(this);
 	}
 }
+
+void membuf_dump(membuf this, void *filep)
+{
+	size_t i;
+	FILE *f = filep;
+
+	fprintf(f, "written: %zu read: %zu\n", this->written, this->read);
+	fprintf(f, "Contents:\n");
+	for (i = 0; i < this->size; i++) {
+		if (this->data[i] != '\0')
+			fprintf(f, "data[%zu] == %c\n", i, this->data[i]);
+	}
+}
+
 
 size_t membuf_write(membuf this, const void *src, size_t count)
 {

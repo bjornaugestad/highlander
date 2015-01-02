@@ -64,6 +64,7 @@ libhighlander_la_CFLAGS+=-DWITH_VALGRIND=1
 endif
 
 TESTS=\
+	http_server_check\
 	http_client_check\
 	attribute_check\
 	rfc1738_check\
@@ -94,6 +95,7 @@ rfc1738_check_CFLAGS=-DCHECK_RFC1738 $(AM_CFLAGS)
 
 http_server_check_SOURCES=\
 	http_server.c\
+	http_client.c\
 	http.c\
 	request.c\
 	response.c\

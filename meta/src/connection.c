@@ -566,8 +566,9 @@ status_t connection_write_big_buffer(
 	assert(timeout >= 0);
 	assert(nretries >= 0);
 
-	if ((rc = connection_flush(conn)))
+	if ((rc = connection_flush(conn))) {
 		rc = sock_write(conn->sock, buf, count, timeout, nretries);
+	}
 
 	return rc;
 }

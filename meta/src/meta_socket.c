@@ -135,7 +135,6 @@ status_t sock_write(meta_socket this, const char *buf, size_t count, int timeout
 	assert(timeout >= 0);
 	assert(nretries >= 0);
 
-
 	do {
 		if (!wait_for_writability(this, timeout)) {
 			if (errno != EAGAIN)
@@ -153,7 +152,7 @@ status_t sock_write(meta_socket this, const char *buf, size_t count, int timeout
 	} while(count > 0 && nretries--);
 
 	/* If not able to write and no errors detected, we have a timeout */
-	if ((ssize_t)count != nwritten) {
+	if ((ssize_t)count != 0) {
 		errno = EAGAIN;
 		return failure;
 	}
@@ -197,12 +196,7 @@ ssize_t sock_read(
 			return -1;
 		}
 
-		/*
-		 * We have data! We don't know how much we have, but we 
-		 * do know that the socket is non-blocking. Therefore, let's
-		 * spin-read until read() returns 0. 
-		 */
-		while ((nread = read(this->fd, &dest[nreadsum], cbToRead)) > 0) {
+		if ((nread = read(this->fd, &dest[nreadsum], cbToRead)) > 0) {
 			nreadsum += nread;
 			if (nreadsum == (ssize_t)count) {
 				return nreadsum; // we're done
@@ -211,15 +205,10 @@ ssize_t sock_read(
 			cbToRead = count - nreadsum;
 		}
 
-
 		if (nread == -1 && errno != EAGAIN) {
 			/* An error occured. Uncool. */
 			return -1;
 		}
-
-		if (nread == -1 && errno == EAGAIN)
-			nretries++; // Don't dec nretries
-
 	} while(nreadsum < (ssize_t)count && nretries--);
 
 	return nreadsum;

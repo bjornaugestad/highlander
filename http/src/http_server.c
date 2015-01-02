@@ -1144,11 +1144,50 @@ static void * serverthread(void *arg)
 	http_server_free(srv);
 }
 
+static void make_request(void)
+{
+	http_client p;
+	http_response resp;
+
+	const char *hostname ="localhost";
+	const char *uri = "/";
+	int port = 2000;
+
+	if ((p = http_client_new()) == NULL)
+		exit(1);
+
+	if (!http_client_connect(p, hostname, port)) {
+		fprintf(stderr, "Could not connect to %s\n", hostname);
+		exit(1);
+	}
+
+	if (!http_client_get(p, hostname, uri)) {
+		fprintf(stderr, "Could not get %s from %s\n", uri, hostname);
+		http_client_disconnect(p);
+		exit(1);
+	}
+
+	if (!http_client_disconnect(p)) {
+		fprintf(stderr, "Could not disconnect from %s\n", hostname);
+		exit(1);
+	}
+
+	resp = http_client_response(p);
+	// Did we get what we expected?
+	if (strcmp(html, response_get_entity(resp)) != 0) {
+		fprintf(stderr, "Expected \"%s\", got \"%s\"\n", html, response_get_entity(resp));
+	}
+
+	http_client_free(p);
+}
+
 static void check_response_time(void)
 {
 	http_server srv = http_server_new();
 	pthread_t t;
 	int err;
+	clock_t start, stop;
+	double duration, max_duration = 0.002;
 
 	if ((err = pthread_create(&t, NULL, serverthread, srv)))
 		die("Could not start server thread\n");
@@ -1157,6 +1196,16 @@ static void check_response_time(void)
 	sleep(1);
 
 	// Now make a request
+	start = clock();
+	make_request();
+	stop = clock();
+	duration = stop - start;
+	duration /= CLOCKS_PER_SEC;
+	if (duration > max_duration) {
+		fprintf(stderr, "Server too slow, spent %g seconds,"
+			" which is above threshold of %g secs.\n", duration, max_duration);
+		exit(1);
+	}
 
 	sleep(1);
 	if (!http_server_shutdown(srv))

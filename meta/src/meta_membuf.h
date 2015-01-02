@@ -74,6 +74,7 @@ membuf membuf_new(size_t size) __attribute__((malloc));
 /* Frees a membuf buffer.  */
 void membuf_free(membuf m);
 
+void membuf_dump(membuf this, void *filep);
 /*
  * Appends count bytes to the buffer. Returns the number of bytes
  * actually added to the buffer. If the returned value is less
