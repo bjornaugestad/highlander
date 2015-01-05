@@ -157,7 +157,8 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "hipp: No input files\n");
 		exit(EXIT_FAILURE);
 	}
-	else if (g_outputfile != NULL && optind + 1 < argc) {
+
+	if (g_outputfile != NULL && optind + 1 < argc) {
 		fprintf(stderr, "-o option is only valid if input is one file\n");
 		exit(EXIT_FAILURE);
 	}
@@ -177,10 +178,10 @@ int main(int argc, char *argv[])
 	 * which sets up a web server for us.
 	 */
 	if(g_mainfile != NULL) 
-		create_mainfile(argc-optind, &argv[optind], g_mainfile);
+		create_mainfile(argc - optind, &argv[optind], g_mainfile);
 
 	if(m_automake)
-		create_autoxx_files(argc-optind, &argv[optind]);
+		create_autoxx_files(argc - optind, &argv[optind]);
 
 
 	exit(EXIT_SUCCESS);
@@ -278,7 +279,8 @@ static void print_fn(FILE*f, char* name)
 	p(f, "\n");
 
 	if(g_content_type != NULL) {
-		p(f, "\tresponse_set_content_type(response, \"%s\");\n", g_content_type);
+		p(f, "\tif (!response_set_content_type(response, \"%s\"))\n", g_content_type);
+		p(f, "\t\treturn HTTP_500_INTERNAL_SERVER_ERROR;\n");
 		p(f, "\n");
 	}
 }
