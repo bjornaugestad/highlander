@@ -27,7 +27,7 @@ int main(void)
 	tcp_server_set_service_function(srv, fn, NULL);
 	tcp_server_start_via_process(p, srv);
 
-	if (!process_start(p, 1))
+	if (!process_start(p, 0))
 		exit(1);
 
 	if (!process_wait_for_shutdown(p)) {

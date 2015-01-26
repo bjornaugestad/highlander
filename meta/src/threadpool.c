@@ -168,7 +168,7 @@ threadpool threadpool_new(
 	if ((p = malloc(sizeof *p)) == NULL)
 		return NULL;
 
-	if ((p->threads = malloc(sizeof *p->threads * nthreads)) == NULL) {
+	if ((p->threads = calloc(nthreads, sizeof *p->threads)) == NULL) {
 		free(p);
 		return NULL;
 	}

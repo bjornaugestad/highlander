@@ -336,6 +336,7 @@ static void shutdown_started_objects(process this, struct srv* failed)
 
 		/* Shut down the object and wait to get the exitcode */
 		s->shutdown_func(s->object);
+		assert(s->tid);
 		pthread_join(s->tid, NULL);
 	}
 }
@@ -466,6 +467,7 @@ status_t process_wait_for_shutdown(process this)
 	int error;
 
 	assert(this != NULL);
+	assert(this->sdt);
 	if ((error = pthread_join(this->sdt, NULL))) {
 		errno = error;
 		return failure;
@@ -477,6 +479,7 @@ status_t process_wait_for_shutdown(process this)
 	for (i = 0; i < this->objects_used; i++) {
 		struct srv* srv = &this->objects[i];
 		void *pfoo = &srv->exitcode;
+		assert(srv->tid);
 		if ((error = pthread_join(srv->tid, &pfoo))) {
 			errno = error;
 			return failure;

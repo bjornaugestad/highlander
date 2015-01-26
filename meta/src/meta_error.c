@@ -166,8 +166,8 @@ int get_error_code(meta_error e)
 void set_error_message(meta_error e, const char *msg)
 {
 	if (e != NULL) {
-		strncpy(e->message, msg, META_ERROR_MESSAGE_MAX);
-		e->message[META_ERROR_MESSAGE_MAX] = '\0';
+		strncpy(e->message, msg, sizeof e->message);
+		e->message[sizeof e->message - 1] = '\0';
 	}
 }
 
