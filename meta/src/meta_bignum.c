@@ -104,12 +104,54 @@ status_t bignum_add(bignum *dest, const bignum *a, const bignum *b)
 
 status_t bignum_sub(bignum *dest, const bignum *a, const bignum *b)
 {
+	size_t i, an, bn;
+	int delta, borrow = 0;
+
 	assert(dest != NULL);
 	assert(a != NULL);
 	assert(b != NULL);
 
-	(void)dest; (void)a; (void)b;
-	return failure;
+	an = a->len;
+	bn = b->len;
+	assert(an >= bn); // No support for wraparound
+
+	i = sizeof a->value - 1;
+	dest->len = 0;
+	memset(dest->value, 0, sizeof dest->value);
+
+	while (bn--) {
+		delta = a->value[i] - b->value[i] - borrow;
+		borrow = delta < 0;
+		dest->value[i] = delta;
+		dest->len++;
+		i--;
+	}
+
+	// Now just carry the borrow
+	an -= b->len;
+	while(an--) {
+		delta = a->value[i] - borrow;
+		borrow = delta < 0;
+		dest->value[i] = delta;
+		dest->len++;
+		i--;
+	}
+
+	if (borrow)
+		return failure;
+
+	// Reduce length to ignore leading zero bytes.
+	for (i = sizeof dest->value - dest->len; i < sizeof dest->value; i++) {
+		if (dest->value[i] != 0)
+			break;
+
+		if (dest->len == 0)
+			break;
+
+		dest->len--;
+	}
+		
+	return success;
 }
 
 status_t bignum_mul(bignum *dest, const bignum *a, const bignum *b)
@@ -287,6 +329,49 @@ int main(void)
 #endif
 
 #ifdef BIGNUM_CHECK
+
+static void check_sub(void)
+{
+	bignum a, b, c, facit;
+
+	bignum_set(&a, "ff");
+	bignum_set(&b, "01");
+	if (!bignum_sub(&c, &a, &b))
+		exit(2);
+
+	bignum_set(&facit, "fe");
+	if (bignum_cmp(&c, &facit) != 0) {
+		dump(&c, "Should've been fe");
+		exit(3);
+	}
+
+	bignum_set(&facit, "");
+	bignum_set(&a, maxval);
+	if (!bignum_sub(&c, &a, &a))
+		exit(4);
+
+	if (bignum_cmp(&c, &facit) != 0) {
+		dump(&c, "Should've been zero\n");
+		exit(5);
+	}
+
+	bignum_set(&b, halfval);
+	if (!bignum_sub(&c, &a, &b))
+		exit(6);
+
+	bignum_set(&a, "");
+	bignum_set(&b, "");
+	bignum_set(&facit, "");
+	if (!bignum_sub(&c, &a, &b))
+		exit(7);
+
+	if (bignum_cmp(&c, &facit) != 0) {
+		dump(&c, "Should've been zero\n");
+		exit(8);
+	}
+
+}
+
 int main(void)
 {
 	bignum *p, a, b, c, facit;
@@ -295,6 +380,8 @@ int main(void)
 	const char *odd_len3 = "fad"; // We need a multiple of 2.
 	const char *invalid_chars = "foobar";
 	char too_long_value[META_BIGNUM_MAXBYTES * 2 + 4];
+
+	check_sub();
 
 	// Empty strings == zero.
 	if (!valid_bignum(""))
