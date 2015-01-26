@@ -6,6 +6,7 @@ lib_LTLIBRARIES=libmeta.la libmetad.la
 include_HEADERS=\
 	cstring.h\
 	meta_atomic.h\
+	meta_bignum.h\
 	meta_sampler.h\
 	meta_common.h\
 	meta_ticker.h\
@@ -38,6 +39,7 @@ libmetad_la_LDFLAGS=-release $(PACKAGE_VERSION) -version-info 0:0:0
 
 libmeta_la_SOURCES=\
 	meta_common.c\
+	meta_bignum.c\
 	meta_sampler.c\
 	meta_wlock.c\
 	meta_ticker.c\
@@ -94,6 +96,8 @@ endif
 
 TESTS=\
 	convert_check\
+	bignum_check\
+	bignum_speed\
 	sampler_check\
 	bitset_check\
 	fifo_check\
@@ -115,6 +119,8 @@ TESTS=\
 
 check_PROGRAMS=\
 	convert_check\
+	bignum_check\
+	bignum_speed\
 	slotbuf_check\
 	sampler_check\
 	list_check\
@@ -139,6 +145,12 @@ AM_CFLAGS=-p -pg -Wall -pedantic -std=gnu99 -Wextra -Werror -O0
 tcp_server_check_SOURCES=tcp_server.c threadpool.c meta_membuf.c meta_pool.c\
 	meta_socket.c connection.c meta_process.c cstring.c meta_common.c
 tcp_server_check_CFLAGS=-DCHECK_TCP_SERVER $(AM_CFLAGS) 
+
+bignum_check_SOURCES=meta_bignum.c meta_common.c
+bignum_check_CFLAGS=-DBIGNUM_CHECK $(AM_CFLAGS) 
+
+bignum_speed_SOURCES=meta_bignum.c meta_common.c
+bignum_speed_CFLAGS=-DBIGNUM_SPEED -O3 -DNDEBUG -std=gnu99
 
 list_check_SOURCES=meta_list.c
 list_check_CFLAGS=-DLIST_CHECK $(AM_CFLAGS) 
@@ -179,8 +191,8 @@ pair_check_CFLAGS=-DCHECK_PAIR $(AM_CFLAGS)
 fifo_check_SOURCES=meta_fifo.c meta_wlock.c meta_common.c
 fifo_check_CFLAGS=-DCHECK_FIFO $(AM_CFLAGS)
 
-tsb_check_SOURCES=meta_tsb.c  meta_common.c
-tsb_check_CFLAGS=-DCHECK_TSB $(AM_CFLAGS)
+#tsb_check_SOURCES=meta_tsb.c  meta_common.c
+#tsb_check_CFLAGS=-DCHECK_TSB $(AM_CFLAGS)
 
 wlock_check_SOURCES=meta_wlock.c meta_common.c
 wlock_check_CFLAGS=-DCHECK_WLOCK -O0 -ggdb -D_GNU_SOURCE -std=gnu99 -D_REENTRANT $(AM_CFLAGS)
