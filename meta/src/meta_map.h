@@ -56,7 +56,7 @@ void map_free(map m);
 
 /*
  * Creates a new entry or updates an existing entry.
- * Returns 0 on OK and ENOMEM if out of memory.
+ * Returns success on OK and failure if out of memory.
  * If an existing entry exists, the memory pointed to by the prev.
  * value will be freed.
  */

@@ -154,13 +154,43 @@ status_t bignum_sub(bignum *dest, const bignum *a, const bignum *b)
 	return success;
 }
 
+// Left-shift one bit.
+void bignum_lshift(bignum *p)
+{
+	size_t i, start, stop;
+	unsigned char prev = 0, overflow = 0;
+
+	assert(p != NULL);
+
+	// we iterate from LSB to MSB
+	stop = sizeof p->value - p->len;
+	start = sizeof p->value - 1;
+	for (i = start; i >= stop; i--) {
+		overflow = p->value[i] & 0x80 ? 1 : 0;
+		p->value[i] <<= 1;
+		p->value[i] |= prev;
+		prev = overflow;
+	}
+
+	// Now expand if last overflowed.
+	if (overflow && p->len != sizeof p->value) {
+		p->len++;
+		p->value[sizeof p->value - p->len] = 0x01;
+	}
+}
+
 status_t bignum_mul(bignum *dest, const bignum *a, const bignum *b)
 {
+	//unsigned char mask = 0x01;
+	//size_t i;
+
 	assert(dest != NULL);
 	assert(a != NULL);
 	assert(b != NULL);
 
-	(void)dest; (void)a; (void)b;
+	memset(dest->value, 0, sizeof dest->value);
+	dest->len = 0;
+
 	return failure;
 }
 
@@ -372,6 +402,33 @@ static void check_sub(void)
 
 }
 
+static void check_lshift(void)
+{
+	bignum a, b;
+	size_t i;
+
+	bignum_set(&a, "01");
+	bignum_set(&b, "02");
+
+	bignum_lshift(&a);
+	if (bignum_cmp(&a, &b) != 0) {
+		dump(&a, "Should've been 02");
+		exit(10);
+	}
+
+	bignum_set(&a, "01");
+	bignum_set(&b, "80000000");
+
+	for (i = 0; i < 31; i++)
+		bignum_lshift(&a);
+
+	if (bignum_cmp(&a, &b) != 0) {
+		dump(&a, "Should've been b");
+		dump(&b, "b");
+		exit(11);
+	}
+}
+
 int main(void)
 {
 	bignum *p, a, b, c, facit;
@@ -382,6 +439,7 @@ int main(void)
 	char too_long_value[META_BIGNUM_MAXBYTES * 2 + 4];
 
 	check_sub();
+	check_lshift();
 
 	// Empty strings == zero.
 	if (!valid_bignum(""))
