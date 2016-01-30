@@ -162,6 +162,19 @@ man_MANS=\
 	\
 	threadpool.3\
 	\
+	fifo_add.3\
+	fifo_free_slot_count.3\
+	fifo_get.3\
+	fifo_lock.3\
+	fifo_nelem.3\
+	fifo_new.3\
+	fifo_peek.3\
+	fifo_signal.3\
+	fifo_unlock.3\
+	fifo_wait_cond.3\
+	fifo_wake.3\
+	fifo_write_signal.3\
+	\
 	filecache.3\
 	filecache_new.3\
 	\

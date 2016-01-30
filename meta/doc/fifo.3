@@ -1,0 +1,74 @@
+.Dd Jan 30, 2016
+.Os POSIX
+.Dt FIFO
+.Th fifo 3
+.Sh NAME
+.Nm fifo
+.Nd A FIFO implementation
+.Sh SYNOPSIS
+.Fd #include <meta_fifo.h>
+.Fo "fifo fifo_new"
+.Fa "size_t size"
+.Fc
+.Fo "void fifo_free"
+.Fa "fifo p"
+.Fa "dtor dtor_fn"
+.Fc
+.Fo "status_t fifo_lock"
+.Fa "fifo p"
+.Fc
+.Fo "status_t fifo_unlock"
+.Fa "fifo p"
+.Fc
+.Fo "status_t fifo_add"
+.Fa "fifo p"
+.Fa "void *data"
+.Fc
+.Fo "size_t fifo_nelem"
+.Fa "fifo p"
+.Fc
+.Fo "size_t fifo_free_slot_count"
+.Fa "fifo p"
+.Fc
+.Fo "void *fifo_get"
+.Fa "fifo p"
+.Fc
+.Fo "void *fifo_peek"
+.Fa "fifo p"
+.Fa "size_t i"
+.Fc
+.Fo "status_t fifo_write_signal"
+.Fa "fifo p"
+.Fa "void *data"
+.Fc
+.Fo "status_t fifo_wait_cond"
+.Fa "fifo p"
+.Fc
+.Fo "status_t fifo_wake"
+.Fa "fifo p"
+.Fc
+.Fo "status_t fifo_signal"
+.Fa "fifo p"
+
+.Sh DESCRIPTION
+The fifo ADT implements a tradidional First In, First Out queue.
+Using a fifo follows the same pattern as all other ADTs, create it,
+use it, and then free it.
+.Pp
+Any type of data stored in the FIFO, as long as one can convert it
+to and from a void* pointer.
+.Pp
+The FIFO is designed to be thread safe and to be used in combination
+with POSIX condition variables. More correctly, the FIFO uses such
+variables internally to let consumers of thread data wait for events,
+typically new entries in the queue.
+.Pp
+.Sh SEE ALSO
+.Xr wlock pthread_cond_wait
+.Xr fifo_new fifo_free fifo_lock fifo_unlock fifo_add fifo_nelem
+.Xr fifo_free_slot_count fifo_get fifo_peek
+.Xr fifo_write_signal fifo_wait_cond fifo_wake fifo_signal
+.Sh AUTHOR
+.An B. Augestad, bjorn.augestad@gmail.com
+
+
