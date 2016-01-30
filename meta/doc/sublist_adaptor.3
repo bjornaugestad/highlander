@@ -19,7 +19,8 @@ to contain. The argument to
 a pointer to the object stored in list A.
 Use sublist_free() to free memory.
 .SH EXAMPLE
-.Bd -literal
+.in +4n
+.nf
 /* A list contains objects of type struct foo. */
 struct foo {
 	char *name;
@@ -60,6 +61,7 @@ list foolist, namelist;
 namelist = sublist_adaptor(foolist, foo2string);
 list_foreach(namelist, f, process_string);
 sublist_free(namelist);
-.Ed
+.nf
+.in
 .SH SEE ALSO
 .Xr sublist_free 3

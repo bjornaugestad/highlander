@@ -41,7 +41,8 @@ function is executed in-between each item in the list.  If the list consists of 
 accepts two parameters to use as arguments to the supplied 
 function. 
 .SH EXAMPLE
-.Bd -literal
+.in +4n
+.nf
 /* The object we store in list */
 struct foo {
 	char* name;
@@ -80,4 +81,5 @@ list_foreach_reversed(lst, f, foo_print);
 list_foreach_sep(lst, f, foo_print, sep);
 /* Print all names as separate HTML paragraphs */
 list_dual_foreach(lst, f, "p", foo_print_tagged);
-.Ed
+.nf
+.in

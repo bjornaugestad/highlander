@@ -17,7 +17,8 @@ No memory will be freed and the string is fully usable after a call to
 The idea is to use this function instead of multiple calls to 
 cstring_new()/cstring_free().
 .SH EXAMPLE
-.Bd -literal
+.in +4n
+.nf
 size_t i, niter = 1000;
 cstring s = cstring_new();
 cstring_extend(s, 10000);
@@ -26,4 +27,5 @@ for(i = 0; i < niter; i++) {
 	... /* Now use s for something */
 }
 cstring_free(s);
-.Ed
+.nf
+.in

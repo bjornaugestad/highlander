@@ -11,7 +11,8 @@ list_last() \- Is the current node the last node?
 returns true if the next call to list_next() will return NULL.
 Returns false, 0, if there are more items in the list.
 .SH EXAMPLE
-.Bd -literal
+.in +4n
+.nf
 /* How and when to use list_last() */
 printf("Names of all objects: ");
 for(i = list_first(my_list); !list_end(i); i = list_next(i)) {
@@ -22,4 +23,5 @@ for(i = list_first(my_list); !list_end(i); i = list_next(i)) {
    else
        printf(", ");
 }
-.Ed
+.nf
+.in

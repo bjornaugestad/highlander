@@ -19,7 +19,8 @@ called.
 .Nm
 returns 1 on success and 0 if an error occurs.
 .SH EXAMPLE
-.Bd -literal
+.in +4n
+.nf
 process p = process_new();
 process_set_username(p, "nobody");
 \&...
@@ -27,4 +28,5 @@ process_start(p, 1);
 process_wait_for_shutdown(p);
 \&...
 process_free(p);
-.Ed
+.nf
+.in

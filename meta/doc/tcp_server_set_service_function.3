@@ -22,7 +22,8 @@ how the
 argument can be accessed. In a real world application, the value
 would not be a string, but a pointer to data that the service function
 needs to implement the server.
-.Bd -literal
+.in +4n
+.nf
 .B #include <stdio.h>
 .sp
 .B #include <tcp_server.h>
@@ -55,4 +56,5 @@ int main(void)
 	tcp_server_free(s);
 	return 0;
 }
-.Ed
+.nf
+.in

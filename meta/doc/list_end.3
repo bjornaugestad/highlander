@@ -12,11 +12,13 @@ will return 1 if the list iterator
 .Fa li
 points to the end of the list which the iterator belongs to.
 .SH EXAMPLE
-.Bd -literal
+.in +4n
+.nf
 list lst;
 list_iterator i;
 ...
 for(i = list_first(lst); !list_end(i); i = list_next(i)) {
 	...
 }
-.Ed
+.nf
+.in

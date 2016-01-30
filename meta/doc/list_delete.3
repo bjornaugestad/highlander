@@ -22,7 +22,8 @@ itself contains pointers to allocated memory. In such a case the program will le
 returns a list_iterator which will point to the first node after the deleted node, or to the
 end of the list if the deleted node was the last node in the list.
 .SH EXAMPLE
-.Bd -literal
+.in +4n
+.nf
 /* The object stored in the list */
 struct foo { char *name; };
 /* Create an object */
@@ -40,4 +41,5 @@ void my_dtor(void *pfoo)
 list_iterator i = list_find(lst, "Hello, world", my_compare);
 if(!list_end(i))
     list_delete(lst, &i, my_dtor);
-.Ed
+.nf
+.in

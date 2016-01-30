@@ -23,7 +23,8 @@ source string on either space, tab or newline characters.
 .SH SEE ALSO
 .Xr cstring_multifree 3
 .SH EXAMPLE
-.Bd -literal
+.in +4n
+.nf
 .B #include <stdio.h>
 .sp
 .B #include <cstring.h>
@@ -41,4 +42,5 @@ int main(void)
 	cstring_multifree(s, n);
 	return 0;
 }
-.Ed
+.nf
+.in

@@ -20,7 +20,8 @@ frees the array. If the cleanup function parameter is NULL,
 the entries in the array will not be freed by 
 .Nm array_free().
 .SH EXAMPLE
-.Bd -literal
+.in +4n
+.nf
 .B #include <stdlib.h>
 .sp
 .B #include <stdio.h>
@@ -65,4 +66,5 @@ int main(void)
     array_free(a, free);
     return 0;
 }
-.Ed
+.nf
+.in

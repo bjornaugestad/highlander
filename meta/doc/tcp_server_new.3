@@ -16,7 +16,8 @@ creates a new instance of a tcp_server.
 The new instance will set up default values for the 
 tcp_server. You can override these defaults later, but it has
 to be done before the tcp_server is started.
-.Bd -literal
+.in +4n
+.nf
 Timeout reads           : 5 seconds
 Timeout writes          : 1 second
 Timeout accepts         : 8 seconds
@@ -30,14 +31,17 @@ Who can connect         : All IP addresses
 Read buffer size        :  4 KB
 Write buffer size       : 64 KB
 Block when full         : No
-.Ed
+.nf
+.in
 .PP
 .Nm tcp_server_free()
 Frees all memory and all resources used by the tcp_server.
 The server cannot be used after a call to tcp_server_free().
 .SH EXAMPLE
-.Bd -literal
+.in +4n
+.nf
 tcp_server s = tcp_server_new();
 \&...
 tcp_server_free(s);
-.Ed
+.nf
+.in

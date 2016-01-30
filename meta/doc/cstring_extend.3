@@ -30,7 +30,8 @@ characters.
 returns 1 if successful and 0 if it failed to reallocate 
 the memory.
 .SH EXAMPLE
-.Bd -literal
+.in +4n
+.nf
 cstring s;
 s = cstring_new();
 if(!cstring_extend(s, 1024 * 1024)) {
@@ -38,4 +39,5 @@ if(!cstring_extend(s, 1024 * 1024)) {
 }
 ...
 cstring_free(s);
-.Ed
+.nf
+.in

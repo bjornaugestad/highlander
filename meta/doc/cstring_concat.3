@@ -27,10 +27,12 @@ and
 appends 3 strings to 
 .Fa dest.
 .SH EXAMPLE
-.Bd -literal
+.in +4n
+.nf
 const char *myvar = "some value";
 cstring s;
 	
 if( (s = cstring_new()) != NULL)
 	cstring_concat3(s, "<h1>", myvar, "</h1>");
-.Ed
+.nf
+.in

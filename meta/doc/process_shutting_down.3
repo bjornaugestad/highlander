@@ -16,7 +16,8 @@ shuts down.
 .SH SEE ALSO
 .Xr process_wait_for_shutdown 3
 .SH EXAMPLE
-.Bd -literal
+.in +4n
+.nf
 process p = process_new();
 /* Register objects to start */
 \&...
@@ -26,4 +27,5 @@ while(!process_shutting_down(p)) {
 	sleep(1);
 }
 process_free(p);
-.Ed
+.nf
+.in

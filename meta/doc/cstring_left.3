@@ -31,7 +31,8 @@ is greater than the length of
 .SH RETURN VALUE
 Both functions return NULL if an error occurs, else a valid cstring. Remember to free the returned cstring using cstring_free().
 .SH EXAMPLE
-.Bd -literal
+.in +4n
+.nf
 cstring h, w, s = cstring_new();
 cstring_set(s, "Hello, World");
 
@@ -41,4 +42,5 @@ w = cstring_right(s, 5); /* w will contain "World" */
 cstring_free(s);
 cstring_free(h);
 cstring_free(w);
-.Ed
+.nf
+.in

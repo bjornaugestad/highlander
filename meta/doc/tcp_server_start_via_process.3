@@ -18,7 +18,8 @@ with a process object.
 .Xr process_start 3 ,
 .Xr process_add_object_to_start 3 
 .SH EXAMPLE
-.Bd -literal
+.in +4n
+.nf
 .B #include <meta_process.h>
 .sp
 .B #include <tcp_server.h>
@@ -54,4 +55,5 @@ int main(void)
 	process_free(p);
 	return 0;
 }
-.Ed
+.nf
+.in

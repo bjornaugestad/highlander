@@ -22,8 +22,10 @@ therefore not a good idea to modify the contents directly.
 .SH RETURN VALUE
 A pointer to the internal buffer.
 .SH EXAMPLE
-.Bd -literal
+.in +4n
+.nf
 cstring s = cstring_new();
 cstring_set(s, "Hello, World");
 printf("%s\\n", c_str(s));
-.Ed
+.nf
+.in

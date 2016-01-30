@@ -10,14 +10,16 @@ list_next() \- Move to the next node in a list.
 .Nm 
 returns an iterator to the next item. 
 .SH EXAMPLE
-.Bd -literal
+.in +4n
+.nf
 list lst;
 list_iterator i;
 \&...
 for(i = list_first(lst); !list_end(i); i = list_next(i)) {
 	...
 }
-.Ed
+.nf
+.in
 .SH SEE ALSO
 .Xr list_first 3 ,
 .Xr list_end 3

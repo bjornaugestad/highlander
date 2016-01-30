@@ -25,7 +25,8 @@ arrives too slowly,
 .Nm
 returns 0 and sets errno to EAGAIN. We therefore test for this.
 .PP
-.Bd -literal
+.in +4n
+.nf
 .B #include <tcp_server.h>
 .sp
 .B #include <connection.h>
@@ -59,4 +60,5 @@ int main(void)
 	return 0;
 }
 	
-.Ed
+.nf
+.in

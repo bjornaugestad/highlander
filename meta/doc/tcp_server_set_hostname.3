@@ -15,10 +15,12 @@ if you want to clear a previously assigned host name. The content
 of the host parameter will be copied and stored within the tcp_server,
 so any string will do as an argument.
 .SH EXAMPLE
-.Bd -literal
+.in +4n
+.nf
 tcp_server s = tcp_server_new();
 /* Listen to localhost only */
 tcp_server_set_nostname(s, "localhost");
 \&...
 tcp_server_free(s);
-.Ed
+.nf
+.in

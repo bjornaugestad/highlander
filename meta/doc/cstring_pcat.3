@@ -9,11 +9,13 @@ cstring_pcat() \- Appends characters to a cstring
 .SH DESCRIPTION
 Appends 0..n characters from start to end(exclusive).
 .SH EXAMPLE
-.Bd -literal
+.in +4n
+.nf
 const char* hello = "Hello, world";
 cstring s;
 const char* end;
 ...
 end = strchr(hello, ',');
 cstring_pcat(s, hello, end); /* Appends "Hello" to s */
-.Ed
+.nf
+.in

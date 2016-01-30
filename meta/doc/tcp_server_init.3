@@ -18,8 +18,10 @@ tcp_server and finally initialize it using this function.
 .Nm
 returns 1 on success, else 0.
 .SH EXAMPLE
-.Bd -literal
+.in +4n
+.nf
 tcp_server srv = tcp_server_new();
 tcp_server_set_worker_threads(srv, 80);
 tcp_server_init(srv);
-.Ed
+.nf
+.in

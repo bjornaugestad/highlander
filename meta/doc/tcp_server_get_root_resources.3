@@ -22,7 +22,8 @@ as root and later switch to a user named \e foo. Then it will
 start accepting connections. Please note that error handling
 is dropped here for clarity. Production code should always check
 for errors.
-.Bd -literal
+.in +4n
+.nf
    struct passwd* pwd = getpwnam("foo");
    tcp_server srv = tcp_server_new();
    tcp_server_init(srv);
@@ -31,7 +32,8 @@ for errors.
    tcp_server_start(srv);
    tcp_server_free_root_resources(srv);
    tcp_server_free(srv);
-.Ed
+.nf
+.in
 .SH RETURN VALUE
 .Nm
 return 1 on success, else 0.

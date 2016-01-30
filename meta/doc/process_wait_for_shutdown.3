@@ -12,10 +12,12 @@ Wait for shutdown is needed to avoid that we fall off main().
 .Nm
 just joins the shutdown thread.
 .SH EXAMPLE
-.Bd -literal
+.in +4n
+.nf
 process p = process_new();
 \&...
 process_start(p, 1);
 process_wait_for_shutdown();
 process_free(p);
-.Ed
+.nf
+.in

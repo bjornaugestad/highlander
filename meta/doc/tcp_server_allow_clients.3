@@ -22,9 +22,11 @@ by your platforms implementation of regcomp.
 .Nm
 returns 1 on success, 0 on errors. Note that errno may be a bit odd as regcomp() has special error codes which this function will return.
 .SH EXAMPLE
-.Bd -literal
+.in +4n
+.nf
    const char *filter = "1.1.1.* 2.*.1.? 192.168.*.*";
    tcp_server_allow_clients(srv, filter);
-.Ed
+.nf
+.in
 .SH SEE ALSO
 .Xr regcomp tcp_server_clear_client_filter

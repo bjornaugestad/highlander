@@ -43,7 +43,8 @@ returns 1 if all the strings were created or 0 if an error occured.
 .PP
 .Nm cstring_copy() creates a deep copy of a cstring object.
 .SH EXAMPLE
-.Bd -literal
+.in +4n
+.nf
 cstring s, s1, s2, s3;
 cstring arr[3];
 if( (s = cstring_new()) != NULL)
@@ -66,4 +67,5 @@ s1 = cstring_copy(s);
 cstring_free(s);
 cstring_free(s1);
 
-.Ed
+.nf
+.in

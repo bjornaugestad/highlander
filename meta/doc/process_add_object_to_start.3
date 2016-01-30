@@ -37,7 +37,8 @@ returns 1 if the object was successfully added and 0 if an error occured.
 This very simple example creates a myserver and starts it properly, as well
 as handles shutdown and signaling. 
 Remember that you can add any number of objects to the process object.
-.Bd -literal
+.in +4n
+.nf
 .B #include <stdlib.h>
 .sp
 .B #include <meta_process.h>
@@ -99,6 +100,7 @@ int main(void)
 	process_free(p);
 	return 0;
 }
-.Ed
+.nf
+.in
 .SH SEE ALSO
 .Xr process_start

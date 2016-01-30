@@ -21,7 +21,8 @@ for each node in the list. If
 .Fa dtor
 is NULL, then the data will not be freed.
 .SH EXAMPLE
-.Bd -literal
+.in +4n
+.nf
 /* The object we store in the list */
 struct foo {
 	char *name;
@@ -40,4 +41,5 @@ void foo_dtor(void* arg)
 list lst = list_new();
 \&...
 list_free(lst, foo_dtor);
-.Ed
+.nf
+.in
