@@ -47,5 +47,3 @@ typical operations cannot be made atomic without risking to block, e.g.
 we cannot retrieve items if there are no items in the queue. We must
 therefore first check size to see if there are any items and then later
 retrieve the items. To achieve this, we use external locking. 
-.SH AUTHOR
-.An B. Augestad, bjorn.augestad@gmail.com
