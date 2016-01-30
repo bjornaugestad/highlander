@@ -1,13 +1,10 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt SOCK
-.Th sock 3
-.Sh NAME
+.TH sock 3
+.SH NAME
 .Nm sock
 .Nd sock
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_sock.h>
-.Sh DESCRIPTION
+.SH DESCRIPTION
 Utility functions for sockets
 
 NOTE: This file is just a collection of utility functions manipulating
@@ -16,5 +13,5 @@ return codes are very inconsistent. All of this means that sock.[ch]
 is up for a redesign/rewrite.
 (BTW: the known bug is gethostname() instead of gethostname_r() in
 reentrant programs).
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

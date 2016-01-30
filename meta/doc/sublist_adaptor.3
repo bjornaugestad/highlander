@@ -1,15 +1,14 @@
-.Dd Nov 25, 2005
-.Th sublist_adaptor 3
-.Sh NAME
+.TH sublist_adaptor 3
+.SH NAME
 .Nm sublist_adaptor()
 .Nd Transform a list into another.
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_list.h>
 .Fo "list sublist_adaptor"
 .Fa "list lst"
 .Fa "void* (*adaptor)(void*)"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 transforms a list of one type to another list containing another type, without copying
 data. 
@@ -21,7 +20,7 @@ to contain. The argument to
 .Fa adaptor
 a pointer to the object stored in list A.
 Use sublist_free() to free memory.
-.Sh EXAMPLE
+.SH EXAMPLE
 .Bd -literal
 /* A list contains objects of type struct foo. */
 struct foo {
@@ -64,7 +63,7 @@ namelist = sublist_adaptor(foolist, foo2string);
 list_foreach(namelist, f, process_string);
 sublist_free(namelist);
 .Ed
-.Sh SEE ALSO
+.SH SEE ALSO
 .Xr sublist_free 3
-.Sh AUTHOR
+.SH AUTHOR
 B. Augestad, bjorn.augestad@gmail.com.

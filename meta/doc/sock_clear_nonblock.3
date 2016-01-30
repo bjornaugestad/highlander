@@ -1,21 +1,18 @@
-.Dd Nov 29, 2014
-.Os POSIX
-.Dt SOCK
-.Th sock_clear_nonblock 3
-.Sh NAME
+.TH sock_clear_nonblock 3
+.SH NAME
 .Nm sock_clear_nonblock
 .Nd Y
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_sock.h>
 .Fo "int sock_clear_nonblock"
 .Fa "meta_socket p"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 clears the O_NONBLOCK flag from the socket. This means that
 read/write operations on the socket will block after this 
 function is called.
-.Sh SEE ALSO
+.SH SEE ALSO
 .Xr sock_set_nonblock 3
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

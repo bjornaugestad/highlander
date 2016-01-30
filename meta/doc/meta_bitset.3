@@ -1,11 +1,8 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th meta_bitset 3
-.Sh NAME
+.TH meta_bitset 3
+.SH NAME
 .Nm meta_bitset
 .Nd Dynamic bitset ADT
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_bitset.h>
 .Fo "bitset bitset_new"
 .Fa "size_t bitcount"
@@ -74,7 +71,7 @@
 .Fa "bitset b"
 .Fa "bitset c"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 A bitset is nothing more than a very long integer with bits to indicate
 true or false. 
 .Pp
@@ -89,5 +86,5 @@ may be e.g. a memory mapped file or even an automatic variable.
 The bitset is reentrant, but not thread safe. This means that 
 multiple threads cannot read and write to the same bitset at 
 the same time. Use a lock to control access to the bitset if needed.
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

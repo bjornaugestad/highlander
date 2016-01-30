@@ -1,11 +1,8 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th cache_add 3
-.Sh NAME
+.TH cache_add 3
+.SH NAME
 .Nm cache_add
 .Nd Add an element to a cache
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_cache.h>
 .Fo "int cache_add"
 .Fa "cache c"
@@ -14,7 +11,7 @@
 .Fa "size_t cb"
 .Fa "int pin"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 Add a new item to the cache. The item is identified
 by the id parameter and has size cb. The data pointer
 must be a pointer to allocated memory as it will be
@@ -27,5 +24,5 @@ when the cache is deleted.
 returns 1 if the item was added successfully.
 The function will return 0 if an item with the same id
 already exists. 
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

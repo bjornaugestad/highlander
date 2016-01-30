@@ -1,22 +1,19 @@
-.Dd Nov 29, 2014
-.Os POSIX
-.Dt SOCK
-.Th sock_bind 3
-.Sh NAME
+.TH sock_bind 3
+.SH NAME
 .Nm sock_bind
 .Nd Y
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_sock.h>
 .Fo "int sock_bind"
 .Fa "meta_socket p"
 .Fa "const char *hostname"
 .Fa "int port"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 binds a socket to a host/port combo. Returns 0 if an error occured,
 and 1 if the operation was successful.
-.Sh SEE ALSO
+.SH SEE ALSO
 .Xr bind 2
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

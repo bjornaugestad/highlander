@@ -1,14 +1,11 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt CONNECTION
-.Th connection_assign_read_buffer 3
-.Sh NAME
+.TH connection_assign_read_buffer 3
+.SH NAME
 .Nm connection_assign_read_buffer()
 .Nm connection_assign_write_buffer()
 .Nm connection_reclaim_read_buffer()
 .Nm connection_reclaim_write_buffer()
 .Nd Manage connection buffers
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <connection.h>
 .Fo "membuf connection_reclaim_read_buffer"
 .Fa "connection conn"
@@ -24,7 +21,7 @@
 .Fa "connection conn"
 .Fa "membuf buf"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 The connection is assigned a read buffer and a write buffer on demand,
 instead of managing the buffers itself. The reason is that we may
 have a huge queue of unserved connections and a rather low number of
@@ -34,5 +31,5 @@ itself is stored in the queue.
 .Pp
 You do not have to worry about this if you use tcp_server ADT,
 as it assigns and reclaims buffers automatically. 
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

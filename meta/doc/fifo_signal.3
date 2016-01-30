@@ -1,14 +1,11 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th fifo_signal 3
-.Sh NAME
+.TH fifo_signal 3
+.SH NAME
 .Nm fifo_signal
 .Nm fifo_write_signal
 .Nm fifo_wait_cond
 .Nm fifo_wake
 .Nd Signalling functions for meta_fifo
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_fifo.h>
 .Fo "int fifo_write_signal"
 .Fa "fifo p"
@@ -23,7 +20,7 @@
 .Fo "int fifo_signal"
 .Fa "fifo p"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 Sometimes a reader thread wants to be notified whenever data is added to
 the fifo. This is done using these functions:
 fifo_write_signal() - First write, then call pthread_cond_signal()
@@ -44,7 +41,7 @@ wakes up, the function returns 1. If no data is available,
 sets errno to ENOENT and returns 0.
 .Pp
 I guess we need quite a lot of examples to explain this to people. :-(
-.Sh SEE ALSO
+.SH SEE ALSO
 .Xr meta_wlock 3
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

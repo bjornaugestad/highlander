@@ -1,11 +1,8 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th meta_pool 3
-.Sh NAME
+.TH meta_pool 3
+.SH NAME
 .Nm meta_pool
 .Nd Object management ADT
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_pool.h>
 .Fo "pool pool_new"
 .Fc
@@ -24,7 +21,7 @@
 .Fa "pool p"
 .Fa "void *resource"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 A pool is just a pool of resources, which basically can
 be anything. You create the pool by adding resources to it
 and later you can get resources from the pool by calling
@@ -44,5 +41,5 @@ get an ADT from the pool.
 .Pp
 The resource pool is thread safe and reentrant. It uses a mutex
 to control access to the pool. 
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

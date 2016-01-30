@@ -1,12 +1,11 @@
-.Dd Nov 25, 2005
-.Th list_foreach 3
-.Sh NAME
+.TH list_foreach 3
+.SH NAME
 .Nm list_foreach() 
 .Nm list_foreach_reversed()
 .Nm list_foreach_sep()
 .Nm list_dual_foreach()
 .Nd Execute a function once for each node in a list.
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_list.h>
 .Fo "int list_foreach"
 .Fa "list lst"
@@ -30,7 +29,7 @@
 .Fa "void *arg2"
 .Fa "int(*dual)(void* a1, void *a2, void *data)"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm list_foreach()
 executes function 
 .Fa f
@@ -54,7 +53,7 @@ function is executed in-between each item in the list.  If the list consists of 
 .Fn list_dual_foreach
 accepts two parameters to use as arguments to the supplied 
 function. 
-.Sh EXAMPLE
+.SH EXAMPLE
 .Bd -literal
 /* The object we store in list */
 struct foo {
@@ -95,5 +94,5 @@ list_foreach_sep(lst, f, foo_print, sep);
 /* Print all names as separate HTML paragraphs */
 list_dual_foreach(lst, f, "p", foo_print_tagged);
 .Ed
-.Sh AUTHOR
+.SH AUTHOR
 B. Augestad, bjorn.augestad@gmail.com.

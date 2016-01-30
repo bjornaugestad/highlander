@@ -1,12 +1,9 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META_PROCESS
-.Th process_new 3
-.Sh NAME
+.TH process_new 3
+.SH NAME
 .Nm process_new()
 .Nm process_free()
 .Nd Create and destroy process objects
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_process.h>
 .Fo "process process_new"
 .Fa "const char* appname"
@@ -14,7 +11,7 @@
 .Fo "void process_free"
 .Fa "process p"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm process_new()
 creates a new process object. 
 .Fa appname 
@@ -29,5 +26,5 @@ fork() and threads don't mix very well.
 .Nm process_free()
 frees all memory used by the process object, but not stop any running threads. 
 You must call process_shutdown() to do that.
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

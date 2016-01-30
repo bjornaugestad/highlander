@@ -1,20 +1,19 @@
-.Dd Nov 25, 2005
-.Th list_insert 3
-.Sh NAME
+.TH list_insert 3
+.SH NAME
 .Nm list_insert() 
 .Nd Insert a node in front of the list.
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_list.h>
 .Fo "list list_insert"
 .Fa "list lst"
 .Fa "void *data"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 insert a new node in the front of the list.  returns NULL if we fail. 
 .Nm
 will allocate a new list if lst is NULL.
-.Sh SEE ALSO
+.SH SEE ALSO
 .Xr list_add() 3
-.Sh AUTHOR
+.SH AUTHOR
 B. Augestad, bjorn.augestad@gmail.com.

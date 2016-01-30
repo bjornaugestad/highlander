@@ -1,12 +1,9 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th cache_new 3
-.Sh NAME
+.TH cache_new 3
+.SH NAME
 .Nm cache_new
 .Nm cache_free
 .Nd Create and destroy a cache.
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_cache.h>
 .Fo "cache cache_new"
 .Fa "size_t nelem"
@@ -17,7 +14,7 @@
 .Fa "cache c"
 .Fa "dtor cleanup"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm cache_new()
 creates a new cache. The cache will have room for nelem elements,
 and we keep hotlist_nelem elements on a hotlist, which stores the most
@@ -27,5 +24,5 @@ The total size of the cache cannot exceed cb bytes in size.
 .Pp
 .Nm cache_free()
 destroys a cache. 
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

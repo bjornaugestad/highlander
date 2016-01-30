@@ -1,21 +1,18 @@
-.Dd Nov 29, 2014
-.Os POSIX
-.Dt SOCK
-.Th create_client_socket 3
-.Sh NAME
+.TH create_client_socket 3
+.SH NAME
 .Nm create_client_socket
 .Nd Y
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_sock.h>
 .Fo "meta_socket create_client_socket"
 .Fa "const char *host"
 .Fa "int port"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 Connects to a host on a port.
 This function calls gethostbyname() to get host info, and
 it connects to the h_addr member of struct hostent. h_addr
 is an alias for h_addrlist[0].
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

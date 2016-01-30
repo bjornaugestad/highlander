@@ -1,12 +1,9 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th tcp_server_new 3
-.Sh NAME
+.TH tcp_server_new 3
+.SH NAME
 .Nm tcp_server_new()
 .Nm tcp_server_free()
 .Nd Create and destroy tcp_server objects
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <tcp_server.h>
 .Fo "tcp_server tcp_server_new"
 .Fa "void"
@@ -14,7 +11,7 @@
 .Fo "void tcp_server_free"
 .Fa "tcp_server srv"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm tcp_server_new()
 creates a new instance of a tcp_server.
 The new instance will set up default values for the 
@@ -39,11 +36,11 @@ Block when full         : No
 .Nm tcp_server_free()
 Frees all memory and all resources used by the tcp_server.
 The server cannot be used after a call to tcp_server_free().
-.Sh EXAMPLE
+.SH EXAMPLE
 .Bd -literal
 tcp_server s = tcp_server_new();
 \&...
 tcp_server_free(s);
 .Ed
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

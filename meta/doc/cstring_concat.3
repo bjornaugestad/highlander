@@ -1,13 +1,10 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt CSTRING
-.Th cstring_concat 3
-.Sh NAME
+.TH cstring_concat 3
+.SH NAME
 .Nm cstring_concat()
 .Nm cstring_concat2()
 .Nm cstring_concat3()
 .Nd Concatenates strings
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <cstring.h>
 .Fo "int cstring_concat"
 .Fa "cstring dest"
@@ -24,7 +21,7 @@
 .Fa "const char* src2"
 .Fa "const char* src3"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm cstring_concat()
 appends the
 .Fa src
@@ -37,7 +34,7 @@ and
 .Nm cstring_concat3()
 appends 3 strings to 
 .Fa dest.
-.Sh EXAMPLE
+.SH EXAMPLE
 .Bd -literal
 const char *myvar = "some value";
 cstring s;
@@ -45,5 +42,5 @@ cstring s;
 if( (s = cstring_new()) != NULL)
 	cstring_concat3(s, "<h1>", myvar, "</h1>");
 .Ed
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

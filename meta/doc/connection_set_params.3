@@ -1,23 +1,20 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt CONNECTION
-.Th connection_set_params 3
-.Sh NAME
+.TH connection_set_params 3
+.SH NAME
 .Nm connection_set_params()
 .Nd Set parameters for the current connection
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <connection.h>
 .Fo "void connection_set_params"
 .Fa "connection conn"
 .Fa "int fd"
 .Fa "struct sockaddr_in* paddr"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 assigns a file descriptor and a pointer to a sockaddr_in to 
 the connection.
 .Pp
 Users of the tcp_server ADT never has to call this function, in fact
 they never should.
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

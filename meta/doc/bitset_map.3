@@ -1,18 +1,15 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th bitset_map 3
-.Sh NAME
+.TH bitset_map 3
+.SH NAME
 .Nm bitset_map
 .Nd Map a bitset to a memory area
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_bitset.h>
 .Fo "bitset bitset_map"
 .Fa "bitset b "
 .Fa "void *buf"
 .Fa "size_t len"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 Use bitset_map() if you have a bitset in memory or want to 
 create one in memory. Typical use will be if you have a memory
 mapped file and parts of that file is a bitset. 
@@ -28,5 +25,5 @@ len is the length of the buffer in bytes
 The function returns a new bitset. Use bitset_unmap to free any memory used 
 by a mapped bitset. Calling bitset_free() will most probably
 crash your application, as the data pointed to hasn't been allocated.
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

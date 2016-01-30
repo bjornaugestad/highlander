@@ -1,21 +1,18 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th bitset_data 3
-.Sh NAME
+.TH bitset_data 3
+.SH NAME
 .Nm bitset_data
 .Nd Return a pointer to the internal data structure.
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_bitset.h>
 .Fo "void* bitset_data"
 .Fa "bitset b"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 Returns a void pointer to the data that implements the bitset.
 .Pp
 You might ask why this function is needed? The reason is that 
 we then can 'move' the bitset from memory to e.g. a memory mapped file.
 We can write the bitsets to files using this function and
 bitset_size() as arguments to write().
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

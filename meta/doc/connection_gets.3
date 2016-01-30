@@ -1,12 +1,9 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt CONNECTION
-.Th connection_gets 3
-.Sh NAME
+.TH connection_gets 3
+.SH NAME
 .Nm connection_gets()
 .Nm connection_puts()
 .Nd Reads or writes a string
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <connection.h>
 .Fo "int connection_gets"
 .Fa "connection conn"
@@ -17,7 +14,7 @@
 .Fa "connection conn"
 .Fa "const char* s"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm connection_gets()
 reads a string, terminated by \\n, from the connection.
 The size argument is the number of bytes available in buf to 
@@ -27,16 +24,16 @@ The size argument must therefore be greater than 0.
 .Pp
 The \\n, if found, will be put in the buf and the buffer will be
 terminated by '\\0'. 
-.Sh RETURN VALUE
+.SH RETURN VALUE
 .Nm connection_gets()
 returns 1 if a string was read, or 0 if an error occured. 
 .Pp
 .Nm connection_puts()
 returns 1 if the string was written to the socket or output 
 buffer, or 0 if an error occured.
-.Sh SEE ALSO
+.SH SEE ALSO
 .Xr connection_getc 3 ,
-.Sh EXAMPLE
+.SH EXAMPLE
 .Bd -literal
 #include <tcp_server.h>
 #include <connection.h>
@@ -66,5 +63,5 @@ int main(void)
 }
 	
 .Ed
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

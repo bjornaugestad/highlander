@@ -1,17 +1,16 @@
-.Dd Nov 25, 2005
-.Th list_count 3
-.Sh NAME
+.TH list_count 3
+.SH NAME
 .Nm list_count() 
 .Nd Count the number of nodes satisfying some criteria.
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_list.h>
 .Fo "size_t list_count"
 .Fa "list lst"
 .Fa "int (*include_node)(void*)"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 counts the number of nodes in the list which complies to some criteria. The criteria is decided by a caller supplied
 function. That function should return 1 if the node is to be counted, and 0 if the node is not to be counted.  Use NULL as function parameter if you want to count all items.
-.Sh AUTHOR
+.SH AUTHOR
 B. Augestad, bjorn.augestad@gmail.com.

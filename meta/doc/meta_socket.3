@@ -1,11 +1,8 @@
-.Dd Nov 29, 2014
-.Os POSIX
-.Dt CSTRING
-.Th meta_socket 3
-.Sh NAME
+.TH meta_socket 3
+.SH NAME
 .Nm meta_socket
 .Nd A socket ADT
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_socket.h>
 .Fo "meta_socket sock_socket"
 .Fa "int unix_socket"
@@ -65,8 +62,8 @@
 .Fo "int sock_close"
 .Fa "meta_socket p"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 The meta_socket ADT is a thin layer over an ordinary socket.
 .Pp
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

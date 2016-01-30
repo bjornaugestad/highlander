@@ -1,11 +1,8 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th threadpool_add_work 3
-.Sh NAME
+.TH threadpool_add_work 3
+.SH NAME
 .Nm threadpool_add_work
 .Nd Add work to the thread pool's work queue.
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <threadpool.h>
 .Fo "int threadpool_add_work"
 .Fa "threadpool tp"
@@ -16,7 +13,7 @@
 .Fa "void (*exitfn)(void*, void*)"
 .Fa "void* exitarg"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm threadpool_add_work()
 adds work to the queue. The work will be performed by the work_func,
 After the work_func has been executed, the cleanup function will
@@ -40,5 +37,5 @@ cleanup_arg and work_arg, in that order.
 .Pp
 This function sets errno to ENOSPC if the work queue is full and
 the pool is set to not block.
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

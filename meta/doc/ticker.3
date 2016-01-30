@@ -1,11 +1,8 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th ticker 3
-.Sh NAME
+.TH ticker 3
+.SH NAME
 .Nm ticker
 .Nd A ticker ADT
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_ticker.h>
 .Fo "ticker ticker_new"
 .Fa "int usec"
@@ -24,7 +21,7 @@
 .Fo "void ticker_stop"
 .Fa "ticker t"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 A ticker is a thread which at certain intervals performs
 some caller defined actions.
 

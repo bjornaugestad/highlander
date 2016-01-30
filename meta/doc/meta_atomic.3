@@ -1,11 +1,8 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th meta_atomic 3
-.Sh NAME
+.TH meta_atomic 3
+.SH NAME
 .Nm meta_atomic
 .Nd Atomic types and operators
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_atomic.h>
 .Fo "void atomic_X_init"
 .Fa "atomic_X *p"
@@ -30,7 +27,7 @@
 .Fo "void atomic_X_dec"
 .Fa "atomic_X *p"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 The core meta library provides atomic versions of many integer data types,
 as well as operators to manipulate the values.
 .Pp
@@ -64,5 +61,5 @@ atomic_X_init().
 Note that atomic_X_add(), atomic_X_inc() and atomic_X_dec() returns
 the value of the atomic type after your modification, but before the object
 is unlocked. 
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

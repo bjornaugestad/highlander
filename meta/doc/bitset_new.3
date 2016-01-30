@@ -1,12 +1,9 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th bitset_new 3
-.Sh NAME
+.TH bitset_new 3
+.SH NAME
 .Nm bitset_new
 .Nm bitset_free
 .Nd Allocate and free bitsets.
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_bitset.h>
 .Fo "bitset bitset_new"
 .Fa "size_t bitcount"
@@ -14,12 +11,12 @@
 .Fo "void bitset_free"
 .Fa "bitset b"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm bitset_new()
 creates a new bitset with room for bitcount bits.
 .Pp
 .Nm bitset_free()
 frees a bitset previously created by 
 .Nm bitset_new().
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

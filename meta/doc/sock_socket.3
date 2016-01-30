@@ -1,20 +1,17 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt SOCK
-.Th sock_socket 3
-.Sh NAME
+.TH sock_socket 3
+.SH NAME
 .Nm sock_socket
 .Nd Create a new meta_socket
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_sock.h>
 .Fo "meta_socket sock_socket"
 .Fa "int unix_socket"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 Creates a new socket.
 This is a wrapper function for a call to socket().
 If unix_socket is !0, then a UNIX socket is created, else
 an INET socket is created.
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

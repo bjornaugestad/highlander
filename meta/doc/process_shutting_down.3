@@ -1,25 +1,22 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META_PROCESS
-.Th process_shutting_down 3
-.Sh NAME
+.TH process_shutting_down 3
+.SH NAME
 .Nm process_shutting_down()
 .Nd Is the process shutting down?
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_process.h>
 .Fo "int process_shutting_down"
 .Fa "process p"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 returns 1 if the process has received SIGTERM, 0 if not.
 Since process_start() returns after it has started all objects,
 you might want to do other things in the "main" thread. These other
 things must have a way of stopping processing when the process 
 shuts down.
-.Sh SEE ALSO
+.SH SEE ALSO
 .Xr process_wait_for_shutdown 3
-.Sh EXAMPLE
+.SH EXAMPLE
 .Bd -literal
 process p = process_new();
 /* Register objects to start */
@@ -31,5 +28,5 @@ while(!process_shutting_down(p)) {
 }
 process_free(p);
 .Ed
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

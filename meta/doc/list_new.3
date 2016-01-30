@@ -1,10 +1,9 @@
-.Dd Nov 25, 2005
-.Th list_new 3
-.Sh NAME
+.TH list_new 3
+.SH NAME
 .Nm list_new() 
 .Nm list_free() 
 .Nd Create and destroy lists
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_list.h>
 .Fo "list list_new"
 .Fa "void"
@@ -13,7 +12,7 @@
 .Fa "list lst"
 .Fa "dtor dtor"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm list_new()
 creates a new list, returns NULL if failure. 
 .Nm list_free()
@@ -23,7 +22,7 @@ is a pointer an optional cleanup function which is called once
 for each node in the list. If 
 .Fa dtor
 is NULL, then the data will not be freed.
-.Sh EXAMPLE
+.SH EXAMPLE
 .Bd -literal
 /* The object we store in the list */
 struct foo {
@@ -44,5 +43,5 @@ list lst = list_new();
 \&...
 list_free(lst, foo_dtor);
 .Ed
-.Sh AUTHOR
+.SH AUTHOR
 B. Augestad, bjorn.augestad@gmail.com.

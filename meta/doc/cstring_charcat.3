@@ -1,24 +1,21 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt CSTRING
-.Th cstring_charcat 3
-.Sh NAME
+.TH cstring_charcat 3
+.SH NAME
 .Nm cstring_charcat()
 .Nd Append a character to a cstring
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <cstring.h>
 .Fo "int cstring_charcat"
 .Fa "cstring dest"
 .Fa "int c"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 appends the character
 .Fa c
 to the string
 .Fa dest
  .
-.Sh RETURN VALUE
+.SH RETURN VALUE
 .Nm
 returns 1 if the character was successfully appended to the
 string
@@ -26,9 +23,9 @@ string
 , or 0 if 
 .Nm
 was unable to allocate memory.
-.Sh SEE ALSO
+.SH SEE ALSO
 .Xr cstring_concat 3 ,
 .Xr cstring_concat2 3 ,
 .Xr cstring_concat3 3
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

@@ -1,14 +1,13 @@
-.Dd Nov 25, 2005
-.Th sublist_copy 3
-.Sh NAME
+.TH sublist_copy 3
+.SH NAME
 .Nm sublist_copy()
 .Nd Copy a list, but not the data.
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_list.h>
 .Fo "list sublist_copy"
 .Fa "list lst"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 creates a copy of the list
 .Fa lst,
@@ -17,7 +16,7 @@ you have a list in a specific order and don't want to change that
 list, but still want fo e.g. sort a copy of the list in a different
 order without copying the data. 
 Free it with sublist_free.
-.Sh SEE ALSO
+.SH SEE ALSO
 .Xr sublist_free 3
-.Sh AUTHOR
+.SH AUTHOR
 B. Augestad, bjorn.augestad@gmail.com.

@@ -1,12 +1,9 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th pool_new 3
-.Sh NAME
+.TH pool_new 3
+.SH NAME
 .Nm pool_new
 .Nm pool_free
 .Nd Object management ADT
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_pool.h>
 .Fo "pool pool_new"
 .Fc
@@ -14,7 +11,7 @@
 .Fa "pool p"
 .Fa "dtor cleanup"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 Creates a new resource pool. The pool will have room for nelem elements.
 A resource pool is nice to have if you want to preallocate/precreate
 objects and then later use them. The pool ADT is thread safe.
@@ -34,6 +31,6 @@ pool_free(p, (dtor)destroy_my_resource);
 .Nm pool_free frees the pool and all entries in it.
 The entries in the pool will not be freed if the cleanup 
 function pointer parameter is NULL,
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com
 

@@ -1,16 +1,13 @@
-.Dd Nov 29, 2014
-.Os POSIX
-.Dt FILECACHE
-.Th filecache_new 3
-.Sh NAME
+.TH filecache_new 3
+.SH NAME
 .Nm filecache_new
 .Nd Short desc here
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fo "filecache filecache_new"
 .Fa "size_t nelem"
 .Fa "size_t bytes"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm filecache_new()
 Creates a new filecache.
 nelem is used to presize a table of entries in the cache,
@@ -21,5 +18,5 @@ bytes are the total number of bytes the cache can use.
 A megabyte is 1024*1024, btw.
 nelem is the number of elements in the hash table(s),
 and not the max number of elements in the cache.
-.Sh AUTHOR
+.SH AUTHOR
 .An Bjorn Augestad bjorn.augestad@gmail.com

@@ -1,15 +1,14 @@
-.Dd Nov 25, 2005
-.Th list_sort 3
-.Sh NAME
+.TH list_sort 3
+.SH NAME
 .Nm list_sort()
 .Nd Sort a list
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_list.h>
 .Fo "void list_sort"
 .Fa "list lst"
 .Fa "int(*compar)(const void *p1, const void *p2)"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 sorts a list, but is probably very slow.
 The contents of the list are sorted in ascending order according to a comparison function pointed to by
@@ -18,5 +17,5 @@ The contents of the list are sorted in ascending order according to a comparison
 The comparison function must return an integer less than, equal to, or greater than zero if the
 first argument is considered to be respectively less than, equal to, or greater than the second
 argument. 
-.Sh AUTHOR
+.SH AUTHOR
 B. Augestad, bjorn.augestad@gmail.com.

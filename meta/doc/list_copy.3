@@ -1,16 +1,15 @@
-.Dd Nov 25, 2005
-.Th list_copy 3
-.Sh NAME
+.TH list_copy 3
+.SH NAME
 .Nm list_copy() 
 .Nd Create a copy of a list and its contents.
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_list.h>
 .Fo "list list_copy"
 .Fa "list lst"
 .Fa "void*(*copyfn)(const void*)"
 .Fa "dtor dtor"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 creates and returns a copy of
 .Fa lst.
@@ -21,14 +20,14 @@ The
 function is used to free memory in case of a failure, as we don't want to return partial lists if the
 .Fa copyfn
 function returns NULL. 
-.Sh RETURN VALUE
+.SH RETURN VALUE
 .Nm
 returns a pointer to a new list or NULL if 
 .Nm
 or the 
 .Fa copyfn
 function failed to allocate memory.
-.Sh EXAMPLE
+.SH EXAMPLE
 .Bd -literal 
 /* Our object */
 struct foo { char * name; };
@@ -61,5 +60,5 @@ dest = list_copy(src, foo_dup, foo_free);
 if(dest == NULL)
   handle_error();
 .Ed
-.Sh AUTHOR
+.SH AUTHOR
 B. Augestad, bjorn.augestad@gmail.com.

@@ -1,17 +1,14 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt HIGHLANDER
-.Th td2p 3
-.Sh NAME
+.TH td2p 3
+.SH NAME
 .Nm td2p()
 .Nd td2p
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <highlander.h>
 .Fo "int td2p"
 .Fa "http_response response"
 .Fa "const char* text"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 We want to keep the executable small, we therefore use functions for
 some common tasks instead of spreading a lot of constant data around
 in the application. This will make the app a bit slower, but we can 
@@ -19,10 +16,10 @@ live with that until gprof tells us otherwise.
 .Pp
 Adds a <TD>text</TD> to the page 
 int td2p(http_response response, const char* text);
-.Sh RETURN VALUE
-.Sh EXAMPLE
+.SH RETURN VALUE
+.SH EXAMPLE
 .Bd -literal
 .Ed
-.Sh SEE ALSO
-.Sh AUTHOR
+.SH SEE ALSO
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

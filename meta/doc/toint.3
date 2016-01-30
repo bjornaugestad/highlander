@@ -1,11 +1,8 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th meta_convert 3
-.Sh NAME
+.TH meta_convert 3
+.SH NAME
 .Nm meta_convert
 .Nd Conversion functions.
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_convert.h>
 .Fo "status_t toint"
 .Fa "const char *src"
@@ -31,12 +28,12 @@
 .Fa "const char *src"
 .Fa "double *dest"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 All of these functions convert a string to a number. They all return success or
 failure, and errno can be inspected to find the cause of the failure, if any.
 .Pp
 All source strings must be complete numbers without trailing characters.
 Sources like "123asb" are not cool, neither are "123 " or "". We want numbers,
 nothing else.
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

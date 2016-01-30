@@ -1,11 +1,8 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt CONNECTION
-.Th connection_new 3
-.Sh NAME
+.TH connection_new 3
+.SH NAME
 .Nm connection_new
 .Nd Create a new connection
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <connection.h>
 .Fo "connection connection_new"
 .Fa "int timeout_reads"
@@ -14,7 +11,7 @@
 .Fa "int retries_writes"
 .Fa "void* arg2"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 creates an instance of the connection ADT. 
 .Pp
@@ -34,5 +31,5 @@ http_servers can share the callback function. arg2 can be used
 to identify which http_server the connection was made to.
 .Pp
 Users of tcp_server never has to call this function.
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

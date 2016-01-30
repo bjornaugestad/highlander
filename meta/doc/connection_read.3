@@ -1,18 +1,15 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt CONNECTION
-.Th connection_read 3
-.Sh NAME
+.TH connection_read 3
+.SH NAME
 .Nm connection_read()
 .Nd connection_read
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <connection.h>
 .Fo "ssize_t connection_read"
 .Fa "connection conn"
 .Fa "void *buf"
 .Fa "size_t count"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 attempts to read 
 .Fa cb
@@ -22,10 +19,10 @@ bytes from the connection.
 will read up to 
 .Fa cb
 bytes and return the number of bytes read.
-.Sh SEE ALSO
+.SH SEE ALSO
 .Xr connection_set_read_buffer 3 ,
 .Xr connection_write 3
-.Sh EXAMPLE
+.SH EXAMPLE
 Here we read 10 and 10 bytes from the socket. If the input
 arrives too slowly, 
 .Nm
@@ -63,5 +60,5 @@ int main(void)
 }
 	
 .Ed
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

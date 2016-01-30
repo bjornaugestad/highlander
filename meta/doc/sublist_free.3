@@ -1,23 +1,22 @@
-.Dd Nov 25, 2005
-.Th sublist_free 3
-.Sh NAME
+.TH sublist_free 3
+.SH NAME
 .Nm sublist_free() 
 .Nd Free a sublist.
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_list.h>
 .Fo "void sublist_free"
 .Fa "list lst"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 frees all memory used by the sublist, but does not free the nodes in the list. 
 Use 
 .Nm
 to free lists created by sublist_copy, sublist_create(), sublist_create_neg() and sublist_adaptor().
-.Sh SEE ALSO
+.SH SEE ALSO
 .Xr sublist_copy 3 ,
 .Xr sublist_create 3 ,
 .Xr sublist_create_neg 3 ,
 .Xr sublist_adaptor 3
-.Sh AUTHOR
+.SH AUTHOR
 B. Augestad, bjorn.augestad@gmail.com.

@@ -1,11 +1,8 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th meta_process 3
-.Sh NAME
+.TH meta_process 3
+.SH NAME
 .Nm meta_process
 .Nd Process management ADT
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_process.h>
 .Fo "process process_new"
 .Fc
@@ -42,7 +39,7 @@
 .Fa "process p"
 .Fa "void *object"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 A process object is used to control the currently executing process.
 Normally the process consists of one or more http_server threads.
 These threads cannot change e.g. current directory as that will 
@@ -52,5 +49,5 @@ in a process not the process itself).
 .Pp
 The process ADT controls current directory, shutdown semantics,
 startup semantics and more. 
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

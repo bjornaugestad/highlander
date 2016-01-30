@@ -1,13 +1,10 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th bitset_and_eq 3
-.Sh NAME
+.TH bitset_and_eq 3
+.SH NAME
 .Nm bitset_and_eq
 .Nm bitset_or_eq
 .Nm bitset_xor_eq
 .Nd Binary AND/OR/XOR two bitsets.
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_bitset.h>
 .Fo "void bitset_and_eq"
 .Fa "bitset a"
@@ -21,9 +18,9 @@
 .Fa "bitset a"
 .Fa "bitset b"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 Binary AND two bitsets, and store the result in the first set.
 These three functions perform the equivalent of a OP = b;
 where OP is &, | or ^.
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

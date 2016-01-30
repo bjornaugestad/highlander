@@ -1,16 +1,13 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt HIGHLANDER
-.Th get_mime_type 3
-.Sh NAME
+.TH get_mime_type 3
+.SH NAME
 .Nm get_mime_type()
 .Nd get_mime_type
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <highlander.h>
 .Fo "const char* get_mime_type"
 .Fa "const char* filename"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 returns the mime type for a file.
 .Pp
@@ -25,10 +22,10 @@ used if the extension isn't recognised or understood.
 A good place to look for mime type definitions is 
 http://www.iana.org/assignments/media-types
  
-.Sh RETURN VALUE
-.Sh EXAMPLE
+.SH RETURN VALUE
+.SH EXAMPLE
 .Bd -literal
 .Ed
-.Sh SEE ALSO
-.Sh AUTHOR
+.SH SEE ALSO
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

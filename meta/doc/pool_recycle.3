@@ -1,18 +1,15 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th pool_recycle 3
-.Sh NAME
+.TH pool_recycle 3
+.SH NAME
 .Nm pool_recycle
 .Nd Object management ADT
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_pool.h>
 .Fo "void* pool_recycle"
 .Fa "pool p"
 .Fa "void *resource"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 Returns a resource to the pool. You should always return a resource to the
 pool as soon as possible, so that other threads may use the same resource.
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

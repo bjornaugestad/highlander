@@ -1,20 +1,17 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt CONNECTION
-.Th connection_discard 3
-.Sh NAME
+.TH connection_discard 3
+.SH NAME
 .Nm connection_discard()
 .Nd Discard a connection
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <connection.h>
 .Fo "void connection_discard"
 .Fa "connection conn"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 discards a connection by closing it. Errors are ignored.
 Data in the write buffer will not be written. 
 .Pp
 Users of tcp_server never has to call this function.
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

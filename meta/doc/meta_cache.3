@@ -1,11 +1,8 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th meta_cache 3
-.Sh NAME
+.TH meta_cache 3
+.SH NAME
 .Nm meta_cache
 .Nd A cache ADT
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_cache.h>
 .Fo "cache cache_new"
 .Fa "size_t nelem"
@@ -37,10 +34,10 @@
 .Fa "cache c"
 .Fa "size_t id"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 A meta_cache is just a simple cache to which you can add and later
 retrieve items. 
 .Pp
 An item is any number of bytes identified by an id.
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

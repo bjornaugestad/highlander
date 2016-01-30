@@ -1,12 +1,9 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt CSTRING
-.Th cstring_left 3
-.Sh NAME
+.TH cstring_left 3
+.SH NAME
 .Nm cstring_left()
 .Nm cstring_right()
 .Nd create a string from another string
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <cstring.h>
 .Fo "cstring cstring_left"
 .Fa "cstring src"
@@ -16,7 +13,7 @@
 .Fa "cstring src"
 .Fa "size_t n"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm cstring_left()
 creates a new cstring containing the 
 .Fa n
@@ -34,9 +31,9 @@ If
 is greater than the length of
 .Fa src
 , then the entire string will be copied.
-.Sh RETURN VALUE
+.SH RETURN VALUE
 Both functions return NULL if an error occurs, else a valid cstring. Remember to free the returned cstring using cstring_free().
-.Sh EXAMPLE
+.SH EXAMPLE
 .Bd -literal
 cstring h, w, s = cstring_new();
 cstring_set(s, "Hello, World");
@@ -48,5 +45,5 @@ cstring_free(s);
 cstring_free(h);
 cstring_free(w);
 .Ed
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

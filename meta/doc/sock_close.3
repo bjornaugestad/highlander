@@ -1,19 +1,16 @@
-.Dd Nov 29, 2014
-.Os POSIX
-.Dt SOCK
-.Th sock_close 3
-.Sh NAME
+.TH sock_close 3
+.SH NAME
 .Nm sock_close
 .Nd Close a socket
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_sock.h>
 .Fo "int sock_close"
 .Fa "meta_socket p"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 Closes the socket.
 .Nm
 sock_close first calls shutdown() with the how parameter set to
 SHUT_RDWR. Then it closes the socket using close().
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

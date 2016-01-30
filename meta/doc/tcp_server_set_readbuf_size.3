@@ -1,17 +1,14 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th tcp_server_set_readbuf_size 3
-.Sh NAME
+.TH tcp_server_set_readbuf_size 3
+.SH NAME
 .Nm tcp_server_set_readbuf_size()
 .Nd tcp_server_set_readbuf_size
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <tcp_server.h>
 .Fo "void tcp_server_set_readbuf_size"
 .Fa "tcp_server s"
 .Fa "size_t size"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 Sets the size of the read buffer.
 Incoming data is buffered for each connection. The size of
 the buffer can be set prior to the call to tcp_server_init().
@@ -21,5 +18,5 @@ value.
 .Xr tcp_server_new() 3 ,
 .Xr tcp_server_set_writebuf_size() 3 ,
 .Xr tcp_server_init() 3 
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

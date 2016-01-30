@@ -1,30 +1,24 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th filecache 3
-.Sh NAME
+.TH filecache 3
+.SH NAME
 .Nm filecache
-.Dd Nov 29, 2014
-.Os POSIX
-.Dt FILECACHE
-.Th filecache_new 3
-.Sh NAME
+.TH filecache_new 3
+.SH NAME
 .Nm filecache_new
 .Nd Short desc here
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fo "filecache filecache_new"
 .Fa "size_t nelem"
 .Fa "size_t bytes"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm filecache_new()
 long desc goes here.
-.Sh AUTHOR
+.SH AUTHOR
 .An Bjorn Augestad bjorn.augestad@gmail.com
 .Nd General purpose filecache ADT
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <filecache.h>
-.Sh DESCRIPTION
+.SH DESCRIPTION
 The filecache ADT is a 
 This ADT reads files from disk and caches them in memory.
 The files can later be accessed directly in user space without
@@ -46,5 +40,5 @@ Algorithm: The file cache implements a traditional LRU
 algorithm and will remove the LRU entry when the cache is
 full and a new request is made. See cache.h for more details
 as filecache just builds on cache.
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

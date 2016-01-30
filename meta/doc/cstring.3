@@ -1,11 +1,8 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt CSTRING
-.Th cstring 3
-.Sh NAME
+.TH cstring 3
+.SH NAME
 .Nm cstring
 .Nd A string ADT
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <cstring.h>
 .Fo "const char* c_str"
 .Fa "cstring s"
@@ -99,7 +96,7 @@
 .Fa "size_t from"
 .Fa "size_t to"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 The goal of the cstring ADT is to create a better way of handling
 strings than the standard C way. cstring is designed to be fast and
 to be suitable in e.g. multithreaded (server) programs. 
@@ -125,5 +122,5 @@ and then append a long string of e.g. 600 bytes, the string will use
 cstring will double to 1201 bytes.
 .Pp
 Allocated memory will not be freed until cstring_free() is called.
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

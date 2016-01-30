@@ -1,12 +1,9 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th fifo_new 3
-.Sh NAME
+.TH fifo_new 3
+.SH NAME
 .Nm fifo_new
 .Nm fifo_free
 .Nd A thread safe FIFO ADT.
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_fifo.h>
 .Fo "fifo fifo_new"
 .Fa "size_t nelem"
@@ -14,12 +11,12 @@
 .Fo "void fifo_free"
 .Fa "fifo p"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm fifo_new()
 creates a new fifo with room for nelem entries, and
 .Fa foobar
 .Nm fifo_free()
 destroys a fifo created by 
 .Nm fifo_new().
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

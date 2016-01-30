@@ -1,17 +1,14 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th array_add 3
-.Sh NAME
+.TH array_add 3
+.SH NAME
 .Nm array_add
 .Nd Add an element to the array
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_array.h>
 .Fo "int array_add"
 .Fa "array p"
 .Fa "void *elem"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 Adds a new element to the array.
 .Pp
 If there is no free space in the array and the array 
@@ -26,8 +23,8 @@ return 1 if everything was OK, 0 if an error occured.
 An error is either that we ran out of memory if we tried to reallocate
 the array to make room for the new entry, or that the array was full
 and that the array wasn't allowed to grow automatically.
-.Sh SEE ALSO
+.SH SEE ALSO
 .Xr array_new 3
 .Xr array_get 3
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

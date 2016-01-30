@@ -1,16 +1,13 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th tcp_server_get_root_resources 3
-.Sh NAME
+.TH tcp_server_get_root_resources 3
+.SH NAME
 .Nm tcp_server_get_root_resources()
 .Nd Creates and binds the socket the server uses
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <tcp_server.h>
 .Fo "int tcp_server_get_root_resources"
 .Fa "tcp_server srv"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 gets all resources which must be gotten while we are root.
 For the tcp_server this mainly is binding reserved ports.
@@ -19,7 +16,7 @@ Note that this function must be called even if the tcp_server
 doesn't require any root resources, ie when binding to a port
 above 1023. The name is just to indicate that it must be called
 while the process runs as root.
-.Sh EXAMPLE
+.SH EXAMPLE
 The following example assumes that the process is started as 
 the user \e root. The snippet will create and configure a tcp_server
 as root and later switch to a user named \e foo. Then it will
@@ -36,11 +33,11 @@ for errors.
    tcp_server_free_root_resources(srv);
    tcp_server_free(srv);
 .Ed
-.Sh RETURN VALUE
+.SH RETURN VALUE
 .Nm
 return 1 on success, else 0.
-.Sh SEE ALSO
+.SH SEE ALSO
 .Xr meta_process 7 ,
 .Xr tcp_server_free_root_resources 3
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

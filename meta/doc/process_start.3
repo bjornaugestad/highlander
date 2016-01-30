@@ -1,17 +1,14 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META_PROCESS
-.Th process_start 3
-.Sh NAME
+.TH process_start 3
+.SH NAME
 .Nm process_start()
 .Nd Starts all registred objects
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_process.h>
 .Fo "int process_start"
 .Fa "process p"
 .Fa "int fork_and_close"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 The startup of the process is a bit complicated, as lots of
 things can go wrong. Luckily enough, if you've set up the process
 correctly it will probably always work. Here is a detailed 
@@ -70,11 +67,11 @@ If everything went well, then process_start() returns 1.
 You can now perform other tasks in the main thread or just
 call the process_wait_for_shutdown() function, which will block
 until the SIGTERM signal is received.
-.Sh SEE ALSO
+.SH SEE ALSO
 .Xr process_wait_for_shutdown 3 ,
 .Xr process_get_exitcode 3
-.Sh EXAMPLE
+.SH EXAMPLE
 .Bd -literal
 .Ed
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

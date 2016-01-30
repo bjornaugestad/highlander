@@ -1,11 +1,8 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt CONNECTION
-.Th connection_write_big_buffer 3
-.Sh NAME
+.TH connection_write_big_buffer 3
+.SH NAME
 .Nm connection_write_big_buffer
 .Nd Write a big buffer directly to the socket
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <connection.h>
 .Fo "int connection_write_big_buffer"
 .Fa "connection conn"
@@ -14,7 +11,7 @@
 .Fa "int timeout"
 .Fa "int retries"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 I have encountered problems when I send large files. This surfaced
 after porting to aix, and is probably related to tcp/ip buffer sizes
 on aix. The problem is that Highlander times out when sending large 
@@ -33,9 +30,9 @@ e.g. 64KB is unlikely to fit in within a normal tcp/ip buffer.
 .Pp
 This function will call connection_flush() before it starts transfering
 data.
-.Sh RETURN VALUE
+.SH RETURN VALUE
 .Nm
 returns 1 if the buffer was written to the socket and 0 if an
 error occured. Note that connection_flush() may cause errors.
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

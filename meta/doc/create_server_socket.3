@@ -1,18 +1,15 @@
-.Dd Nov 29, 2014
-.Os POSIX
-.Dt SOCK
-.Th create_server_socket 3
-.Sh NAME
+.TH create_server_socket 3
+.SH NAME
 .Nm create_server_socket
 .Nd Y
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_sock.h>
 .Fo "meta_socket create_server_socket"
 .Fa "int unix_socket"
 .Fa "const char *host"
 .Fa "int port"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 Creates a server socket.
 This function calls socket(), sets some socket options,
@@ -23,5 +20,5 @@ If unix_socket is 1, then the function will create a Unix socket,
 else it will create a regular AF_INET socket.
 .Pp
 A server socket is ready to accept connections.
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

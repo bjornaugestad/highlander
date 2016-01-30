@@ -1,24 +1,21 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th tcp_server_set_queue_size 3
-.Sh NAME
+.TH tcp_server_set_queue_size 3
+.SH NAME
 .Nm tcp_server_set_queue_size()
 .Nd Set size of work queue.
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <tcp_server.h>
 .Fo "void tcp_server_set_queue_size"
 .Fa "tcp_server srv"
 .Fa "size_t size"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 Sets the size of the work queue. The main thread in the tcp_server
 accepts connection requests and puts these requests in a queue which
 the worker threads reads from. 
 .Pp
-.Sh SEE ALSO
+.SH SEE ALSO
 .Xr tcp_server_set_block_when_full 3 ,
 .Xr tcp_server_set_worker_threads 3
 .Ed
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

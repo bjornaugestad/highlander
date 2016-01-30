@@ -1,16 +1,15 @@
-.Dd Nov 25, 2005
-.Th list_delete 3
-.Sh NAME
+.TH list_delete 3
+.SH NAME
 .Nm list_delete() 
 .Nd Delete a node from a list.
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_list.h>
 .Fo "list_iterator list_delete"
 .Fa "list lst"
 .Fa "list_iterator i"
 .Fa "dtor dtor"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 deletes the node indexed by the 
 .Fa i
@@ -21,11 +20,11 @@ function pointer is NULL, then
 will call free() to free the memory used by the node. This works well for node data allocated with 
 malloc() or calloc(), but fails miserably if the node points to static data or the node data
 itself contains pointers to allocated memory. In such a case the program will leak memory.
-.Sh RETURN VALUE
+.SH RETURN VALUE
 .Nm
 returns a list_iterator which will point to the first node after the deleted node, or to the
 end of the list if the deleted node was the last node in the list.
-.Sh EXAMPLE
+.SH EXAMPLE
 .Bd -literal
 /* The object stored in the list */
 struct foo { char *name; };
@@ -45,5 +44,5 @@ list_iterator i = list_find(lst, "Hello, world", my_compare);
 if(!list_end(i))
     list_delete(lst, &i, my_dtor);
 .Ed
-.Sh AUTHOR
+.SH AUTHOR
 B. Augestad, bjorn.augestad@gmail.com.

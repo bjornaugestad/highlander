@@ -1,17 +1,15 @@
-.Dd Nov 25, 2005
-.Dt META
-.Th list_find 3 
-.Sh NAME
+.TH list_find 3 
+.SH NAME
 .Nm list_find() 
 .Nd Find a node in a list.
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_list.h>
 .Fo "list_iterator list_find"
 .Fa "list lst"
 .Fa "const void *data"
 .Fa "int(*compar)(const void*, const void*)"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 finds the first occurence of an item in the list and returns an iterator positioned at that item.
 If no item was found in the list, then list_end() will return 1.
@@ -20,10 +18,10 @@ first argument is considered to be respectively less than, equal to, or greater 
 argument. The 
 .Fa data
 argument will be passed as the first argument to the comparison function.
-.Sh RETURN VALUE
+.SH RETURN VALUE
 .Nm
 always returns a list_iterator. Use the list_end() function to see if data was found or not.
-.Sh EXAMPLE
+.SH EXAMPLE
 .Bd -literal 
 /* The object stored in the list */
 struct foo {
@@ -46,8 +44,8 @@ li = list_find(lst, &searchterm, foo_compare);
 	/* No node found */
 }
 .Ed
-.Sh SEE ALSO
+.SH SEE ALSO
 .Xr meta_list 7 ,
 .Xr list_end 3 ,
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com.

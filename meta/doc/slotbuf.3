@@ -1,11 +1,8 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th slotbuf 3
-.Sh NAME
+.TH slotbuf 3
+.SH NAME
 .Nm slotbuf
 .Nd A slotbuf ADT
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_slotbuf.h>
 .Fo "slotbuf slotbuf_new"
 .Fa "size_t size"
@@ -41,7 +38,7 @@
 .Fo "void slotbuf_unlock"
 .Fa "slotbuf p"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 A slot buffer stores data in 'slots'. A slot buffer contains one or
 more slots. A slot buffer is similar to an array, except that a slot's
 index has a fixed range. That range is i % nslots.

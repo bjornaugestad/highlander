@@ -1,10 +1,9 @@
-.Dd Nov 25, 2005
-.Th sublist_create 3
-.Sh NAME
+.TH sublist_create 3
+.SH NAME
 .Nm sublist_create() 
 .Nm sublist_create_neg() 
 .Nd Create a sublist.
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_list.h>
 .Fo "list sublist_create"
 .Fa "list lst"
@@ -14,7 +13,7 @@
 .Fa "list lst"
 .Fa "int (*include_node)(void*)"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm sublist_create
 creates a new list consisting 
 of a subset of a list, but does not copy the data stored in the original list.
@@ -34,7 +33,7 @@ is just like
 , except that is uses negation. So if the function 
 .Fa include_node
 returns 1, the node is excluded. We do it this way to avoid having to duplicate a lot of functions.
-.Sh SEE ALSO
+.SH SEE ALSO
 .Xr sublist_free 3
-.Sh AUTHOR
+.SH AUTHOR
 B. Augestad, bjorn.augestad@gmail.com.

@@ -1,18 +1,15 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt CONNECTION
-.Th connection_get_addr 3
-.Sh NAME
+.TH connection_get_addr 3
+.SH NAME
 .Nm connection_get_addr
 .Nd Get client IP address
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <connection.h>
 .Fo "struct sockaddr_in* connection_get_addr"
 .Fa "connection conn"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 Returns the client address that the socket is connected to.
-.Sh EXAMPLE
+.SH EXAMPLE
 .Bd -literal
 #include <stdio.h>
 #include <netinet/in.h>
@@ -52,5 +49,5 @@ int main(void)
 }
 
 .Ed
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

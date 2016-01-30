@@ -1,26 +1,23 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt CONNECTION
-.Th connection_flush 3
-.Sh NAME
+.TH connection_flush 3
+.SH NAME
 .Nm connection_flush()
 .Nd Flush the write buffer
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <connection.h>
 .Fo "int connection_flush"
 .Fa "connection conn"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 writes data in the write buffer to the socket.
-.Sh RETURN VALUE
+.SH RETURN VALUE
 .Nm
 returns 1 if the buffer was written to the socket, 0 if an error occured.
-.Sh SEE ALSO
+.SH SEE ALSO
 .Xr connection_putc 3 ,
 .Xr connection_write 3 ,
 .Xr sock_write 3
-.Sh EXAMPLE
+.SH EXAMPLE
 Here we flush once for every character to make the echo server
 as interactive as possible. This is not recommended as it will create
 more load on the server and more context switches.
@@ -40,5 +37,5 @@ void* echoserverfn(void* arg)
 	return NULL;
 }
 .Ed
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

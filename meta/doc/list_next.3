@@ -1,17 +1,16 @@
-.Dd Nov 25, 2005
-.Th list_next 3
-.Sh NAME
+.TH list_next 3
+.SH NAME
 .Nm list_next() 
 .Nd Move to the next node in a list.
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_list.h>
 .Fo "list_iterator list_next"
 .Fa "list_iterator i"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm 
 returns an iterator to the next item. 
-.Sh EXAMPLE
+.SH EXAMPLE
 .Bd -literal
 list lst;
 list_iterator i;
@@ -20,8 +19,8 @@ for(i = list_first(lst); !list_end(i); i = list_next(i)) {
 	...
 }
 .Ed
-.Sh SEE ALSO
+.SH SEE ALSO
 .Xr list_first 3 ,
 .Xr list_end 3
-.Sh AUTHOR
+.SH AUTHOR
 B. Augestad, bjorn.augestad@gmail.com.

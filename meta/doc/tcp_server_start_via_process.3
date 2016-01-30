@@ -1,28 +1,25 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th tcp_server_start_via_process 3
-.Sh NAME
+.TH tcp_server_start_via_process 3
+.SH NAME
 .Nm tcp_server_start_via_process()
 .Nd Let the process ADT start the tcp_server
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <tcp_server.h>
 .Fo "int tcp_server_start_via_process"
 .Fa "process p"
 .Fa "tcp_server s"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 Let the process ADT start the tcp server instead of starting it
 ourselves. The process ADT handles proper startup and shutdown
 and 
 .Nm
 is a utility function to register a tcp_server object 
 with a process object.
-.Sh SEE ALSO
+.SH SEE ALSO
 .Xr meta_process 7 ,
 .Xr process_start 3 ,
 .Xr process_add_object_to_start 3 
-.Sh EXAMPLE
+.SH EXAMPLE
 .Bd -literal
 #include <meta_process.h>
 #include <tcp_server.h>
@@ -57,5 +54,5 @@ int main(void)
 	return 0;
 }
 .Ed
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

@@ -1,11 +1,8 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th tcp_server_set_timeout 3
-.Sh NAME
+.TH tcp_server_set_timeout 3
+.SH NAME
 .Nm tcp_server_set_timeout()
 .Nd Sets timeout values for a tcp_server
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <tcp_server.h>
 .Fo "void tcp_server_set_timeout"
 .Fa "tcp_server srv"
@@ -13,7 +10,7 @@
 .Fa "int writes"
 .Fa "int accepts"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 sets the number of seconds to wait when reading or writing to 
 the socket, as well as the time to wait when accepting new 
@@ -38,7 +35,7 @@ will be half of the value in accepts. The default value is 8
 seconds, which means that the server on average will respond to
 the shutdown request after 4 seconds. If you set it too low, you
 will consume more system resources(cpu) than you have to.
-.Sh SEE ALSO
+.SH SEE ALSO
 .Xr tcp_server_set_retries() 3
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

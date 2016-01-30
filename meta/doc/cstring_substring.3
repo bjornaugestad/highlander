@@ -1,18 +1,15 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt CSTRING
-.Th cstring_substring 3
-.Sh NAME
+.TH cstring_substring 3
+.SH NAME
 .Nm cstring_substring()
 .Nd Create a substring 
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <cstring.h>
 .Fo "cstring cstring_substring"
 .Fa "cstring src"
 .Fa "size_t from"
 .Fa "size_t to"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 Create a new cstring containing a substring of 
 .Fa src
 . The 
@@ -37,12 +34,12 @@ If
 is greater than the length of 
 .Fa src
 , the resulting string will be truncated.
-.Sh RETURN VALUE
+.SH RETURN VALUE
 .Nm
 returns a new cstring or NULL if an error occurs.
 NULL if an error occurs, else a valid cstring. Remember to free the 
 returned cstring using cstring_free().
-.Sh EXAMPLE
+.SH EXAMPLE
 .Bd -literal
 cstring x, s = cstring_new();
 cstring_set(s, "Hello, world");
@@ -50,8 +47,8 @@ x = cstring_substring(s, 1, 4); /* x now contains "ell" */
 ...
 cstring_free(x);
 .Ed
-.Sh SEE ALSO
+.SH SEE ALSO
 .Xr cstring_left 3 ,
 .Xr cstring_right 3
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

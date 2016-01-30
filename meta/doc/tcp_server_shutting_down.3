@@ -1,21 +1,18 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th tcp_server_shutting_down 3
-.Sh NAME
+.TH tcp_server_shutting_down 3
+.SH NAME
 .Nm tcp_server_shutting_down()
 .Nd Is the tcp_server shutting down?
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <tcp_server.h>
 .Fo "int tcp_server_shutting_down"
 .Fa "tcp_server srv"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 returns 1 if we're shutting down, 0 if we're not. Call this function
 from your own service functions to be able to tell when to terminate
 if your connections tend to be long.
-.Sh EXAMPLE
+.SH EXAMPLE
 Here we call 
 .Nm
 to check for shutdown. Whenever 
@@ -51,5 +48,5 @@ int main(void)
 	return 0;
 }
 .Ed
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

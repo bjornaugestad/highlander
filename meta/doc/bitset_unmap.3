@@ -1,16 +1,13 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th bitset_unmap 3
-.Sh NAME
+.TH bitset_unmap 3
+.SH NAME
 .Nm bitset_unmap
 .Nd Unmaps mapped memory.
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_bitset.h>
 .Fo "void bitset_unmap"
 .Fa "bitset b"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 Frees memory allocated by bitset, but the memory used to store 
 bits is untouched. Memory mapped bitsets must be unmapped using 
 this function. Do not use 
@@ -20,5 +17,5 @@ created using
 .Nm bitset_map()
 or
 .Nm bitset_remap().
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

@@ -1,16 +1,13 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt CSTRING
-.Th c_str 3
-.Sh NAME
+.TH c_str 3
+.SH NAME
 .Nm c_str()
 .Nd Return a char pointer to the cstring
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <cstring.h>
 .Fo "const char* c_str"
 .Fa "cstring s"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 Returns a pointer to the memory that stores the string.
 .Pp
 The current implementation stores data as a char pointer, so
@@ -23,13 +20,13 @@ shorter as internal counters will be invalidated.
 The internal representation may change. Very long string may
 become memory mapped instead of allocated on the heap. It is
 therefore not a good idea to modify the contents directly.
-.Sh RETURN VALUE
+.SH RETURN VALUE
 A pointer to the internal buffer.
-.Sh EXAMPLE
+.SH EXAMPLE
 .Bd -literal
 cstring s = cstring_new();
 cstring_set(s, "Hello, World");
 printf("%s\\n", c_str(s));
 .Ed
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

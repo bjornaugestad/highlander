@@ -1,11 +1,8 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th threadpool 3
-.Sh NAME
+.TH threadpool 3
+.SH NAME
 .Nm threadpool
 .Nd General purpose threadpool ADT
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <threadpool.h>
 .Fo "threadpool threadpool_new"
 .Fa "size_t num_worker_threads"
@@ -34,7 +31,7 @@
 .Fo "unsigned long threadpool_sum_added"
 .Fa "threadpool p"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 The threadpool ADT implements a thread pool with a work queue. Users
 can add work to the queue, and the work will be performed when 
 a worker thread is free to perform it. 
@@ -88,5 +85,5 @@ queue was full and the thread pool was non-blocking.
 returns the number of times work was successfully added to the queue.
  
 All
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

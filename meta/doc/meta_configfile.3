@@ -1,11 +1,8 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META
-.Th meta_configfile 3
-.Sh NAME
+.TH meta_configfile 3
+.SH NAME
 .Nm meta_configfile
 .Nd Generic configuration file ADT
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_configfile.h>
 .Fo "configfile configfile_read"
 .Fa "const char *path"
@@ -43,7 +40,7 @@
 .Fa "const char *name"
 .Fa "unsigned int *value"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 Generic interface to a general purpose configuration file.
 .Pp
 A configfile has very simple layout, the following rules apply:
@@ -80,6 +77,6 @@ user     "John doe"
 username "Jane Doe"   # This is a comment too
 .El
 
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com
 

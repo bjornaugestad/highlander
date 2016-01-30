@@ -1,11 +1,8 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt META_PROCESS
-.Th process_add_object_to_start 3
-.Sh NAME
+.TH process_add_object_to_start 3
+.SH NAME
 .Nm process_add_object_to_start()
 .Nd Add an object to start when process_start() is called
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <meta_process.h>
 .Fo "int process_add_object_to_start"
 .Fa "process p"
@@ -15,7 +12,7 @@
 .Fa "int run_func(void *)"
 .Fa "int shutdown_func(void *)"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 The process object can start any number of threads. Use this function to 
 add a function to run as a separate thread.
 .Fa object
@@ -39,10 +36,10 @@ is called from process_start() after the process has changed rootdir directory a
 will be called when the process receives SIGTERM.
 .Pp
 All functions must return 1 on success and and 0 on error.
-.Sh RETURN VALUE
+.SH RETURN VALUE
 .Nm
 returns 1 if the object was successfully added and 0 if an error occured.
-.Sh EXAMPLE
+.SH EXAMPLE
 This very simple example creates a myserver and starts it properly, as well
 as handles shutdown and signaling. 
 Remember that you can add any number of objects to the process object.
@@ -107,7 +104,7 @@ int main(void)
 	return 0;
 }
 .Ed
-.Sh SEE ALSO
+.SH SEE ALSO
 .Xr process_start
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

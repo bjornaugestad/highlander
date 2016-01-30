@@ -1,14 +1,11 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt CSTRING
-.Th cstring_new 3
-.Sh NAME
+.TH cstring_new 3
+.SH NAME
 .Nm cstring_new()
 .Nm cstring_multinew()
 .Nm cstring_dup()
 .Nm cstring_free()
 .Nd Create and destroy cstrings
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <cstring.h>
 .Fo "cstring cstring_new"
 .Fa void
@@ -26,7 +23,7 @@
 .Fo "void cstring_free"
 .Fa "cstring s"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm cstring_new()
 creates a new cstring.  The string will initially have room for
 255 characters plus the always present string terminator ('\\0').
@@ -42,7 +39,7 @@ creates a cstring from a string literal.
 .Nm cstring_free()
 frees all memory used by the string, including the cstring itself.
 The string cannot be used after a call to cstring_free. 
-.Sh RETURN VALUE
+.SH RETURN VALUE
 .Nm cstring_new()
 returns a pointer to the new cstring, or NULL if an error occured.
 .Pp
@@ -50,7 +47,7 @@ returns a pointer to the new cstring, or NULL if an error occured.
 returns 1 if all the strings were created or 0 if an error occured.
 .Pp
 .Nm cstring_copy() creates a deep copy of a cstring object.
-.Sh EXAMPLE
+.SH EXAMPLE
 .Bd -literal
 cstring s, s1, s2, s3;
 cstring arr[3];
@@ -75,5 +72,5 @@ cstring_free(s);
 cstring_free(s1);
 
 .Ed
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

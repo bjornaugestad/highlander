@@ -1,18 +1,15 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt CONNECTION
-.Th connection_get_fd 3
-.Sh NAME
+.TH connection_get_fd 3
+.SH NAME
 .Nm connection_get_fd()
 .Nd Return file descriptor
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <connection.h>
 .Fo "int connection_get_fd"
 .Fa "connection conn"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 Returns the file descriptor or -1 if no valid file descriptor
 has been assigned to the connection.
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

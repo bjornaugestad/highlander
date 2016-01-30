@@ -1,22 +1,19 @@
-.Dd Nov 25, 2005
-.Os POSIX
-.Dt CONNECTION
-.Th connection_set_fd 3
-.Sh NAME
+.TH connection_set_fd 3
+.SH NAME
 .Nm connection_set_fd()
 .Nd Assign a file descriptor to the connection object.
-.Sh SYNOPSIS
+.SH SYNOPSIS
 .Fd #include <connection.h>
 .Fo "void connection_set_fd"
 .Fa "connection conn"
 .Fa "int fd"
 .Fc
-.Sh DESCRIPTION
+.SH DESCRIPTION
 .Nm
 assigns a new file descriptor to the connection ADT. The fd
 will normally represent an open socket.
 .Pp
 Users of the tcp_server ADT never has to call this function, in fact
 they never should.
-.Sh AUTHOR
+.SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com
