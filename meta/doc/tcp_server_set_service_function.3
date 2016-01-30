@@ -1,9 +1,9 @@
-.TH tcp_server_set_service_function 3
+.TH tcp_server_set_service_function 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm tcp_server_set_service_function()
 .Nd Sets the callback function
 .SH SYNOPSIS
-.Fd #include <tcp_server.h>
+.B #include <tcp_server.h>
 .Fo "void tcp_server_set_service_function"
 .Fa "tcp_server srv"
 .Fa "void* (*func)(void*)"
@@ -14,7 +14,7 @@ Set the function that will be called from tcp_server to
 service requests from clients. The service function is called
 once for each client connecting to the server, so the function
 must be thread safe.
-.Pp
+.PP
 .Fa arg
 can be anything and will be passed on to the service function as 
 connection_arg2.

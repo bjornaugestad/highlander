@@ -1,9 +1,9 @@
-.TH process_set_rootdir 3
+.TH process_set_rootdir 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm process_set_rootdir()
 .Nd Set root directory for a process object
 .SH SYNOPSIS
-.Fd #include <meta_process.h>
+.B #include <meta_process.h>
 .Fo "int process_set_rootdir"
 .Fa "process p"
 .Fa "const char* path"
@@ -13,11 +13,11 @@ Stores the path to the directory which will be the
 "root directory" when the process_start() function
 returns. It will also change the current directory
 to the root dir.
-.Pp
+.PP
 The process_start() function will not change the root
 directory of the process unless process_set_rootdir()
 has been called.
-.Pp
+.PP
 Note that you have to be root to change root directory
 for a process. 
 .SH RETURN VALUE

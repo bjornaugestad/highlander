@@ -1,4 +1,4 @@
-.TH cstring_split 3
+.TH cstring_split 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm cstring_split()
 .Nd Strip leading and trailing white space from a string.
@@ -8,7 +8,7 @@ of items in the array. Each item must be freed separately.
 delim can contain any number of characters, see strcspn()
 
 .SH SYNOPSIS
-.Fd #include <cstring.h>
+.B #include <cstring.h>
 .Fo "size_t cstring_split"
 .Fa "cstring **dest"
 .Fa "const char *src"
@@ -19,7 +19,7 @@ delim can contain any number of characters, see strcspn()
 splits a string literal into multiple cstring strings. After successful
 completion, the dest pointer will point to several cstring strings. The
 exact number is returned as a return value.
-.Pp
+.PP
 Note that delim can be one or more characters, e.g. " \t\n" to split a
 source string on either space, tab or newline characters.
 .SH SEE ALSO

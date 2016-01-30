@@ -1,9 +1,9 @@
-.TH connection_set_fd 3
+.TH connection_set_fd 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm connection_set_fd()
 .Nd Assign a file descriptor to the connection object.
 .SH SYNOPSIS
-.Fd #include <connection.h>
+.B #include <connection.h>
 .Fo "void connection_set_fd"
 .Fa "connection conn"
 .Fa "int fd"
@@ -12,7 +12,7 @@
 .Nm
 assigns a new file descriptor to the connection ADT. The fd
 will normally represent an open socket.
-.Pp
+.PP
 Users of the tcp_server ADT never has to call this function, in fact
 they never should.
 .SH AUTHOR

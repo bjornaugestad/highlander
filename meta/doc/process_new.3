@@ -1,10 +1,10 @@
-.TH process_new 3
+.TH process_new 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm process_new()
 .Nm process_free()
 .Nd Create and destroy process objects
 .SH SYNOPSIS
-.Fd #include <meta_process.h>
+.B #include <meta_process.h>
 .Fo "process process_new"
 .Fa "const char* appname"
 .Fc
@@ -16,13 +16,13 @@
 creates a new process object. 
 .Fa appname 
 will be used as basename when we create e.g. the pidfile or application specific directories.
-.Pp
+.PP
 The pid file will, at least for now, be named appname.pid and 
 will reside in /var/run.  This is borken under AIX. AIX has no /var/run 
 (you can of course create it yourself). The pid file contains
 an incorrect pid. May be related to the forking we do.
 fork() and threads don't mix very well.
-.Pp
+.PP
 .Nm process_free()
 frees all memory used by the process object, but not stop any running threads. 
 You must call process_shutdown() to do that.

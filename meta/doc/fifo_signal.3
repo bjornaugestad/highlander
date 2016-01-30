@@ -1,4 +1,4 @@
-.TH fifo_signal 3
+.TH fifo_signal 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm fifo_signal
 .Nm fifo_write_signal
@@ -6,7 +6,7 @@
 .Nm fifo_wake
 .Nd Signalling functions for meta_fifo
 .SH SYNOPSIS
-.Fd #include <meta_fifo.h>
+.B #include <meta_fifo.h>
 .Fo "int fifo_write_signal"
 .Fa "fifo p"
 .Fa "void *data"
@@ -27,11 +27,11 @@ fifo_write_signal() - First write, then call pthread_cond_signal()
 fifo_signal() - Just signal that there's data in the fifo.
 fifo_wait_cond() - waits until data is written to the buffer.
 fifo_wake() - Wakes any sleeping threads by calling wlock_broadcast().
-.Pp
+.PP
 Remember that a fifo should be used either in this blocking mode with
 no extra locking, or with no calls to these new functions and external
 calls to the locking functions fifo_lock() and fifo_unlock(). 
-.Pp
+.PP
 .Nm fifo_wait_cond()
 locks the fifo, then calls wlock_wait() to wait for data to arrive in
 the fifo. If data is present in the fifo when 
@@ -39,7 +39,7 @@ the fifo. If data is present in the fifo when
 wakes up, the function returns 1. If no data is available, 
 .Nm fifo_wait_cond()
 sets errno to ENOENT and returns 0.
-.Pp
+.PP
 I guess we need quite a lot of examples to explain this to people. :-(
 .SH SEE ALSO
 .Xr meta_wlock 3

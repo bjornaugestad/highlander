@@ -1,4 +1,4 @@
-.TH connection_assign_read_buffer 3
+.TH connection_assign_read_buffer 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm connection_assign_read_buffer()
 .Nm connection_assign_write_buffer()
@@ -6,7 +6,7 @@
 .Nm connection_reclaim_write_buffer()
 .Nd Manage connection buffers
 .SH SYNOPSIS
-.Fd #include <connection.h>
+.B #include <connection.h>
 .Fo "membuf connection_reclaim_read_buffer"
 .Fa "connection conn"
 .Fc
@@ -28,7 +28,7 @@ have a huge queue of unserved connections and a rather low number of
 worker threads. The connection does not need the buffers until the
 worker thread starts to service the connection, but the connection object
 itself is stored in the queue. 
-.Pp
+.PP
 You do not have to worry about this if you use tcp_server ADT,
 as it assigns and reclaims buffers automatically. 
 .SH AUTHOR

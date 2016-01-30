@@ -1,9 +1,9 @@
-.TH tcp_server_set_timeout 3
+.TH tcp_server_set_timeout 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm tcp_server_set_timeout()
 .Nd Sets timeout values for a tcp_server
 .SH SYNOPSIS
-.Fd #include <tcp_server.h>
+.B #include <tcp_server.h>
 .Fo "void tcp_server_set_timeout"
 .Fa "tcp_server srv"
 .Fa "int reads"
@@ -15,7 +15,7 @@
 sets the number of seconds to wait when reading or writing to 
 the socket, as well as the time to wait when accepting new 
 connections. 
-.Pp
+.PP
 The tcp_server uses poll() to see if data is available on a socket,
 or to see if it is possible to write data to a socket. poll() will
 wait for
@@ -24,7 +24,7 @@ and
 .Fa writes
 seconds before it tries to read or write data from/to the socket.
 If no data is available it will retry the operation.
-.Pp
+.PP
 The 
 .Fa accepts
 parameter affects how fast the server responds to

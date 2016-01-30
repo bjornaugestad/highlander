@@ -1,9 +1,9 @@
-.TH tcp_server_shutdown 3
+.TH tcp_server_shutdown 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm tcp_server_shutdown()
 .Nd Stop a tcp_server
 .SH SYNOPSIS
-.Fd #include <tcp_server.h>
+.B #include <tcp_server.h>
 .Fo "void tcp_server_shutdown"
 .Fa "tcp_server srv"
 .Fc
@@ -13,7 +13,7 @@ stops the TCP server, causing
 .Nm tcp_server_start()
 to return. This function is often called from a separate thread
 when the process receives SIGTERM.
-.Pp
+.PP
 Shutdown is an ansynchronus operation and the server threads 
 will run for some time after tcp_server_shutdown returns. How long
 depends on the timeout values used.

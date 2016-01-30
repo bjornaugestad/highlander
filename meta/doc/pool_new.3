@@ -1,10 +1,10 @@
-.TH pool_new 3
+.TH pool_new 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm pool_new
 .Nm pool_free
 .Nd Object management ADT
 .SH SYNOPSIS
-.Fd #include <meta_pool.h>
+.B #include <meta_pool.h>
 .Fo "pool pool_new"
 .Fc
 .Fo "void pool_free"
@@ -15,7 +15,7 @@
 Creates a new resource pool. The pool will have room for nelem elements.
 A resource pool is nice to have if you want to preallocate/precreate
 objects and then later use them. The pool ADT is thread safe.
-.Pp
+.PP
 pool p;
 ...
 if( (p = pool_new(NELEM)) != NULL) {
@@ -27,7 +27,7 @@ my_resource mr = pool_get(p);
 ... 
 pool_recycle(p, mr);
 pool_free(p, (dtor)destroy_my_resource);
-.Pp
+.PP
 .Nm pool_free frees the pool and all entries in it.
 The entries in the pool will not be freed if the cleanup 
 function pointer parameter is NULL,

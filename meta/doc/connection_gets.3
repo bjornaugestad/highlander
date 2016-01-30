@@ -1,10 +1,10 @@
-.TH connection_gets 3
+.TH connection_gets 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm connection_gets()
 .Nm connection_puts()
 .Nd Reads or writes a string
 .SH SYNOPSIS
-.Fd #include <connection.h>
+.B #include <connection.h>
 .Fo "int connection_gets"
 .Fa "connection conn"
 .Fa "char *buf"
@@ -21,13 +21,13 @@ The size argument is the number of bytes available in buf to
 store data in. This means that the function will read at 
 most size-1 bytes, and use one byte to store '\\0'.
 The size argument must therefore be greater than 0.
-.Pp
+.PP
 The \\n, if found, will be put in the buf and the buffer will be
 terminated by '\\0'. 
 .SH RETURN VALUE
 .Nm connection_gets()
 returns 1 if a string was read, or 0 if an error occured. 
-.Pp
+.PP
 .Nm connection_puts()
 returns 1 if the string was written to the socket or output 
 buffer, or 0 if an error occured.

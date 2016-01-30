@@ -1,10 +1,10 @@
-.TH cstring_set 3
+.TH cstring_set 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm cstring_set()
 .Nm cstring_nset()
 .Nd Copy a string
 .SH SYNOPSIS
-.Fd #include <cstring.h>
+.B #include <cstring.h>
 .Fo "int cstring_set"
 .Fa "cstring dest"
 .Fa "const char* src"
@@ -21,7 +21,7 @@ function copies the string pointed to by
 .Fa src
 to the cstring pointed to by
 .Fa dest.
-.Pp
+.PP
 The 
 .Nm cstring_nset()
 function is similar, except that not more than
@@ -35,7 +35,7 @@ Both functions return 1 if
 was successfully copied to 
 .Fa dest,
 or 0 if the functions failed to allocate memory.
-.Pp
+.PP
 .Nm cstring_nset()
 copies at most
 .Fa n

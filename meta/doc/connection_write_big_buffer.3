@@ -1,9 +1,9 @@
-.TH connection_write_big_buffer 3
+.TH connection_write_big_buffer 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm connection_write_big_buffer
 .Nd Write a big buffer directly to the socket
 .SH SYNOPSIS
-.Fd #include <connection.h>
+.B #include <connection.h>
 .Fo "int connection_write_big_buffer"
 .Fa "connection conn"
 .Fa "const void* buf"
@@ -17,17 +17,17 @@ after porting to aix, and is probably related to tcp/ip buffer sizes
 on aix. The problem is that Highlander times out when sending large 
 buffers and since the retry count normally is low, Highlander closes
 the connection before we have transfered all the data. 
-.Pp
+.PP
 This can be fixed in several ways, we can increase the timeout, 
 we can increase the number of retries. Neither solution is optimal,
 as it will delay the overall snappyness of the server. I've therefore
 added this function which writes large data "unbuffered" with its own
 timeout/retry values. This function bypasses the normal values for
 a connection.
-.Pp
+.PP
 Now, what is a big buffer? I don't know, but anything greater than
 e.g. 64KB is unlikely to fit in within a normal tcp/ip buffer.
-.Pp
+.PP
 This function will call connection_flush() before it starts transfering
 data.
 .SH RETURN VALUE

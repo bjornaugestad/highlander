@@ -1,9 +1,9 @@
-.TH connection_close 3
+.TH connection_close 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm connection_close()
 .Nd Closes a connection
 .SH SYNOPSIS
-.Fd #include <connection.h>
+.B #include <connection.h>
 .Fo "int connection_close"
 .Fa "connection conn"
 .Fc
@@ -14,7 +14,7 @@ closes the connection to the client.
 will try to write any pending data to the socket and then 
 close the connection.  It will always close the socket,
 but may report errors when flushing write-buffer.
-.Pp
+.PP
 Users of tcp_server never has to call this function.
 .SH RETURN VALUE
 .Nm

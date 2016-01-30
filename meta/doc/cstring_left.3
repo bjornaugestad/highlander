@@ -1,10 +1,10 @@
-.TH cstring_left 3
+.TH cstring_left 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm cstring_left()
 .Nm cstring_right()
 .Nd create a string from another string
 .SH SYNOPSIS
-.Fd #include <cstring.h>
+.B #include <cstring.h>
 .Fo "cstring cstring_left"
 .Fa "cstring src"
 .Fa "size_t n"
@@ -19,13 +19,13 @@ creates a new cstring containing the
 .Fa n
 leftmost characters of 
 .Fa src.
-.Pp
+.PP
 .Nm cstring_right()
 creates a new cstring containing the
 .Fa n
 rightmost characters of
 .Fa src.
-.Pp
+.PP
 If 
 .Fa n
 is greater than the length of

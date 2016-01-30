@@ -1,9 +1,9 @@
-.TH cstring 3
+.TH cstring 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm cstring
 .Nd A string ADT
 .SH SYNOPSIS
-.Fd #include <cstring.h>
+.B #include <cstring.h>
 .Fo "const char* c_str"
 .Fa "cstring s"
 .Fc
@@ -100,14 +100,14 @@
 The goal of the cstring ADT is to create a better way of handling
 strings than the standard C way. cstring is designed to be fast and
 to be suitable in e.g. multithreaded (server) programs. 
-.Pp
+.PP
 NOTES:
 a) As we have no function overload in C, we use char*
 instead of cstring* where needed(e.g. in strcat())
 Some of the functions in cstring also allocate memory when
 called. This allocation may fail, and the functions then return 0
 or NULL to indicate out of memory.
-.Pp
+.PP
 Memory handling in cstring:
 All strings will initially have room for 256 bytes. One byte is 
 reserved for the terminating zero. Whenever the memory area 
@@ -115,12 +115,12 @@ is excausted, the size is doubled. If doubling isn't sufficient,
 then cstring will compute the exact value needed and use that 
 value instead. The next time a string needs more space,
 the computed value is doubled.
-.Pp
+.PP
 This means that if you start out with an empty string of 256 bytes,
 and then append a long string of e.g. 600 bytes, the string will use
 601 bytes. If you then append a short string of e.g. 4 bytes,
 cstring will double to 1201 bytes.
-.Pp
+.PP
 Allocated memory will not be freed until cstring_free() is called.
 .SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

@@ -1,9 +1,9 @@
-.TH meta_fifo 3
+.TH meta_fifo 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm meta_fifo
 .Nd A thread safe FIFO ADT.
 .SH SYNOPSIS
-.Fd #include <meta_fifo.h>
+.B #include <meta_fifo.h>
 .Fo "fifo fifo_new"
 .Fa "size_t bitcount"
 .Fc
@@ -48,14 +48,14 @@
 .Fc
 .SH DESCRIPTION
 A thread safe FIFO ADT.
-.Pp
+.PP
 Fifo is short for First In, First Out. meta_fifo is a fifo queue where
 you can add and get items. It is written to be thread safe and very, very
 fast as its intended use is in threaded and real time environments.
 In order to avoid  calls to malloc() and free() while adding and getting
 items from the fifo, we presize internal buffers and impose a limit
 on the number of items in the fifo queue. 
-.Pp
+.PP
 A word or two about locking: We do not want to block on operations on
 this adt, since that may create serious timing issues. At the same time,
 we need to control access to it since we're in a MT environment. Some

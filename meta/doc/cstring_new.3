@@ -1,4 +1,4 @@
-.TH cstring_new 3
+.TH cstring_new 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm cstring_new()
 .Nm cstring_multinew()
@@ -6,7 +6,7 @@
 .Nm cstring_free()
 .Nd Create and destroy cstrings
 .SH SYNOPSIS
-.Fd #include <cstring.h>
+.B #include <cstring.h>
 .Fo "cstring cstring_new"
 .Fa void
 .Fc
@@ -27,13 +27,13 @@
 .Nm cstring_new()
 creates a new cstring.  The string will initially have room for
 255 characters plus the always present string terminator ('\\0').
-.Pp
+.PP
 .Nm cstring_multinew()
 creates multiple new cstrings.
 This function is a bit experimental and the intention is to 
 reduce the number of tests in functions that allocates more than one cstring. 
 The array is used only to store pointers when making the function call.
-.Pp
+.PP
 .Nm cstring_dup()
 creates a cstring from a string literal.
 .Nm cstring_free()
@@ -42,10 +42,10 @@ The string cannot be used after a call to cstring_free.
 .SH RETURN VALUE
 .Nm cstring_new()
 returns a pointer to the new cstring, or NULL if an error occured.
-.Pp
+.PP
 .Nm cstring_multinew()
 returns 1 if all the strings were created or 0 if an error occured.
-.Pp
+.PP
 .Nm cstring_copy() creates a deep copy of a cstring object.
 .SH EXAMPLE
 .Bd -literal

@@ -1,9 +1,9 @@
-.TH create_server_socket 3
+.TH create_server_socket 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm create_server_socket
 .Nd Y
 .SH SYNOPSIS
-.Fd #include <meta_sock.h>
+.B #include <meta_sock.h>
 .Fo "meta_socket create_server_socket"
 .Fa "int unix_socket"
 .Fa "const char *host"
@@ -15,10 +15,10 @@ Creates a server socket.
 This function calls socket(), sets some socket options,
 binds the socket to a host/port and calls listen with a
 backlog of 100.
-.Pp 
+.PP 
 If unix_socket is 1, then the function will create a Unix socket,
 else it will create a regular AF_INET socket.
-.Pp
+.PP
 A server socket is ready to accept connections.
 .SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

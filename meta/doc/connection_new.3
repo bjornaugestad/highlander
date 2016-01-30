@@ -1,9 +1,9 @@
-.TH connection_new 3
+.TH connection_new 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm connection_new
 .Nd Create a new connection
 .SH SYNOPSIS
-.Fd #include <connection.h>
+.B #include <connection.h>
 .Fo "connection connection_new"
 .Fa "int timeout_reads"
 .Fa "int timeout_writes"
@@ -14,12 +14,12 @@
 .SH DESCRIPTION
 .Nm
 creates an instance of the connection ADT. 
-.Pp
+.PP
 The tcp_server creates a given number of connections when the 
 tcp_server is initialized. These connections are later supplied
 to the caller of the tcp_server whenever a new connection from
 a client is accepted by the server.
-.Pp
+.PP
 The arg2 parameter is an optional pointer value which will be 
 returned to the callback function when a new connection is made.
 One possible and quite common use of arg2 is to store a handle
@@ -29,7 +29,7 @@ Each http_server will then have its own instance, possibly
 represented as a malloced() pointer. At the same time, both
 http_servers can share the callback function. arg2 can be used
 to identify which http_server the connection was made to.
-.Pp
+.PP
 Users of tcp_server never has to call this function.
 .SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

@@ -1,10 +1,10 @@
-.TH array_new 3
+.TH array_new 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm array_new()
 .Nm array_free()
 .Nd Create and destroy dynamic arrays
 .SH SYNOPSIS
-.Fd #include <meta_array.h>
+.B #include <meta_array.h>
 .Fo "array array_new"
 .Fa "size_t nmemb"
 .Fa "int can_grow"
@@ -17,7 +17,7 @@
 .Nm array_new()
 creates a new array. If can_grow is <> 0, then the array
 is allowed to grow automatically. 
-.Pp
+.PP
 .Nm array_free()
 frees the array. If the cleanup function parameter is NULL,
 the entries in the array will not be freed by 

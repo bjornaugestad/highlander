@@ -1,22 +1,22 @@
-.TH c_str 3
+.TH c_str 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm c_str()
 .Nd Return a char pointer to the cstring
 .SH SYNOPSIS
-.Fd #include <cstring.h>
+.B #include <cstring.h>
 .Fo "const char* c_str"
 .Fa "cstring s"
 .Fc
 .SH DESCRIPTION
 Returns a pointer to the memory that stores the string.
-.Pp
+.PP
 The current implementation stores data as a char pointer, so
 it should be OK to modify the contents of the memory, but
 it is not recommended (for obvious reasons). 
-.Pp
+.PP
 Do not append data to the string, and do not make the string
 shorter as internal counters will be invalidated.
-.Pp
+.PP
 The internal representation may change. Very long string may
 become memory mapped instead of allocated on the heap. It is
 therefore not a good idea to modify the contents directly.

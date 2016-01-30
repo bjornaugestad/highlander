@@ -1,10 +1,10 @@
-.TH connection_set_persistent 3
+.TH connection_set_persistent 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm connection_set_persistent()
 .Nm connection_is_persistent()
 .Nd Set or get the connection flag
 .SH SYNOPSIS
-.Fd #include <connection.h>
+.B #include <connection.h>
 .Fo "void connection_set_persistent"
 .Fa "connection conn"
 .Fa "int val"
@@ -18,10 +18,10 @@ sets the persistent flag of the connection to either true
 or false. This flag is not used by the connection object itself,
 but is an attribute for the connection which can be used by
 protocol handlers (read:http 1.1).
-.Pp
+.PP
 .Nm connection_is_persistent()
 returns if the connection is persistent or not. 
-.Pp
+.PP
 Users of the tcp_server ADT never has to call these function.
 .SH AUTHOR
 .An B. Augestad, bjorn.augestad@gmail.com

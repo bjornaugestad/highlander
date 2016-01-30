@@ -1,19 +1,19 @@
-.TH connection_recycle 3
+.TH connection_recycle 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm connection_recycle()
 .Nd Prepare a connection object for reuse.
 .SH SYNOPSIS
-.Fd #include <connection.h>
+.B #include <connection.h>
 .Fo "void connection_recycle"
 .Fa "connection conn"
 .Fc
 .SH DESCRIPTION
 .Nm
 prepares the connection object to be reused by another client.
-.Pp
+.PP
 Flush and close the connection before recycling if you want the
 write buffer to be transfered to the client.
-.Pp
+.PP
 Users of the tcp_server ADT never has to call this function, in fact
 they never should.
 .SH SEE ALSO

@@ -1,10 +1,10 @@
-.TH tcp_server_new 3
+.TH tcp_server_new 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm tcp_server_new()
 .Nm tcp_server_free()
 .Nd Create and destroy tcp_server objects
 .SH SYNOPSIS
-.Fd #include <tcp_server.h>
+.B #include <tcp_server.h>
 .Fo "tcp_server tcp_server_new"
 .Fa "void"
 .Fc
@@ -32,7 +32,7 @@ Read buffer size        :  4 KB
 Write buffer size       : 64 KB
 Block when full         : No
 .Ed
-.Pp
+.PP
 .Nm tcp_server_free()
 Frees all memory and all resources used by the tcp_server.
 The server cannot be used after a call to tcp_server_free().

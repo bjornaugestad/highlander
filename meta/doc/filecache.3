@@ -1,7 +1,7 @@
-.TH filecache 3
+.TH filecache 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm filecache
-.TH filecache_new 3
+.TH filecache_new 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm filecache_new
 .Nd Short desc here
@@ -17,25 +17,25 @@ long desc goes here.
 .An Bjorn Augestad bjorn.augestad@gmail.com
 .Nd General purpose filecache ADT
 .SH SYNOPSIS
-.Fd #include <filecache.h>
+.B #include <filecache.h>
 .SH DESCRIPTION
 The filecache ADT is a 
 This ADT reads files from disk and caches them in memory.
 The files can later be accessed directly in user space without
 any kernel calls. This is A Good Thing as it avoids
 slow context switches.
-.Pp
+.PP
 You can specify both the number of files you want to be
 able to cache, as well as the total number of bytes
 you want the cache to use.
-.Pp
+.PP
 The file name is used to identify each file, and the file cache
 ignores symbolic links.
-.Pp
+.PP
 The file cache is fully thread safe, and the initial design
 was done to support the Highlander when running as an
 image server.
-.Pp
+.PP
 Algorithm: The file cache implements a traditional LRU
 algorithm and will remove the LRU entry when the cache is
 full and a new request is made. See cache.h for more details

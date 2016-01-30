@@ -1,9 +1,9 @@
-.TH meta_process 3
+.TH meta_process 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm meta_process
 .Nd Process management ADT
 .SH SYNOPSIS
-.Fd #include <meta_process.h>
+.B #include <meta_process.h>
 .Fo "process process_new"
 .Fc
 .Fo "void process_free"
@@ -46,7 +46,7 @@ These threads cannot change e.g. current directory as that will
 affect other threads as well. They cannot change user id
 (of course they can, but the http servers are just threads 
 in a process not the process itself).
-.Pp
+.PP
 The process ADT controls current directory, shutdown semantics,
 startup semantics and more. 
 .SH AUTHOR

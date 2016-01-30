@@ -1,9 +1,9 @@
-.TH tcp_server_get_root_resources 3
+.TH tcp_server_get_root_resources 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm tcp_server_get_root_resources()
 .Nd Creates and binds the socket the server uses
 .SH SYNOPSIS
-.Fd #include <tcp_server.h>
+.B #include <tcp_server.h>
 .Fo "int tcp_server_get_root_resources"
 .Fa "tcp_server srv"
 .Fc
@@ -11,7 +11,7 @@
 .Nm
 gets all resources which must be gotten while we are root.
 For the tcp_server this mainly is binding reserved ports.
-.Pp
+.PP
 Note that this function must be called even if the tcp_server 
 doesn't require any root resources, ie when binding to a port
 above 1023. The name is just to indicate that it must be called

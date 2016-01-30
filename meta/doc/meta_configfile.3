@@ -1,9 +1,9 @@
-.TH meta_configfile 3
+.TH meta_configfile 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm meta_configfile
 .Nd Generic configuration file ADT
 .SH SYNOPSIS
-.Fd #include <meta_configfile.h>
+.B #include <meta_configfile.h>
 .Fo "configfile configfile_read"
 .Fa "const char *path"
 .Fc
@@ -42,7 +42,7 @@
 .Fc
 .SH DESCRIPTION
 Generic interface to a general purpose configuration file.
-.Pp
+.PP
 A configfile has very simple layout, the following rules apply:
 .Bl -bullet
 .It
@@ -62,7 +62,7 @@ Names cannot contain spaces
 .It
 Line lengths are limited to 2048 bytes.
 .El
-.Pp
+.PP
 Examples:
 .Bl 
 .It

@@ -1,9 +1,9 @@
-.TH threadpool 3
+.TH threadpool 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm threadpool
 .Nd General purpose threadpool ADT
 .SH SYNOPSIS
-.Fd #include <threadpool.h>
+.B #include <threadpool.h>
 .Fo "threadpool threadpool_new"
 .Fa "size_t num_worker_threads"
 .Fa "size_t max_queue_size"
@@ -35,7 +35,7 @@
 The threadpool ADT implements a thread pool with a work queue. Users
 can add work to the queue, and the work will be performed when 
 a worker thread is free to perform it. 
-.Pp
+.PP
 .Nm threadpool_create()
 creates a new thread pool. The pool will have num_worker_thread
 threads, which are the units performing the work. Typically, one
@@ -43,34 +43,34 @@ wants many threads, but not too many. The exact number depends on
 your hardware and your application profile. One or two threads per
 core should be OK as we don't want our hardware to idle when we're
 heavily loaded.
-.Pp
+.PP
 The queue size is the number of work items the queue can store. If
 the size is low, then the application will either block a lot or
 discard lots of requests. So the queue size should not be too low.
-.Pp
+.PP
 On the other hand, if the queue size is huge, the application will
 use more memory and be more phrone to DoS attacks since it may be possible
 to flood the application with lots of work, effectively jamming it.
-.Pp
+.PP
 .Nm threadpool_add_work()
 adds work to the queue. The work will be performed by the work_func,
 After the work_func has been executed, the cleanup function will
 be executed. This way you can pass e.g. allocated memory to work_func
 and cleanup_func can free it.
-.Pp
+.PP
 Note that initialize function and the cleanup function takes 2 parameters,
 cleanup_arg and work_arg, in that order.
-.Pp
+.PP
 This function sets errno to ENOSPC if the work queue is full and
 the pool is set to not block.
 
 .Nm threadpool_destroy()
 destroys a thread pool. This function will wake all threads and
 wait for them to finish, if instructed to do so.
-.Pp
+.PP
 It will join each worker thread, and when
 they're all done, threadpool_destroy() will free all memory allocated.
-.Pp
+.PP
 Check errno for possible reason if this function returns failure.
 
 .Nm threadpool_sum_blocked()

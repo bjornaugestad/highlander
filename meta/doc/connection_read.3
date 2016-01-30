@@ -1,9 +1,9 @@
-.TH connection_read 3
+.TH connection_read 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm connection_read()
 .Nd connection_read
 .SH SYNOPSIS
-.Fd #include <connection.h>
+.B #include <connection.h>
 .Fo "ssize_t connection_read"
 .Fa "connection conn"
 .Fa "void *buf"
@@ -14,7 +14,7 @@
 attempts to read 
 .Fa cb
 bytes from the connection. 
-.Pp
+.PP
 .Nm
 will read up to 
 .Fa cb
@@ -27,7 +27,7 @@ Here we read 10 and 10 bytes from the socket. If the input
 arrives too slowly, 
 .Nm
 returns 0 and sets errno to EAGAIN. We therefore test for this.
-.Pp
+.PP
 .Bd -literal
 #include <tcp_server.h>
 #include <connection.h>

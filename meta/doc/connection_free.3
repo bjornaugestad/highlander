@@ -1,9 +1,9 @@
-.TH connection_free 3
+.TH connection_free 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm connection_free
 .Nd Free a connection object
 .SH SYNOPSIS
-.Fd #include <connection.h>
+.B #include <connection.h>
 .Fo "void connection_free"
 .Fa "connection conn"
 .Fc
@@ -12,10 +12,10 @@
 frees the connection object. All data in the buffers will be
 discarded, so call the appropriate function before freeing the 
 connection object. 
-.Pp
+.PP
 Note that the read and write buffers will not be freed, you must
 free them yourself. 
-.Pp
+.PP
 Users of the tcp_server ADT never has to call this function.
 .SH SEE ALSO
 .Xr connection_discard

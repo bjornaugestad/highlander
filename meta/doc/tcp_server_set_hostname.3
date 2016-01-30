@@ -1,9 +1,9 @@
-.TH tcp_server_set_hostname 3
+.TH tcp_server_set_hostname 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm tcp_server_set_hostname()
 .Nd Set host name for the tcp_server
 .SH SYNOPSIS
-.Fd #include <tcp_server.h>
+.B #include <tcp_server.h>
 .Fo "int tcp_server_set_hostname"
 .Fa "tcp_server srv"
 .Fa "const char* host"
@@ -11,7 +11,7 @@
 .SH DESCRIPTION
 .Nm
 sets the host name for the tcp server.  
-.Pp
+.PP
 The server will bind to this hostname. You can set it to NULL
 if you want to clear a previously assigned host name. The content
 of the host parameter will be copied and stored within the tcp_server,

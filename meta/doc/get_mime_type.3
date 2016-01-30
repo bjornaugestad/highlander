@@ -1,16 +1,16 @@
-.TH get_mime_type 3
+.TH get_mime_type 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm get_mime_type()
 .Nd get_mime_type
 .SH SYNOPSIS
-.Fd #include <highlander.h>
+.B #include <highlander.h>
 .Fo "const char* get_mime_type"
 .Fa "const char* filename"
 .Fc
 .SH DESCRIPTION
 .Nm
 returns the mime type for a file.
-.Pp
+.PP
 Note that this function uses the file extension to determine
 the type of the file. This may be bad in some cases and may
 even be a security issue. Then again, it may not. 

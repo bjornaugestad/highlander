@@ -1,15 +1,15 @@
-.TH bitset_data 3
+.TH bitset_data 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm bitset_data
 .Nd Return a pointer to the internal data structure.
 .SH SYNOPSIS
-.Fd #include <meta_bitset.h>
+.B #include <meta_bitset.h>
 .Fo "void* bitset_data"
 .Fa "bitset b"
 .Fc
 .SH DESCRIPTION
 Returns a void pointer to the data that implements the bitset.
-.Pp
+.PP
 You might ask why this function is needed? The reason is that 
 we then can 'move' the bitset from memory to e.g. a memory mapped file.
 We can write the bitsets to files using this function and

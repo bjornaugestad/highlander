@@ -1,9 +1,9 @@
-.TH threadpool_add_work 3
+.TH threadpool_add_work 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm threadpool_add_work
 .Nd Add work to the thread pool's work queue.
 .SH SYNOPSIS
-.Fd #include <threadpool.h>
+.B #include <threadpool.h>
 .Fo "int threadpool_add_work"
 .Fa "threadpool tp"
 .Fa "void (*initfn)(void*, void*)"
@@ -19,22 +19,22 @@ adds work to the queue. The work will be performed by the work_func,
 After the work_func has been executed, the cleanup function will
 be executed. This way you can pass e.g. allocated memory to work_func
 and cleanup_func can free it.
-.Pp
+.PP
 This function accepts three pairs of a function pointer plus a function
 argument. These three functions are an initialization function, a work
 function which performs the actual work, and a cleanup function called
 after the work function returns. 
-.Pp
+.PP
 The init and exit functions, which both can be null if they're not needed,
 accept two arguments. The first argument is the
 .Fa initarg
 and the second
 is the 
 .Fa workarg.
-.Pp
+.PP
 Note that initialize function and the cleanup function takes 2 parameters,
 cleanup_arg and work_arg, in that order.
-.Pp
+.PP
 This function sets errno to ENOSPC if the work queue is full and
 the pool is set to not block.
 .SH AUTHOR

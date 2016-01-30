@@ -1,10 +1,10 @@
-.TH connection_getc 3
+.TH connection_getc 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm connection_getc()
 .Nm connection_putc()
 .Nd read or write one character 
 .SH SYNOPSIS
-.Fd #include <connection.h>
+.B #include <connection.h>
 .Fo "int connection_getc"
 .Fa "connection conn"
 .Fa "int* pch"
@@ -16,7 +16,7 @@
 .SH DESCRIPTION
 .Nm connection_getc()
 reads one character from the socket or the read buffer.
-.Pp
+.PP
 .Nm connection_putc()
 writes one character to the socket or write buffer.
 .SH RETURN VALUE

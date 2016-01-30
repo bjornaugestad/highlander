@@ -1,9 +1,9 @@
-.TH tcp_server 3
+.TH tcp_server 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm tcp_server
 .Nd General purpose TCP/IP server ADT
 .SH SYNOPSIS
-.Fd #include <tcp_server.h>
+.B #include <tcp_server.h>
 .Fo "int tcp_server_allow_clients"
 .Fa "tcp_server srv"
 .Fa "const char* filter"
@@ -88,7 +88,7 @@ The tcp_server ADT is a general purpose TCP/IP based server framework
 which can be used to serve most types of servers. It implements the
 necessary TCP/IP stuff needed to act as a server and uses a pool of
 worker threads to serve incoming connection requests.
-.Pp
+.PP
 All we need to do to build a server based on the tcp_server ADT is to
 provide callback functions that processes the application level protocol
 used. See man pages for 
@@ -96,7 +96,7 @@ used. See man pages for
 or
 .Nm tcp_server_set_service_func()
 for an example of how to use a tcp_server object to build a server.
-.Pp
+.PP
 The tcp_server creates a work queue (FIFO) and several worker threads.
 When a TCP/IP connection request is accepted, a connection object
 is placed in the work queue by the main thread in the tcp_server. One

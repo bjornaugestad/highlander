@@ -1,9 +1,9 @@
-.TH meta_bitset 3
+.TH meta_bitset 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm meta_bitset
 .Nd Dynamic bitset ADT
 .SH SYNOPSIS
-.Fd #include <meta_bitset.h>
+.B #include <meta_bitset.h>
 .Fo "bitset bitset_new"
 .Fa "size_t bitcount"
 .Fc
@@ -74,15 +74,15 @@
 .SH DESCRIPTION
 A bitset is nothing more than a very long integer with bits to indicate
 true or false. 
-.Pp
+.PP
 All you have to do to use a bitset is to decide how many bits you want,
 and then create the bitset. Now you're ready to set and clear bits, and
 test to see if a given bit is set or not.
-.Pp
+.PP
 This class can also do a lot more. You can assign a specific memory area
 to the bitset and then manipulate that area bit by bit. The memory area
 may be e.g. a memory mapped file or even an automatic variable. 
-.Pp
+.PP
 The bitset is reentrant, but not thread safe. This means that 
 multiple threads cannot read and write to the same bitset at 
 the same time. Use a lock to control access to the bitset if needed.

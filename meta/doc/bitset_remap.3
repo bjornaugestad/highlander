@@ -1,9 +1,9 @@
-.TH bitset_remap 3
+.TH bitset_remap 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm bitset_remap
 .Nd Remap a bitset in memory
 .SH SYNOPSIS
-.Fd #include <meta_bitset.h>
+.B #include <meta_bitset.h>
 .Fo "bitset bitset_remap"
 .Fa "bitset b "
 .Fa "void *buf"
@@ -13,7 +13,7 @@
 Frees old memory and starts using the memory pointed to by buf.
 Typical usage is when you e.g. create a new memory mapped indexed file with
 a bitmap created in memory and you want it moved to the new memory mapped file.
-.Pp
+.PP
 b a bitset created by bitset_new
 buf The new memory to be used as a bitset.
 buflen Size of memory the buf parameter points to, in bytes.

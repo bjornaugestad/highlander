@@ -1,9 +1,9 @@
-.TH process_add_object_to_start 3
+.TH process_add_object_to_start 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm process_add_object_to_start()
 .Nd Add an object to start when process_start() is called
 .SH SYNOPSIS
-.Fd #include <meta_process.h>
+.B #include <meta_process.h>
 .Fo "int process_add_object_to_start"
 .Fa "process p"
 .Fa "void *object"
@@ -17,24 +17,24 @@ The process object can start any number of threads. Use this function to
 add a function to run as a separate thread.
 .Fa object
 is used as argument to all the function pointers.
-.Pp
+.PP
 .Fa do_func
 is called in phase one of process startup, before we change user id.
 .Fa do_func
 must therefore perform all operations needed to be done as user root,
 e.g. bind sockets to reserverd ports.
-.Pp
+.PP
 .Fa undo_func()
 is called if one of the 
 .Fa do_func()
 functions fails, but is not called for the object that failed.
-.Pp
+.PP
 .Fa run_func()
 is called from process_start() after the process has changed rootdir directory and user id. 
-.Pp
+.PP
 .Fa shutdown_func()
 will be called when the process receives SIGTERM.
-.Pp
+.PP
 All functions must return 1 on success and and 0 on error.
 .SH RETURN VALUE
 .Nm

@@ -1,9 +1,9 @@
-.TH list_add 3
+.TH list_add 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm list_add() 
 .Nd Add a new item to a list
 .SH SYNOPSIS
-.Fd #include <meta_list.h>
+.B #include <meta_list.h>
 .Fo "list list_add"
 .Fa "list lst"
 .Fa "void* data"
@@ -13,7 +13,7 @@
 adds a new node at the end of an existing list, or
 creates a new list and adds data to the new list if lst is 
 NULL. 
-.Pp
+.PP
 .Nm
 will not copy the memory pointed to by data,
 just the pointer itself. The memory should therefore be 

@@ -1,11 +1,11 @@
-.TH bitset_and 3
+.TH bitset_and 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm bitset_and
 .Nm bitset_or
 .Nm bitset_xor
 .Nd Binary AND/OR/XOR two bitsets. Return the result in a new bitset.
 .SH SYNOPSIS
-.Fd #include <meta_bitset.h>
+.B #include <meta_bitset.h>
 .Fo "bitset bitset_and"
 .Fa "bitset b"
 .Fa "bitset c"
@@ -22,7 +22,7 @@
 Binary AND two bitsets. Return the result in a new bitset.
 These three functions perform the equivalent of a = b OP c;
 where OP is &, | or ^.
-.Pp
+.PP
 Remember to free the returned bitset.
 .SH ERRORS
 The functions will return if they were unable to allocate room for

@@ -1,9 +1,9 @@
-.TH tcp_server_allow_clients 3
+.TH tcp_server_allow_clients 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm tcp_server_allow_clients()
 .Nd Set client filter
 .SH SYNOPSIS
-.Fd #include <tcp_server.h>
+.B #include <tcp_server.h>
 .Fo "int tcp_server_allow_clients"
 .Fa "tcp_server srv"
 .Fa "const char* filter"
@@ -16,7 +16,7 @@ but cannot contain DNS names. DNS names are denied to
 avoid the risk of DNS spoofing, as well as to increase performance.
 The idea is that normally you do not want filtering, in the cases
 you do, the number of clients allowed is relatively small.
-.Pp
+.PP
 The regexp can be anything, but should contain IP addresses
 to work. The number of addresses specified is only limited
 by your platforms implementation of regcomp. 

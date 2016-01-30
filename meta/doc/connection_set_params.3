@@ -1,9 +1,9 @@
-.TH connection_set_params 3
+.TH connection_set_params 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm connection_set_params()
 .Nd Set parameters for the current connection
 .SH SYNOPSIS
-.Fd #include <connection.h>
+.B #include <connection.h>
 .Fo "void connection_set_params"
 .Fa "connection conn"
 .Fa "int fd"
@@ -13,7 +13,7 @@
 .Nm
 assigns a file descriptor and a pointer to a sockaddr_in to 
 the connection.
-.Pp
+.PP
 Users of the tcp_server ADT never has to call this function, in fact
 they never should.
 .SH AUTHOR

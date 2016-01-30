@@ -1,10 +1,10 @@
-.TH cstring_printf 3
+.TH cstring_printf 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm cstring_printf()
 .Nm cstring_vprintf()
 .Nd formatted data conversion
 .SH SYNOPSIS
-.Fd #include <cstring.h>
+.B #include <cstring.h>
 .Fo "int cstring_printf"
 .Fa "cstring dest"
 .Fa "size_t needs_max"
@@ -23,7 +23,7 @@ formats and appends data to
 .Fa dest. 
 It mostly works like sprintf(), except that it appends data instead
 of replacing existing data.
-.Pp
+.PP
 .Fa needs_max
 is the maximum number of bytes that the formatted data will occupy,
 .Fa fmt

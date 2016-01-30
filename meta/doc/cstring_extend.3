@@ -1,9 +1,9 @@
-.TH cstring_extend 3
+.TH cstring_extend 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 .Nm cstring_extend()
 .Nd Make room for more characters.
 .SH SYNOPSIS
-.Fd #include <cstring.h>
+.B #include <cstring.h>
 .Fo "int cstring_extend"
 .Fa "cstring s"
 .Fa "size_t size"
@@ -16,11 +16,11 @@ new characters in
 .Fa s.
 If you know that the string will become large, you can presize the
 internal buffer and avoid later (multiple) calls to realloc().
-.Pp
+.PP
 .Nm 
 will first try to double the size of the string. If that isn't sufficient,
 the function will allocate the exact number of bytes needed to store the string.
-.Pp
+.PP
 .Fa size
 is the number of new characters the string must have 
 room for after allocation, excluding current content and the '\0'. 
