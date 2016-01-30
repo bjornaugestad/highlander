@@ -4,7 +4,7 @@ array_add \- Add an element to the array
 .SH SYNOPSIS
 .B #include <meta_array.h>
 .sp
-.BI "int array_add(array p, void *elem);
+.BI "status_t array_add(array p, void *elem);
 
 .SH DESCRIPTION
 Adds a new element to the array.
@@ -17,7 +17,7 @@ The element to add cannot be a pointer an automatic variable,
 as that will invalidate the pointer when the variable goes
 out of scope.
 .PP
-return 1 if everything was OK, 0 if an error occured.
+return success if everything was OK, failure if an error occured.
 An error is either that we ran out of memory if we tried to reallocate
 the array to make room for the new entry, or that the array was full
 and that the array wasn't allowed to grow automatically.

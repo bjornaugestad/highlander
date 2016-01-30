@@ -1,33 +1,35 @@
 .TH array_new 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
-.Nm array_new()
-.Nm array_free()
-.Nd Create and destroy dynamic arrays
+array_new() array_free() \- Create and destroy dynamic arrays
+
 .SH SYNOPSIS
 .B #include <meta_array.h>
 .sp
-.BI "array array_new(size_t nmemb, int can_grow);
+.BI "array array_new(size_t " nmemb ", int " can_grow ");
 
-.BI "void array_free(array p, dtor cleanup);
+.BI "void array_free(array " p ", dtor " cleanup ");
 
 .SH DESCRIPTION
-.Nm array_new()
+.BR array_new()
 creates a new array. If can_grow is <> 0, then the array
 is allowed to grow automatically. 
 .PP
-.Nm array_free()
-frees the array. If the cleanup function parameter is NULL,
-the entries in the array will not be freed by 
-.Nm array_free().
+.BR array_free()
+frees the array.
+.PP
+If the cleanup function parameter is NULL, the entries in the array will not be freed by 
+.BR array_free().
+This makes it possible to add entries in the array which cannot be freed,
+e.g., text literals. If the destructor always called a free function for
+the entries in the array, then one couldn't add such objects.
+
+
 .SH EXAMPLE
-.in +4n
+.in
 .nf
-.B #include <stdlib.h>
-.sp
-.B #include <stdio.h>
-.sp
-.B #include <meta_array.h>
-.sp
+#include <stdlib.h>
+#include <stdio.h>
+#include <meta_array.h>
 
 int main(void)
 {
@@ -38,7 +40,7 @@ int main(void)
     // Store integers in array
     a = array_new(10, 0);
     for (i = 0; i < n; i++)
-        array_add(a, (void*)i);
+        array_add(a, (void *)i);
 
     for (i = 0; i < n; i++) {
         size_t val = (size_t)array_get(a, i);
