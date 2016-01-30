@@ -30,34 +30,34 @@ buffer, or 0 if an error occured.
 .SH SEE ALSO
 .Xr connection_getc 3 ,
 .SH EXAMPLE
-.Bd -literal
-.B #include <tcp_server.h>
-.sp
-.B #include <connection.h>
-.sp
+.in +4n
+.nf
+#include <tcp_server.h>
+#include <connection.h>
+
 void* echoserverfn(void* arg)
 {
-	connection conn = arg;
-	char line[1024];
-	while(connection_gets(conn, line, sizeof line)) {
-		connection_puts(conn, line);
-		connection_flush(conn);
-	}
-	return NULL;
+    connection conn = arg;
+    char line[1024];
+    while(connection_gets(conn, line, sizeof line)) {
+        connection_puts(conn, line);
+        connection_flush(conn);
+    }
+    return NULL;
 }
 int main(void)
 {
-	tcp_server s = tcp_server_new();
-	tcp_server_set_service_function(
-		s, 
-		echoserverfn,
-		s);
-	tcp_server_init(s);
-	tcp_server_get_root_resources(s);
-	tcp_server_start(s);
-	
-	tcp_server_free(s);
-	return 0;
+    tcp_server s = tcp_server_new();
+    tcp_server_set_service_function(
+        s, 
+        echoserverfn,
+        s);
+    tcp_server_init(s);
+    tcp_server_get_root_resources(s);
+    tcp_server_start(s);
+    
+    tcp_server_free(s);
+    return 0;
 }
-	
-.Ed
+.fi
+.in
