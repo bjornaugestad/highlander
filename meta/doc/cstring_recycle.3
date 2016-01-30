@@ -23,8 +23,8 @@ size_t i, niter = 1000;
 cstring s = cstring_new();
 cstring_extend(s, 10000);
 for(i = 0; i < niter; i++) {
-	cstring_recycle(s); /* Remove contents from previous iteration */
-	... /* Now use s for something */
+    cstring_recycle(s); /* Remove contents from previous iteration */
+    ... /* Now use s for something */
 }
 cstring_free(s);
 .nf

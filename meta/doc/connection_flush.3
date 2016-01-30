@@ -28,15 +28,15 @@ more load on the server and more context switches.
 .sp
 void* echoserverfn(void* arg)
 {
-	int c;
-	connection conn = arg;
-	tcp_server s = connection_arg2(conn);
-	while(!tcp_server_shutting_down(s) 
-	&& connection_getc(conn, &c)) {
-		connection_putc(conn, c);
-		connection_flush(conn);
-	}
-	return NULL;
+    int c;
+    connection conn = arg;
+    tcp_server s = connection_arg2(conn);
+    while(!tcp_server_shutting_down(s) 
+    && connection_getc(conn, &c)) {
+        connection_putc(conn, c);
+        connection_flush(conn);
+    }
+    return NULL;
 }
 .nf
 .in

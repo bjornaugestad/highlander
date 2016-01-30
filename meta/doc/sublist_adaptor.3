@@ -23,7 +23,7 @@ Use sublist_free() to free memory.
 .nf
 /* A list contains objects of type struct foo. */
 struct foo {
-	char *name;
+    char *name;
 };
 /*
  * Another function, process_string(), expects a pointer 
@@ -31,10 +31,10 @@ struct foo {
  */
 int process_string(void *arg, void *node)
 {
-	FILE* f = arg;
-	const char* p = node;
-	fprintf(f, "%s\n", p);
-	return 1;
+    FILE* f = arg;
+    const char* p = node;
+    fprintf(f, "%s\n", p);
+    return 1;
 }
 /*
  * We have a long list of struct foo objects, and we
@@ -47,8 +47,8 @@ int process_string(void *arg, void *node)
  */
 void* foo2string(void *arg)
 {
-	struct foo* f = arg;
-	return f->name;
+    struct foo* f = arg;
+    return f->name;
 }
 \&...
 /*

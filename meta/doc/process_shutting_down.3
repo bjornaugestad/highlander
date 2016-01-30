@@ -23,8 +23,8 @@ process p = process_new();
 \&...
 process_start(p, 1);
 while(!process_shutting_down(p)) {
-	printf("Still not received SIGTERM...\n");
-	sleep(1);
+    printf("Still not received SIGTERM...\n");
+    sleep(1);
 }
 process_free(p);
 .nf

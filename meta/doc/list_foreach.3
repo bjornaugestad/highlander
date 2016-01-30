@@ -45,12 +45,12 @@ function.
 .nf
 /* The object we store in list */
 struct foo {
-	char* name;
+    char* name;
 };
 /* Call myfunction once for each node in the list */
 int foo_print(void *arg, void *node)
 {
-	struct foo* pfoo = node;
+    struct foo* pfoo = node;
     FILE *f = arg;
     fprintf(f, "%s\\n", pfoo->name);
     return 1; 
@@ -58,18 +58,18 @@ int foo_print(void *arg, void *node)
 /* Print name surrounded with a HTML tag stored in arg2. */
 int foo_print_tagged(void *arg1, void* arg2, void *node)
 {
-	struct foo* pfoo = node;
+    struct foo* pfoo = node;
     FILE *f = arg1;
-	const char* tag = arg2;
+    const char* tag = arg2;
     fprintf(f, "<%s>%s</%s>\\n", tag, pfoo->name, tag);
     return 1; 
 }
 /* Separating function, see below */
 int sep(void* arg)
 {
-	FILE* f = arg;
-	fprintf(f, ", ");
-	return 1;
+    FILE* f = arg;
+    fprintf(f, ", ");
+    return 1;
 }
 FILE *f = fopen("somefile", "w");
 \&...

@@ -45,60 +45,60 @@ Remember that you can add any number of objects to the process object.
 .sp
 /* Some object which contains thread specific data */
 struct myserver {
-	int shutting_down;
-	...;
+    int shutting_down;
+    ...;
 };
 /* Do stuff as root, if needed. Typical actions would 
  * be to bind() to reserved ports
  */
 int myserver_do(void* arg)
 {
-	struct myserver* p = arg;
-	return 1;
+    struct myserver* p = arg;
+    return 1;
 }
 /* Undo what myserver_do() did, e.g. close the socket
  * that myserver_do() bound to a port. 
  */
 int myserver_undo(void* arg)
 {
-	struct myserver* p = arg;
-	return 1;
+    struct myserver* p = arg;
+    return 1;
 }
 /* Do the actual task of my server, until we're shutting down. */
 int myserver_run(void* arg)
 {
-	struct myserver* p = arg;
-	while(!p->shutting_down) {
-		/* Perform the server task(s) */
-	}
-	/* Cleanup */
-	return 1;
+    struct myserver* p = arg;
+    while(!p->shutting_down) {
+        /* Perform the server task(s) */
+    }
+    /* Cleanup */
+    return 1;
 }
 int myserver_shutting_down(void* arg)
 {
-	struct myserver* p = arg;
-	p->shutting_down = 1;
-	return 1;
+    struct myserver* p = arg;
+    p->shutting_down = 1;
+    return 1;
 }
 int main(void)
 {
-	struct myserver* mys;
-	process p;
-	mys = malloc(sizeof *mys);
-	p = process_new();
-	process_add_object_to_start(
-		p, 
-		mys, 
-		mys_do,
-		mys_undo,
-		mys_run,
-		mys_shutting_down);
-	process_set_username(p, "nobody");
-	process_start(p, 1);
-	process_wait_for_shutdown(p);
-	free(mys);
-	process_free(p);
-	return 0;
+    struct myserver* mys;
+    process p;
+    mys = malloc(sizeof *mys);
+    p = process_new();
+    process_add_object_to_start(
+        p, 
+        mys, 
+        mys_do,
+        mys_undo,
+        mys_run,
+        mys_shutting_down);
+    process_set_username(p, "nobody");
+    process_start(p, 1);
+    process_wait_for_shutdown(p);
+    free(mys);
+    process_free(p);
+    return 0;
 }
 .nf
 .in

@@ -36,29 +36,29 @@ returns 0 and sets errno to EAGAIN. We therefore test for this.
 
 void* echoserverfn(void* arg)
 {
-	connection conn = arg;
-	char line[1024];
-	ssize_t nread;
+    connection conn = arg;
+    char line[1024];
+    ssize_t nread;
 
-	errno = 0;
-	while ((nread = connection_read(conn, line, 10)) >= 0) {
-		connection_write(conn, line, nread);
-		connection_flush(conn);
-	}
+    errno = 0;
+    while ((nread = connection_read(conn, line, 10)) >= 0) {
+        connection_write(conn, line, nread);
+        connection_flush(conn);
+    }
 
-	return NULL;
+    return NULL;
 }
 int main(void)
 {
-	tcp_server s = tcp_server_new();
-	tcp_server_set_service_function(s, echoserverfn, s);
-	tcp_server_init(s);
-	tcp_server_get_root_resources(s);
-	tcp_server_start(s);
-	
-	tcp_server_free(s);
-	return 0;
+    tcp_server s = tcp_server_new();
+    tcp_server_set_service_function(s, echoserverfn, s);
+    tcp_server_init(s);
+    tcp_server_get_root_resources(s);
+    tcp_server_start(s);
+    
+    tcp_server_free(s);
+    return 0;
 }
-	
+    
 .nf
 .in

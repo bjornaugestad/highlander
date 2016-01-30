@@ -32,15 +32,15 @@ source string on either space, tab or newline characters.
 
 int main(void)
 {
-	cstring *s;
-	size_t i, n;
+    cstring *s;
+    size_t i, n;
 
-	n = cstring_split(&s, "Hello world", " ");
-	for (i = 0; i < n; i++)
-		printf("%s\n", c_str(s[i]));
+    n = cstring_split(&s, "Hello world", " ");
+    for (i = 0; i < n; i++)
+        printf("%s\n", c_str(s[i]));
 
-	cstring_multifree(s, n);
-	return 0;
+    cstring_multifree(s, n);
+    return 0;
 }
 .nf
 .in

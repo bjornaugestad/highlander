@@ -28,32 +28,32 @@ with a process object.
 .sp
 void* echoserverfn(void* arg)
 {
-	int c;
-	connection conn = arg;
-	tcp_server s = connection_arg2(conn);
-	while(!tcp_server_shutting_down(s) 
-	&& connection_getc(conn, &c)) {
-		connection_putc(conn, c);
-		connection_flush(conn);
-	}
-	return NULL;
+    int c;
+    connection conn = arg;
+    tcp_server s = connection_arg2(conn);
+    while(!tcp_server_shutting_down(s) 
+    && connection_getc(conn, &c)) {
+        connection_putc(conn, c);
+        connection_flush(conn);
+    }
+    return NULL;
 }
 int main(void)
 {
-	process p = process_new("echoserver");
-	tcp_server s = tcp_server_new();
-	tcp_server_set_service_function(
-		s, 
-		echoserverfn,
-		s);
-	tcp_server_init(s);
-	tcp_server_start_via_process(p, s);
-	process_start(p, 0);
-	process_wait_for_shutdown(p);
-	
-	tcp_server_free(s);
-	process_free(p);
-	return 0;
+    process p = process_new("echoserver");
+    tcp_server s = tcp_server_new();
+    tcp_server_set_service_function(
+        s, 
+        echoserverfn,
+        s);
+    tcp_server_init(s);
+    tcp_server_start_via_process(p, s);
+    process_start(p, 0);
+    process_wait_for_shutdown(p);
+    
+    tcp_server_free(s);
+    process_free(p);
+    return 0;
 }
 .nf
 .in

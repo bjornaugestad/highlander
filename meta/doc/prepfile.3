@@ -1,10 +1,10 @@
 #!/bin/bash
 # First remove all C stuff, like commenting
 for i in $*; do
-	sed -e 's/ \*\///' -e 's/^ \* //' -e 's/^ \*//' -e 's/\/\*\*//' $i | bf $i
+    sed -e 's/ \*\///' -e 's/^ \* //' -e 's/^ \*//' -e 's/\/\*\*//' $i | bf $i
 done
 # Now change some doxygen tags to mdoc macros
 for i in $*; do
-	sed -e 's/@see/.Xr/' -e 's/@return/return/' -e 's/@section Example/.Sh EXAMPLE/' \
-	-e 's/@code/.Bd -literal/' -e 's/@endcode/.Be/' $i | bf $i
+    sed -e 's/@see/.Xr/' -e 's/@return/return/' -e 's/@section Example/.Sh EXAMPLE/' \
+    -e 's/@code/.Bd -literal/' -e 's/@endcode/.Be/' $i | bf $i
 done

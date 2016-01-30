@@ -25,17 +25,17 @@ is NULL, then the data will not be freed.
 .nf
 /* The object we store in the list */
 struct foo {
-	char *name;
+    char *name;
 };
 
 /* Destructor for foo */
 void foo_dtor(void* arg)
 {
-	struct foo* p = arg;
-	if(p != NULL) {
-		free(p->name);
-		free(p);
-	}
+    struct foo* p = arg;
+    if(p != NULL) {
+        free(p->name);
+        free(p);
+    }
 }
 \&...
 list lst = list_new();

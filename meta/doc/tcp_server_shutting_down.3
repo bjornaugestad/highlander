@@ -26,28 +26,28 @@ terminating the connection.
 .sp
 void* echoserverfn(void* arg)
 {
-	int c;
-	connection conn = arg;
-	tcp_server s = connection_arg2(conn);
-	while(!tcp_server_shutting_down(s) 
-	&& connection_getc(conn, &c)) {
-		connection_putc(conn, c);
-		connection_flush(conn);
-	}
-	return NULL;
+    int c;
+    connection conn = arg;
+    tcp_server s = connection_arg2(conn);
+    while(!tcp_server_shutting_down(s) 
+    && connection_getc(conn, &c)) {
+        connection_putc(conn, c);
+        connection_flush(conn);
+    }
+    return NULL;
 }
 int main(void)
 {
-	tcp_server s = tcp_server_new();
-	tcp_server_set_service_function(
-		s, 
-		echoserverfn,
-		s);
-	tcp_server_init(s);
-	tcp_server_get_root_resources(s);
-	tcp_server_start(s);
-	tcp_server_free(s);
-	return 0;
+    tcp_server s = tcp_server_new();
+    tcp_server_set_service_function(
+        s, 
+        echoserverfn,
+        s);
+    tcp_server_init(s);
+    tcp_server_get_root_resources(s);
+    tcp_server_start(s);
+    tcp_server_free(s);
+    return 0;
 }
 .nf
 .in

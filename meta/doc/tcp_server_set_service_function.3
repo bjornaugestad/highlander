@@ -32,29 +32,29 @@ needs to implement the server.
 .sp
 void* echoserverfn(void* arg)
 {
-	int c;
-	connection conn = arg;
-	char* s = connection_arg2(conn);
-	printf("%s\\n", s);
-	while(connection_getc(conn, &c)) {
-		connection_putc(conn, c);
-		connection_flush(conn);
-	}
-	return NULL;
+    int c;
+    connection conn = arg;
+    char* s = connection_arg2(conn);
+    printf("%s\\n", s);
+    while(connection_getc(conn, &c)) {
+        connection_putc(conn, c);
+        connection_flush(conn);
+    }
+    return NULL;
 }
 int main(void)
 {
-	char foo[] = "Hello, argument 2";
-	tcp_server s = tcp_server_new();
-	tcp_server_set_service_function(
-		s, 
-		echoserverfn,
-		foo);
-	tcp_server_init(s);
-	tcp_server_get_root_resources(s);
-	tcp_server_start(s);
-	tcp_server_free(s);
-	return 0;
+    char foo[] = "Hello, argument 2";
+    tcp_server s = tcp_server_new();
+    tcp_server_set_service_function(
+        s, 
+        echoserverfn,
+        foo);
+    tcp_server_init(s);
+    tcp_server_get_root_resources(s);
+    tcp_server_start(s);
+    tcp_server_free(s);
+    return 0;
 }
 .nf
 .in
