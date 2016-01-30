@@ -8,6 +8,8 @@ delim can contain any number of characters, see strcspn()
 
 .SH SYNOPSIS
 .B #include <cstring.h>
+.sp
+.sp
 .Fo "size_t cstring_split"
 .Fa "cstring **dest"
 .Fa "const char *src"
@@ -25,8 +27,10 @@ source string on either space, tab or newline characters.
 .Xr cstring_multifree 3
 .SH EXAMPLE
 .Bd -literal
-#include <stdio.h>
-#include <cstring.h>
+.B #include <stdio.h>
+.sp
+.B #include <cstring.h>
+.sp
 
 int main(void)
 {

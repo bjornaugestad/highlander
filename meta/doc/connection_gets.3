@@ -5,6 +5,7 @@
 .Nd Reads or writes a string
 .SH SYNOPSIS
 .B #include <connection.h>
+.sp
 .Fo "int connection_gets"
 .Fa "connection conn"
 .Fa "char *buf"
@@ -35,8 +36,10 @@ buffer, or 0 if an error occured.
 .Xr connection_getc 3 ,
 .SH EXAMPLE
 .Bd -literal
-#include <tcp_server.h>
-#include <connection.h>
+.B #include <tcp_server.h>
+.sp
+.B #include <connection.h>
+.sp
 void* echoserverfn(void* arg)
 {
 	connection conn = arg;

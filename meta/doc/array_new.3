@@ -5,6 +5,7 @@
 .Nd Create and destroy dynamic arrays
 .SH SYNOPSIS
 .B #include <meta_array.h>
+.sp
 .Fo "array array_new"
 .Fa "size_t nmemb"
 .Fa "int can_grow"
@@ -24,9 +25,12 @@ the entries in the array will not be freed by
 .Nm array_free().
 .SH EXAMPLE
 .Bd -literal
-#include <stdlib.h>
-#include <stdio.h>
-#include <meta_array.h>
+.B #include <stdlib.h>
+.sp
+.B #include <stdio.h>
+.sp
+.B #include <meta_array.h>
+.sp
 
 int main(void)
 {

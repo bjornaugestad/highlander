@@ -3,6 +3,7 @@
 connection_read() \- connection_read
 .SH SYNOPSIS
 .B #include <connection.h>
+.sp
 .Fo "ssize_t connection_read"
 .Fa "connection conn"
 .Fa "void *buf"
@@ -28,9 +29,12 @@ arrives too slowly,
 returns 0 and sets errno to EAGAIN. We therefore test for this.
 .PP
 .Bd -literal
-#include <tcp_server.h>
-#include <connection.h>
-#include <errno.h>
+.B #include <tcp_server.h>
+.sp
+.B #include <connection.h>
+.sp
+.B #include <errno.h>
+.sp
 
 void* echoserverfn(void* arg)
 {

@@ -3,6 +3,7 @@
 tcp_server_set_service_function() \- Sets the callback function
 .SH SYNOPSIS
 .B #include <tcp_server.h>
+.sp
 .Fo "void tcp_server_set_service_function"
 .Fa "tcp_server srv"
 .Fa "void* (*func)(void*)"
@@ -25,9 +26,12 @@ argument can be accessed. In a real world application, the value
 would not be a string, but a pointer to data that the service function
 needs to implement the server.
 .Bd -literal
-#include <stdio.h>
-#include <tcp_server.h>
-#include <connection.h>
+.B #include <stdio.h>
+.sp
+.B #include <tcp_server.h>
+.sp
+.B #include <connection.h>
+.sp
 void* echoserverfn(void* arg)
 {
 	int c;

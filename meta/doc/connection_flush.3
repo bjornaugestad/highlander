@@ -3,6 +3,7 @@
 connection_flush() \- Flush the write buffer
 .SH SYNOPSIS
 .B #include <connection.h>
+.sp
 .Fo "int connection_flush"
 .Fa "connection conn"
 .Fc
@@ -21,8 +22,10 @@ Here we flush once for every character to make the echo server
 as interactive as possible. This is not recommended as it will create
 more load on the server and more context switches.
 .Bd -literal
-#include <tcp_server.h>
-#include <connection.h>
+.B #include <tcp_server.h>
+.sp
+.B #include <connection.h>
+.sp
 void* echoserverfn(void* arg)
 {
 	int c;

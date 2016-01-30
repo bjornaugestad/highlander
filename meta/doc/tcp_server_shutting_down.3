@@ -3,6 +3,7 @@
 tcp_server_shutting_down() \- Is the tcp_server shutting down?
 .SH SYNOPSIS
 .B #include <tcp_server.h>
+.sp
 .Fo "int tcp_server_shutting_down"
 .Fa "tcp_server srv"
 .Fc
@@ -19,8 +20,10 @@ to check for shutdown. Whenever
 returns 1, we stop echoing characters and return, effectively
 terminating the connection.
 .Bd -literal
-#include <tcp_server.h>
-#include <connection.h>
+.B #include <tcp_server.h>
+.sp
+.B #include <connection.h>
+.sp
 void* echoserverfn(void* arg)
 {
 	int c;

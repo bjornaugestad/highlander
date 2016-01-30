@@ -3,6 +3,7 @@
 process_add_object_to_start() \- Add an object to start when process_start() is called
 .SH SYNOPSIS
 .B #include <meta_process.h>
+.sp
 .Fo "int process_add_object_to_start"
 .Fa "process p"
 .Fa "void *object"
@@ -43,8 +44,10 @@ This very simple example creates a myserver and starts it properly, as well
 as handles shutdown and signaling. 
 Remember that you can add any number of objects to the process object.
 .Bd -literal
-#include <stdlib.h>
-#include <meta_process.h>
+.B #include <stdlib.h>
+.sp
+.B #include <meta_process.h>
+.sp
 /* Some object which contains thread specific data */
 struct myserver {
 	int shutting_down;

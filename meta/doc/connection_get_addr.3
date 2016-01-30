@@ -3,6 +3,7 @@
 connection_get_addr \- Get client IP address
 .SH SYNOPSIS
 .B #include <connection.h>
+.sp
 .Fo "struct sockaddr_in* connection_get_addr"
 .Fa "connection conn"
 .Fc
@@ -10,10 +11,14 @@ connection_get_addr \- Get client IP address
 Returns the client address that the socket is connected to.
 .SH EXAMPLE
 .Bd -literal
-#include <stdio.h>
-#include <netinet/in.h>
-#include <tcp_server.h>
-#include <connection.h>
+.B #include <stdio.h>
+.sp
+.B #include <netinet/in.h>
+.sp
+.B #include <tcp_server.h>
+.sp
+.B #include <connection.h>
+.sp
 void* echoserverfn(void* arg)
 {
    int c;
