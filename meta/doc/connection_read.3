@@ -4,11 +4,8 @@ connection_read() \- connection_read
 .SH SYNOPSIS
 .B #include <connection.h>
 .sp
-.Fo "ssize_t connection_read"
-.Fa "connection conn"
-.Fa "void *buf"
-.Fa "size_t count"
-.Fc
+.BI "ssize_t connection_read(connection conn, void *buf, size_t count);
+
 .SH DESCRIPTION
 .Nm
 attempts to read 

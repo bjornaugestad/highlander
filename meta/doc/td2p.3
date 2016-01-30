@@ -4,10 +4,8 @@ td2p() \- td2p
 .SH SYNOPSIS
 .B #include <highlander.h>
 .sp
-.Fo "int td2p"
-.Fa "http_response response"
-.Fa "const char* text"
-.Fc
+.BI "int td2p(http_response response, const char* text);
+
 .SH DESCRIPTION
 We want to keep the executable small, we therefore use functions for
 some common tasks instead of spreading a lot of constant data around

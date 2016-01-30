@@ -4,13 +4,8 @@ cache_add \- Add an element to a cache
 .SH SYNOPSIS
 .B #include <meta_cache.h>
 .sp
-.Fo "int cache_add"
-.Fa "cache c"
-.Fa "size_t id"
-.Fa "void *data"
-.Fa "size_t cb"
-.Fa "int pin"
-.Fc
+.BI "int cache_add(cache c, size_t id, void *data, size_t cb, int pin);
+
 .SH DESCRIPTION
 Add a new item to the cache. The item is identified
 by the id parameter and has size cb. The data pointer

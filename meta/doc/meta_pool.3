@@ -4,23 +4,16 @@ meta_pool \- Object management ADT
 .SH SYNOPSIS
 .B #include <meta_pool.h>
 .sp
-.Fo "pool pool_new"
-.Fc
-.Fo "void pool_free"
-.Fa "pool p"
-.Fa "dtor cleanup"
-.Fc
-.Fo "void* pool_add"
-.Fa "pool p"
-.Fa "void *resource"
-.Fc
-.Fo "void* pool_get"
-.Fa "pool p"
-.Fc
-.Fo "void* pool_recycle"
-.Fa "pool p"
-.Fa "void *resource"
-.Fc
+.BI "pool pool_new);
+
+.BI "void pool_free(pool p, dtor cleanup);
+
+.BI "void* pool_add(pool p, void *resource);
+
+.BI "void* pool_get(pool p);
+
+.BI "void* pool_recycle(pool p, void *resource);
+
 .SH DESCRIPTION
 A pool is just a pool of resources, which basically can
 be anything. You create the pool by adding resources to it

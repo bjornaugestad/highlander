@@ -10,11 +10,8 @@ delim can contain any number of characters, see strcspn()
 .B #include <cstring.h>
 .sp
 .sp
-.Fo "size_t cstring_split"
-.Fa "cstring **dest"
-.Fa "const char *src"
-.Fa "const char *delim"
-.Fc
+.BI "size_t cstring_split(cstring **dest, const char *src, const char *delim);
+
 .SH DESCRIPTION
 .Nm
 splits a string literal into multiple cstring strings. After successful

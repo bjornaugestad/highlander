@@ -4,36 +4,18 @@ meta_cache \- A cache ADT
 .SH SYNOPSIS
 .B #include <meta_cache.h>
 .sp
-.Fo "cache cache_new"
-.Fa "size_t nelem"
-.Fa "size_t hotlist_nelem"
-.Fa "size_t bytes"
-.Fc
-.Fo "void cache_free"
-.Fa "cache c"
-.Fa "dtor cleanup"
-.Fc
-.Fo "int cache_add"
-.Fa "cache c"
-.Fa "size_t id"
-.Fa "void *data"
-.Fa "size_t cb"
-.Fa "int pin"
-.Fc
-.Fo "int cache_exists"
-.Fa "cache c"
-.Fa "size_t id"
-.Fc
-.Fo "int cache_get"
-.Fa "cache c"
-.Fa "size_t id"
-.Fa "void **pdata"
-.Fa "size_t *pcb"
-.Fc
-.Fo "int cache_remove"
-.Fa "cache c"
-.Fa "size_t id"
-.Fc
+.BI "cache cache_new(size_t nelem, size_t hotlist_nelem, size_t bytes);
+
+.BI "void cache_free(cache c, dtor cleanup);
+
+.BI "int cache_add(cache c, size_t id, void *data, size_t cb, int pin);
+
+.BI "int cache_exists(cache c, size_t id);
+
+.BI "int cache_get(cache c, size_t id, void **pdata, size_t *pcb);
+
+.BI "int cache_remove(cache c, size_t id);
+
 .SH DESCRIPTION
 A meta_cache is just a simple cache to which you can add and later
 retrieve items. 

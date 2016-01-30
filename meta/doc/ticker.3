@@ -4,23 +4,16 @@ ticker \- A ticker ADT
 .SH SYNOPSIS
 .B #include <meta_ticker.h>
 .sp
-.Fo "ticker ticker_new"
-.Fa "int usec"
-.Fc
-.Fo "void ticker_free"
-.Fa "ticker t"
-.Fc
-.Fo "status_t ticker_add_action"
-.Fa "ticker t"
-.Fa "void(*pfn)(void*)"
-.Fa "void *arg"
-.Fc
-.Fo "status_t ticker_start"
-.Fa "ticker t"
-.Fc
-.Fo "void ticker_stop"
-.Fa "ticker t"
-.Fc
+.BI "ticker ticker_new(int usec);
+
+.BI "void ticker_free(ticker t);
+
+.BI "status_t ticker_add_action(ticker t, void(*pfn)(void*), void *arg);
+
+.BI "status_t ticker_start(ticker t);
+
+.BI "void ticker_stop(ticker t);
+
 .SH DESCRIPTION
 A ticker is a thread which at certain intervals performs
 some caller defined actions.

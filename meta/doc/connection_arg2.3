@@ -4,9 +4,8 @@ connection_arg2() \- Returns a pointer to argument 2.
 .SH SYNOPSIS
 .B #include <connection.h>
 .sp
-.Fo "void* connection_arg2"
-.Fa "connection conn"
-.Fc
+.BI "void* connection_arg2(connection conn);
+
 .SH DESCRIPTION
 Returns the value of arg2 that was supplied when the connection was 
 created. The object pointed to varies with the type of server you

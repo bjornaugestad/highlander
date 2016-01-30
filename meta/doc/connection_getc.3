@@ -5,14 +5,10 @@
 .SH SYNOPSIS
 .B #include <connection.h>
 .sp
-.Fo "int connection_getc"
-.Fa "connection conn"
-.Fa "int* pch"
-.Fc
-.Fo "int connection_putc"
-.Fa "connection conn"
-.Fa "int ch"
-.Fc
+.BI "int connection_getc(connection conn, int* pch);
+
+.BI "int connection_putc(connection conn, int ch);
+
 .SH DESCRIPTION
 .Nm connection_getc()
 reads one character from the socket or the read buffer.

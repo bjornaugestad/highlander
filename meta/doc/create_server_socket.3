@@ -4,11 +4,8 @@ create_server_socket \- Y
 .SH SYNOPSIS
 .B #include <meta_sock.h>
 .sp
-.Fo "meta_socket create_server_socket"
-.Fa "int unix_socket"
-.Fa "const char *host"
-.Fa "int port"
-.Fc
+.BI "meta_socket create_server_socket(int unix_socket, const char *host, int port);
+
 .SH DESCRIPTION
 .Nm
 Creates a server socket.

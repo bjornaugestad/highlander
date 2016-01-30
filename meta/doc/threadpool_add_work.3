@@ -4,15 +4,8 @@ threadpool_add_work \- Add work to the thread pool's work queue.
 .SH SYNOPSIS
 .B #include <threadpool.h>
 .sp
-.Fo "int threadpool_add_work"
-.Fa "threadpool tp"
-.Fa "void (*initfn)(void*, void*)"
-.Fa "void *initarg"
-.Fa "void* (*workfn)(void*)"
-.Fa "void* workarg"
-.Fa "void (*exitfn)(void*, void*)"
-.Fa "void* exitarg"
-.Fc
+.BI "int threadpool_add_work(threadpool tp, void (*initfn)(void*, void*), void *initarg, void* (*workfn)(void*), void* workarg, void (*exitfn)(void*, void*), void* exitarg);
+
 .SH DESCRIPTION
 .Nm threadpool_add_work()
 adds work to the queue. The work will be performed by the work_func,

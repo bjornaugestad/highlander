@@ -4,12 +4,8 @@ configfile_get_string \- Retrieve a string from the configfile ADT
 .SH SYNOPSIS
 .B #include <meta_configfile.h>
 .sp
-.Fo "int configfile_get_string"
-.Fa "configfile cf"
-.Fa "const char *name"
-.Fa "char *value"
-.Fa "size_t cb"
-.Fc
+.BI "int configfile_get_string(configfile cf, const char *name, char *value, size_t cb);
+
 .SH DESCRIPTION
 Retrieve a string from the configfile ADT
 .SH AUTHOR

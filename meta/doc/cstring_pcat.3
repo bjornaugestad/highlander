@@ -4,11 +4,8 @@ cstring_pcat() \- Appends characters to a cstring
 .SH SYNOPSIS
 .B #include <cstring.h>
 .sp
-.Fo "int cstring_pcat"
-.Fa "cstring dest"
-.Fa "const char *start"
-.Fa "const char *end"
-.Fc
+.BI "int cstring_pcat(cstring dest, const char *start, const char *end);
+
 .SH DESCRIPTION
 Appends 0..n characters from start to end(exclusive).
 .SH EXAMPLE

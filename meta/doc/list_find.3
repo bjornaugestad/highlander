@@ -4,11 +4,8 @@ list_find() \- Find a node in a list.
 .SH SYNOPSIS
 .B #include <meta_list.h>
 .sp
-.Fo "list_iterator list_find"
-.Fa "list lst"
-.Fa "const void *data"
-.Fa "int(*compar)(const void*, const void*)"
-.Fc
+.BI "list_iterator list_find(list lst, const void *data, int(*compar)(const void*, const void*));
+
 .SH DESCRIPTION
 .Nm
 finds the first occurence of an item in the list and returns an iterator positioned at that item.

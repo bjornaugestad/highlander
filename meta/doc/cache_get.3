@@ -4,12 +4,8 @@ cache_get \- Retrieves an item from the cache.
 .SH SYNOPSIS
 .B #include <meta_cache.h>
 .sp
-.Fo "int cache_get"
-.Fa "cache c"
-.Fa "size_t id"
-.Fa "void **pdata"
-.Fa "size_t *pcb"
-.Fc
+.BI "int cache_get(cache c, size_t id, void **pdata, size_t *pcb);
+
 .SH DESCRIPTION
 Retrieves an item from the cache.
 .SH AUTHOR

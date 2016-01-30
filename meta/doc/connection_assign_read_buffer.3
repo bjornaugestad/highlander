@@ -8,20 +8,14 @@
 .SH SYNOPSIS
 .B #include <connection.h>
 .sp
-.Fo "membuf connection_reclaim_read_buffer"
-.Fa "connection conn"
-.Fc
-.Fo "membuf connection_reclaim_write_buffer"
-.Fa "connection conn"
-.Fc
-.Fo "void connection_assign_read_buffer"
-.Fa "connection conn"
-.Fa "membuf buf"
-.Fc
-.Fo "void connection_assign_write_buffer"
-.Fa "connection conn"
-.Fa "membuf buf"
-.Fc
+.BI "membuf connection_reclaim_read_buffer(connection conn);
+
+.BI "membuf connection_reclaim_write_buffer(connection conn);
+
+.BI "void connection_assign_read_buffer(connection conn, membuf buf);
+
+.BI "void connection_assign_write_buffer(connection conn, membuf buf);
+
 .SH DESCRIPTION
 The connection is assigned a read buffer and a write buffer on demand,
 instead of managing the buffers itself. The reason is that we may

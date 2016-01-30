@@ -6,15 +6,10 @@
 .SH SYNOPSIS
 .B #include <connection.h>
 .sp
-.Fo "int connection_gets"
-.Fa "connection conn"
-.Fa "char *buf"
-.Fa "size_t size"
-.Fc
-.Fo "int connection_puts"
-.Fa "connection conn"
-.Fa "const char* s"
-.Fc
+.BI "int connection_gets(connection conn, char *buf, size_t size);
+
+.BI "int connection_puts(connection conn, const char* s);
+
 .SH DESCRIPTION
 .Nm connection_gets()
 reads a string, terminated by \\n, from the connection.

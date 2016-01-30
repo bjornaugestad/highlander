@@ -4,9 +4,8 @@ bitset_unmap \- Unmaps mapped memory.
 .SH SYNOPSIS
 .B #include <meta_bitset.h>
 .sp
-.Fo "void bitset_unmap"
-.Fa "bitset b"
-.Fc
+.BI "void bitset_unmap(bitset b);
+
 .SH DESCRIPTION
 Frees memory allocated by bitset, but the memory used to store 
 bits is untouched. Memory mapped bitsets must be unmapped using 

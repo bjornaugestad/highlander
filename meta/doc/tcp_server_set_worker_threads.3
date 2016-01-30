@@ -5,10 +5,8 @@
 .SH SYNOPSIS
 .B #include <tcp_server.h>
 .sp
-.Fo "void tcp_server_set_worker_threads"
-.Fa "tcp_server srv"
-.Fa "size_t count"
-.Fc
+.BI "void tcp_server_set_worker_threads(tcp_server srv, size_t count);
+
 .SH DESCRIPTION
 .Fa
 The tcp_server creates a thread pool of 

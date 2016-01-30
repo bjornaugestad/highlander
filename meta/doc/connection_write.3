@@ -4,11 +4,8 @@ connection_write() \- Write to a connection
 .SH SYNOPSIS
 .B #include <connection.h>
 .sp
-.Fo "int connection_write"
-.Fa "connection conn"
-.Fa "const void* buf"
-.Fa "size_t cb"
-.Fc
+.BI "int connection_write(connection conn, const void* buf, size_t cb);
+
 .SH DESCRIPTION
 .Nm
 writes n bytes to the connection. The bytes will be placed in 

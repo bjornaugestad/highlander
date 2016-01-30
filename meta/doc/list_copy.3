@@ -4,11 +4,8 @@ list_copy() \- Create a copy of a list and its contents.
 .SH SYNOPSIS
 .B #include <meta_list.h>
 .sp
-.Fo "list list_copy"
-.Fa "list lst"
-.Fa "void*(*copyfn)(const void*)"
-.Fa "dtor dtor"
-.Fc
+.BI "list list_copy(list lst, void*(*copyfn)(const void*), dtor dtor);
+
 .SH DESCRIPTION
 .Nm
 creates and returns a copy of

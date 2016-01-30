@@ -4,98 +4,52 @@ cstring \- A string ADT
 .SH SYNOPSIS
 .B #include <cstring.h>
 .sp
-.Fo "const char* c_str"
-.Fa "cstring s"
-.Fc
-.Fo "int cstring_charcat"
-.Fa "cstring dest"
-.Fa "int c"
-.Fc
-.Fo "int cstring_concat"
-.Fa "cstring dest"
-.Fa "const char* src"
-.Fc
-.Fo "int cstring_concat2"
-.Fa "cstring dest"
-.Fa "const char* src1"
-.Fa "const char* src2"
-.Fc
-.Fo "int cstring_concat3"
-.Fa "cstring dest"
-.Fa "const char* src1"
-.Fa "const char* src2"
-.Fa "const char* src3"
-.Fc
-.Fo "int cstring_set"
-.Fa "cstring dest"
-.Fa "const char* src"
-.Fc
-.Fo "int cstring_nset"
-.Fa "cstring dest"
-.Fa "const char* src"
-.Fa "size_t n"
-.Fc
-.Fo "int cstring_extend"
-.Fa "cstring s"
-.Fa "size_t size"
-.Fc
-.Fo "cstring cstring_left"
-.Fa "cstring src"
-.Fa "size_t n"
-.Fc
-.Fo "cstring cstring_right"
-.Fa "cstring src"
-.Fa "size_t n"
-.Fc
-.Fo "size_t cstring_length"
-.Fa "cstring s"
-.Fc
-.Fo "cstring cstring_new"
-.Fc
-.Fo "int cstring_multinew"
-.Fa "cstring *pstr"
-.Fa "size_t nelem"
-.Fc
-.Fo "void cstring_free"
-.Fa "cstring s"
-.Fc
-.Fo "int cstring_pcat"
-.Fa "cstring dest"
-.Fa "const char *start"
-.Fa "const char *end"
-.Fc
-.Fo "int cstring_printf"
-.Fa "cstring dest"
-.Fa "size_t needs_max"
-.Fa "const char* fmt"
-.Fa "..."
-.Fc
-.Fo "int cstring_vprintf"
-.Fa "cstring dest"
-.Fa "size_t needs_max"
-.Fa "const char* fmt"
-.Fa "va_list ap"
-.Fc
-.Fo "void cstring_recycle"
-.Fa "cstring s"
-.Fc
-.Fo "void cstring_reverse"
-.Fa "cstring s"
-.Fc
-.Fo "void cstring_strip"
-.Fa "cstring s"
-.Fc
-.Fo "void cstring_upper"
-.Fa "cstring s"
-.Fc
-.Fo "void cstring_lower"
-.Fa "cstring s"
-.Fc
-.Fo "cstring cstring_substring"
-.Fa "cstring src"
-.Fa "size_t from"
-.Fa "size_t to"
-.Fc
+.BI "const char* c_str(cstring s);
+
+.BI "int cstring_charcat(cstring dest, int c);
+
+.BI "int cstring_concat(cstring dest, const char* src);
+
+.BI "int cstring_concat2(cstring dest, const char* src1, const char* src2);
+
+.BI "int cstring_concat3(cstring dest, const char* src1, const char* src2, const char* src3);
+
+.BI "int cstring_set(cstring dest, const char* src);
+
+.BI "int cstring_nset(cstring dest, const char* src, size_t n);
+
+.BI "int cstring_extend(cstring s, size_t size);
+
+.BI "cstring cstring_left(cstring src, size_t n);
+
+.BI "cstring cstring_right(cstring src, size_t n);
+
+.BI "size_t cstring_length(cstring s);
+
+.BI "cstring cstring_new);
+
+.BI "int cstring_multinew(cstring *pstr, size_t nelem);
+
+.BI "void cstring_free(cstring s);
+
+.BI "int cstring_pcat(cstring dest, const char *start, const char *end);
+
+.BI "int cstring_printf(cstring dest, size_t needs_max, const char* fmt, ...);
+
+.BI "int cstring_vprintf(cstring dest, size_t needs_max, const char* fmt, va_list ap);
+
+.BI "void cstring_recycle(cstring s);
+
+.BI "void cstring_reverse(cstring s);
+
+.BI "void cstring_strip(cstring s);
+
+.BI "void cstring_upper(cstring s);
+
+.BI "void cstring_lower(cstring s);
+
+.BI "cstring cstring_substring(cstring src, size_t from, size_t to);
+
 .SH DESCRIPTION
 The goal of the cstring ADT is to create a better way of handling
 strings than the standard C way. cstring is designed to be fast and

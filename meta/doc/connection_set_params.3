@@ -4,11 +4,8 @@ connection_set_params() \- Set parameters for the current connection
 .SH SYNOPSIS
 .B #include <connection.h>
 .sp
-.Fo "void connection_set_params"
-.Fa "connection conn"
-.Fa "int fd"
-.Fa "struct sockaddr_in* paddr"
-.Fc
+.BI "void connection_set_params(connection conn, int fd, struct sockaddr_in* paddr);
+
 .SH DESCRIPTION
 .Nm
 assigns a file descriptor and a pointer to a sockaddr_in to 

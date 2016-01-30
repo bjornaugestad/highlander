@@ -6,12 +6,10 @@
 .SH SYNOPSIS
 .B #include <meta_fifo.h>
 .sp
-.Fo "fifo fifo_new"
-.Fa "size_t nelem"
-.Fc
-.Fo "void fifo_free"
-.Fa "fifo p"
-.Fc
+.BI "fifo fifo_new(size_t nelem);
+
+.BI "void fifo_free(fifo p);
+
 .SH DESCRIPTION
 .Nm fifo_new()
 creates a new fifo with room for nelem entries, and

@@ -4,10 +4,8 @@ tcp_server_set_queue_size() \- Set size of work queue.
 .SH SYNOPSIS
 .B #include <tcp_server.h>
 .sp
-.Fo "void tcp_server_set_queue_size"
-.Fa "tcp_server srv"
-.Fa "size_t size"
-.Fc
+.BI "void tcp_server_set_queue_size(tcp_server srv, size_t size);
+
 .SH DESCRIPTION
 Sets the size of the work queue. The main thread in the tcp_server
 accepts connection requests and puts these requests in a queue which

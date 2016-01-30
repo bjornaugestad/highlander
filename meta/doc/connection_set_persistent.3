@@ -6,13 +6,10 @@
 .SH SYNOPSIS
 .B #include <connection.h>
 .sp
-.Fo "void connection_set_persistent"
-.Fa "connection conn"
-.Fa "int val"
-.Fc
-.Fo "int connection_is_persistent"
-.Fa "connection conn"
-.Fc
+.BI "void connection_set_persistent(connection conn, int val);
+
+.BI "int connection_is_persistent(connection conn);
+
 .SH DESCRIPTION
 .Nm connection_set_persistent()
 sets the persistent flag of the connection to either true

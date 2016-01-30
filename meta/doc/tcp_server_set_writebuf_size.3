@@ -4,10 +4,8 @@ tcp_server_set_writebuf_size() \- Sets size of buffer for outgoing data
 .SH SYNOPSIS
 .B #include <tcp_server.h>
 .sp
-.Fo "void tcp_server_set_writebuf_size"
-.Fa "tcp_server s"
-.Fa "size_t size"
-.Fc
+.BI "void tcp_server_set_writebuf_size(tcp_server s, size_t size);
+
 .SH DESCRIPTION
 .Nm
 Sets the size of the write buffer.

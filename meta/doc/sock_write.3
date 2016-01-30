@@ -4,13 +4,8 @@ sock_write \- Write data to socket.
 .SH SYNOPSIS
 .B #include <meta_sock.h>
 .sp
-.Fo "int sock_write"
-.Fa "meta_socket p"
-.Fa "const char *s"
-.Fa "size_t count"
-.Fa "int timeout"
-.Fa "int retries"
-.Fc
+.BI "int sock_write(meta_socket p, const char *s, size_t count, int timeout, int retries);
+
 .SH DESCRIPTION
 .Nm
 .SH AUTHOR

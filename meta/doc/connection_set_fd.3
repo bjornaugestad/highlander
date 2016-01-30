@@ -4,10 +4,8 @@ connection_set_fd() \- Assign a file descriptor to the connection object.
 .SH SYNOPSIS
 .B #include <connection.h>
 .sp
-.Fo "void connection_set_fd"
-.Fa "connection conn"
-.Fa "int fd"
-.Fc
+.BI "void connection_set_fd(connection conn, int fd);
+
 .SH DESCRIPTION
 .Nm
 assigns a new file descriptor to the connection ADT. The fd

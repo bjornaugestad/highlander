@@ -4,10 +4,8 @@ tcp_server_set_port() \- Set the port number to listen on.
 .SH SYNOPSIS
 .B #include <tcp_server.h>
 .sp
-.Fo "void tcp_server_set_port"
-.Fa "tcp_server srv"
-.Fa "int port"
-.Fc
+.BI "void tcp_server_set_port(tcp_server srv, int port);
+
 .SH DESCRIPTION
 Sets the port number that the tcp_server will listen to.
 The tcp_server will by default listen to port 2000. Listening to

@@ -4,9 +4,8 @@ sock_clear_nonblock \- Y
 .SH SYNOPSIS
 .B #include <meta_sock.h>
 .sp
-.Fo "int sock_clear_nonblock"
-.Fa "meta_socket p"
-.Fc
+.BI "int sock_clear_nonblock(meta_socket p);
+
 .SH DESCRIPTION
 .Nm
 clears the O_NONBLOCK flag from the socket. This means that

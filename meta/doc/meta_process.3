@@ -4,41 +4,24 @@ meta_process \- Process management ADT
 .SH SYNOPSIS
 .B #include <meta_process.h>
 .sp
-.Fo "process process_new"
-.Fc
-.Fo "void process_free"
-.Fa "process p"
-.Fc
-.Fo "int process_shutting_down"
-.Fa "process p"
-.Fc
-.Fo "int process_set_rootdir"
-.Fa "process p"
-.Fa "const char *path"
-.Fc
-.Fo "int process_set_username"
-.Fa "process p "
-.Fa "const char *username"
-.Fc
-.Fo "int process_add_object_to_start"
-.Fa "process p"
-.Fa "void *object"
-.Fa "int do_func(void *)"
-.Fa "int undo_func(void *)"
-.Fa "int run_func(void *)"
-.Fa "int shutdown_func(void *)"
-.Fc
-.Fo "int process_start"
-.Fa "process p"
-.Fa "int fork_and_close"
-.Fc
-.Fo "int process_wait_for_shutdown"
-.Fa "process p"
-.Fc
-.Fo "int process_get_exitcode"
-.Fa "process p"
-.Fa "void *object"
-.Fc
+.BI "process process_new);
+
+.BI "void process_free(process p);
+
+.BI "int process_shutting_down(process p);
+
+.BI "int process_set_rootdir(process p, const char *path);
+
+.BI "int process_set_username(process p, const char *username);
+
+.BI "int process_add_object_to_start(process p, void *object, int do_func(void *), int undo_func(void *), int run_func(void *), int shutdown_func(void *));
+
+.BI "int process_start(process p, int fork_and_close);
+
+.BI "int process_wait_for_shutdown(process p);
+
+.BI "int process_get_exitcode(process p, void *object);
+
 .SH DESCRIPTION
 A process object is used to control the currently executing process.
 Normally the process consists of one or more http_server threads.

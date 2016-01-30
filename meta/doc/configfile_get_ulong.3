@@ -4,11 +4,8 @@ configfile_get_ulong \- Retrieve an unsigned long value from the configfile.
 .SH SYNOPSIS
 .B #include <meta_configfile.h>
 .sp
-.Fo "int configfile_get_ulong"
-.Fa "configfile cf"
-.Fa "const char *name"
-.Fa "unsigned long *value"
-.Fc
+.BI "int configfile_get_ulong(configfile cf, const char *name, unsigned long *value);
+
 .SH DESCRIPTION
 Retrieve an unsigned long value from the configfile.
 .SH AUTHOR

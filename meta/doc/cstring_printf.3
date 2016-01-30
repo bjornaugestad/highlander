@@ -6,18 +6,10 @@
 .SH SYNOPSIS
 .B #include <cstring.h>
 .sp
-.Fo "int cstring_printf"
-.Fa "cstring dest"
-.Fa "size_t needs_max"
-.Fa "const char* fmt"
-.Fa "..."
-.Fc
-.Fo "int cstring_vprintf"
-.Fa "cstring dest"
-.Fa "size_t needs_max"
-.Fa "const char* fmt"
-.Fa "va_list ap"
-.Fc
+.BI "int cstring_printf(cstring dest, size_t needs_max, const char* fmt, ...);
+
+.BI "int cstring_vprintf(cstring dest, size_t needs_max, const char* fmt, va_list ap);
+
 .SH DESCRIPTION
 .Nm cstring_printf()
 formats and appends data to

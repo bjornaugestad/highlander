@@ -4,10 +4,8 @@ tcp_server_allow_clients() \- Set client filter
 .SH SYNOPSIS
 .B #include <tcp_server.h>
 .sp
-.Fo "int tcp_server_allow_clients"
-.Fa "tcp_server srv"
-.Fa "const char* filter"
-.Fc
+.BI "int tcp_server_allow_clients(tcp_server srv, const char* filter);
+
 .SH DESCRIPTION
 .Nm
 sets a filter which will be used to deny clients access

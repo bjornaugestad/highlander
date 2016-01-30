@@ -8,19 +8,14 @@
 .SH SYNOPSIS
 .B #include <meta_fifo.h>
 .sp
-.Fo "int fifo_write_signal"
-.Fa "fifo p"
-.Fa "void *data"
-.Fc
-.Fo "int fifo_wait_cond"
-.Fa "fifo p"
-.Fc
-.Fo "int fifo_wake"
-.Fa "fifo p"
-.Fc
-.Fo "int fifo_signal"
-.Fa "fifo p"
-.Fc
+.BI "int fifo_write_signal(fifo p, void *data);
+
+.BI "int fifo_wait_cond(fifo p);
+
+.BI "int fifo_wake(fifo p);
+
+.BI "int fifo_signal(fifo p);
+
 .SH DESCRIPTION
 Sometimes a reader thread wants to be notified whenever data is added to
 the fifo. This is done using these functions:

@@ -4,10 +4,8 @@ tcp_server_start_via_process() \- Let the process ADT start the tcp_server
 .SH SYNOPSIS
 .B #include <tcp_server.h>
 .sp
-.Fo "int tcp_server_start_via_process"
-.Fa "process p"
-.Fa "tcp_server s"
-.Fc
+.BI "int tcp_server_start_via_process(process p, tcp_server s);
+
 .SH DESCRIPTION
 Let the process ADT start the tcp server instead of starting it
 ourselves. The process ADT handles proper startup and shutdown

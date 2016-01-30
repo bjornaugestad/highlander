@@ -4,12 +4,8 @@ tcp_server_set_timeout() \- Sets timeout values for a tcp_server
 .SH SYNOPSIS
 .B #include <tcp_server.h>
 .sp
-.Fo "void tcp_server_set_timeout"
-.Fa "tcp_server srv"
-.Fa "int reads"
-.Fa "int writes"
-.Fa "int accepts"
-.Fc
+.BI "void tcp_server_set_timeout(tcp_server srv, int reads, int writes, int accepts);
+
 .SH DESCRIPTION
 .Nm
 sets the number of seconds to wait when reading or writing to 

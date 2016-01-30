@@ -4,73 +4,42 @@ meta_bitset \- Dynamic bitset ADT
 .SH SYNOPSIS
 .B #include <meta_bitset.h>
 .sp
-.Fo "bitset bitset_new"
-.Fa "size_t bitcount"
-.Fc
-.Fo "void bitset_free"
-.Fa "bitset b"
-.Fc
-.Fo "void bitset_set"
-.Fa "bitset b"
-.Fa "size_t i"
-.Fc
-.Fo "void bitset_clear"
-.Fa "bitset b"
-.Fa "size_t i"
-.Fc
-.Fo "int bitset_is_set"
-.Fa "bitset b"
-.Fa "size_t i"
-.Fc
-.Fo "void bitset_set_all"
-.Fa "bitset b"
-.Fc
-.Fo "void bitset_clear_all"
-.Fa "bitset b"
-.Fc
-.Fo "size_t bitset_size"
-.Fa "bitset b"
-.Fc
-.Fo "bitset bitset_map"
-.Fa "bitset b "
-.Fa "void *mem"
-.Fa "size_t cb"
-.Fc
-.Fo "bitset bitset_remap"
-.Fa "bitset b "
-.Fa "void *mem"
-.Fa "size_t cb"
-.Fc
-.Fo "void bitset_unmap"
-.Fa "bitset b"
-.Fc
-.Fo "void* bitset_data"
-.Fa "bitset b"
-.Fc
-.Fo "bitset bitset_and"
-.Fa "bitset b"
-.Fa "bitset c"
-.Fc
-.Fo "bitset bitset_or"
-.Fa "bitset b"
-.Fa "bitset c"
-.Fc
-.Fo "bitset bitset_xor"
-.Fa "bitset b"
-.Fa "bitset c"
-.Fc
-.Fo "void bitset_and_eq"
-.Fa "bitset b"
-.Fa "bitset c"
-.Fc
-.Fo "void bitset_or_eq"
-.Fa "bitset b"
-.Fa "bitset c"
-.Fc
-.Fo "void bitset_xor_eq"
-.Fa "bitset b"
-.Fa "bitset c"
-.Fc
+.BI "bitset bitset_new(size_t bitcount);
+
+.BI "void bitset_free(bitset b);
+
+.BI "void bitset_set(bitset b, size_t i);
+
+.BI "void bitset_clear(bitset b, size_t i);
+
+.BI "int bitset_is_set(bitset b, size_t i);
+
+.BI "void bitset_set_all(bitset b);
+
+.BI "void bitset_clear_all(bitset b);
+
+.BI "size_t bitset_size(bitset b);
+
+.BI "bitset bitset_map(bitset b, void *mem, size_t cb);
+
+.BI "bitset bitset_remap(bitset b, void *mem, size_t cb);
+
+.BI "void bitset_unmap(bitset b);
+
+.BI "void* bitset_data(bitset b);
+
+.BI "bitset bitset_and(bitset b, bitset c);
+
+.BI "bitset bitset_or(bitset b, bitset c);
+
+.BI "bitset bitset_xor(bitset b, bitset c);
+
+.BI "void bitset_and_eq(bitset b, bitset c);
+
+.BI "void bitset_or_eq(bitset b, bitset c);
+
+.BI "void bitset_xor_eq(bitset b, bitset c);
+
 .SH DESCRIPTION
 A bitset is nothing more than a very long integer with bits to indicate
 true or false. 

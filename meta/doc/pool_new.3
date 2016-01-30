@@ -6,12 +6,10 @@
 .SH SYNOPSIS
 .B #include <meta_pool.h>
 .sp
-.Fo "pool pool_new"
-.Fc
-.Fo "void pool_free"
-.Fa "pool p"
-.Fa "dtor cleanup"
-.Fc
+.BI "pool pool_new);
+
+.BI "void pool_free(pool p, dtor cleanup);
+
 .SH DESCRIPTION
 Creates a new resource pool. The pool will have room for nelem elements.
 A resource pool is nice to have if you want to preallocate/precreate

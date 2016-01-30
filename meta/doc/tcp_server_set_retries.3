@@ -5,11 +5,8 @@
 .SH SYNOPSIS
 .B #include <tcp_server.h>
 .sp
-.Fo "void tcp_server_set_retries"
-.Fa "tcp_server srv"
-.Fa "int reads"
-.Fa "int writes"
-.Fc
+.BI "void tcp_server_set_retries(tcp_server srv, int reads, int writes);
+
 .SH DESCRIPTION
 Set the number of retries that will be performed when reading or 
 writing. 0 is a valid value, as the tcp_server will try once,

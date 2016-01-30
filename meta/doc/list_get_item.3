@@ -4,10 +4,8 @@ list_get_item() \- Return a node.
 .SH SYNOPSIS
 .B #include <meta_list.h>
 .sp
-.Fo "void* list_get_item"
-.Fa "list lst"
-.Fa "size_t index"
-.Fc
+.BI "void* list_get_item(list lst, size_t index);
+
 .SH DESCRIPTION
 .Nm
 returns the n'th node in the list, or NULL if 

@@ -6,15 +6,10 @@
 .SH SYNOPSIS
 .B #include <meta_cache.h>
 .sp
-.Fo "cache cache_new"
-.Fa "size_t nelem"
-.Fa "size_t hotlist_nelem"
-.Fa "size_t cb"
-.Fc
-.Fo "void cache_free"
-.Fa "cache c"
-.Fa "dtor cleanup"
-.Fc
+.BI "cache cache_new(size_t nelem, size_t hotlist_nelem, size_t cb);
+
+.BI "void cache_free(cache c, dtor cleanup);
+
 .SH DESCRIPTION
 .Nm cache_new()
 creates a new cache. The cache will have room for nelem elements,

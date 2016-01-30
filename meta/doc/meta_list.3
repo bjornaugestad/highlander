@@ -4,114 +4,60 @@ meta_list \- General purpose list ADT.
 .SH SYNOPSIS
 .B #include <meta_list.h>
 .sp
-.Fo "list list_add"
-.Fa "list lst"
-.Fa "void* data"
-.Fc
-.Fo "list list_copy"
-.Fa "list lst"
-.Fa "void*(*copyfn)(const void*)"
-.Fa "dtor dtor"
-.Fc
-.Fo "size_t list_count"
-.Fa "list lst"
-.Fa "int (*include_node)(void*)"
-.Fc
-.Fo "list_iterator list_delete"
-.Fa "list lst"
-.Fa "list_iterator i"
-.Fa "dtor dtor"
-.Fc
-.Fo "int list_end"
-.Fa "list_iterator li"
-.Fc
-.Fo "list_iterator list_find"
-.Fa "list lst"
-.Fa "const void *data"
-.Fa "int(*compar)(const void*, const void*)"
-.Fc
-.Fo "list_iterator list_first"
-.Fa "list lst"
-.Fc
-.Fo "int list_foreach"
-.Fa "list lst"
-.Fa "void* args"
-.Fa "listfunc f"
-.Fc
-.Fo "int list_foreach_reversed"
-.Fa "list lst"
-.Fa "void* arg"
-.Fa "listfunc f"
-.Fc
-.Fo "int list_foreach_sep"
-.Fa "list lst"
-.Fa "void* arg"
-.Fa "listfunc f"
-.Fa "int(*sep)(void*arg)"
-.Fc
-.Fo "int list_dual_foreach"
-.Fa "list lst"
-.Fa "void *arg1"
-.Fa "void *arg2"
-.Fa "int(*dual)(void* a1, void *a2, void *data)"
-.Fc
-.Fo "void* list_get"
-.Fa "list_iterator i"
-.Fc
-.Fo "void* list_get_item"
-.Fa "list lst"
-.Fa "size_t index"
-.Fc
-.Fo "list list_insert"
-.Fa "list lst"
-.Fa "void *data"
-.Fc
-.Fo "int list_last"
-.Fa "list_iterator li"
-.Fc
-.Fo "list list_merge"
-.Fa "list dest"
-.Fa "list src"
-.Fc
-.Fo "list list_new"
-.Fa "void"
-.Fc
-.Fo "void list_free"
-.Fa "list lst"
-.Fa "dtor dtor"
-.Fc
-.Fo "list_iterator list_next"
-.Fa "list_iterator i"
-.Fc
-.Fo "list_iterator list_remove_node"
-.Fa "list lst"
-.Fa "list_iterator i"
-.Fc
-.Fo "size_t list_size"
-.Fa "list lst"
-.Fc
-.Fo "void list_sort"
-.Fa "list lst"
-.Fa "int(*compar)(const void *p1, const void *p2)"
-.Fc
-.Fo "list sublist_adaptor"
-.Fa "list lst"
-.Fa "void* (*adaptor)(void*)"
-.Fc
-.Fo "list sublist_copy"
-.Fa "list lst"
-.Fc
-.Fo "list sublist_create"
-.Fa "list lst"
-.Fa "int (*include_node)(void*)"
-.Fc
-.Fo "list sublist_create_neg"
-.Fa "list lst"
-.Fa "int (*include_node)(void*)"
-.Fc
-.Fo "void sublist_free"
-.Fa "list lst"
-.Fc
+.BI "list list_add(list lst, void* data);
+
+.BI "list list_copy(list lst, void*(*copyfn)(const void*), dtor dtor);
+
+.BI "size_t list_count(list lst, int (*include_node)(void*));
+
+.BI "list_iterator list_delete(list lst, list_iterator i, dtor dtor);
+
+.BI "int list_end(list_iterator li);
+
+.BI "list_iterator list_find(list lst, const void *data, int(*compar)(const void*, const void*));
+
+.BI "list_iterator list_first(list lst);
+
+.BI "int list_foreach(list lst, void* args, listfunc f);
+
+.BI "int list_foreach_reversed(list lst, void* arg, listfunc f);
+
+.BI "int list_foreach_sep(list lst, void* arg, listfunc f, int(*sep)(void*arg));
+
+.BI "int list_dual_foreach(list lst, void *arg1, void *arg2, int(*dual)(void* a1, void *a2, void *data));
+
+.BI "void* list_get(list_iterator i);
+
+.BI "void* list_get_item(list lst, size_t index);
+
+.BI "list list_insert(list lst, void *data);
+
+.BI "int list_last(list_iterator li);
+
+.BI "list list_merge(list dest, list src);
+
+.BI "list list_new(void);
+
+.BI "void list_free(list lst, dtor dtor);
+
+.BI "list_iterator list_next(list_iterator i);
+
+.BI "list_iterator list_remove_node(list lst, list_iterator i);
+
+.BI "size_t list_size(list lst);
+
+.BI "void list_sort(list lst, int(*compar)(const void *p1, const void *p2));
+
+.BI "list sublist_adaptor(list lst, void* (*adaptor)(void*));
+
+.BI "list sublist_copy(list lst);
+
+.BI "list sublist_create(list lst, int (*include_node)(void*));
+
+.BI "list sublist_create_neg(list lst, int (*include_node)(void*));
+
+.BI "void sublist_free(list lst);
+
 .SH DESCRIPTION
 The 
 .Nm meta_list

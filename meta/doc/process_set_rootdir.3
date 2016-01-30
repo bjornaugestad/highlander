@@ -4,10 +4,8 @@ process_set_rootdir() \- Set root directory for a process object
 .SH SYNOPSIS
 .B #include <meta_process.h>
 .sp
-.Fo "int process_set_rootdir"
-.Fa "process p"
-.Fa "const char* path"
-.Fc
+.BI "int process_set_rootdir(process p, const char* path);
+
 .SH DESCRIPTION
 Stores the path to the directory which will be the 
 "root directory" when the process_start() function

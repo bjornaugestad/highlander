@@ -4,11 +4,8 @@ tcp_server_set_service_function() \- Sets the callback function
 .SH SYNOPSIS
 .B #include <tcp_server.h>
 .sp
-.Fo "void tcp_server_set_service_function"
-.Fa "tcp_server srv"
-.Fa "void* (*func)(void*)"
-.Fa "void* arg"
-.Fc
+.BI "void tcp_server_set_service_function(tcp_server srv, void* (*func)(void*), void* arg);
+
 .SH DESCRIPTION
 Set the function that will be called from tcp_server to
 service requests from clients. The service function is called

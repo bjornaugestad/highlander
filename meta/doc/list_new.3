@@ -6,13 +6,10 @@
 .SH SYNOPSIS
 .B #include <meta_list.h>
 .sp
-.Fo "list list_new"
-.Fa "void"
-.Fc
-.Fo "void list_free"
-.Fa "list lst"
-.Fa "dtor dtor"
-.Fc
+.BI "list list_new(void);
+
+.BI "void list_free(list lst, dtor dtor);
+
 .SH DESCRIPTION
 .Nm list_new()
 creates a new list, returns NULL if failure. 

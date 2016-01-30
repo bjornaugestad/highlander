@@ -6,12 +6,10 @@
 .SH SYNOPSIS
 .B #include <meta_process.h>
 .sp
-.Fo "process process_new"
-.Fa "const char* appname"
-.Fc
-.Fo "void process_free"
-.Fa "process p"
-.Fc
+.BI "process process_new(const char* appname);
+
+.BI "void process_free(process p);
+
 .SH DESCRIPTION
 .Nm process_new()
 creates a new process object. 

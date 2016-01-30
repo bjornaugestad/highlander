@@ -4,64 +4,32 @@ meta_socket \- A socket ADT
 .SH SYNOPSIS
 .B #include <meta_socket.h>
 .sp
-.Fo "meta_socket sock_socket"
-.Fa "int unix_socket"
-.Fc
-.Fo "int sock_listen"
-.Fa "meta_socket p"
-.Fa "int backlog"
-.Fc
-.Fo "meta_socket sock_accept"
-.Fa "meta_socket p"
-.Fa "struct sockaddr *addr"
-.Fa "socklen_t *addrsize"
-.Fc
-.Fo "int sock_read"
-.Fa "meta_socket p"
-.Fa "char *buf"
-.Fa "size_t cbMax"
-.Fa "int timeout"
-.Fa "int retries"
-.Fa "size_t* cbReadSum"
-.Fc
-.Fo "int wait_for_data"
-.Fa "meta_socket p"
-.Fa "int timeout"
-.Fc
-.Fo "int wait_for_writability"
-.Fa "meta_socket p"
-.Fa "int timeout"
-.Fc
-.Fo "int sock_write"
-.Fa "meta_socket p"
-.Fa "const char *s"
-.Fa "size_t count"
-.Fa "int timeout"
-.Fa "int retries"
-.Fc
-.Fo "int sock_bind"
-.Fa "meta_socket p"
-.Fa "const char *hostname"
-.Fa "int port"
-.Fc
-.Fo "int sock_set_nonblock"
-.Fa "meta_socket p"
-.Fc
-.Fo "int sock_clear_nonblock"
-.Fa "meta_socket p"
-.Fc
-.Fo "meta_socket create_server_socket"
-.Fa "int unix_socket"
-.Fa "const char *host"
-.Fa "int port"
-.Fc
-.Fo "meta_socket create_client_socket"
-.Fa "const char *host"
-.Fa "int port"
-.Fc
-.Fo "int sock_close"
-.Fa "meta_socket p"
-.Fc
+.BI "meta_socket sock_socket(int unix_socket);
+
+.BI "int sock_listen(meta_socket p, int backlog);
+
+.BI "meta_socket sock_accept(meta_socket p, struct sockaddr *addr, socklen_t *addrsize);
+
+.BI "int sock_read(meta_socket p, char *buf, size_t cbMax, int timeout, int retries, size_t* cbReadSum);
+
+.BI "int wait_for_data(meta_socket p, int timeout);
+
+.BI "int wait_for_writability(meta_socket p, int timeout);
+
+.BI "int sock_write(meta_socket p, const char *s, size_t count, int timeout, int retries);
+
+.BI "int sock_bind(meta_socket p, const char *hostname, int port);
+
+.BI "int sock_set_nonblock(meta_socket p);
+
+.BI "int sock_clear_nonblock(meta_socket p);
+
+.BI "meta_socket create_server_socket(int unix_socket, const char *host, int port);
+
+.BI "meta_socket create_client_socket(const char *host, int port);
+
+.BI "int sock_close(meta_socket p);
+
 .SH DESCRIPTION
 The meta_socket ADT is a thin layer over an ordinary socket.
 .PP

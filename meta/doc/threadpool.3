@@ -4,33 +4,18 @@ threadpool \- General purpose threadpool ADT
 .SH SYNOPSIS
 .B #include <threadpool.h>
 .sp
-.Fo "threadpool threadpool_new"
-.Fa "size_t num_worker_threads"
-.Fa "size_t max_queue_size"
-.Fa "bool block_when_full"
-.Fc
-.Fo "status_t threadpool_add_work"
-.Fa "threadpool tp"
-.Fa "void (*initialize)(void*, void*)"
-.Fa "void *initialize_arg"
-.Fa "void* (*work_func)(void*)"
-.Fa "void* work_arg"
-.Fa "void (*cleanup_func)(void*, void*)"
-.Fa "void* cleanup_arg"
-.Fc
-.Fo "status_t threadpool_destroy"
-.Fa "threadpool tp"
-.Fa "bool finish"
-.Fc
-.Fo "unsigned long threadpool_sum_blocked"
-.Fa "threadpool p"
-.Fc
-.Fo "unsigned long threadpool_sum_discarded"
-.Fa "threadpool p"
-.Fc
-.Fo "unsigned long threadpool_sum_added"
-.Fa "threadpool p"
-.Fc
+.BI "threadpool threadpool_new(size_t num_worker_threads, size_t max_queue_size, bool block_when_full);
+
+.BI "status_t threadpool_add_work(threadpool tp, void (*initialize)(void*, void*), void *initialize_arg, void* (*work_func)(void*), void* work_arg, void (*cleanup_func)(void*, void*), void* cleanup_arg);
+
+.BI "status_t threadpool_destroy(threadpool tp, bool finish);
+
+.BI "unsigned long threadpool_sum_blocked(threadpool p);
+
+.BI "unsigned long threadpool_sum_discarded(threadpool p);
+
+.BI "unsigned long threadpool_sum_added(threadpool p);
+
 .SH DESCRIPTION
 The threadpool ADT implements a thread pool with a work queue. Users
 can add work to the queue, and the work will be performed when 

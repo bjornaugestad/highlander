@@ -4,85 +4,48 @@ tcp_server \- General purpose TCP/IP server ADT
 .SH SYNOPSIS
 .B #include <tcp_server.h>
 .sp
-.Fo "int tcp_server_allow_clients"
-.Fa "tcp_server srv"
-.Fa "const char* filter"
-.Fc
-.Fo "void tcp_server_clear_client_filter"
-.Fa "tcp_server srv"
-.Fc
-.Fo "int tcp_server_free_root_resources"
-.Fa "tcp_server s"
-.Fc
-.Fo "int tcp_server_get_root_resources"
-.Fa "tcp_server srv"
-.Fc
-.Fo "int tcp_server_init"
-.Fa "tcp_server srv"
-.Fc
-.Fo "tcp_server tcp_server_new"
-.Fa "void"
-.Fc
-.Fo "void tcp_server_free"
-.Fa "tcp_server srv"
-.Fc
-.Fo "void tcp_server_set_block_when_full"
-.Fa "tcp_server srv"
-.Fa "int block"
-.Fc
-.Fo "int tcp_server_set_hostname"
-.Fa "tcp_server srv"
-.Fa "const char* host"
-.Fc
-.Fo "void tcp_server_set_port"
-.Fa "tcp_server srv"
-.Fa "int port"
-.Fc
-.Fo "void tcp_server_set_queue_size"
-.Fa "tcp_server srv"
-.Fa "size_t size"
-.Fc
-.Fo "void tcp_server_set_readbuf_size"
-.Fa "tcp_server s"
-.Fa "size_t size"
-.Fc
-.Fo "void tcp_server_set_retries"
-.Fa "tcp_server srv"
-.Fa "int reads"
-.Fa "int writes"
-.Fc
-.Fo "void tcp_server_set_service_function"
-.Fa "tcp_server srv"
-.Fa "void* (*func)(void*)"
-.Fa "void* arg"
-.Fc
-.Fo "void tcp_server_set_timeout"
-.Fa "tcp_server srv"
-.Fa "int reads"
-.Fa "int writes"
-.Fa "int accepts"
-.Fc
-.Fo "void tcp_server_set_worker_threads"
-.Fa "tcp_server srv"
-.Fa "size_t count"
-.Fc
-.Fo "void tcp_server_set_writebuf_size"
-.Fa "tcp_server s"
-.Fa "size_t size"
-.Fc
-.Fo "int tcp_server_shutdown"
-.Fa "tcp_server srv"
-.Fc
-.Fo "int tcp_server_shutting_down"
-.Fa "tcp_server srv"
-.Fc
-.Fo "int tcp_server_start"
-.Fa "tcp_server srv"
-.Fc
-.Fo "int tcp_server_start_via_process"
-.Fa "process p"
-.Fa "tcp_server s"
-.Fc
+.BI "int tcp_server_allow_clients(tcp_server srv, const char* filter);
+
+.BI "void tcp_server_clear_client_filter(tcp_server srv);
+
+.BI "int tcp_server_free_root_resources(tcp_server s);
+
+.BI "int tcp_server_get_root_resources(tcp_server srv);
+
+.BI "int tcp_server_init(tcp_server srv);
+
+.BI "tcp_server tcp_server_new(void);
+
+.BI "void tcp_server_free(tcp_server srv);
+
+.BI "void tcp_server_set_block_when_full(tcp_server srv, int block);
+
+.BI "int tcp_server_set_hostname(tcp_server srv, const char* host);
+
+.BI "void tcp_server_set_port(tcp_server srv, int port);
+
+.BI "void tcp_server_set_queue_size(tcp_server srv, size_t size);
+
+.BI "void tcp_server_set_readbuf_size(tcp_server s, size_t size);
+
+.BI "void tcp_server_set_retries(tcp_server srv, int reads, int writes);
+
+.BI "void tcp_server_set_service_function(tcp_server srv, void* (*func)(void*), void* arg);
+
+.BI "void tcp_server_set_timeout(tcp_server srv, int reads, int writes, int accepts);
+
+.BI "void tcp_server_set_worker_threads(tcp_server srv, size_t count);
+
+.BI "void tcp_server_set_writebuf_size(tcp_server s, size_t size);
+
+.BI "int tcp_server_shutdown(tcp_server srv);
+
+.BI "int tcp_server_shutting_down(tcp_server srv);
+
+.BI "int tcp_server_start(tcp_server srv);
+
+.BI "int tcp_server_start_via_process(process p, tcp_server s);
+
 .SH DESCRIPTION
 The tcp_server ADT is a general purpose TCP/IP based server framework
 which can be used to serve most types of servers. It implements the

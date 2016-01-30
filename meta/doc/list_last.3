@@ -4,9 +4,8 @@ list_last() \- Is the current node the last node?
 .SH SYNOPSIS
 .B #include <meta_list.h>
 .sp
-.Fo "int list_last"
-.Fa "list_iterator li"
-.Fc
+.BI "int list_last(list_iterator li);
+
 .SH DESCRIPTION
 .Nm
 returns true if the next call to list_next() will return NULL.

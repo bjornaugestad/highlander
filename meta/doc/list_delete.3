@@ -4,11 +4,8 @@ list_delete() \- Delete a node from a list.
 .SH SYNOPSIS
 .B #include <meta_list.h>
 .sp
-.Fo "list_iterator list_delete"
-.Fa "list lst"
-.Fa "list_iterator i"
-.Fa "dtor dtor"
-.Fc
+.BI "list_iterator list_delete(list lst, list_iterator i, dtor dtor);
+
 .SH DESCRIPTION
 .Nm
 deletes the node indexed by the 

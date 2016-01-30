@@ -7,18 +7,12 @@
 .SH SYNOPSIS
 .B #include <meta_bitset.h>
 .sp
-.Fo "bitset bitset_and"
-.Fa "bitset b"
-.Fa "bitset c"
-.Fc
-.Fo "bitset bitset_or"
-.Fa "bitset b"
-.Fa "bitset c"
-.Fc
-.Fo "bitset bitset_xor"
-.Fa "bitset b"
-.Fa "bitset c"
-.Fc
+.BI "bitset bitset_and(bitset b, bitset c);
+
+.BI "bitset bitset_or(bitset b, bitset c);
+
+.BI "bitset bitset_xor(bitset b, bitset c);
+
 .SH DESCRIPTION
 Binary AND two bitsets. Return the result in a new bitset.
 These three functions perform the equivalent of a = b OP c;

@@ -7,18 +7,12 @@
 .SH SYNOPSIS
 .B #include <meta_bitset.h>
 .sp
-.Fo "void bitset_and_eq"
-.Fa "bitset a"
-.Fa "bitset b"
-.Fc
-.Fo "void bitset_or_eq"
-.Fa "bitset a"
-.Fa "bitset b"
-.Fc
-.Fo "void bitset_xor_eq"
-.Fa "bitset a"
-.Fa "bitset b"
-.Fc
+.BI "void bitset_and_eq(bitset a, bitset b);
+
+.BI "void bitset_or_eq(bitset a, bitset b);
+
+.BI "void bitset_xor_eq(bitset a, bitset b);
+
 .SH DESCRIPTION
 Binary AND two bitsets, and store the result in the first set.
 These three functions perform the equivalent of a OP = b;

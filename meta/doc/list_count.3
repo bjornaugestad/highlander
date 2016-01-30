@@ -4,10 +4,8 @@ list_count() \- Count the number of nodes satisfying some criteria.
 .SH SYNOPSIS
 .B #include <meta_list.h>
 .sp
-.Fo "size_t list_count"
-.Fa "list lst"
-.Fa "int (*include_node)(void*)"
-.Fc
+.BI "size_t list_count(list lst, int (*include_node)(void*));
+
 .SH DESCRIPTION
 .Nm
 counts the number of nodes in the list which complies to some criteria. The criteria is decided by a caller supplied

@@ -4,11 +4,8 @@ bitset_remap \- Remap a bitset in memory
 .SH SYNOPSIS
 .B #include <meta_bitset.h>
 .sp
-.Fo "bitset bitset_remap"
-.Fa "bitset b "
-.Fa "void *buf"
-.Fa "size_t buflen"
-.Fc
+.BI "bitset bitset_remap(bitset b, void *buf, size_t buflen);
+
 .SH DESCRIPTION
 Frees old memory and starts using the memory pointed to by buf.
 Typical usage is when you e.g. create a new memory mapped indexed file with

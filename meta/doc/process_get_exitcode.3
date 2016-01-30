@@ -4,10 +4,8 @@ process_get_exitcode() \- Get exit code from a thread
 .SH SYNOPSIS
 .B #include <meta_process.h>
 .sp
-.Fo "int process_get_exitcode"
-.Fa "process p"
-.Fa "void* object"
-.Fc
+.BI "int process_get_exitcode(process p, void* object);
+
 .SH DESCRIPTION
 .Nm
 Returns the exit code from the objects run() function. 

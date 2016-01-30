@@ -4,9 +4,8 @@ connection_flush() \- Flush the write buffer
 .SH SYNOPSIS
 .B #include <connection.h>
 .sp
-.Fo "int connection_flush"
-.Fa "connection conn"
-.Fc
+.BI "int connection_flush(connection conn);
+
 .SH DESCRIPTION
 .Nm
 writes data in the write buffer to the socket.

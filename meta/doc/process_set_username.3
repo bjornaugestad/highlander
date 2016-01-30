@@ -4,10 +4,8 @@ process_set_username() \- Set user name the process will run as
 .SH SYNOPSIS
 .B #include <meta_process.h>
 .sp
-.Fo "int process_set_username"
-.Fa "process p"
-.Fa "const char* username"
-.Fc
+.BI "int process_set_username(process p, const char* username);
+
 .SH DESCRIPTION
 The process will run as this user after the process_start()
 function returns. The username parameter must exist in

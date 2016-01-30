@@ -4,14 +4,8 @@ sock_read \- Read data off a socket.
 .SH SYNOPSIS
 .B #include <meta_sock.h>
 .sp
-.Fo "int sock_read"
-.Fa "meta_socket p"
-.Fa "char *buf"
-.Fa "size_t cbMax"
-.Fa "int timeout"
-.Fa "int retries"
-.Fa "size_t* cbReadSum"
-.Fc
+.BI "int sock_read(meta_socket p, char *buf, size_t cbMax, int timeout, int retries, size_t* cbReadSum);
+
 .SH DESCRIPTION
 .Nm
 reads up to and including cbMax bytes off the socket, if that

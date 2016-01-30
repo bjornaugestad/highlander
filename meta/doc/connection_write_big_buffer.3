@@ -4,13 +4,8 @@ connection_write_big_buffer \- Write a big buffer directly to the socket
 .SH SYNOPSIS
 .B #include <connection.h>
 .sp
-.Fo "int connection_write_big_buffer"
-.Fa "connection conn"
-.Fa "const void* buf"
-.Fa "size_t cb"
-.Fa "int timeout"
-.Fa "int retries"
-.Fc
+.BI "int connection_write_big_buffer(connection conn, const void* buf, size_t cb, int timeout, int retries);
+
 .SH DESCRIPTION
 I have encountered problems when I send large files. This surfaced
 after porting to aix, and is probably related to tcp/ip buffer sizes

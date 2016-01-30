@@ -6,14 +6,10 @@
 .SH SYNOPSIS
 .B #include <cstring.h>
 .sp
-.Fo "cstring cstring_left"
-.Fa "cstring src"
-.Fa "size_t n"
-.Fc
-.Fo "cstring cstring_right"
-.Fa "cstring src"
-.Fa "size_t n"
-.Fc
+.BI "cstring cstring_left(cstring src, size_t n);
+
+.BI "cstring cstring_right(cstring src, size_t n);
+
 .SH DESCRIPTION
 .Nm cstring_left()
 creates a new cstring containing the 

@@ -6,15 +6,10 @@
 .SH SYNOPSIS
 .B #include <cstring.h>
 .sp
-.Fo "int cstring_set"
-.Fa "cstring dest"
-.Fa "const char* src"
-.Fc
-.Fo "int cstring_nset"
-.Fa "cstring dest"
-.Fa "const char* src"
-.Fa "size_t n"
-.Fc
+.BI "int cstring_set(cstring dest, const char* src);
+
+.BI "int cstring_nset(cstring dest, const char* src, size_t n);
+
 .SH DESCRIPTION
 The
 .Nm cstring_set()

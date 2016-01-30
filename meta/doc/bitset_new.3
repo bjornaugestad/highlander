@@ -6,12 +6,10 @@
 .SH SYNOPSIS
 .B #include <meta_bitset.h>
 .sp
-.Fo "bitset bitset_new"
-.Fa "size_t bitcount"
-.Fc
-.Fo "void bitset_free"
-.Fa "bitset b"
-.Fc
+.BI "bitset bitset_new(size_t bitcount);
+
+.BI "void bitset_free(bitset b);
+
 .SH DESCRIPTION
 .Nm bitset_new()
 creates a new bitset with room for bitcount bits.

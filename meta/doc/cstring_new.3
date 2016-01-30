@@ -8,22 +8,16 @@
 .SH SYNOPSIS
 .B #include <cstring.h>
 .sp
-.Fo "cstring cstring_new"
-.Fa void
-.Fc
-.Fo "int cstring_multinew"
-.Fa "cstring *pstr"
-.Fa "size_t nelem"
-.Fc
-.Fo "cstring cstring_dup"
-.Fa "const char *src"
-.Fc
-.Fo "cstring cstring_copy"
-.Fa "const cstring src"
-.Fc
-.Fo "void cstring_free"
-.Fa "cstring s"
-.Fc
+.BI "cstring cstring_new" .Fa void
+
+.BI "int cstring_multinew(cstring *pstr, size_t nelem);
+
+.BI "cstring cstring_dup(const char *src);
+
+.BI "cstring cstring_copy(const cstring src);
+
+.BI "void cstring_free(cstring s);
+
 .SH DESCRIPTION
 .Nm cstring_new()
 creates a new cstring.  The string will initially have room for

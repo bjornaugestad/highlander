@@ -4,13 +4,8 @@ connection_new \- Create a new connection
 .SH SYNOPSIS
 .B #include <connection.h>
 .sp
-.Fo "connection connection_new"
-.Fa "int timeout_reads"
-.Fa "int timeout_writes"
-.Fa "int retries_reads"
-.Fa "int retries_writes"
-.Fa "void* arg2"
-.Fc
+.BI "connection connection_new(int timeout_reads, int timeout_writes, int retries_reads, int retries_writes, void* arg2);
+
 .SH DESCRIPTION
 .Nm
 creates an instance of the connection ADT. 

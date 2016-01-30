@@ -4,29 +4,18 @@ meta_array \- Dynamic array ADT
 .SH SYNOPSIS
 .B #include <meta_array.h>
 .sp
-.Fo "array array_new"
-.Fa "size_t nmemb"
-.Fa "int can_grow"
-.Fc
-.Fo "void array_free"
-.Fa "array p"
-.Fa "dtor cleanup"
-.Fc
-.Fo "int array_nelem"
-.Fa "array p"
-.Fc
-.Fo "int array_extend"
-.Fa "array p"
-.Fa "size_t nelem"
-.Fc
-.Fo "int array_get"
-.Fa "array p "
-.Fa "size_t i"
-.Fc
-.Fo "int array_add"
-.Fa "array p"
-.Fa "void *elem"
-.Fc
+.BI "array array_new(size_t nmemb, int can_grow);
+
+.BI "void array_free(array p, dtor cleanup);
+
+.BI "int array_nelem(array p);
+
+.BI "int array_extend(array p, size_t nelem);
+
+.BI "int array_get(array p, size_t i);
+
+.BI "int array_add(array p, void *elem);
+
 .SH DESCRIPTION
 An array stores n elements of void* pointers. The pointers should not
 point to automatic memory.

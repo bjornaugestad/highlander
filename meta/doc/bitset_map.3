@@ -4,11 +4,8 @@ bitset_map \- Map a bitset to a memory area
 .SH SYNOPSIS
 .B #include <meta_bitset.h>
 .sp
-.Fo "bitset bitset_map"
-.Fa "bitset b "
-.Fa "void *buf"
-.Fa "size_t len"
-.Fc
+.BI "bitset bitset_map(bitset b, void *buf, size_t len);
+
 .SH DESCRIPTION
 Use bitset_map() if you have a bitset in memory or want to 
 create one in memory. Typical use will be if you have a memory

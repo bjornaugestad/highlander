@@ -6,14 +6,10 @@
 .SH SYNOPSIS
 .B #include <meta_array.h>
 .sp
-.Fo "array array_new"
-.Fa "size_t nmemb"
-.Fa "int can_grow"
-.Fc
-.Fo "void array_free"
-.Fa "array p"
-.Fa "dtor cleanup"
-.Fc
+.BI "array array_new(size_t nmemb, int can_grow);
+
+.BI "void array_free(array p, dtor cleanup);
+
 .SH DESCRIPTION
 .Nm array_new()
 creates a new array. If can_grow is <> 0, then the array

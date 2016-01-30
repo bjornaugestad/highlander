@@ -4,42 +4,22 @@ meta_configfile \- Generic configuration file ADT
 .SH SYNOPSIS
 .B #include <meta_configfile.h>
 .sp
-.Fo "configfile configfile_read"
-.Fa "const char *path"
-.Fc
-.Fo "void configfile_free"
-.Fa "configfile cf"
-.Fc
-.Fo "int configfile_exists"
-.Fa "configfile cf"
-.Fa "const char *name"
-.Fc
-.Fo "int configfile_get_string"
-.Fa "configfile cf"
-.Fa "const char *name"
-.Fa "char *value"
-.Fa "size_t cb"
-.Fc
-.Fo "int configfile_get_long"
-.Fa "configfile cf"
-.Fa "const char *name"
-.Fa "long *value"
-.Fc
-.Fo "int configfile_get_ulong"
-.Fa "configfile cf"
-.Fa "const char *name"
-.Fa "unsigned long *value"
-.Fc
-.Fo "int configfile_get_int"
-.Fa "configfile cf"
-.Fa "const char *name"
-.Fa "int *value"
-.Fc
-.Fo "int configfile_get_uint"
-.Fa "configfile cf"
-.Fa "const char *name"
-.Fa "unsigned int *value"
-.Fc
+.BI "configfile configfile_read(const char *path);
+
+.BI "void configfile_free(configfile cf);
+
+.BI "int configfile_exists(configfile cf, const char *name);
+
+.BI "int configfile_get_string(configfile cf, const char *name, char *value, size_t cb);
+
+.BI "int configfile_get_long(configfile cf, const char *name, long *value);
+
+.BI "int configfile_get_ulong(configfile cf, const char *name, unsigned long *value);
+
+.BI "int configfile_get_int(configfile cf, const char *name, int *value);
+
+.BI "int configfile_get_uint(configfile cf, const char *name, unsigned int *value);
+
 .SH DESCRIPTION
 Generic interface to a general purpose configuration file.
 .PP

@@ -4,27 +4,20 @@ wlock \- a lock one can wait on.
 .SH SYNOPSIS
 .B #include <meta_wlock.h>
 .sp
-.Fo "wlock wlock_new"
-.Fa "void"
-.Fc
-.Fo "void wlock_free"
-.Fa "wlock p"
-.Fc
-.Fo "int wlock_lock"
-.Fa "wlock p"
-.Fc
-.Fo "int wlock_unlock"
-.Fa "wlock p"
-.Fc
-.Fo "int wlock_signal"
-.Fa "wlock p"
-.Fc
-.Fo "int wlock_wait"
-.Fa "wlock p"
-.Fc
-.Fo "int wlock_broadcast"
-.Fa "wlock p"
-.Fc
+.BI "wlock wlock_new(void);
+
+.BI "void wlock_free(wlock p);
+
+.BI "int wlock_lock(wlock p);
+
+.BI "int wlock_unlock(wlock p);
+
+.BI "int wlock_signal(wlock p);
+
+.BI "int wlock_wait(wlock p);
+
+.BI "int wlock_broadcast(wlock p);
+
 .SH DESCRIPTION
 The wlock ADT implements a waitable/signalable lock as one
 atomic type. It's a traditional combination of a mutex and

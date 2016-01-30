@@ -4,10 +4,8 @@ tcp_server_set_readbuf_size() \- tcp_server_set_readbuf_size
 .SH SYNOPSIS
 .B #include <tcp_server.h>
 .sp
-.Fo "void tcp_server_set_readbuf_size"
-.Fa "tcp_server s"
-.Fa "size_t size"
-.Fc
+.BI "void tcp_server_set_readbuf_size(tcp_server s, size_t size);
+
 .SH DESCRIPTION
 Sets the size of the read buffer.
 Incoming data is buffered for each connection. The size of

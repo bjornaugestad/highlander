@@ -4,9 +4,8 @@ connection_get_addr \- Get client IP address
 .SH SYNOPSIS
 .B #include <connection.h>
 .sp
-.Fo "struct sockaddr_in* connection_get_addr"
-.Fa "connection conn"
-.Fc
+.BI "struct sockaddr_in* connection_get_addr(connection conn);
+
 .SH DESCRIPTION
 Returns the client address that the socket is connected to.
 .SH EXAMPLE

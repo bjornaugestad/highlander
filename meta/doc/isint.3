@@ -4,24 +4,18 @@ meta_convert \- Conversion functions.
 .SH SYNOPSIS
 .B #include <meta_convert.h>
 .sp
-.Fo "bool isint"
-.Fa "const char *src"
-.Fc
-.Fo "bool isuint"
-.Fa "const char *src"
-.Fc
-.Fo "bool islong"
-.Fa "const char *src"
-.Fc
-.Fo "bool isulong"
-.Fa "const char *src"
-.Fc
-.Fo "bool isfloat"
-.Fa "const char *src"
-.Fc
-.Fo "bool isdouble"
-.Fa "const char *src"
-.Fc
+.BI "bool isint(const char *src);
+
+.BI "bool isuint(const char *src);
+
+.BI "bool islong(const char *src);
+
+.BI "bool isulong(const char *src);
+
+.BI "bool isfloat(const char *src);
+
+.BI "bool isdouble(const char *src);
+
 .SH DESCRIPTION
 All of these functions return true if the src is of type int, uint and so forth.
 .SH AUTHOR

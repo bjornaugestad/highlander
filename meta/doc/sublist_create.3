@@ -6,14 +6,10 @@
 .SH SYNOPSIS
 .B #include <meta_list.h>
 .sp
-.Fo "list sublist_create"
-.Fa "list lst"
-.Fa "int (*include_node)(void*)"
-.Fc
-.Fo "list sublist_create_neg"
-.Fa "list lst"
-.Fa "int (*include_node)(void*)"
-.Fc
+.BI "list sublist_create(list lst, int (*include_node)(void*));
+
+.BI "list sublist_create_neg(list lst, int (*include_node)(void*));
+
 .SH DESCRIPTION
 .Nm sublist_create
 creates a new list consisting 

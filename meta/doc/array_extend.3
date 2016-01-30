@@ -4,10 +4,8 @@ array_extend \- Extend a dynamic array
 .SH SYNOPSIS
 .B #include <meta_array.h>
 .sp
-.Fo "int array_extend"
-.Fa "array p"
-.Fa "size_t nelem"
-.Fc
+.BI "int array_extend(array p, size_t nelem);
+
 .SH DESCRIPTION
 Adds room for nelem new elements in the array.
 Returns 0 if the function was unable to extend the array, else 1.

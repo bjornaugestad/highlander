@@ -4,29 +4,20 @@ stack \- A stack ADT
 .SH SYNOPSIS
 .B #include <meta_stack.h>
 .sp
-.Fo "stack stack_new"
-.Fa "void"
-.Fc
-.Fo "void stack_free"
-.Fa "stack s"
-.Fc
-.Fo "status_t stack_push"
-.Fa "stack s"
-.Fa "void *p"
-.Fc
-.Fo "void *stack_top"
-.Fa "stack s"
-.Fc
-.Fo "void stack_pop"
-.Fa "stack s"
-.Fc
-.Fo "size_t stack_nelem"
-.Fa "stack s"
-.Fc
-.Fo "void *stack_get"
-.Fa "stack s"
-.Fa "size_t i"
-.Fc
+.BI "stack stack_new(void);
+
+.BI "void stack_free(stack s);
+
+.BI "status_t stack_push(stack s, void *p);
+
+.BI "void *stack_top(stack s);
+
+.BI "void stack_pop(stack s);
+
+.BI "size_t stack_nelem(stack s);
+
+.BI "void *stack_get(stack s, size_t i);
+
 .SH DESCRIPTION
 .Nm stack_new()
 Creates a new stack.

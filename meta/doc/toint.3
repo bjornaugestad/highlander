@@ -4,30 +4,18 @@ meta_convert \- Conversion functions.
 .SH SYNOPSIS
 .B #include <meta_convert.h>
 .sp
-.Fo "status_t toint"
-.Fa "const char *src"
-.Fa "int *dest"
-.Fc
-.Fo "status_t touint"
-.Fa "const char *src"
-.Fa "unsigned int *dest"
-.Fc
-.Fo "status_t tolong"
-.Fa "const char *src"
-.Fa "long *dest"
-.Fc
-.Fo "status_t toulong"
-.Fa "const char *src"
-.Fa "unsigned long *dest"
-.Fc
-.Fo "status_t tofloat"
-.Fa "const char *src"
-.Fa "float *dest"
-.Fc
-.Fo "status_t todouble"
-.Fa "const char *src"
-.Fa "double *dest"
-.Fc
+.BI "status_t toint(const char *src, int *dest);
+
+.BI "status_t touint(const char *src, unsigned int *dest);
+
+.BI "status_t tolong(const char *src, long *dest);
+
+.BI "status_t toulong(const char *src, unsigned long *dest);
+
+.BI "status_t tofloat(const char *src, float *dest);
+
+.BI "status_t todouble(const char *src, double *dest);
+
 .SH DESCRIPTION
 All of these functions convert a string to a number. They all return success or
 failure, and errno can be inspected to find the cause of the failure, if any.

@@ -4,48 +4,32 @@ meta_fifo \- A thread safe FIFO ADT.
 .SH SYNOPSIS
 .B #include <meta_fifo.h>
 .sp
-.Fo "fifo fifo_new"
-.Fa "size_t bitcount"
-.Fc
-.Fo "void fifo_free"
-.Fa "fifo p"
-.Fc
-.Fo "int fifo_lock"
-.Fa "fifo p"
-.Fc
-.Fo "int fifo_unlock"
-.Fa "fifo p"
-.Fc
-.Fo "size_t fifo_nelem"
-.Fa "fifo p"
-.Fc
-.Fo "size_t fifo_free_slot_count"
-.Fa "fifo p"
-.Fc
-.Fo "int fifo_add"
-.Fa "fifo p"
-.Fa "void *data"
-.Fc
-.Fo "void* fifo_get"
-.Fa "fifo p"
-.Fc
-.Fo "void fifo_peek"
-.Fa "fifo p"
-.Fa "size_t i"
-.Fc
-.Fo "int fifo_write_signal"
-.Fa "fifo p"
-.Fa "void *data"
-.Fc
-.Fo "int fifo_wait_cond"
-.Fa "fifo p"
-.Fc
-.Fo "int fifo_wake"
-.Fa "fifo p"
-.Fc
-.Fo "int fifo_signal"
-.Fa "fifo p"
-.Fc
+.BI "fifo fifo_new(size_t bitcount);
+
+.BI "void fifo_free(fifo p);
+
+.BI "int fifo_lock(fifo p);
+
+.BI "int fifo_unlock(fifo p);
+
+.BI "size_t fifo_nelem(fifo p);
+
+.BI "size_t fifo_free_slot_count(fifo p);
+
+.BI "int fifo_add(fifo p, void *data);
+
+.BI "void* fifo_get(fifo p);
+
+.BI "void fifo_peek(fifo p, size_t i);
+
+.BI "int fifo_write_signal(fifo p, void *data);
+
+.BI "int fifo_wait_cond(fifo p);
+
+.BI "int fifo_wake(fifo p);
+
+.BI "int fifo_signal(fifo p);
+
 .SH DESCRIPTION
 A thread safe FIFO ADT.
 .PP

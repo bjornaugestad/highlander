@@ -4,9 +4,8 @@ pool_get \- Object management ADT
 .SH SYNOPSIS
 .B #include <pool_get.h>
 .sp
-.Fo "void* pool_get"
-.Fa "pool p"
-.Fc
+.BI "void* pool_get(pool p);
+
 .SH DESCRIPTION
 Gets a resource from the pool. The function assumes that enough resources
 are available, but will assert() in debug versions if all resources already

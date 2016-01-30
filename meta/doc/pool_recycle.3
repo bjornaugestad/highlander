@@ -4,10 +4,8 @@ pool_recycle \- Object management ADT
 .SH SYNOPSIS
 .B #include <meta_pool.h>
 .sp
-.Fo "void* pool_recycle"
-.Fa "pool p"
-.Fa "void *resource"
-.Fc
+.BI "void* pool_recycle(pool p, void *resource);
+
 .SH DESCRIPTION
 Returns a resource to the pool. You should always return a resource to the
 pool as soon as possible, so that other threads may use the same resource.

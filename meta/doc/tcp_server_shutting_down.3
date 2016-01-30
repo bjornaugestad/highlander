@@ -4,9 +4,8 @@ tcp_server_shutting_down() \- Is the tcp_server shutting down?
 .SH SYNOPSIS
 .B #include <tcp_server.h>
 .sp
-.Fo "int tcp_server_shutting_down"
-.Fa "tcp_server srv"
-.Fc
+.BI "int tcp_server_shutting_down(tcp_server srv);
+
 .SH DESCRIPTION
 .Nm
 returns 1 if we're shutting down, 0 if we're not. Call this function

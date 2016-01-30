@@ -4,14 +4,8 @@ process_add_object_to_start() \- Add an object to start when process_start() is 
 .SH SYNOPSIS
 .B #include <meta_process.h>
 .sp
-.Fo "int process_add_object_to_start"
-.Fa "process p"
-.Fa "void *object"
-.Fa "int do_func(void *)"
-.Fa "int undo_func(void *)"
-.Fa "int run_func(void *)"
-.Fa "int shutdown_func(void *)"
-.Fc
+.BI "int process_add_object_to_start(process p, void *object, int do_func(void *), int undo_func(void *), int run_func(void *), int shutdown_func(void *));
+
 .SH DESCRIPTION
 The process object can start any number of threads. Use this function to 
 add a function to run as a separate thread.

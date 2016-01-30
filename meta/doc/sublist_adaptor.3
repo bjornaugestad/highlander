@@ -4,10 +4,8 @@ sublist_adaptor() \- Transform a list into another.
 .SH SYNOPSIS
 .B #include <meta_list.h>
 .sp
-.Fo "list sublist_adaptor"
-.Fa "list lst"
-.Fa "void* (*adaptor)(void*)"
-.Fc
+.BI "list sublist_adaptor(list lst, void* (*adaptor)(void*));
+
 .SH DESCRIPTION
 .Nm
 transforms a list of one type to another list containing another type, without copying

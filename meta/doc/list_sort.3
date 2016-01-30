@@ -4,10 +4,8 @@ list_sort() \- Sort a list
 .SH SYNOPSIS
 .B #include <meta_list.h>
 .sp
-.Fo "void list_sort"
-.Fa "list lst"
-.Fa "int(*compar)(const void *p1, const void *p2)"
-.Fc
+.BI "void list_sort(list lst, int(*compar)(const void *p1, const void *p2));
+
 .SH DESCRIPTION
 .Nm
 sorts a list, but is probably very slow.

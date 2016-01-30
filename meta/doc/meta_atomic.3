@@ -4,29 +4,22 @@ meta_atomic \- Atomic types and operators
 .SH SYNOPSIS
 .B #include <meta_atomic.h>
 .sp
-.Fo "void atomic_X_init"
-.Fa "atomic_X *p"
-.Fc
-.Fo "void atomic_X_destroy"
-.Fa "atomic_X *p"
-.Fc
-.Fo "X atomic_X_get"
-.Fa "atomic_X *p"
-.Fc
-.Fo "void atomic_X_set"
-.Fa "atomic_X *p"
+.BI "void atomic_X_init(atomic_X *p);
+
+.BI "void atomic_X_destroy(atomic_X *p);
+
+.BI "X atomic_X_get(atomic_X *p);
+
+.BI "void atomic_X_set(atomic_X *p);
 .Fa "X value"
-.Fc
-.Fo "X atomic_X_add"
-.Fa "atomic_X *p"
+
+.BI "X atomic_X_add(atomic_X *p);
 .Fa "X value"
-.Fc
-.Fo "void atomic_X_inc"
-.Fa "atomic_X *p"
-.Fc
-.Fo "void atomic_X_dec"
-.Fa "atomic_X *p"
-.Fc
+
+.BI "void atomic_X_inc(atomic_X *p);
+
+.BI "void atomic_X_dec(atomic_X *p);
+
 .SH DESCRIPTION
 The core meta library provides atomic versions of many integer data types,
 as well as operators to manipulate the values.

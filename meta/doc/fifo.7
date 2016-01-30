@@ -7,48 +7,32 @@ fifo \- A general purpose FIFO queue
 .Nd A FIFO implementation
 .SH SYNOPSIS
 .B #include <meta_fifo.h>
-.Fo "fifo fifo_new"
-.Fa "size_t size"
-.Fc
-.Fo "void fifo_free"
-.Fa "fifo p"
-.Fa "dtor dtor_fn"
-.Fc
-.Fo "status_t fifo_lock"
-.Fa "fifo p"
-.Fc
-.Fo "status_t fifo_unlock"
-.Fa "fifo p"
-.Fc
-.Fo "status_t fifo_add"
-.Fa "fifo p"
-.Fa "void *data"
-.Fc
-.Fo "size_t fifo_nelem"
-.Fa "fifo p"
-.Fc
-.Fo "size_t fifo_free_slot_count"
-.Fa "fifo p"
-.Fc
-.Fo "void *fifo_get"
-.Fa "fifo p"
-.Fc
-.Fo "void *fifo_peek"
-.Fa "fifo p"
-.Fa "size_t i"
-.Fc
-.Fo "status_t fifo_write_signal"
-.Fa "fifo p"
-.Fa "void *data"
-.Fc
-.Fo "status_t fifo_wait_cond"
-.Fa "fifo p"
-.Fc
-.Fo "status_t fifo_wake"
-.Fa "fifo p"
-.Fc
-.Fo "status_t fifo_signal"
-.Fa "fifo p"
+.BI "fifo fifo_new(size_t size);
+
+.BI "void fifo_free(fifo p, dtor dtor_fn);
+
+.BI "status_t fifo_lock(fifo p);
+
+.BI "status_t fifo_unlock(fifo p);
+
+.BI "status_t fifo_add(fifo p, void *data);
+
+.BI "size_t fifo_nelem(fifo p);
+
+.BI "size_t fifo_free_slot_count(fifo p);
+
+.BI "void *fifo_get(fifo p);
+
+.BI "void *fifo_peek(fifo p, size_t i);
+
+.BI "status_t fifo_write_signal(fifo p, void *data);
+
+.BI "status_t fifo_wait_cond(fifo p);
+
+.BI "status_t fifo_wake(fifo p);
+
+.BI "status_t fifo_signal(fifo p);
+
 
 .SH DESCRIPTION
 The fifo ADT implements a tradidional First In, First Out queue.

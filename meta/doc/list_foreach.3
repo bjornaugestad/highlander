@@ -8,28 +8,14 @@
 .SH SYNOPSIS
 .B #include <meta_list.h>
 .sp
-.Fo "int list_foreach"
-.Fa "list lst"
-.Fa "void* args"
-.Fa "listfunc f"
-.Fc
-.Fo "int list_foreach_reversed"
-.Fa "list lst"
-.Fa "void* arg"
-.Fa "listfunc f"
-.Fc
-.Fo "int list_foreach_sep"
-.Fa "list lst"
-.Fa "void* arg"
-.Fa "listfunc f"
-.Fa "int(*sep)(void*arg)"
-.Fc
-.Fo "int list_dual_foreach"
-.Fa "list lst"
-.Fa "void *arg1"
-.Fa "void *arg2"
-.Fa "int(*dual)(void* a1, void *a2, void *data)"
-.Fc
+.BI "int list_foreach(list lst, void* args, listfunc f);
+
+.BI "int list_foreach_reversed(list lst, void* arg, listfunc f);
+
+.BI "int list_foreach_sep(list lst, void* arg, listfunc f, int(*sep)(void*arg));
+
+.BI "int list_dual_foreach(list lst, void *arg1, void *arg2, int(*dual)(void* a1, void *a2, void *data));
+
 .SH DESCRIPTION
 .Nm list_foreach()
 executes function 
