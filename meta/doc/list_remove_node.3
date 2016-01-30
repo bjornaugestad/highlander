@@ -1,16 +1,17 @@
 .TH list_remove_node 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 list_remove_node() \- Remove a node from a list.
+
 .SH SYNOPSIS
 .B #include <meta_list.h>
 .sp
-.BI "list_iterator list_remove_node(list lst, list_iterator i);
+.BI "list_iterator list_remove_node(list " lst ", list_iterator " i ");
 
-.br
 .SH DESCRIPTION
-.Nm
+.BR list_remove_node()
 removes one node from the list, but does NOT free the data memory.
 Use with care, and use list_delete() instead if the intention was to free
 the memory as well.
+
 .SH SEE ALSO
 .BR list_delete 3

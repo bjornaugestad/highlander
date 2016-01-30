@@ -1,15 +1,17 @@
 .TH list_insert 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 list_insert() \- Insert a node in front of the list.
+
 .SH SYNOPSIS
 .B #include <meta_list.h>
 .sp
-.BI "list list_insert(list lst, void *data);
+.BI "list list_insert(list " lst ", void * " data ");
 
 .SH DESCRIPTION
-.Nm
+.BR list_insert()
 insert a new node in the front of the list.  returns NULL if we fail. 
-.Nm
+.BR list_insert()
 will allocate a new list if lst is NULL.
+
 .SH SEE ALSO
 .BR list_add() 3

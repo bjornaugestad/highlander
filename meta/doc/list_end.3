@@ -1,16 +1,17 @@
 .TH list_end 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 list_end() \- Have we reached the end of a list?
+
 .SH SYNOPSIS
 .B #include <meta_list.h>
 .sp
-.BI "int list_end(list_iterator li);
+.BI "int list_end(list_iterator " li ");
 
 .SH DESCRIPTION
-.Nm
-will return 1 if the list iterator 
-.Fa li
+.BR list_end()
+will return 1 if the list iterator li
 points to the end of the list which the iterator belongs to.
+
 .SH EXAMPLE
 .in +4n
 .nf
@@ -18,7 +19,7 @@ list lst;
 list_iterator i;
 ...
 for(i = list_first(lst); !list_end(i); i = list_next(i)) {
-    ...
+    struct foo *p = list_get(li);
 }
 .nf
 .in

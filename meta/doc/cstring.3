@@ -1,61 +1,66 @@
 .TH cstring 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 cstring \- A string ADT
+
 .SH SYNOPSIS
 .B #include <cstring.h>
 .sp
-.BI "const char* c_str(cstring s);
+.BI "cstring cstring_new(void);
 
-.BI "int cstring_charcat(cstring dest, int c);
+.BI "status_t cstring_multinew(cstring * " pstr ", size_t " nelem ");
 
-.BI "int cstring_concat(cstring dest, const char* src);
+.BI "void cstring_free(cstring " s ");
 
-.BI "int cstring_concat2(cstring dest, const char* src1, const char* src2);
+.BI "void cstring_recycle(cstring " s ");
 
-.BI "int cstring_concat3(cstring dest, const char* src1, const char* src2, const char* src3);
+.BI "const char* c_str(cstring " s ");
 
-.BI "int cstring_set(cstring dest, const char* src);
+.BI "size_t cstring_length(cstring " s ");
 
-.BI "int cstring_nset(cstring dest, const char* src, size_t n);
+.BI "status_t cstring_charcat(cstring " dest " , int " c ");
 
-.BI "int cstring_extend(cstring s, size_t size);
+.BI "status_t cstring_concat(cstring " dest " , const char* " src ");
 
-.BI "cstring cstring_left(cstring src, size_t n);
+.BI "status_t cstring_concat2(cstring " dest " , const char* " src1 " , const char* " src2 ");
 
-.BI "cstring cstring_right(cstring src, size_t n);
+.BI "status_t cstring_concat3(cstring " dest " , const char* " src1 " , const char* " src2 " , const char* " src3 ");
 
-.BI "size_t cstring_length(cstring s);
+.BI "status_t cstring_set(cstring " dest " , const char* " " src ");
 
-.BI "cstring cstring_new);
+.BI "status_t cstring_nset(cstring " dest " , const char* " src ", size_t " n ");
 
-.BI "int cstring_multinew(cstring *pstr, size_t nelem);
+.BI "status_t cstring_extend(cstring " s ", size_t " size ");
 
-.BI "void cstring_free(cstring s);
+.BI "cstring cstring_left(cstring " src ", size_t " n ");
 
-.BI "int cstring_pcat(cstring dest, const char *start, const char *end);
+.BI "cstring cstring_right(cstring " src ", size_t " n ");
 
-.BI "int cstring_printf(cstring dest, size_t needs_max, const char* fmt, ...);
+.BI "status_t cstring_pcat(cstring " dest " , const char * " start " , const char * " end ");
 
-.BI "int cstring_vprintf(cstring dest, size_t needs_max, const char* fmt, va_list ap);
+.BI "status_t cstring_printf(cstring " dest ", size_t " needs_max " , const char* " fmt ", " ... ");
 
-.BI "void cstring_recycle(cstring s);
+.BI "status_t cstring_vprintf(cstring " dest ", size_t " needs_max " , const char* " fmt ", va_list " ap ");
 
-.BI "void cstring_reverse(cstring s);
+.BI "void cstring_reverse(cstring " s ");
 
-.BI "void cstring_strip(cstring s);
+.BI "void cstring_strip(cstring " s ");
 
-.BI "void cstring_upper(cstring s);
+.BI "void cstring_upper(cstring " s ");
 
-.BI "void cstring_lower(cstring s);
+.BI "void cstring_lower(cstring " s ");
 
-.BI "cstring cstring_substring(cstring src, size_t from, size_t to);
+.BI "cstring cstring_substring(cstring " src ", size_t " from ", size_t " to ");
+
+.BI "int cstring_compare(cstring " s " , const char * " str ");
+
+.BI "int cstring_casecompare(cstring " s " , const char * " str ");
 
 .SH DESCRIPTION
 The goal of the cstring ADT is to create a better way of handling
 strings than the standard C way. cstring is designed to be fast and
 to be suitable in e.g. multithreaded (server) programs. 
 .PP
-NOTES:
+.SH NOTES:
 a) As we have no function overload in C, we use char*
 instead of cstring* where needed(e.g. in strcat())
 Some of the functions in cstring also allocate memory when

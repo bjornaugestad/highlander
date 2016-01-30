@@ -1,25 +1,28 @@
 .TH list_last 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 list_last() \- Is the current node the last node?
+
 .SH SYNOPSIS
 .B #include <meta_list.h>
 .sp
-.BI "int list_last(list_iterator li);
+.BI "int list_last(list_iterator " li ");
 
 .SH DESCRIPTION
-.Nm
+.BR list_last()
 returns true if the next call to list_next() will return NULL.
 Returns false, 0, if there are more items in the list.
 .SH EXAMPLE
 .in +4n
 .nf
+
 /* How and when to use list_last() */
 printf("Names of all objects: ");
+
 for(i = list_first(my_list); !list_end(i); i = list_next(i)) {
    my_object = list_get(i);
    printf("%s", get_name(my_object));
    if(list_last(i))
-       printf(".\n");
+       printf(".\\n");
    else
        printf(", ");
 }

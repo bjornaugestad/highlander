@@ -4,10 +4,10 @@ cstring_charcat() \- Append a character to a cstring
 .SH SYNOPSIS
 .B #include <cstring.h>
 .sp
-.BI "int cstring_charcat(cstring dest, int c);
+.BI "status_t cstring_charcat(cstring " dest ", int " c ");
 
 .SH DESCRIPTION
-.Nm
+.BR cstring_charcat()
 appends the character
 .Fa c
 to the string

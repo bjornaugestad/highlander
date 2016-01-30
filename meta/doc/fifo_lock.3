@@ -6,12 +6,13 @@
 .SH SYNOPSIS
 .B #include <meta_fifo.h>
 .sp
-.BI "int fifo_lock(fifo p);
+.BI "int fifo_lock(fifo " p ");
 
-.BI "int fifo_unlock(fifo p);
+.BI "int fifo_unlock(fifo " p ");
 
 .SH DESCRIPTION
-.Nm fifo_lock()
+.BR fifo_lock()
 locks the fifo so that no other threads can access it.
-.Nm fifo_unlock()
+
+.BR fifo_unlock()
 unlocks the fifo.

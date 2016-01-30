@@ -1,4 +1,4 @@
-.TH list_find 3  2016-01-30 "" "The Meta C Library"
+.TH list_find 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 list_find() \- Find a node in a list.
 .SH SYNOPSIS
@@ -7,41 +7,48 @@ list_find() \- Find a node in a list.
 .BI "list_iterator list_find(list lst, const void *data, int(*compar)(const void*, const void*));
 
 .SH DESCRIPTION
-.Nm
+.BR list_find()
 finds the first occurence of an item in the list and returns an iterator positioned at that item.
 If no item was found in the list, then list_end() will return 1.
 The comparison function must return an integer less than, equal to, or greater than zero if the
 first argument is considered to be respectively less than, equal to, or greater than the second
-argument. The 
-.Fa data
-argument will be passed as the first argument to the comparison function.
+argument. The data argument will be passed as the first argument to the comparison function.
+
 .SH RETURN VALUE
-.Nm
+.BR list_find()
 always returns a list_iterator. Use the list_end() function to see if data was found or not.
+
 .SH EXAMPLE
-.Bd -literal 
+.in +4n
+.nf
+
 /* The object stored in the list */
 struct foo {
     char* name;
 };
+
 /* The comparison function used */
 int foo_compare(const void* p1, const void* p2)
 {
     const struct foo *f1 = p1, *f2 = p2;
+
     return strcmp(f1->name, f2->name);
 }
+
 \&...
 list lst;
 list_iterator li;
 struct foo searchterm;
 \&...
+
 searchterm.name = "abcd";
 li = list_find(lst, &searchterm, foo_compare);
-    if(list_end(li)) {
+if (list_end(li)) {
     /* No node found */
 }
 .nf
 .in
+
 .SH SEE ALSO
-.BR meta_list 7 ,
-.BR list_end 3 ,
+.BR meta_list(7),
+.BR list_end(3)

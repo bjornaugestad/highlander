@@ -1,51 +1,38 @@
 .TH cstring_substring 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 cstring_substring() \- Create a substring 
+
 .SH SYNOPSIS
 .B #include <cstring.h>
 .sp
 .BI "cstring cstring_substring(cstring src, size_t from, size_t to);
 
 .SH DESCRIPTION
-Create a new cstring containing a substring of 
-.Fa src
-. The 
-.Fa from 
-and 
-.Fa to
-arguments are zero based. 
-.Fa to
-is exclusive and the character at 
-.Fa to
-will not be copied.
-.Fa from
-must be smaller than
-.Fa to
-and
-.Fa to
-must be less than or equal to the total length of 
-.Fa src.
+Create a new cstring containing a substring of src. The from and 
+to arguments are zero based. to is exclusive and the character at 
+to will not be copied. from must be smaller than to and to
+must be less than or equal to the total length of src.
 .PP
-If 
-.Fa to
-is greater than the length of 
-.Fa src
-, the resulting string will be truncated.
+If to is greater than the length of src, the resulting string will be truncated.
+
 .SH RETURN VALUE
 .Nm
 returns a new cstring or NULL if an error occurs.
 NULL if an error occurs, else a valid cstring. Remember to free the 
 returned cstring using cstring_free().
+
 .SH EXAMPLE
-.in +4n
+.in
 .nf
-cstring x, s = cstring_new();
-cstring_set(s, "Hello, world");
-x = cstring_substring(s, 1, 4); /* x now contains "ell" */
-...
-cstring_free(x);
+    cstring x, s = cstring_new();
+    cstring_set(s, "Hello, world");
+    x = cstring_substring(s, 1, 4); /* x now contains "ell" */
+    ...
+    cstring_free(x);
+    cstring_free(s);
 .nf
 .in
+
 .SH SEE ALSO
-.BR cstring_left 3 ,
-.BR cstring_right 3
+.BR cstring_left (3),
+.BR cstring_right (3)

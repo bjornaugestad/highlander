@@ -8,13 +8,13 @@
 .SH SYNOPSIS
 .B #include <meta_fifo.h>
 .sp
-.BI "int fifo_write_signal(fifo p, void *data);
+.BI "status_t fifo_write_signal(fifo " p ", void * " data ");
 
-.BI "int fifo_wait_cond(fifo p);
+.BI "status_t fifo_wait_cond(fifo " p ");
 
-.BI "int fifo_wake(fifo p);
+.BI "status_t fifo_wake(fifo " p ");
 
-.BI "int fifo_signal(fifo p);
+.BI "status_t fifo_signal(fifo " p ");
 
 .SH DESCRIPTION
 Sometimes a reader thread wants to be notified whenever data is added to
@@ -32,10 +32,11 @@ calls to the locking functions fifo_lock() and fifo_unlock().
 locks the fifo, then calls wlock_wait() to wait for data to arrive in
 the fifo. If data is present in the fifo when 
 .Nm fifo_wait_cond()
-wakes up, the function returns 1. If no data is available, 
+wakes up, the function returns succcess. If no data is available, 
 .Nm fifo_wait_cond()
-sets errno to ENOENT and returns 0.
+sets errno to ENOENT and returns failure.
 .PP
 I guess we need quite a lot of examples to explain this to people. :-(
+
 .SH SEE ALSO
-.BR meta_wlock 3
+.BR meta_wlock(3)

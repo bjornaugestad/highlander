@@ -1,15 +1,14 @@
 .TH list_get_item 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 list_get_item() \- Return a node.
+
 .SH SYNOPSIS
 .B #include <meta_list.h>
 .sp
-.BI "void* list_get_item(list lst, size_t index);
+.BI "void* list_get_item(list " lst ", size_t " index ");
 
 .SH DESCRIPTION
-.Nm
-returns the n'th node in the list, or NULL if 
-.Fa index
-is out of bounds.
-.Fa index
-is zero based, so the value 0 will return the first item.
+.BR list_get_item()
+returns the n'th node in the list, or NULL if index
+is out of bounds. index is zero based, so the value 0
+will return the first item.

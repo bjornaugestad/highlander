@@ -4,18 +4,21 @@ list_add() \- Add a new item to a list
 .SH SYNOPSIS
 .B #include <meta_list.h>
 .sp
-.BI "list list_add(list lst, void* data);
+.BI "list list_add(list " lst ", void*" data ");
 
 .SH DESCRIPTION
-.Nm
+.BR list_add()
 adds a new node at the end of an existing list, or
 creates a new list and adds data to the new list if lst is NULL. 
 .PP
-.Nm
+.BR list_add()
 will not copy the memory pointed to by data,
 just the pointer itself. The memory should therefore be heap allocated or static.
+
 .SH RETURN VALUE
 A pointer to lst if the new node was successfully 
 added to the list, or NULL if list_add() failed to allocate memory.
+
 .SH SEE ALSO
-.BR list_delete 3
+.BR list_delete(3),
+.BR list_get(3)

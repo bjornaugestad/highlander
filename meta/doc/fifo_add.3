@@ -1,22 +1,25 @@
 .TH fifo_add 3 2016-01-30 "" "The Meta C library"
 .SH NAME
 fifo_add \- Add an item to a fifo
+
 .SH SYNOPSIS
 .nf
 .B #include <meta_fifo.h>
 .sp
-.sp
 .BI "status_t fifo_add(fifo " p ", void *" data ");
 .Fi
+
 .SH DESCRIPTION
 The
 .BR fifo_add()
 function adds an item to the queue.
+
 .SH  RETURN VALUE
 .BR fifo_add()
 returns either \fIsuccess\fP or \fIfailure\fP. It will only
 return failure if the queue was full.
 .PP
+
 .SH NOTES
 .BR fifo_add()
 does not lock the FIFO's internal data structures. This means
@@ -25,8 +28,9 @@ calling
 .BR fifo_add()
 . An alternative is to call fifo_write_signal() instead, if
 the intention is to just add one item to the queue.
+
 .SH SEE ALSO
-.BR fifo_get (3)
-.BR fifo_lock (3)
-.BR fifo_write_signal (3)
+.BR fifo_get (3),
+.BR fifo_lock (3),
+.BR fifo_write_signal (3),
 .BR fifo_signal (3)

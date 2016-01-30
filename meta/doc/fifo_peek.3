@@ -1,10 +1,10 @@
 .TH fifo_peek 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
-fifo_peek \- A thread safe FIFO ADT.
+fifo_peek \- Return a value without removing it.
 .SH SYNOPSIS
 .B #include <meta_fifo.h>
 .sp
-.BI "void fifo_peek(fifo p, size_t i);
+.BI "void* fifo_peek(fifo " p ", size_t " i ");
 
 .SH DESCRIPTION
 Retrieves any item from the fifo without removing it from the fifo.

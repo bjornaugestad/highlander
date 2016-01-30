@@ -1,60 +1,69 @@
 .TH list_copy 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 list_copy() \- Create a copy of a list and its contents.
+
 .SH SYNOPSIS
 .B #include <meta_list.h>
 .sp
-.BI "list list_copy(list lst, void*(*copyfn)(const void*), dtor dtor);
+.BI "list list_copy(list " lst ", void* (" *copyfn ")(const void*) , dtor " dtor ");
 
 .SH DESCRIPTION
-.Nm
-creates and returns a copy of
-.Fa lst.
-.Nm
-uses two user supplied functions to perform the copy, the copyfn function which will be called once for each node in the list and must create a copy of the node or return NULL if it failed to create a copy of the node.
-The 
-.Fa dtor
-function is used to free memory in case of a failure, as we don't want to return partial lists if the
-.Fa copyfn
-function returns NULL. 
+.BR list_copy()
+creates and returns a copy of lst.
+.PP
+.BR list_copy()
+uses two user supplied functions to perform the copy, the copyfn function
+which will be called once for each node in the list and must create a copy
+of the node or return NULL if it failed to create a copy of the node.
+.PP
+The dtor function is used to free memory in case of a failure, as we don't want to return 
+partial lists if the copyfn function returns NULL. 
+
 .SH RETURN VALUE
-.Nm
+.BR list_copy()
 returns a pointer to a new list or NULL if 
-.Nm
-or the 
-.Fa copyfn
-function failed to allocate memory.
+.BR list_copy()
+or the copyfn function failed to allocate memory.
+
 .SH EXAMPLE
-.Bd -literal 
+.in +4
+.nf
+
 /* Our object */
-struct foo { char * name; };
+struct foo { char *name; };
+
 /* destructor for foo */
-void foo_free(struct foo* f)
+void foo_free(struct foo *p)
 {
-    if(f != NULL) {
-        free(f->name);
-        free(f);
+    if (p != NULL) {
+        free(p->name);
+        free(p);
     }
 }
+
 /* Copy function */
-struct foo* foo_dup(const struct foo* src)
+struct foo* foo_dup(const struct foo *src)
 {
     struct foo* p;
-    if( (p = malloc(sizeof *p)) == NULL
-    ||  (p->name = malloc(strlen(src->name) + 1)) == NULL) {
+    size_t n = strlen(src->name) + 1;
+
+    if ((p = malloc(sizeof *p)) == NULL || (p->name = malloc(n)) == NULL) {
        free(p);
-       p = NULL;
+       return NULL;
     }
-    else 
-       strcpy(p->name, src->name);
+
+    memcpy(p->name, src->name, n);
     return p;
 }
+
+\&...
+
+list src, dest;
+
 \&...
 /* Copy the list */
-list src, dest;
-\&...
 dest = list_copy(src, foo_dup, foo_free);
 if(dest == NULL)
-  handle_error();
+    handle_error();
 .nf
 .in

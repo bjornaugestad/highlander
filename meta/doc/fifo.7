@@ -1,37 +1,34 @@
 .TH FIFO 7 2016-01-30 Meta Meta 
 fifo \- A general purpose FIFO queue
 
-
-.SH NAME
-.Nm fifo
-.Nd A FIFO implementation
 .SH SYNOPSIS
 .B #include <meta_fifo.h>
-.BI "fifo fifo_new(size_t size);
 
-.BI "void fifo_free(fifo p, dtor dtor_fn);
+.BI "fifo fifo_new(size_t " size ");
 
-.BI "status_t fifo_lock(fifo p);
+.BI "void fifo_free(fifo " p ", dtor " dtor_fn ");
 
-.BI "status_t fifo_unlock(fifo p);
+.BI "status_t fifo_lock(fifo " p ");
 
-.BI "status_t fifo_add(fifo p, void *data);
+.BI "status_t fifo_unlock(fifo " p ");
 
-.BI "size_t fifo_nelem(fifo p);
+.BI "status_t fifo_add(fifo " p ", void * " data ");
 
-.BI "size_t fifo_free_slot_count(fifo p);
+.BI "size_t fifo_nelem(fifo " p ");
 
-.BI "void *fifo_get(fifo p);
+.BI "size_t fifo_free_slot_count(fifo " p ");
 
-.BI "void *fifo_peek(fifo p, size_t i);
+.BI "void *fifo_get(fifo " p ");
 
-.BI "status_t fifo_write_signal(fifo p, void *data);
+.BI "void *fifo_peek(fifo " p ", size_t " i ");
 
-.BI "status_t fifo_wait_cond(fifo p);
+.BI "status_t fifo_write_signal(fifo " p ", void * " data ");
 
-.BI "status_t fifo_wake(fifo p);
+.BI "status_t fifo_wait_cond(fifo " p ");
 
-.BI "status_t fifo_signal(fifo p);
+.BI "status_t fifo_wake(fifo " p ");
+
+.BI "status_t fifo_signal(fifo " p ");
 
 
 .SH DESCRIPTION
@@ -48,9 +45,20 @@ variables internally to let consumers of thread data wait for events,
 typically new entries in the queue.
 .PP
 .SH SEE ALSO
-.BR wlock pthread_cond_wait
-.BR fifo_new fifo_free fifo_lock fifo_unlock fifo_add fifo_nelem
-.BR fifo_free_slot_count fifo_get fifo_peek
-.BR fifo_write_signal fifo_wait_cond fifo_wake fifo_signal
+.BR wlock(3),
+.BR pthread_cond_wait(3),
+.BR fifo_new(3),
+.BR fifo_free(3),
+.BR fifo_lock(3),
+.BR fifo_unlock(3),
+.BR fifo_add(3),
+.BR fifo_nelem(3),
+.BR fifo_free_slot_count(3),
+.BR fifo_get(3),
+.BR fifo_peek(3),
+.BR fifo_write_signal(3),
+.BR fifo_wait_cond(3),
+.BR fifo_wake(3),
+.BR fifo_signal(3)
 
 

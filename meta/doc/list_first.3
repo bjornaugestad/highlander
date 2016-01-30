@@ -1,12 +1,13 @@
 .TH list_first 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 list_first() \- Return an iterator to the first node in a list.
+
 .SH SYNOPSIS
 .B #include <meta_list.h>
 .sp
-.BI "list_iterator list_first(list lst);
+.BI "list_iterator list_first(list " lst ");
 
 .SH DESCRIPTION
-.Nm
+.BR list_first()
 returns an iterator to the first item. Use list_end() to test if we reached the end 
 of the list, i.e. the list was empty.

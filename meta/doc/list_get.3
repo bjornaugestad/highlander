@@ -1,14 +1,16 @@
 .TH list_get 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 list_get() \- Return a pointer to a node in a list.
+
 .SH SYNOPSIS
 .B #include <meta_list.h>
 .sp
-.BI "void* list_get(list_iterator i);
+.BI "void* list_get(list_iterator " i 2);
 
 .SH DESCRIPTION
-.Nm
+.BR list_get()
 returns a pointer to an item in the list. 
+
 .SH SEE ALSO
 .BR list_add 3 
 .BR list_get_item 3 

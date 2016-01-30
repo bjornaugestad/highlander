@@ -6,9 +6,9 @@
 .SH SYNOPSIS
 .B #include <cstring.h>
 .sp
-.BI "int cstring_printf(cstring dest, size_t needs_max, const char* fmt, ...);
+.BI "status_t cstring_printf(cstring dest, size_t needs_max, const char* fmt, ...);
 
-.BI "int cstring_vprintf(cstring dest, size_t needs_max, const char* fmt, va_list ap);
+.BI "status_t cstring_vprintf(cstring dest, size_t needs_max, const char* fmt, va_list ap);
 
 .SH DESCRIPTION
 .Nm cstring_printf()

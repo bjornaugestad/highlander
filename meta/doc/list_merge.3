@@ -1,32 +1,25 @@
 .TH list_merge 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 list_merge() \- merges two lists.
+
 .SH SYNOPSIS
 .B #include <meta_list.h>
 .sp
-.BI "list list_merge(list dest, list src);
+.BI "list list_merge(list " dest ", list " src ");
 
 .SH DESCRIPTION
-.Nm
+.BR list_merge()
 merges two lists into one list. 
 Sometimes we need to merge two lists. Data from both lists will 
 be added to the new list. We will not check for duplicates or anything else. 
-.Fa src
-will be invalid after the merge. You don't have to free 
-.Fa src
-, 
-.Nm 
+src will be invalid after the merge. You don't have to free src, 
+.BR list_merge() 
 will do that for you.
+
 .SH RETURN VALUE
-.Nm
-returns a pointer to 
-.Fa dest
-or NULL if anything went wrong.
-.Fa dest
-can be NULL, 
-.Fa src
-cannot. If the 
-.Fa dest
+.BR list_merge()
+returns a pointer to dest or NULL if anything went wrong.
+dest can be NULL, src cannot. If the dest
 pointer is NULL, then
-.Nm
+.BR list_merge()
 returns a pointer to a new list if no error occurs.

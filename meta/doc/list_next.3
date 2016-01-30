@@ -4,11 +4,12 @@ list_next() \- Move to the next node in a list.
 .SH SYNOPSIS
 .B #include <meta_list.h>
 .sp
-.BI "list_iterator list_next(list_iterator i);
+.BI "list_iterator list_next(list_iterator " i ");
 
 .SH DESCRIPTION
-.Nm 
+.BR list_next() 
 returns an iterator to the next item. 
+
 .SH EXAMPLE
 .in +4n
 .nf
@@ -21,5 +22,5 @@ for(i = list_first(lst); !list_end(i); i = list_next(i)) {
 .nf
 .in
 .SH SEE ALSO
-.BR list_first 3 ,
-.BR list_end 3
+.BR list_first(3),
+.BR list_end(3)

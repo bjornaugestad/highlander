@@ -1,45 +1,48 @@
 .TH list_delete 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
 list_delete() \- Delete a node from a list.
+
 .SH SYNOPSIS
 .B #include <meta_list.h>
 .sp
-.BI "list_iterator list_delete(list lst, list_iterator i, dtor dtor);
+.BI "list_iterator list_delete(list " lst ", list_iterator " i ", dtor " dtor ");
 
 .SH DESCRIPTION
-.Nm
-deletes the node indexed by the 
-.Fa i
-iterator from the list. If  the optional 
-.Fa dtor
-function pointer is NULL, then 
-.Nm
-will call free() to free the memory used by the node. This works well for node data allocated with 
-malloc() or calloc(), but fails miserably if the node points to static data or the node data
-itself contains pointers to allocated memory. In such a case the program will leak memory.
+.BR list_delete()
+deletes the node indexed by the i iterator from the list. If the optional 
+dtor function pointer is NULL, then 
+.BR list_delete()
+will call free() to free the memory used by the node. This works well for node 
+data allocated with malloc() or calloc(), but fails miserably if the node points
+to static data or the node data itself contains pointers to allocated memory.
+In such a case the program will leak memory.
+
 .SH RETURN VALUE
-.Nm
-returns a list_iterator which will point to the first node after the deleted node, or to the
-end of the list if the deleted node was the last node in the list.
+.BR list_delete()
+returns a list_iterator which will point to the first node 
+after the deleted node, or to the end of the list if the deleted
+node was the last node in the list.
+
 .SH EXAMPLE
 .in +4n
 .nf
 /* The object stored in the list */
-struct foo { char *name; };
+struct foo { char name[100]; };
+
 /* Create an object */
 struct foo *p = malloc(sizeof *p);
-p->name = malloc(100);
 strcpy(p->name, "Hello, world");
+
 /* Destructor for the object */
 void my_dtor(void *pfoo)
 {
-   struct foo *p = pfoo;
-   free(p->name);
-   free(p);
+    struct foo *p = pfoo;
+    free(p);
 }
+
 /* Delete one object */
 list_iterator i = list_find(lst, "Hello, world", my_compare);
-if(!list_end(i))
+if (!list_end(i))
     list_delete(lst, &i, my_dtor);
 .nf
 .in

@@ -1,19 +1,16 @@
 .TH fifo_new 3 2016-01-30 "" "The Meta C Library"
 .SH NAME
-.Nm fifo_new
-.Nm fifo_free
-.Nd A thread safe FIFO ADT.
+.Nm fifo_new fifo_free \- A thread safe FIFO ADT.
 .SH SYNOPSIS
 .B #include <meta_fifo.h>
 .sp
-.BI "fifo fifo_new(size_t nelem);
+.BI "fifo fifo_new(size_t " nelem ");
 
-.BI "void fifo_free(fifo p);
+.BI "void fifo_free(fifo " p ");
 
 .SH DESCRIPTION
-.Nm fifo_new()
+.BR fifo_new()
 creates a new fifo with room for nelem entries, and
-.Fa foobar
-.Nm fifo_free()
+.BR fifo_free()
 destroys a fifo created by 
-.Nm fifo_new().
+.BR fifo_new().
