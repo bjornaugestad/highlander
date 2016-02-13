@@ -20,7 +20,9 @@
 #ifndef META_COMMON_H
 #define META_COMMON_H
 
+#include <assert.h>
 #include <stdarg.h> /* for va_list */
+#include <errno.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -100,6 +102,25 @@ void meta_disable_debug_output(void);
 typedef struct metastatus *status_t;
 #define success ((status_t)1)
 #define failure ((status_t)0)
+
+/*
+ * We use the errno variable to set/get errors, since it's so commonly used.
+ * To simplify code, we throw in a silly function which sets errno for us
+ * and returns an error.
+ *
+ * Note that we do NOT accept 0 as error cause. That'd clear errno and
+ * return failure. We could of course add an if-test and return either
+ * success or failure, but that'd add cycles and be semantically silly.
+ *
+ * 20160213 boa
+ */
+static inline status_t __attribute__((warn_unused_result)) fail(int cause)
+{
+    assert(cause != 0);
+
+    errno = cause;
+    return failure;
+}
 
 
 #ifdef __cplusplus
