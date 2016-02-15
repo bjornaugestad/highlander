@@ -30,6 +30,8 @@ struct task_tag {
     tid_t tid;
 
     char name[METAL_TASKNAME_MAX + 1];
+    int instance;
+
     taskfn fn;
 
     pthread_t threadid;
@@ -55,7 +57,7 @@ task task_new(void)
     return p;
 }
 
-status_t task_init(task p, const char *name, taskfn fn, tid_t tid)
+status_t task_init(task p, const char *name, int instance, taskfn fn, tid_t tid)
 {
     assert(p != NULL);
     assert(name != NULL);
@@ -65,6 +67,8 @@ status_t task_init(task p, const char *name, taskfn fn, tid_t tid)
     task_set_tid(p, tid);
     task_set_fn(p, fn);
     task_set_name(p, name);
+    task_set_instance(p, instance);
+
     return success;
 }
 
@@ -205,5 +209,17 @@ pthread_t task_threadid(task p)
 {
     assert(p != NULL);
     return p->threadid;
+}
+
+int task_instance(task p)
+{
+    assert(p != NULL);
+    return p->instance;
+}
+
+void task_set_instance(task p, int instance)
+{
+    assert(p != NULL);
+    p->instance = instance;
 }
 

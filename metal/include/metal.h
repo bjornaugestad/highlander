@@ -30,7 +30,7 @@ status_t metal_init(int flags)
 status_t metal_exit(void);
 
 // Create a new task and return the task's id in the tid arg.
-status_t metal_task_new(tid_t *tid, const char *name, taskfn fn) 
+status_t metal_task_new(tid_t *tid, const char *name, int instance, taskfn fn) 
     __attribute__((warn_unused_result));
 
 status_t metal_task_start(tid_t tid) 
@@ -62,7 +62,7 @@ status_t metal_unsubscribe(tid_t publisher, tid_t subscriber)
 // Task functions
 typedef struct task_tag *task;
 task task_new(void);
-status_t task_init(task p, const char *name, taskfn fn, tid_t tid);
+status_t task_init(task p, const char *name, int instance, taskfn fn, tid_t tid);
 task self(void);
 
 void task_free(task p);
@@ -73,10 +73,12 @@ status_t task_message_add(task p, tid_t sender, msgid_t msg, msgarg_t arg1, msga
 void task_set_name(task p, const char *name) __attribute__((nonnull(1)));
 void task_set_tid(task p, tid_t tid) __attribute__((nonnull(1)));
 void task_set_fn(task p, taskfn fn) __attribute__((nonnull(1)));
+void task_set_instance(task p, int instance) __attribute__((nonnull(1)));
 
 const char* task_name(task p) __attribute__((nonnull(1)));
 tid_t task_tid(task p) __attribute__((nonnull(1)));
 tid_t self_tid(void);
+int task_instance(task p) __attribute__((nonnull(1)));
 pthread_t task_threadid(task p);
 
 #endif

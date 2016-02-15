@@ -17,7 +17,7 @@ int main(void)
     if (!metal_init(0))
         die("Meh. Could not initialize metal.\n");
 
-    if (!metal_task_new(&tid, "foo", foomain))
+    if (!metal_task_new(&tid, "foo", 0, foomain))
         die("Could not create task foo. error is %d:%s\n", errno, strerror(errno));
 
     if (!metal_task_start(tid))

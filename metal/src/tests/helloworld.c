@@ -38,7 +38,7 @@ int main(void)
     if (!metal_init(0))
         return 1;
 
-    if (!metal_task_new(&tid, "hello", hellofn))
+    if (!metal_task_new(&tid, "hello", 0, hellofn))
         die("Could not create task.\n");
 
     if (!metal_task_start(tid))

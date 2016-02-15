@@ -54,12 +54,14 @@ static task tasks[METAL_MAXTASKS];
 // other threads to exchange messages when we e.g. scan the array.
 static pthread_rwlock_t taskslock = PTHREAD_RWLOCK_INITIALIZER;
 
-static task find_task_by_name(const char *name)
+static task find_task(const char *name, int instance)
 {
     size_t i, n = sizeof tasks / sizeof *tasks;
 
     for (i = 0; i < n; i++) {
-        if (tasks[i] != NULL && strcmp(task_name(tasks[i]), name) == 0)
+        if (tasks[i] != NULL 
+        && strcmp(task_name(tasks[i]), name) == 0
+        && task_instance(tasks[i]) == instance)
             return tasks[i];
     }
 
@@ -141,7 +143,7 @@ found:
     return tid;
 }
 
-status_t metal_task_new(tid_t *tid, const char *name, taskfn fn)
+status_t metal_task_new(tid_t *tid, const char *name, int instance, taskfn fn)
 {
     int err;
     size_t i;
@@ -155,7 +157,7 @@ status_t metal_task_new(tid_t *tid, const char *name, taskfn fn)
     if ((err = pthread_rwlock_wrlock(&taskslock)) != 0)
         return fail(err);
 
-    if (find_task_by_name(name) != NULL) {
+    if (find_task(name, instance) != NULL) {
         pthread_rwlock_unlock(&taskslock);
         return fail(EINVAL);
     }
@@ -169,7 +171,7 @@ status_t metal_task_new(tid_t *tid, const char *name, taskfn fn)
         pthread_rwlock_unlock(&taskslock);
 
     *tid = tid_get();
-    if (!task_init(tasks[i], name, fn, *tid)) {
+    if (!task_init(tasks[i], name, instance, fn, *tid)) {
         task_free(tasks[i]);
         tasks[i] = NULL;
         pthread_rwlock_unlock(&taskslock);
@@ -240,7 +242,7 @@ status_t metal_init(int flags)
     if ((tasks[0] = task_new()) == NULL)
         return failure;
 
-    if (!task_init(tasks[0], "system", systemtask, 0)) {
+    if (!task_init(tasks[0], "system", 0, systemtask, 0)) {
         task_free(tasks[0]);
         tasks[0] = NULL;
         return failure;
@@ -313,7 +315,7 @@ int main(void)
 
     for (i = 0, n = 100; i < n; i++) {
         tid_t tid;
-        if (!metal_task_new(&tid, "foo", foofn))
+        if (!metal_task_new(&tid, "foo", 0, foofn))
             die("Meh 3");
 
         if (!metal_task_start(tid))

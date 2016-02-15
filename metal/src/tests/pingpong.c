@@ -42,7 +42,7 @@ int main(void)
     if (!metal_init(0))
         return 1;
 
-    if (!metal_task_new(&tid, "pingpong", pingpongfn))
+    if (!metal_task_new(&tid, "pingpong", 0, pingpongfn))
         die("Could not create task.\n");
 
     if (!metal_task_start(tid))
