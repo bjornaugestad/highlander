@@ -1,0 +1,12 @@
+A clean room reimplementation of TMK. 
+Metal is an acronym for MEssaging and TAsk Library.
+It reimplements the concepts of TMK, at least partly,
+but is written totally from scratch since TMK is owned by Cisco.
+Metal is owned by me. :)
+
+
+For Metal, we use Lua as scripting language from day one!
+We also assume that we have highlander, and utilize the general purpose
+ADTs from highlander/meta.
+
+License will be GPLv2 (for now)
