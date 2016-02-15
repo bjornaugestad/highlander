@@ -175,6 +175,8 @@ void *fifo_get(fifo p)
 
 status_t fifo_write_signal(fifo p, void *data)
 {
+    status_t rc;
+
 	assert(p != NULL);
 	assert(data != NULL);
 
@@ -186,13 +188,10 @@ status_t fifo_write_signal(fifo p, void *data)
 		return failure;
 	}
 
-	if (!fifo_unlock(p))
-		return failure;
+	rc = fifo_signal(p);
+	fifo_unlock(p);
 
-	if (!fifo_signal(p))
-		return failure;
-
-	return success;
+	return rc;
 }
 
 status_t fifo_wait_cond(fifo p)
