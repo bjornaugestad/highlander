@@ -24,7 +24,7 @@ void pingpongfn(void)
         switch (msg) {
             case MM_MY_MESSAGE:
                 n++;
-                usleep(1);
+                //usleep(1);
                 if (!publish(msg, arg1 + 1, arg2)) {
                     puts("Could not publish message");
                     break; // Do nothing ATM
