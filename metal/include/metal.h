@@ -68,7 +68,10 @@ task self(void);
 void task_free(task p);
 status_t task_start(task p) __attribute__((nonnull(1)));
 
-status_t task_message_add(task p, tid_t sender, msgid_t msg, msgarg_t arg1, msgarg_t arg2);
+status_t task_message_add(task p, tid_t sender, msgid_t msg, msgarg_t arg1, msgarg_t arg2) 
+    __attribute__((nonnull(1)));
+
+status_t task_subscriber_add(task p, tid_t tid) __attribute__((nonnull(1)));
 
 void task_set_name(task p, const char *name) __attribute__((nonnull(1)));
 void task_set_tid(task p, tid_t tid) __attribute__((nonnull(1)));
@@ -80,5 +83,6 @@ tid_t task_tid(task p) __attribute__((nonnull(1)));
 tid_t self_tid(void);
 int task_instance(task p) __attribute__((nonnull(1)));
 pthread_t task_threadid(task p);
+status_t task_subscriber_remove(task p, tid_t tid) __attribute__((nonnull(1)));
 
 #endif

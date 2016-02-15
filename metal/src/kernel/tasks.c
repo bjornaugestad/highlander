@@ -167,8 +167,10 @@ status_t metal_task_new(tid_t *tid, const char *name, int instance, taskfn fn)
         return fail(ENOSPC);
     }
 
-    if ((tasks[i] = task_new()) == NULL)
+    if ((tasks[i] = task_new()) == NULL) {
         pthread_rwlock_unlock(&taskslock);
+        return failure;
+    }
 
     *tid = tid_get();
     if (!task_init(tasks[i], name, instance, fn, *tid)) {
@@ -188,6 +190,7 @@ status_t metal_task_new(tid_t *tid, const char *name, int instance, taskfn fn)
 status_t metal_task_stop(tid_t tid)
 {
     task p;
+    size_t i;
 
     assert(tid > 0); // Can't reset the system task
 
@@ -195,14 +198,20 @@ status_t metal_task_stop(tid_t tid)
     if (!message_send(0, tid, MM_EXIT, 0, 0))
         return failure;
 
-    // TODO: Unsubscribe other tasks
+    // TODO: Unsubscribe from other tasks
     // TODO: 
 
     pthread_rwlock_wrlock(&taskslock);
 
+
     if ((p = find_task_by_tid(tid)) == NULL) {
         pthread_rwlock_unlock(&taskslock);
         return fail(ENOENT);
+    }
+
+    for (i = 0; i < sizeof tasks / sizeof *tasks; i++) {
+        if (tasks[i] != NULL && !task_subscriber_remove(tasks[i], tid))
+            die("Unable to remove subscription");
     }
 
     usleep(500);
@@ -265,6 +274,22 @@ status_t metal_exit(void)
     return success;
 }
 
+status_t metal_subscribe(tid_t publisher, tid_t subscriber)
+{
+    task p;
+
+    assert(publisher != 0);
+    assert(subscriber != 0);
+
+    if ((p = find_task_by_tid(publisher)) == NULL)
+        return fail(ENOENT);
+
+    // Check that subscriber task exists
+    assert(find_task_by_tid(subscriber) != NULL);
+
+    return task_subscriber_add(p, subscriber);
+}
+
 // So we want to send a message to a specific task. We can do that.
 // 1. Check if the task exists or not.
 // 2. Add message to the tasks' queue.
@@ -291,6 +316,7 @@ status_t message_send(tid_t sender, tid_t dest, msgid_t msg, msgarg_t arg1, msga
     return success;
 
 error:
+    fprintf(stderr, "meh in %s\n", __func__);
     pthread_rwlock_unlock(&taskslock);
     return failure;
     

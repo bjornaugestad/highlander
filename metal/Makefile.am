@@ -1,5 +1,6 @@
 AM_CFLAGS=-ggdb -O0 -Wall -Wextra -pedantic -std=gnu11 -Werror -pthread\
-	-Iinclude -I$(top_srcdir)/include
+	-Iinclude -I$(top_srcdir)/include\
+	-Wno-empty-body
 
 include_HEADERS=\
 	include/metal.h\
@@ -18,7 +19,8 @@ libmetal_a_SOURCES=\
 
 TESTS=\
 	tasks_check\
-	helloworld
+	helloworld\
+	pingpong
 
 check_PROGRAMS=\
 	tasks_check\

@@ -7,4 +7,7 @@
 #define METAL_MAXTASKS 1024
 #define METAL_TASKNAME_MAX 63
 
+// How many subscribers can a task have?
+#define METAL_MAXSUBSCRIBERS 128
+
 #endif

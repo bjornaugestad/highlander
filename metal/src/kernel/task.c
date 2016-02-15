@@ -37,14 +37,105 @@ struct task_tag {
     pthread_t threadid;
 
     fifo q;
+
+    // Who subscribes to this task's published messages?
+    // Keep the array entries left-shifted, so if someone
+    // unsubscribes, we shift other entries to the left if needed.
+    tid_t subscribers[METAL_MAXSUBSCRIBERS];
+    pthread_rwlock_t sublock;
 };
+
+status_t task_subscriber_add(task p, tid_t tid)
+{
+    int err;
+    size_t i;
+
+    assert(p != NULL);
+
+    if ((err = pthread_rwlock_wrlock(&p->sublock)) != 0)
+        return fail(err);
+
+    for (i = 0; i < sizeof p->subscribers / sizeof *p->subscribers; i++) {
+        if (p->subscribers[i] == tid) {
+            pthread_rwlock_unlock(&p->sublock);
+            return fail(EINVAL);
+        }
+        else if (p->subscribers[i] == 0) {
+            p->subscribers[i] = tid;
+            pthread_rwlock_unlock(&p->sublock);
+            return success;
+        }
+    }
+
+    // No room
+    pthread_rwlock_unlock(&p->sublock);
+    return fail(ENOSPC);
+}
+
+// Remove the tid, if found in the subscribers array.
+// No biggie if the tid isn't in the array.
+status_t task_subscriber_remove(task p, tid_t tid)
+{
+    int err;
+    size_t i, n;
+    bool shifting = false;
+
+    assert(p != NULL);
+
+    if ((err = pthread_rwlock_wrlock(&p->sublock)) != 0)
+        return fail(err);
+
+    n = sizeof p->subscribers / sizeof *p->subscribers;
+    for (i = 0; i < n; i++) {
+        if (p->subscribers[i] == 0)
+            break;
+
+        if (!shifting && p->subscribers[i] == tid)
+            shifting = true;
+
+        if (shifting && i + 1 < n)
+            p->subscribers[i] = p->subscribers[i + 1];
+    }
+
+    pthread_rwlock_unlock(&p->sublock);
+    return success;
+}
+
+status_t message_publish(msgid_t msg, msgarg_t arg1, msgarg_t arg2) 
+{
+    task p;
+    size_t i;
+    int err;
+    
+    p = self();
+
+    if ((err = pthread_rwlock_rdlock(&p->sublock)) != 0)
+        return fail(err);
+
+    for (i = 0; i < sizeof p->subscribers / sizeof *p->subscribers; i++) {
+        if (p->subscribers[i] == 0)
+            break;
+        if (!message_send(p->tid, p->subscribers[i], msg, arg1, arg2))
+            puts("Meh");
+    }
+
+    pthread_rwlock_unlock(&p->sublock);
+    return success;
+}
+
 
 task task_new(void)
 {
     task p;
+    int err;
 
-    if ((p = malloc(sizeof *p)) == NULL)
+    if ((p = calloc(1, sizeof *p)) == NULL)
         return NULL;
+
+    if ((err = pthread_rwlock_init(&p->sublock, NULL)) != 0) {
+        free(p);
+        return NULL;
+    }
 
     if ((p->q = fifo_new(METAL_TASK_QUEUE_SIZE)) == NULL) {
         free(p);
@@ -76,6 +167,7 @@ void task_free(task p)
 {
     if (p != NULL) {
         fifo_free(p->q, free);
+        pthread_rwlock_destroy(&p->sublock);
         free(p);
     }
 }
