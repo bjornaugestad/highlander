@@ -20,6 +20,8 @@
 #ifndef META_WLOCK_H
 #define META_WLOCK_H
 
+#include <meta_common.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
