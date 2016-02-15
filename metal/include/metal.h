@@ -39,6 +39,8 @@ status_t metal_task_start(tid_t tid)
 status_t metal_task_stop(tid_t tid) 
     __attribute__((warn_unused_result));
 
+status_t publish(msgid_t msg, msgarg_t arg1, msgarg_t arg2);
+
 // Messages : We want to send and receive messages.
 // Strictly speaking we publish events and subscribe to events.
 // For all practical purposes, a message is an event.

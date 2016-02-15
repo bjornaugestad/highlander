@@ -143,6 +143,20 @@ found:
     return tid;
 }
 
+status_t publish(msgid_t msg, msgarg_t arg1, msgarg_t arg2) 
+{
+    int err;
+    status_t rc;
+
+    if ((err = pthread_rwlock_rdlock(&taskslock)) != 0)
+        die("Internal error.");
+    
+    rc = message_publish(msg, arg1, arg2);
+
+    pthread_rwlock_unlock(&taskslock);
+    return rc;
+}
+
 status_t metal_task_new(tid_t *tid, const char *name, int instance, taskfn fn)
 {
     int err;
@@ -198,11 +212,11 @@ status_t metal_task_stop(tid_t tid)
     if (!message_send(0, tid, MM_EXIT, 0, 0))
         return failure;
 
-    // TODO: Unsubscribe from other tasks
-    // TODO: 
+    // Tasks need time to process the MM_EXIT message.
+    usleep(5000);
 
+    // Remember that writelocks blocks messages
     pthread_rwlock_wrlock(&taskslock);
-
 
     if ((p = find_task_by_tid(tid)) == NULL) {
         pthread_rwlock_unlock(&taskslock);
@@ -301,7 +315,7 @@ status_t message_send(tid_t sender, tid_t dest, msgid_t msg, msgarg_t arg1, msga
     task p;
     int err;
 
-    if ((err = pthread_rwlock_wrlock(&taskslock)) != 0)
+    if ((err = pthread_rwlock_rdlock(&taskslock)) != 0)
         return fail(err);
 
     if ((p = find_task_by_tid(dest)) == NULL) {
@@ -321,6 +335,7 @@ error:
     return failure;
     
 }
+
 
 
 #ifdef TASKS_CHECK

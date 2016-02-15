@@ -24,7 +24,8 @@ void pingpongfn(void)
         switch (msg) {
             case MM_MY_MESSAGE:
                 n++;
-                if (!message_publish(msg, arg1 + 1, arg2)) {
+                usleep(1);
+                if (!publish(msg, arg1 + 1, arg2)) {
                     puts("Could not publish message");
                     break; // Do nothing ATM
                 }
@@ -70,7 +71,7 @@ int main(void)
     if (!metal_task_stop(tid1) || !metal_task_stop(tid2))
         die("Could not stop tasks");
 
-    usleep(100);
+    usleep(1100);
 
     if (!metal_exit())
         return 1;
