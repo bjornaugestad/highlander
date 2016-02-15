@@ -30,19 +30,22 @@ tasks_check_SOURCES=\
 	src/kernel/task.c\
 	src/kernel/tasks.c
 
-tasks_check_CFLAGS=-DTASKS_CHECK -I$(top_srcdir)/include -lmeta -lpthread -ggdb -O0
+tasks_check_CFLAGS=-DTASKS_CHECK -I$(top_srcdir)/include -ggdb -O0
+tasks_check_LDADD=-lmeta -lpthread
 
 helloworld_SOURCES=\
 	src/tests/helloworld.c\
 	src/kernel/task.c\
 	src/kernel/tasks.c
 
-helloworld_CFLAGS=-I$(top_srcdir)/include -lmeta -lpthread -ggdb -O0
+helloworld_CFLAGS=-I$(top_srcdir)/include -ggdb -O0
+helloworld_LDADD=-lmeta -lpthread
 
 pingpong_SOURCES=\
 	src/tests/pingpong.c\
 	src/kernel/task.c\
 	src/kernel/tasks.c
 
-pingpong_CFLAGS=-I$(top_srcdir)/include -lmeta -lpthread -ggdb -O0
+pingpong_CFLAGS=-I$(top_srcdir)/include -ggdb -O0
+pingpong_LDADD=-lmeta -lpthread
 
