@@ -15,7 +15,8 @@ metalsh_SOURCES=\
 
 libmetal_a_SOURCES=\
 	src/kernel/tasks.c\
-	src/kernel/task.c
+	src/kernel/task.c\
+	src/video/webcam_task.c
 
 TESTS=\
 	tasks_check\
