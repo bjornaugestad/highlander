@@ -86,9 +86,15 @@ void warning(const char *fmt, ...)
 void meta_vsyslog(int class, const char *fmt, va_list ap)
 {
 	char err[1000];
+    vsnprintf(err, sizeof err, fmt, ap);
 
-	vsnprintf(err, sizeof err, fmt, ap);
-	syslog(class, "%s", err);
+    // We need a destination regime as we sometimes need to see messages on console.
+    if (1) {
+        fprintf(stderr, "%s\n", err);
+    }
+    else {
+        syslog(class, "%s", err);
+    }
 }
 
 void fs_lower(char *s)

@@ -21,11 +21,13 @@ libmetal_a_SOURCES=\
 TESTS=\
 	tasks_check\
 	helloworld\
+	webcamtask\
 	pingpong
 
 check_PROGRAMS=\
 	tasks_check\
 	helloworld\
+	webcamtask\
 	pingpong
 
 
@@ -52,3 +54,9 @@ pingpong_SOURCES=\
 pingpong_CFLAGS=-I$(top_srcdir)/include -ggdb -O0
 pingpong_LDADD=-lmeta -lpthread
 
+
+webcamtask_SOURCES=\
+	src/video/webcam_task.c
+
+webcamtask_CFLAGS=-I$(top_srcdir)/include -ggdb -O0 -DWEBCAMTASK_CHECK
+webcamtask_LDADD=-lmeta -lpthread

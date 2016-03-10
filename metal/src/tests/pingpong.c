@@ -65,7 +65,7 @@ int main(void)
         die("Could not send message to task\n");
 
     // Wait a long time.
-    usleep(10 * 1000 * 1000);
+    usleep(5 * 1000 * 1000);
 
     // Stop the tasks in a civilized way
     if (!metal_task_stop(tid1) || !metal_task_stop(tid2))

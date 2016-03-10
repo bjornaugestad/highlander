@@ -1,6 +1,6 @@
 SUBDIRS=tools meta http apps 
 LDADD=-lpthread -L.
-AUTOMAKE_OPTIONS=subdir-objects
+#AUTOMAKE_OPTIONS=subdir-objects
 
 AM_CFLAGS=\
 	-D_GNU_SOURCE -std=gnu99 -D_REENTRANT\

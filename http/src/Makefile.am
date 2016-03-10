@@ -1,4 +1,4 @@
-AUTOMAKE_OPTIONS=subdir-objects
+#AUTOMAKE_OPTIONS=subdir-objects
 
 # The main target
 lib_LTLIBRARIES=libhighlander.la libhighlanderd.la
