@@ -400,6 +400,16 @@ static void check_sub(void)
 		exit(8);
 	}
 
+	bignum_set(&a, "ff00");
+	bignum_set(&b, "01");
+	bignum_set(&facit, "feff");
+	if (!bignum_sub(&c, &a, &b))
+		exit(6);
+
+	if (bignum_cmp(&c, &facit) != 0) {
+		dump(&c, "Should've been 0xfeff\n");
+		exit(8);
+	}
 }
 
 static void check_lshift(void)
