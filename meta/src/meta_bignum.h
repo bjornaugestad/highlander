@@ -36,12 +36,12 @@ void bignum_free(bignum *p);
 //
 // Keep in mind that, for now, all bignums are unsigned integers. 
 // No sign involved. 
-status_t bignum_add(bignum *dest, const bignum *a, const bignum *b);
-status_t bignum_sub(bignum *dest, const bignum *a, const bignum *b);
-status_t bignum_mul(bignum *dest, const bignum *a, const bignum *b);
-status_t bignum_div(bignum *dest, const bignum *a, const bignum *b);
-status_t bignum_mod(bignum *dest, const bignum *a, const bignum *b);
-status_t bignum_divmod(bignum *quot, bignum *rem, const bignum *a, const bignum *b);
+status_t bignum_add(bignum * restrict dest, const bignum *a, const bignum *b);
+status_t bignum_sub(bignum * restrict dest, const bignum *a, const bignum *b);
+status_t bignum_mul(bignum * restrict dest, const bignum *a, const bignum *b);
+status_t bignum_div(bignum * restrict dest, const bignum *a, const bignum *b);
+status_t bignum_mod(bignum * restrict dest, const bignum *a, const bignum *b);
+status_t bignum_divmod(bignum * restrict quot, bignum * restrict rem, const bignum *a, const bignum *b);
 
 // bitnum_set uses 2 bytes from value for each byte stored in the
 // bignum object. This is because the value contains hex numbers.

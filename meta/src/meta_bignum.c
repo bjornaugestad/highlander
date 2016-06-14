@@ -41,7 +41,7 @@ void bignum_free(bignum *p)
 }
 
 // a must be longer than b for this to work.
-static inline status_t add(bignum *dest, const bignum *a, const bignum *b)
+static inline status_t add(bignum * restrict dest, const bignum *a, const bignum *b)
 {
 	size_t ai, bi, an, bn;
 	unsigned int sum, carry = 0;
@@ -87,11 +87,27 @@ static inline status_t add(bignum *dest, const bignum *a, const bignum *b)
 	return success;
 }
 
-status_t bignum_add(bignum *dest, const bignum *a, const bignum *b)
+// aaa - add and assign rhs to lhs, as in lhs += rhs.
+// How does this work? For each digit in rhs, add it to lhs.
+// Handle carry properly
+static inline status_t aaa(bignum * restrict lhs, const bignum *rhs)
+{
+    bignum tmp;
+
+    bignum_set(&tmp, "");
+    if (!bignum_add(&tmp, lhs, rhs))
+        return failure;
+    *lhs = tmp;
+    return success;
+}
+
+status_t bignum_add(bignum * restrict dest, const bignum *a, const bignum *b)
 {
 	assert(dest != NULL);
 	assert(a != NULL);
 	assert(b != NULL);
+    assert(dest != a); // We don't like aliases
+    assert(dest != b);
 
 	memset(dest->value, 0, sizeof dest->value);
 	dest->len = 0;
@@ -181,17 +197,28 @@ void bignum_lshift(bignum *p)
 
 status_t bignum_mul(bignum *dest, const bignum *a, const bignum *b)
 {
-	//unsigned char mask = 0x01;
-	//size_t i;
+	unsigned char mask;
+	size_t i;
+    bignum aa; // We need a writable(shiftable) copy of a
 
 	assert(dest != NULL);
 	assert(a != NULL);
 	assert(b != NULL);
 
+    aa = *a;
 	memset(dest->value, 0, sizeof dest->value);
 	dest->len = 0;
 
-	return failure;
+    for (i = 0; i < b->len; i++) {
+        for (mask = 1; mask; mask <<= 1) {
+            if (mask & b->value[sizeof b->value - i])
+                aaa(dest, &aa);
+
+            bignum_lshift(&aa);
+        }
+    }
+
+	return success;
 }
 
 status_t bignum_div(bignum *dest, const bignum *a, const bignum *b)
@@ -439,6 +466,59 @@ static void check_lshift(void)
 	}
 }
 
+static void check_aaa(void)
+{
+    size_t i;
+    bignum lhs, rhs, facit;
+
+    bignum_set(&lhs, "");
+    bignum_set(&rhs, "01");
+
+    for (i = 0; i < 1024; i++) {
+        if (!aaa(&lhs, &rhs))
+            die("aaa() failed\n");
+    }
+
+    bignum_set(&facit, "0400");
+    if (bignum_cmp(&facit, &lhs)) {
+        dump(&lhs, "Expected ff");
+        dump(&facit, "facit");
+        exit(11);
+    }
+}
+
+static void check_mul(void)
+{
+    static const struct {
+        const char *op1, *op2, *facit;
+    } tests[] = {
+        { "ff", "01", "ff" },
+        { "ff", "02", "01fe" },
+        { "ff", "ff", "fe01" }
+    };
+
+    size_t i, n = sizeof tests / sizeof *tests;
+    bignum res, op1, op2, facit;
+
+    for (i = 0; i < n; i++) {
+        bignum_set(&op1, tests[i].op1);
+        bignum_set(&op2, tests[i].op2);
+        bignum_set(&facit, tests[i].facit);
+        bignum_set(&res, "aa");
+
+        if (!bignum_mul(&res, &op1, &op2))
+            die("Unable to multiply...");
+
+        if (bignum_cmp(&res, &facit)) {
+            fprintf(stderr, "Error multiplying %s with %s.\n",
+                tests[i].op1, tests[i].op2);
+            dump(&res, "Result");
+            dump(&facit, "Expected");
+            exit(12);
+        }
+    }
+}
+
 int main(void)
 {
 	bignum *p, a, b, c, facit;
@@ -450,6 +530,8 @@ int main(void)
 
 	check_sub();
 	check_lshift();
+    check_aaa();
+    check_mul();
 
 	// Empty strings == zero.
 	if (!valid_bignum(""))
