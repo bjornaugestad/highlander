@@ -79,7 +79,7 @@ libmeta_a_CFLAGS=\
 	-I$(srcdir)\
 	-I$(top_srcdir)/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\
-	-O2 -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
+	-O2 -Wall --Wno-long-long  -ftree-vectorize -Wno-inline\
     -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
 
 libmetad_a_CFLAGS=\
@@ -87,7 +87,7 @@ libmetad_a_CFLAGS=\
 	-I$(srcdir)\
 	-I$(top_srcdir)/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\
-	-O0 -ggdb -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
+	-O0 -ggdb -Wall -Wno-long-long  -ftree-vectorize -Wno-inline\
     -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
 
 if WITH_VALGRIND
@@ -141,13 +141,13 @@ check_PROGRAMS=\
 	tcp_server_check
 
 
-AM_CFLAGS=-p -pg -Wall -pedantic -std=gnu99 -Wextra -Werror -O0
+AM_CFLAGS=-p -pg -Wall --std=gnu99 -Wextra -Werror -O0
 tcp_server_check_SOURCES=tcp_server.c threadpool.c meta_membuf.c meta_pool.c\
 	meta_socket.c connection.c meta_process.c cstring.c meta_common.c
 tcp_server_check_CFLAGS=-DCHECK_TCP_SERVER $(AM_CFLAGS) 
 
 bignum_check_SOURCES=meta_bignum.c meta_common.c
-bignum_check_CFLAGS=-DBIGNUM_CHECK $(AM_CFLAGS) 
+bignum_check_CFLAGS=-DBIGNUM_CHECK $(AM_CFLAGS)  -O0
 
 bignum_speed_SOURCES=meta_bignum.c meta_common.c
 bignum_speed_CFLAGS=-DBIGNUM_SPEED -O3 -DNDEBUG -std=gnu99

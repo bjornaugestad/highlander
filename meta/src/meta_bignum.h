@@ -5,23 +5,35 @@
  * bignums are big numbers, up to 4096 bits wide. We provide
  * support for math operations on them. Not sure what to use 
  * them for yet. Maybe for metassl? :) 
+ *
+ * Update 20160614: The original implementation was based on
+ * the implementation in "the book". That implementation is
+ * too slow. Also, I'm uncomfortable with just copying code
+ * from a book without understand each and every detail.
+ * Also, in order to speed things up, we need to do arithmetic
+ * in something bigger than char. Also, we want to be able
+ * to paralellize stuff. Also, we want to utilize GPUs, eventually.
+ *
+ * Current working hypothesis is that it is much much faster
+ * to do n 64-bit ops without all the if/else/realloc stuff.
  */
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
+#include <limits.h>
 
 #include <meta_common.h>
 
+// 64 * 64 == 4096. Magic :)
 #define META_BIGNUM_MAXBITS 4096
 
 // Max number of bytes. We intentionally do not use CHAR_BIT.
-#define META_BIGNUM_MAXBYTES (META_BIGNUM_MAXBITS / 8)
+#define META_BIGNUM_SIZE (META_BIGNUM_MAXBITS / (sizeof (uint64_t) * CHAR_BIT))
 
+// We store our values here, in LSB order. 
 typedef struct {
-	// length in bytes
-	size_t len;
-
-	unsigned char value[META_BIGNUM_MAXBYTES] __attribute__((aligned(8)));
+	uint64_t value[META_BIGNUM_SIZE] __attribute__((aligned(8)));
 } bignum;
 
 // Create a new bignum object. Return NULL if length of val mod 8 isn't zero.
@@ -45,8 +57,8 @@ status_t bignum_divmod(bignum * restrict quot, bignum * restrict rem, const bign
 
 // bitnum_set uses 2 bytes from value for each byte stored in the
 // bignum object. This is because the value contains hex numbers.
-// Therefore, value length can be META_BIGNUM_MAXBYTES * 2.
-void bignum_set(bignum *p, const char *value);
+status_t bignum_set(bignum *p, const char *value)
+    __attribute__((warn_unused_result));
 
 // Let users verify their values before calling _set(), as _set() will assert
 // if values are illegal. A string is a valid bignum

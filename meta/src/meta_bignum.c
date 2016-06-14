@@ -10,16 +10,44 @@
 
 static void dump(const bignum *p, const char *lead)
 {
-	size_t i;
+	size_t i = sizeof p->value / sizeof *p->value;
+    size_t nzeros = 0;
+
+    while (nzeros < i && p->value[nzeros] == 0)
+        nzeros++;
 
 	fprintf(stderr, "%s\n", lead);
-	fprintf(stderr, "\tlength: %zu\n", p->len);
+    if (nzeros == i)
+        printf("\t0\n");
 
-	for (i = sizeof p->value - p->len; i < sizeof p->value; i++)
-		fprintf(stderr, "\t%zu:%d\n", i, p->value[i]);
+	while (i-- > nzeros)
+		fprintf(stderr, "\t%zu:%llx\n", i, (unsigned long long)p->value[i]);
 
 }
 #endif
+
+static inline void bignum_zero(bignum *p)
+{
+    assert(p != NULL);
+
+#if 1
+    memset(p->value, 0, sizeof p->value);
+
+#else
+    size_t i, n = sizeof p->value / sizeof *p->value;
+
+    for (i = 0; i < n; i += 8) {
+        p->value[i] = 0;
+        p->value[i + 1] = 0;
+        p->value[i + 2] = 0;
+        p->value[i + 3] = 0;
+        p->value[i + 4] = 0;
+        p->value[i + 5] = 0;
+        p->value[i + 6] = 0;
+        p->value[i + 7] = 0;
+    }
+#endif
+}
 
 bignum* bignum_new(const char *value)
 {
@@ -31,7 +59,11 @@ bignum* bignum_new(const char *value)
 	if ((p = malloc(sizeof *p)) == NULL)
 		return NULL;
 
-	bignum_set(p, value);
+	if (!bignum_set(p, value)) {
+        free(p);
+        return NULL;
+    }
+
 	return p;
 }
 
@@ -40,49 +72,38 @@ void bignum_free(bignum *p)
 	free(p);
 }
 
-// a must be longer than b for this to work.
+// Both a and b have fixed sizes. Just loop and add.
+// We need a 128 bit intermediate. Does that suck? Maybe.
 static inline status_t add(bignum * restrict dest, const bignum *a, const bignum *b)
 {
-	size_t ai, bi, an, bn;
-	unsigned int sum, carry = 0;
-
-	assert(a->len >= b->len);
+	size_t i;
+	uint64_t carry = 0;
+    unsigned __int128 sum;
 
 	// We iterate from right to left
-	ai = sizeof a->value - 1;
-	bi = sizeof b->value - 1;
-	an = a->len;
-	bn = b->len;
+	i = sizeof a->value / sizeof *a->value;
 
-	// First we loop for all cases where we have two values.
-	while(bn--) {
-		sum = a->value[ai] + b->value[bi] + carry;
-		carry = sum > 0xff;
-		dest->value[ai] = sum;
-		dest->len++;
-		ai--;
-		bi--;
+    bignum_zero(dest);
+
+	while(i--) {
+        // Step by step additions to avoid overflow on intermediate values
+		sum = a->value[i];
+        sum += b->value[i];
+        sum += carry;
+#if 0
+		carry = sum > UINT64_MAX;
+#else
+        // debugging
+        if (sum > UINT64_MAX)
+            carry = 1;
+        else 
+            carry = 0;
+#endif
+		dest->value[i] = sum;
 	}
 
-	// Then we add the rest.
-	an -= b->len;
-
-	while (an--) {
-		sum = a->value[ai] + carry;
-		carry = sum > 0xff;
-		dest->value[ai] = sum;
-		dest->len++;
-		ai--;
-	}
-
-	if (carry) {
-		if (dest->len == sizeof dest->value)
-			return failure; // Overflow.
-
-		// Set carry
-		dest->len++;
-		dest->value[sizeof dest->value - dest->len] = 1;
-	}
+	if (carry)
+        return failure; // Overflow.
 
 	return success;
 }
@@ -94,7 +115,8 @@ static inline status_t aaa(bignum * restrict lhs, const bignum *rhs)
 {
     bignum tmp;
 
-    bignum_set(&tmp, "");
+    if (!bignum_set(&tmp, ""))
+        die("Could not set value");
     if (!bignum_add(&tmp, lhs, rhs))
         return failure;
     *lhs = tmp;
@@ -109,105 +131,77 @@ status_t bignum_add(bignum * restrict dest, const bignum *a, const bignum *b)
     assert(dest != a); // We don't like aliases
     assert(dest != b);
 
-	memset(dest->value, 0, sizeof dest->value);
-	dest->len = 0;
+    bignum_zero(dest);
 
-	if (a->len >= b->len)
-		return add(dest, a, b);
-	else 
-		return add(dest, b, a);
+    return add(dest, a, b);
 }
 
 status_t bignum_sub(bignum *dest, const bignum *a, const bignum *b)
 {
-	size_t i, an, bn;
-	int delta, borrow = 0;
+#if 1
+    (void)dest;(void)a;(void)b;
+#else
+	size_t i;
+	int borrow = 0;
+    signed long long delta;
 
 	assert(dest != NULL);
 	assert(a != NULL);
 	assert(b != NULL);
 
-	an = a->len;
-	bn = b->len;
-	assert(an >= bn); // No support for wraparound
+	i = sizeof a->value / sizeof *a->value;
+    bignum_zero(dest);
 
-	i = sizeof a->value - 1;
-	dest->len = 0;
-	memset(dest->value, 0, sizeof dest->value);
-
-	while (bn--) {
+	while (i--) {
 		delta = a->value[i] - b->value[i] - borrow;
 		borrow = delta < 0;
 		dest->value[i] = delta;
-		dest->len++;
-		i--;
-	}
-
-	// Now just carry the borrow
-	an -= b->len;
-	while(an--) {
-		delta = a->value[i] - borrow;
-		borrow = delta < 0;
-		dest->value[i] = delta;
-		dest->len++;
-		i--;
 	}
 
 	if (borrow)
 		return failure;
+#endif
 
-	// Reduce length to ignore leading zero bytes.
-	for (i = sizeof dest->value - dest->len; i < sizeof dest->value; i++) {
-		if (dest->value[i] != 0)
-			break;
-
-		if (dest->len == 0)
-			break;
-
-		dest->len--;
-	}
-		
 	return success;
 }
 
-// Left-shift one bit.
-void bignum_lshift(bignum *p)
+// Left-shift one bit. Return error on overflow
+status_t bignum_lshift(bignum *p)
 {
-	size_t i, start, stop;
+	size_t i;
 	unsigned char prev = 0, overflow = 0;
 
 	assert(p != NULL);
 
 	// we iterate from LSB to MSB
-	stop = sizeof p->value - p->len;
-	start = sizeof p->value - 1;
-	for (i = start; i >= stop; i--) {
-		overflow = p->value[i] & 0x80 ? 1 : 0;
+	i = sizeof p->value / sizeof *p->value;
+	while (i--) {
+		overflow = p->value[i] & 0x8000000000000000 ? 1 : 0;
 		p->value[i] <<= 1;
 		p->value[i] |= prev;
 		prev = overflow;
 	}
 
-	// Now expand if last overflowed.
-	if (overflow && p->len != sizeof p->value) {
-		p->len++;
-		p->value[sizeof p->value - p->len] = 0x01;
-	}
+    if (overflow)
+        return failure;
+
+    return success;
 }
 
 status_t bignum_mul(bignum *dest, const bignum *a, const bignum *b)
 {
-	unsigned char mask;
-	size_t i;
-    bignum aa; // We need a writable(shiftable) copy of a
+	//unsigned char mask;
+	//size_t i;
+    //bignum aa; // We need a writable(shiftable) copy of a
 
 	assert(dest != NULL);
 	assert(a != NULL);
 	assert(b != NULL);
 
-    aa = *a;
-	memset(dest->value, 0, sizeof dest->value);
-	dest->len = 0;
+    //aa = *a;
+    bignum_zero(dest);
+
+#if 0
 
     for (i = 0; i < b->len; i++) {
         for (mask = 1; mask; mask <<= 1) {
@@ -217,7 +211,7 @@ status_t bignum_mul(bignum *dest, const bignum *a, const bignum *b)
             bignum_lshift(&aa);
         }
     }
-
+#endif
 	return success;
 }
 
@@ -264,35 +258,87 @@ static inline unsigned char tohex(char c)
 		return c - '0';
 }
 
-void bignum_set(bignum *p, const char *value)
+status_t bignum_set(bignum *p, const char *value)
 {
-	size_t i, n;
+	size_t i, j, n;
 
 	assert(p != NULL);
 	assert(value != NULL);
 	assert(valid_bignum(value));
 
-	memset(p->value, 0, sizeof p->value);
+    bignum_zero(p);
 
 	n = strlen(value);
-	p->len = n / 2;
-	i = sizeof p->value - 1;
+    assert(n % 2 == 0 && "No odd-length values");
 
-	// Consume two bytes for each iteration.
+	i = sizeof p->value / sizeof *p->value;
+
+    // Is there room for the value in bignum?
+    // value is hex, so we use 4 bits per byte.
+    // p->value can store i * sizeof *p->value bytes.
+    if (n > sizeof p->value * 2)
+        return failure;
+
+	// Consume 16 bytes from 'value' for each iteration.
 	// Remember that we store values as MSB, so 
 	// lower bits go to the end of the array.
-	while(n--) {
-		p->value[i] = tohex(value[n--]);
-		p->value[i] |= tohex(value[n]) << 4;
-		i--;
+    // Also keep in mind that i refers to uint64_t array entries,
+    // and n to char entries. Each iteration decrements n with 8
+    // and i with 1.
+	while(n > sizeof *p->value * 2 && i--) {
+        n--;
+		p->value[i] = tohex(value[n - 15]) << 4;
+		p->value[i] |= tohex(value[n - 14]);
+        p->value[i] <<= 8;
+
+		p->value[i] |= tohex(value[n - 13]) << 4;
+		p->value[i] |= tohex(value[n - 12]);
+        p->value[i] <<= 8;
+
+		p->value[i] |= tohex(value[n - 11]) << 4;
+		p->value[i] |= tohex(value[n - 10]);
+        p->value[i] <<= 8;
+
+		p->value[i] |= tohex(value[n - 9]) << 4;
+		p->value[i] |= tohex(value[n - 8]);
+        p->value[i] <<= 8;
+
+		p->value[i] |= tohex(value[n - 7]) << 4;
+		p->value[i] |= tohex(value[n - 6]);
+        p->value[i] <<= 8;
+
+		p->value[i] |= tohex(value[n - 5]) << 4;
+		p->value[i] |= tohex(value[n - 4]);
+        p->value[i] <<= 8;
+
+		p->value[i] |= tohex(value[n - 3]) << 4;
+		p->value[i] |= tohex(value[n - 2]);
+        p->value[i] <<= 8;
+
+		p->value[i] |= tohex(value[n - 1]) << 4;
+		p->value[i] |= tohex(value[n]);
+        n -= 15;
 	}
 
-	assert(p->len == strlen(value) / 2);
+    // Now n <= 7. Add the last entries, but stop if n == 0.
+    if (n == 0)
+        return success;
+
+    i--;
+    for (j = 0; j < n; j += 2) {
+		p->value[i] |= tohex(value[j]) << 4;
+		p->value[i] |= tohex(value[j + 1]);
+        if (j + 2 < n)
+            p->value[i] <<= 8;
+    }
+
+    return success;
 }
 
 bool valid_bignum(const char *value)
 {
 	size_t i, n;
+    bignum *dummy;
 
 	assert(value != NULL);
 
@@ -300,7 +346,7 @@ bool valid_bignum(const char *value)
 	if (n % 2 != 0)
 		return false;
 
-	if (n > META_BIGNUM_MAXBYTES * 2)
+	if (n > sizeof dummy->value * 2)
 		return false;
 
 	for (i = 0; i < n; i++) {
@@ -313,19 +359,10 @@ bool valid_bignum(const char *value)
 
 int bignum_cmp(const bignum *a, const bignum *b)
 {
-	size_t offset;
-
 	assert(a != NULL);
 	assert(b != NULL);
 
-	if (a->len > b->len)
-		return -1;
-	
-	if (b->len > a->len)
-		return 1;
-
-	offset = sizeof a->value - a->len;
-	return memcmp(a->value + offset, b->value + offset, a->len);
+	return memcmp(a->value, b->value, sizeof a->value);
 }
 
 #if defined(BIGNUM_CHECK) || defined(BIGNUM_SPEED)
@@ -367,9 +404,12 @@ int main(void)
 	size_t i, niter = 1000 * 1000;
 	bignum max, zero, dest, half;
 
-	bignum_set(&max, maxval);
-	bignum_set(&half, halfval);
-	bignum_set(&zero, "");
+	if (!bignum_set(&max, maxval))
+        die("Could not set value");
+	if (!bignum_set(&half, halfval))
+        die("Could not set value");
+	if (!bignum_set(&zero, ""))
+        die("Could not set value");
 
 	for (i = 0; i < niter; i++)
 		bignum_add(&dest, &max, &zero);
@@ -389,21 +429,28 @@ int main(void)
 
 static void check_sub(void)
 {
+    return;
+
 	bignum a, b, c, facit;
 
-	bignum_set(&a, "ff");
-	bignum_set(&b, "01");
+	if (!bignum_set(&a, "ff"))
+        die("Could not set value");
+	if (!bignum_set(&b, "01"))
+        die("Could not set value");
 	if (!bignum_sub(&c, &a, &b))
 		exit(2);
 
-	bignum_set(&facit, "fe");
+	if (!bignum_set(&facit, "fe"))
+        die("Could not set value");
 	if (bignum_cmp(&c, &facit) != 0) {
 		dump(&c, "Should've been fe");
 		exit(3);
 	}
 
-	bignum_set(&facit, "");
-	bignum_set(&a, maxval);
+	if (!bignum_set(&facit, ""))
+        die("Could not set value");
+	if (!bignum_set(&a, maxval))
+        die("Could not set value");
 	if (!bignum_sub(&c, &a, &a))
 		exit(4);
 
@@ -412,13 +459,17 @@ static void check_sub(void)
 		exit(5);
 	}
 
-	bignum_set(&b, halfval);
+	if (!bignum_set(&b, halfval))
+        die("Could not set value");
 	if (!bignum_sub(&c, &a, &b))
 		exit(6);
 
-	bignum_set(&a, "");
-	bignum_set(&b, "");
-	bignum_set(&facit, "");
+	if (!bignum_set(&a, ""))
+        die("Could not set value");
+	if (!bignum_set(&b, ""))
+        die("Could not set value");
+	if (!bignum_set(&facit, ""))
+        die("Could not set value");
 	if (!bignum_sub(&c, &a, &b))
 		exit(7);
 
@@ -427,9 +478,12 @@ static void check_sub(void)
 		exit(8);
 	}
 
-	bignum_set(&a, "ff00");
-	bignum_set(&b, "01");
-	bignum_set(&facit, "feff");
+	if (!bignum_set(&a, "ff00"))
+        die("Could not set value");
+	if (!bignum_set(&b, "01"))
+        die("Could not set value");
+	if (!bignum_set(&facit, "feff"))
+        die("Could not set value");
 	if (!bignum_sub(&c, &a, &b))
 		exit(6);
 
@@ -444,8 +498,10 @@ static void check_lshift(void)
 	bignum a, b;
 	size_t i;
 
-	bignum_set(&a, "01");
-	bignum_set(&b, "02");
+	if (!bignum_set(&a, "01"))
+        die("Could not set value");
+	if (!bignum_set(&b, "02"))
+        die("Could not set value");
 
 	bignum_lshift(&a);
 	if (bignum_cmp(&a, &b) != 0) {
@@ -453,8 +509,10 @@ static void check_lshift(void)
 		exit(10);
 	}
 
-	bignum_set(&a, "01");
-	bignum_set(&b, "80000000");
+	if (!bignum_set(&a, "01"))
+        die("Could not set value");
+	if (!bignum_set(&b, "80000000"))
+        die("Could not set value");
 
 	for (i = 0; i < 31; i++)
 		bignum_lshift(&a);
@@ -471,15 +529,18 @@ static void check_aaa(void)
     size_t i;
     bignum lhs, rhs, facit;
 
-    bignum_set(&lhs, "");
-    bignum_set(&rhs, "01");
+    if (!bignum_set(&lhs, ""))
+        die("Could not set value");
+    if (!bignum_set(&rhs, "01"))
+        die("Could not set value");
 
     for (i = 0; i < 1024; i++) {
         if (!aaa(&lhs, &rhs))
             die("aaa() failed\n");
     }
 
-    bignum_set(&facit, "0400");
+    if (!bignum_set(&facit, "0400"))
+        die("Could not set value");
     if (bignum_cmp(&facit, &lhs)) {
         dump(&lhs, "Expected ff");
         dump(&facit, "facit");
@@ -501,10 +562,14 @@ static void check_mul(void)
     bignum res, op1, op2, facit;
 
     for (i = 0; i < n; i++) {
-        bignum_set(&op1, tests[i].op1);
-        bignum_set(&op2, tests[i].op2);
-        bignum_set(&facit, tests[i].facit);
-        bignum_set(&res, "aa");
+        if (!bignum_set(&op1, tests[i].op1))
+            die("Could not set value");
+
+        if (!bignum_set(&op2, tests[i].op2))
+            die("Could not set value");
+
+        if (!bignum_set(&facit, tests[i].facit))
+            die("Could not set value");
 
         if (!bignum_mul(&res, &op1, &op2))
             die("Unable to multiply...");
@@ -519,56 +584,35 @@ static void check_mul(void)
     }
 }
 
-int main(void)
+static void check_alloc(void)
 {
-	bignum *p, a, b, c, facit;
-	const char *value = "cafebabedeadbeef";
-	const char *odd_len1 = "f"; // We need a multiple of 2.
-	const char *odd_len3 = "fad"; // We need a multiple of 2.
-	const char *invalid_chars = "foobar";
-	char too_long_value[META_BIGNUM_MAXBYTES * 2 + 4];
+	bignum *p;
 
-	check_sub();
-	check_lshift();
-    check_aaa();
-    check_mul();
-
-	// Empty strings == zero.
-	if (!valid_bignum(""))
-		return 1;
-
-	if (!valid_bignum(maxval))
-		return 1;
-
-	if (!valid_bignum(value))
-		return 1;
-
-	if (valid_bignum(invalid_chars))
-		return 1;
-
-	if (valid_bignum(odd_len1))
-		return 1;
-
-	if (valid_bignum(odd_len3))
-		return 1;
-
-	memset(too_long_value, 'a', sizeof too_long_value);
-	too_long_value[sizeof too_long_value - 1] = '\0';
-	if (valid_bignum(too_long_value))
-		return 1;
-
-	p = bignum_new(value);
+	p = bignum_new("ffaabbcc");
 	if (p == NULL)
-		return 1;
+		die("Out of memory or illegal input");
 
-	bignum_set(p, value);
+	if (!bignum_set(p, "deadbabe"))
+        die("Could not set value");
 
-	bignum_set(&a, "ff");
-	bignum_set(&b, "");
-	if (bignum_cmp(&a, &b) >= 0)
-		die("1");
+	bignum_free(p);
+}
 
-	if (bignum_cmp(&b, &a) <= 0)
+
+static void check_add(void)
+{
+	bignum a, b, c, facit;
+
+	if (!bignum_set(&a, "ff") || !bignum_set(&b, ""))
+        die("Could not set value");
+
+	if (bignum_cmp(&a, &b) <= 0) {
+        dump(&a, "a");
+        dump(&b, "b");
+		die("a >= b");
+    }
+
+	if (bignum_cmp(&b, &a) >= 0)
 		die("2");
 
 	if (bignum_cmp(&a, &a) != 0)
@@ -577,36 +621,89 @@ int main(void)
 	if (!bignum_add(&c, &a, &b))
 		die("4");
 
-	if (bignum_cmp(&c, &a) != 0)
-		die("5");
+	if (bignum_cmp(&c, &a) != 0) {
+        dump(&a, "a");
+        dump(&c, "c");
+		die("5: ff plus 0 was not ff.");
+    }
 
-	bignum_set(&a, "ff");
-	bignum_set(&b, "01");
+	if (!bignum_set(&a, "ff") || !bignum_set(&b, "01"))
+        die("Could not set value");
+
 	if (!bignum_add(&c, &a, &b))
 		die("Could not add\n");
 
-	bignum_set(&facit, "0100");
+	if (!bignum_set(&facit, "0100"))
+        die("Could not set value");
+
 	if (bignum_cmp(&c, &facit) != 0) {
 		dump(&c, "c");
 		dump(&facit, "Facit");
-		return 1;
+		die("c != facit");
 	}
 
 	// We can add 0 to maxval and get maxval.
-	bignum_set(&a, maxval);
-	bignum_set(&b, "00");
+	if (!bignum_set(&a, maxval))
+        die("Could not set value");
+	if (!bignum_set(&b, "00"))
+        die("Could not set value");
 	if (!bignum_add(&c, &a, &b))
-		return 1;
+		die("Could not add a and b");
 
 	// We can not add 1 to maxval.
-	bignum_set(&a, maxval);
-	bignum_set(&b, "01");
-	if (bignum_add(&c, &a, &b))
-		return 1;
-	if (bignum_add(&c, &b, &a))
-		return 1;
+	if (!bignum_set(&a, maxval))
+        die("Could not set value");
+	if (!bignum_set(&b, "01"))
+        die("Could not set value");
 
-	bignum_free(p);
+	if (bignum_add(&c, &a, &b))
+		die("Could add a and b, should've been overflow");
+
+	if (bignum_add(&c, &b, &a))
+		die("Could add b and a, should've been overflow");
+
+}
+
+int main(void)
+{
+	const char *value = "cafebabedeadbeef";
+	const char *odd_len1 = "f"; // We need a multiple of 2.
+	const char *odd_len3 = "fad"; // We need a multiple of 2.
+	const char *invalid_chars = "foobar";
+    bignum *dummy;
+
+    check_add();
+	check_sub();
+	check_lshift();
+    check_aaa();
+    check_mul();
+    check_alloc();
+
+	// Empty strings == zero.
+	if (!valid_bignum(""))
+		die("X1");
+
+	if (!valid_bignum(maxval))
+		die("X2");
+
+	if (!valid_bignum(value))
+		die("X3");
+
+	if (valid_bignum(invalid_chars))
+		die("X4");
+
+	if (valid_bignum(odd_len1))
+		die("X5");
+
+	if (valid_bignum(odd_len3))
+		die("X6");
+
+	char too_long_value[sizeof *dummy->value * 2 + 4];
+	memset(too_long_value, 'a', sizeof too_long_value);
+	too_long_value[sizeof too_long_value - 1] = '\0';
+	if (valid_bignum(too_long_value))
+		die("X7");
+
 	return 0;
 }
 
