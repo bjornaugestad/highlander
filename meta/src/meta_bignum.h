@@ -51,6 +51,7 @@ void bignum_free(bignum *p);
 status_t bignum_add(bignum * restrict dest, const bignum *a, const bignum *b);
 status_t bignum_sub(bignum * restrict dest, const bignum *a, const bignum *b);
 status_t bignum_mul(bignum * restrict dest, const bignum *a, const bignum *b);
+
 status_t bignum_div(bignum * restrict dest, const bignum *a, const bignum *b);
 status_t bignum_mod(bignum * restrict dest, const bignum *a, const bignum *b);
 status_t bignum_divmod(bignum * restrict quot, bignum * restrict rem, const bignum *a, const bignum *b);

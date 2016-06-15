@@ -18,10 +18,10 @@ static void dump(const bignum *p, const char *lead)
 
 	fprintf(stderr, "%s\n", lead);
     if (nzeros == i)
-        printf("\t0\n");
+        fprintf(stderr, "\t0\n");
 
 	while (i-- > nzeros)
-		fprintf(stderr, "\t%zu:%llx\n", i, (unsigned long long)p->value[i]);
+		fprintf(stderr, "\t%2zu:%016llx\n", i, (unsigned long long)p->value[i]);
 
 }
 #endif
@@ -116,9 +116,11 @@ static inline status_t aaa(bignum * restrict lhs, const bignum *rhs)
     bignum tmp;
 
     if (!bignum_set(&tmp, ""))
-        die("Could not set value");
+        return failure;
+
     if (!bignum_add(&tmp, lhs, rhs))
         return failure;
+
     *lhs = tmp;
     return success;
 }
@@ -166,52 +168,47 @@ status_t bignum_sub(bignum *dest, const bignum *a, const bignum *b)
 }
 
 // Left-shift one bit. Return error on overflow
-status_t bignum_lshift(bignum *p)
+void bignum_lshift(bignum *p)
 {
 	size_t i;
-	unsigned char prev = 0, overflow = 0;
+	uint64_t prevcarry = 0, carry = 0;
 
 	assert(p != NULL);
 
 	// we iterate from LSB to MSB
 	i = sizeof p->value / sizeof *p->value;
 	while (i--) {
-		overflow = p->value[i] & 0x8000000000000000 ? 1 : 0;
+		prevcarry = carry;
+		carry = p->value[i] & 0x8000000000000000 ? 1 : 0;
 		p->value[i] <<= 1;
-		p->value[i] |= prev;
-		prev = overflow;
+		p->value[i] |= prevcarry;
 	}
-
-    if (overflow)
-        return failure;
-
-    return success;
 }
 
 status_t bignum_mul(bignum *dest, const bignum *a, const bignum *b)
 {
-	//unsigned char mask;
-	//size_t i;
-    //bignum aa; // We need a writable(shiftable) copy of a
+	size_t n;
+    uint64_t mask;
+    bignum tmp;
 
 	assert(dest != NULL);
 	assert(a != NULL);
 	assert(b != NULL);
 
-    //aa = *a;
     bignum_zero(dest);
+    tmp = *a; // We need a shiftable source
 
-#if 0
-
-    for (i = 0; i < b->len; i++) {
+    n = sizeof a->value / sizeof *a->value;
+    while (n--) {
         for (mask = 1; mask; mask <<= 1) {
-            if (mask & b->value[sizeof b->value - i])
-                aaa(dest, &aa);
+            if (mask & b->value[n])
+                if (!aaa(dest, &tmp))
+                    return failure;
 
-            bignum_lshift(&aa);
+            bignum_lshift(&tmp);
         }
     }
-#endif
+
 	return success;
 }
 
@@ -386,7 +383,7 @@ static const char maxval[1025] =
 "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 ;
 
-static const char halfval[1025] =
+static const char halfval[513] =
 "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
@@ -418,8 +415,35 @@ int main(void)
 		if (!bignum_add(&dest, &half, &half))
 			return 1;
 	}
+
+    for (i = 0; i < niter; i++) {
+        if (!bignum_mul(&dest, &half, &half))
+            die("Meh.\n");
+    }
+	if (0) dump(&dest, "dest(mul):");
 	
-	if (0) dump(&dest, "dest");
+    // factorial with mul
+    if (!bignum_set(&dest, "01"))
+        die("meh");
+
+    bignum tmpn, bi;
+    char tmp[100];
+
+    for (i = 1; i <=1000; i++) {
+        sprintf(tmp, "%04zx", i);
+        if (!bignum_set(&bi, tmp))
+            die("WTF?");
+
+        tmpn = dest;
+        if (!bignum_mul(&dest, &tmpn, &bi))
+            die("Meh(fac).\n");
+
+        if (1) dump(&dest, tmp);
+    }
+	if (1) dump(&dest, "1000!");
+
+
+    
 
 	return 0;
 }
@@ -517,11 +541,23 @@ static void check_lshift(void)
 	for (i = 0; i < 31; i++)
 		bignum_lshift(&a);
 
+
 	if (bignum_cmp(&a, &b) != 0) {
 		dump(&a, "Should've been b");
 		dump(&b, "b");
 		exit(11);
 	}
+
+    // Now leftshift a lot!
+    if (!bignum_set(&a, "01"))
+        die("set");
+
+    for (i = 0; i < 4095; i++)
+        bignum_lshift(&a);
+
+    if (a.value[0] != 1llu << 63)
+        die("Incorrect value");
+    if (0) dump(&a, "lshifted 4095 times");
 }
 
 static void check_aaa(void)
@@ -555,7 +591,8 @@ static void check_mul(void)
     } tests[] = {
         { "ff", "01", "ff" },
         { "ff", "02", "01fe" },
-        { "ff", "ff", "fe01" }
+        { "ff", "ff", "fe01" },
+        { "ffffffffffffffff", "ffffffffffffffff", "fffffffffffffffe0000000000000001" },
     };
 
     size_t i, n = sizeof tests / sizeof *tests;
@@ -672,9 +709,9 @@ int main(void)
 	const char *invalid_chars = "foobar";
     bignum *dummy;
 
+	check_lshift();
     check_add();
 	check_sub();
-	check_lshift();
     check_aaa();
     check_mul();
     check_alloc();
