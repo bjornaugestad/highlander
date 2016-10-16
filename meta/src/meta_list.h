@@ -66,8 +66,7 @@ list list_copy(list lst, void*(*copier)(const void*), dtor dtor_fn);
 
 list list_add(list lst, void *data);
 
-list list_insert(list lst, void *data)
-	__attribute__((nonnull(1))); // data can be NULL
+list list_insert(list lst, void *data);
 
 status_t list_insert_before(list_iterator li, void *data)
 	__attribute__((warn_unused_result));

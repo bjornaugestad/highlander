@@ -50,7 +50,6 @@ status_t threadpool_add_work(
 
 
 status_t threadpool_destroy(threadpool tp, bool finish)
-	__attribute__((nonnull(1)))
 	__attribute__((warn_unused_result));
 
 unsigned long threadpool_sum_blocked(threadpool p)

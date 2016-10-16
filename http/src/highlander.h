@@ -426,8 +426,7 @@ int request_get_defered_read(http_request req)
 http_request request_new(void)
 	__attribute__((malloc));
 
-void request_free(http_request p)
-	__attribute__((nonnull(1)));
+void request_free(http_request p);
 
 status_t request_set_entity(http_request r, void *entity, size_t cb)
 	__attribute__((nonnull(1, 2)))

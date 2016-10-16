@@ -36,8 +36,7 @@ typedef struct connection_tag* connection;
 connection connection_new(int timeout_reads, int timeout_writes,
 	int retries_reads, int retries_writes, void *arg2);
 
-void connection_free(connection conn)
-	__attribute__((nonnull(1)));
+void connection_free(connection conn);
 
 void connection_recycle(connection conn)
 	__attribute__((nonnull(1)));
