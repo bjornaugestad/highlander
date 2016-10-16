@@ -188,7 +188,7 @@ struct general_header_tag {
 
 static bool general_header_flag_is_set(general_header gh, flagtype flag)
 {
-	assert(NULL != gh);
+	assert(gh != NULL);
 	assert(flag > 0);
 
 	return gh->flags & flag ? true : false;
@@ -196,7 +196,7 @@ static bool general_header_flag_is_set(general_header gh, flagtype flag)
 
 static void general_header_set_flag(general_header gh, flagtype flag)
 {
-	assert(NULL != gh);
+	assert(gh != NULL);
 	assert(flag > 0);
 
 	gh->flags |= flag;
@@ -204,7 +204,7 @@ static void general_header_set_flag(general_header gh, flagtype flag)
 
 static void general_header_clear_flags(general_header gh)
 {
-	assert(NULL != gh);
+	assert(gh != NULL);
 	gh->flags = 0;
 }
 
@@ -255,7 +255,7 @@ general_header general_header_new(void)
 
 void general_header_set_date(general_header gh, time_t value)
 {
-	assert(NULL != gh);
+	assert(gh != NULL);
 	assert(value != (time_t)-1);
 
 	gh->date = value;
@@ -264,8 +264,8 @@ void general_header_set_date(general_header gh, time_t value)
 
 status_t general_header_set_connection(general_header gh, const char* value)
 {
-	assert(NULL != gh);
-	assert(NULL != value);
+	assert(gh != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(gh->connection, value))
 		return failure;
@@ -277,7 +277,7 @@ status_t general_header_set_connection(general_header gh, const char* value)
 status_t general_header_set_pragma(general_header gh, const char* value)
 {
 	assert(NULL !=	gh);
-	assert(NULL != value);
+	assert(value != NULL);
 
 	if (!cstring_set(gh->pragma, value))
 		return failure;
@@ -288,8 +288,8 @@ status_t general_header_set_pragma(general_header gh, const char* value)
 
 status_t general_header_set_trailer(general_header gh, const char* value)
 {
-	assert(NULL != gh);
-	assert(NULL != value);
+	assert(gh != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(gh->trailer, value))
 		return failure;
@@ -300,8 +300,8 @@ status_t general_header_set_trailer(general_header gh, const char* value)
 
 status_t general_header_set_transfer_encoding(general_header gh, const char* value)
 {
-	assert(NULL != gh);
-	assert(NULL != value);
+	assert(gh != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(gh->transfer_encoding, value))
 		return failure;
@@ -312,8 +312,8 @@ status_t general_header_set_transfer_encoding(general_header gh, const char* val
 
 status_t general_header_set_upgrade(general_header gh, const char* value)
 {
-	assert(NULL != gh);
-	assert(NULL != value);
+	assert(gh != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(gh->upgrade, value))
 		return failure;
@@ -324,8 +324,8 @@ status_t general_header_set_upgrade(general_header gh, const char* value)
 
 status_t general_header_set_via(general_header gh, const char* value)
 {
-	assert(NULL != gh);
-	assert(NULL != value);
+	assert(gh != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(gh->via, value))
 		return failure;
@@ -336,8 +336,8 @@ status_t general_header_set_via(general_header gh, const char* value)
 
 status_t general_header_set_warning(general_header gh, const char* value)
 {
-	assert(NULL != gh);
-	assert(NULL != value);
+	assert(gh != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(gh->warning, value))
 		return failure;
@@ -348,19 +348,19 @@ status_t general_header_set_warning(general_header gh, const char* value)
 
 void general_header_set_no_cache(general_header gh)
 {
-	assert(NULL != gh);
+	assert(gh != NULL);
 	general_header_set_flag(gh, GENERAL_HEADER_NO_CACHE_SET);
 }
 
 void general_header_set_no_store(general_header gh)
 {
-	assert(NULL != gh);
+	assert(gh != NULL);
 	general_header_set_flag(gh, GENERAL_HEADER_NO_STORE_SET);
 }
 
 void general_header_set_max_age(general_header gh, int value)
 {
-	assert(NULL != gh);
+	assert(gh != NULL);
 
 	gh->max_age = value;
 	general_header_set_flag(gh, GENERAL_HEADER_MAX_AGE_SET);
@@ -368,7 +368,7 @@ void general_header_set_max_age(general_header gh, int value)
 
 void general_header_set_s_maxage(general_header gh, int value)
 {
-	assert(NULL != gh);
+	assert(gh != NULL);
 
 	gh->s_maxage = value;
 	general_header_set_flag(gh, GENERAL_HEADER_S_MAXAGE_SET);
@@ -376,7 +376,7 @@ void general_header_set_s_maxage(general_header gh, int value)
 
 void general_header_set_max_stale(general_header gh, int value)
 {
-	assert(NULL != gh);
+	assert(gh != NULL);
 
 	gh->max_stale = value;
 	general_header_set_flag(gh, GENERAL_HEADER_MAX_STALE_SET);
@@ -384,7 +384,7 @@ void general_header_set_max_stale(general_header gh, int value)
 
 void general_header_set_min_fresh(general_header gh, int value)
 {
-	assert(NULL != gh);
+	assert(gh != NULL);
 
 	gh->min_fresh = value;
 	general_header_set_flag(gh, GENERAL_HEADER_MIN_FRESH_SET);
@@ -392,37 +392,37 @@ void general_header_set_min_fresh(general_header gh, int value)
 
 void general_header_set_no_transform(general_header gh)
 {
-	assert(NULL != gh);
+	assert(gh != NULL);
 	general_header_set_flag(gh, GENERAL_HEADER_NO_TRANSFORM_SET);
 }
 
 void general_header_set_only_if_cached(general_header gh)
 {
-	assert(NULL != gh);
+	assert(gh != NULL);
 	general_header_set_flag(gh, GENERAL_HEADER_ONLY_IF_CACHED_SET);
 }
 
 void general_header_set_public(general_header gh)
 {
-	assert(NULL != gh);
+	assert(gh != NULL);
 	general_header_set_flag(gh, GENERAL_HEADER_PUBLIC_SET);
 }
 
 void general_header_set_private(general_header gh)
 {
-	assert(NULL != gh);
+	assert(gh != NULL);
 	general_header_set_flag(gh, GENERAL_HEADER_PRIVATE_SET);
 }
 
 void general_header_set_must_revalidate(general_header gh)
 {
-	assert(NULL != gh);
+	assert(gh != NULL);
 	general_header_set_flag(gh, GENERAL_HEADER_MUST_REVALIDATE_SET);
 }
 
 void general_header_set_proxy_revalidate(general_header gh)
 {
-	assert(NULL != gh);
+	assert(gh != NULL);
 	general_header_set_flag(gh, GENERAL_HEADER_PROXY_REVALIDATE_SET);
 }
 
@@ -1008,8 +1008,8 @@ static status_t parse_cache_control(general_header gh, const char* value, meta_e
 		 | cache-extension					   ; Section 14.9.6
 	*/
 
-	assert(NULL != gh);
-	assert(NULL != value);
+	assert(gh != NULL);
+	assert(value != NULL);
 
 	/* Loop through the values looking for separating space.
 	 * Then look for the actual word
@@ -1033,8 +1033,8 @@ static status_t parse_cache_control(general_header gh, const char* value, meta_e
 static status_t parse_date(general_header gh, const char* value, meta_error e)
 {
 	time_t d;
-	assert(NULL != gh);
-	assert(NULL != value);
+	assert(gh != NULL);
+	assert(value != NULL);
 
 	/* Parse date and create a time_t */
 	if ((d = parse_rfc822_date(value)) == -1)
@@ -1053,8 +1053,8 @@ static status_t parse_date(general_header gh, const char* value, meta_error e)
  */
 static status_t parse_connection(general_header gh, const char* value, meta_error e)
 {
-	assert(NULL != gh);
-	assert(NULL != value);
+	assert(gh != NULL);
+	assert(value != NULL);
 
 	if (strcasecmp(value, "keep-alive"))
 		value = "close";
@@ -1067,8 +1067,8 @@ static status_t parse_connection(general_header gh, const char* value, meta_erro
 
 static status_t parse_trailer(general_header gh, const char* value, meta_error e)
 {
-	assert(NULL != gh);
-	assert(NULL != value);
+	assert(gh != NULL);
+	assert(value != NULL);
 
 	if (!general_header_set_trailer(gh, value))
 		return set_os_error(e, errno);
@@ -1078,8 +1078,8 @@ static status_t parse_trailer(general_header gh, const char* value, meta_error e
 
 static status_t parse_upgrade(general_header gh, const char* value, meta_error e)
 {
-	assert(NULL != gh);
-	assert(NULL != value);
+	assert(gh != NULL);
+	assert(value != NULL);
 
 	/* Since we only understand http 1.0 and 1.1, I see
 	 * no reason whatsoever to support Upgrade.
@@ -1097,8 +1097,8 @@ static status_t parse_upgrade(general_header gh, const char* value, meta_error e
 
 static status_t parse_via(general_header gh, const char* value, meta_error e)
 {
-	assert(NULL != gh);
-	assert(NULL != value);
+	assert(gh != NULL);
+	assert(value != NULL);
 
 	/* NOTE: This is incorrect, we may receive multiple Via: 's */
 	if (!general_header_set_via(gh, value))

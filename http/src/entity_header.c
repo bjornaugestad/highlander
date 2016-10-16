@@ -56,7 +56,7 @@ struct entity_header_tag {
 
 static int entity_header_flag_is_set(entity_header eh, flagtype flag)
 {
-	assert(NULL != eh);
+	assert(eh != NULL);
 	assert(flag > 0);
 
 	return eh->flags & flag ? 1 : 0;
@@ -64,7 +64,7 @@ static int entity_header_flag_is_set(entity_header eh, flagtype flag)
 
 static void entity_header_set_flag(entity_header eh, flagtype flag)
 {
-	assert(NULL != eh);
+	assert(eh != NULL);
 	assert(flag > 0);
 
 	eh->flags |= flag;
@@ -72,7 +72,7 @@ static void entity_header_set_flag(entity_header eh, flagtype flag)
 
 static void entity_header_clear_flags(entity_header eh)
 {
-	assert(NULL != eh);
+	assert(eh != NULL);
 	eh->flags = 0;
 }
 
@@ -124,8 +124,8 @@ void entity_header_recycle(entity_header p)
 
 status_t entity_header_set_allow(entity_header eh, const char* value)
 {
-	assert(NULL != eh);
-	assert(NULL != value);
+	assert(eh != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(eh->allow, value))
 		return failure;
@@ -136,7 +136,7 @@ status_t entity_header_set_allow(entity_header eh, const char* value)
 
 void entity_header_set_expires(entity_header eh, time_t value)
 {
-	assert(NULL != eh);
+	assert(eh != NULL);
 
 	eh->expires = value;
 	entity_header_set_flag(eh, ENTITY_HEADER_EXPIRES_SET);
@@ -144,7 +144,7 @@ void entity_header_set_expires(entity_header eh, time_t value)
 
 void entity_header_set_last_modified(entity_header eh, time_t value)
 {
-	assert(NULL != eh);
+	assert(eh != NULL);
 
 	eh->last_modified = value;
 	entity_header_set_flag(eh, ENTITY_HEADER_LAST_MODIFIED_SET);
@@ -152,8 +152,8 @@ void entity_header_set_last_modified(entity_header eh, time_t value)
 
 status_t entity_header_set_content_language(entity_header eh, const char* value, meta_error e)
 {
-	assert(NULL != eh);
-	assert(NULL != value);
+	assert(eh != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(eh->content_language, value))
 		return set_os_error(e, errno);
@@ -164,7 +164,7 @@ status_t entity_header_set_content_language(entity_header eh, const char* value,
 
 void entity_header_set_content_length(entity_header eh, const size_t value)
 {
-	assert(NULL != eh);
+	assert(eh != NULL);
 
 	eh->content_length = value;
 	entity_header_set_flag(eh, ENTITY_HEADER_CONTENT_LENGTH_SET);
@@ -172,8 +172,8 @@ void entity_header_set_content_length(entity_header eh, const size_t value)
 
 status_t entity_header_set_content_encoding(entity_header eh, const char* value)
 {
-	assert(NULL != eh);
-	assert(NULL != value);
+	assert(eh != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(eh->content_encoding, value))
 		return failure;
@@ -184,8 +184,8 @@ status_t entity_header_set_content_encoding(entity_header eh, const char* value)
 
 status_t entity_header_set_content_type(entity_header eh, const char* value)
 {
-	assert(NULL != eh);
-	assert(NULL != value);
+	assert(eh != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(eh->content_type, value))
 		return failure;
@@ -197,8 +197,8 @@ status_t entity_header_set_content_type(entity_header eh, const char* value)
 
 status_t entity_header_set_content_md5(entity_header eh, const char* value)
 {
-	assert(NULL != eh);
-	assert(NULL != value);
+	assert(eh != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(eh->content_md5, value))
 		return failure;
@@ -209,8 +209,8 @@ status_t entity_header_set_content_md5(entity_header eh, const char* value)
 
 status_t entity_header_set_content_location(entity_header eh, const char* value)
 {
-	assert(NULL != eh);
-	assert(NULL != value);
+	assert(eh != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(eh->content_location, value))
 		return failure;
@@ -221,8 +221,8 @@ status_t entity_header_set_content_location(entity_header eh, const char* value)
 
 status_t entity_header_set_content_range(entity_header eh, const char* value)
 {
-	assert(NULL != eh);
-	assert(NULL != value);
+	assert(eh != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(eh->content_range, value))
 		return failure;
@@ -459,8 +459,8 @@ status_t entity_header_send_fields(entity_header eh, connection c)
 
 static status_t parse_content_encoding(entity_header eh, const char* value, meta_error e)
 {
-	assert(NULL != eh);
-	assert(NULL != value);
+	assert(eh != NULL);
+	assert(value != NULL);
 	/*
 	 * §14.11
 	 * Used as a modifier to the Content-Type
@@ -492,8 +492,8 @@ static status_t parse_content_length(entity_header eh, const char* value, meta_e
 	 * e.g. strtoul(), since strtoul() 1) removes WS and 2) stops
 	 * if it finds non-digits. We require digits in all bytes.
 	 */
-	assert(NULL != eh);
-	assert(NULL != value);
+	assert(eh != NULL);
+	assert(value != NULL);
 
 	if (!string2size_t(value, &len))
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
@@ -504,8 +504,8 @@ static status_t parse_content_length(entity_header eh, const char* value, meta_e
 
 static status_t parse_content_md5(entity_header eh, const char* value, meta_error e)
 {
-	assert(NULL != eh);
-	assert(NULL != value);
+	assert(eh != NULL);
+	assert(value != NULL);
 
 	if (!entity_header_set_allow(eh, value))
 		return set_os_error(e, errno);
@@ -524,8 +524,8 @@ static status_t eh_parse_multivalued_fields(
 	char buf[100];
 	char* s;
 
-	assert(NULL != dest);
-	assert(NULL != value);
+	assert(dest != NULL);
+	assert(value != NULL);
 
 	while ((s = strchr(value, sep)) != NULL) {
 		/* The correct type would be ptrdiff_t,
@@ -555,8 +555,8 @@ static status_t eh_parse_multivalued_fields(
  */
 static status_t parse_content_language(entity_header eh, const char* value, meta_error e)
 {
-	assert(NULL != eh);
-	assert(NULL != value);
+	assert(eh != NULL);
+	assert(value != NULL);
 
 	/*
 	 * NOTE: If we receive a document with content-language, then we
@@ -567,8 +567,8 @@ static status_t parse_content_language(entity_header eh, const char* value, meta
 
 static status_t parse_allow(entity_header eh, const char* value, meta_error e)
 {
-	assert(NULL != eh);
-	assert(NULL != value);
+	assert(eh != NULL);
+	assert(value != NULL);
 
 	if (!entity_header_set_allow(eh, value))
 		return set_os_error(e, errno);
@@ -578,8 +578,8 @@ static status_t parse_allow(entity_header eh, const char* value, meta_error e)
 
 static status_t parse_content_location(entity_header eh, const char* value, meta_error e)
 {
-	assert(NULL != eh);
-	assert(NULL != value);
+	assert(eh != NULL);
+	assert(value != NULL);
 
 	if (!entity_header_set_content_location(eh, value))
 		return set_os_error(e, errno);
@@ -589,8 +589,8 @@ static status_t parse_content_location(entity_header eh, const char* value, meta
 
 static status_t parse_content_range(entity_header eh, const char* value, meta_error e)
 {
-	assert(NULL != eh);
-	assert(NULL != value);
+	assert(eh != NULL);
+	assert(value != NULL);
 
 	if (!entity_header_set_content_range(eh, value))
 		return set_os_error(e, errno);
@@ -610,8 +610,8 @@ static status_t parse_expires(entity_header eh, const char* value, meta_error e)
 {
 	time_t t;
 
-	assert(NULL != eh);
-	assert(NULL != value);
+	assert(eh != NULL);
+	assert(value != NULL);
 
 	if ((t = parse_rfc822_date(value)) == (time_t)-1)
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
@@ -624,8 +624,8 @@ static status_t parse_last_modified(entity_header eh, const char* value, meta_er
 {
 	time_t t;
 
-	assert(NULL != eh);
-	assert(NULL != value);
+	assert(eh != NULL);
+	assert(value != NULL);
 
 	if ((t = parse_rfc822_date(value)) == (time_t)-1)
 		return set_http_error(e, HTTP_400_BAD_REQUEST);

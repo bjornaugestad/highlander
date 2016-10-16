@@ -156,7 +156,7 @@ entity_header response_get_entity_header(http_response r)
 
 const char* response_get_entity(http_response p)
 {
-	assert(NULL != p);
+	assert(p != NULL);
 
 	if (p->content_buffer_in_use)
 		return p->content_buffer;
@@ -320,8 +320,8 @@ static status_t response_send_header_fields(http_response p, connection conn)
 		{ RETRY_AFTER,			send_retry_after },
 	};
 
-	assert(NULL != p);
-	assert(NULL != conn);
+	assert(p != NULL);
+	assert(conn != NULL);
 
 	/*
 	 * Some fields are required by http. We add them if the
@@ -371,8 +371,8 @@ static bool need_quote(const char* s)
  */
 static status_t strcat_quoted(cstring dest, const char* s)
 {
-	assert(NULL != s);
-	assert(NULL != dest);
+	assert(s != NULL);
+	assert(dest != NULL);
 
 	if (!cstring_charcat(dest, '\''))
 		return failure;
@@ -459,8 +459,8 @@ static status_t send_cookie(cookie c, connection conn, meta_error e)
 	cstring s;
 	size_t count;
 
-	assert(NULL != c);
-	assert(NULL != conn);
+	assert(c != NULL);
+	assert(conn != NULL);
 
 	if ((s = cstring_new()) == NULL)
 		return set_os_error(e, ENOMEM);
@@ -485,8 +485,8 @@ static status_t response_send_cookies(http_response p, connection conn, meta_err
 {
 	list_iterator i;
 
-	assert(NULL != p);
-	assert(NULL != conn);
+	assert(p != NULL);
+	assert(conn != NULL);
 
 	for (i = list_first(p->cookies); !list_end(i); i = list_next(i)) {
 		cookie c;
@@ -532,15 +532,15 @@ static status_t response_send_header(
 
 status_t response_add(const http_response p, const char* value)
 {
-	assert(NULL != p);
-	assert(NULL != value);
+	assert(p != NULL);
+	assert(value != NULL);
 
 	return cstring_concat(p->entity, value);
 }
 
 status_t response_add_char(http_response p, int c)
 {
-	assert(NULL != p);
+	assert(p != NULL);
 	return cstring_charcat(p->entity, c);
 }
 
@@ -575,8 +575,8 @@ status_t response_printf(http_response page, const size_t needs_max, const char*
 	status_t status;
 	va_list ap;
 
-	assert(NULL != page);
-	assert(NULL != fmt);
+	assert(page != NULL);
+	assert(fmt != NULL);
 
 	va_start (ap, fmt);
 	status = cstring_vprintf(page->entity, needs_max, fmt, ap);
@@ -599,7 +599,7 @@ status_t response_set_cookie(http_response response, cookie new_cookie)
 		cookie c;
 
 		c = list_get(i);
-		assert(NULL != c);
+		assert(c != NULL);
 		nameOld = cookie_get_name(c);
 		if (0 == strcmp(nameNew, nameOld)) {
 			/* We have a duplicate */
@@ -654,9 +654,9 @@ status_t http_send_field(connection conn, const char* name, cstring value)
 {
 	size_t cb;
 
-	assert(NULL != conn);
-	assert(NULL != name);
-	assert(NULL != value);
+	assert(conn != NULL);
+	assert(name != NULL);
+	assert(value != NULL);
 
 	cb = strlen(name);
 	if (!connection_write(conn, name, cb))
@@ -690,32 +690,32 @@ size_t response_get_content_length(http_response p)
 
 status_t response_set_connection(http_response response, const char* value)
 {
-	assert(NULL != response);
+	assert(response != NULL);
 
 	return general_header_set_connection(response->general_header, value);
 }
 
 void response_set_date(http_response response, time_t value)
 {
-	assert(NULL != response);
+	assert(response != NULL);
 	general_header_set_date(response->general_header, value);
 }
 
 status_t response_set_pragma(http_response response, const char* value)
 {
-	assert(NULL != response);
+	assert(response != NULL);
 	return general_header_set_pragma(response->general_header, value);
 }
 
 status_t response_set_trailer(http_response response, const char* value)
 {
-	assert(NULL != response);
+	assert(response != NULL);
 	return general_header_set_trailer(response->general_header, value);
 }
 
 status_t response_set_transfer_encoding(http_response response, const char* value)
 {
-	assert(NULL != response);
+	assert(response != NULL);
 	return general_header_set_transfer_encoding(response->general_header, value);
 }
 
@@ -775,25 +775,25 @@ void response_set_cachecontrol_s_maxage(http_response response, int value)
 
 status_t response_set_upgrade(http_response response, const char* value)
 {
-	assert(NULL != response);
+	assert(response != NULL);
 	return general_header_set_upgrade(response->general_header, value);
 }
 
 status_t response_set_via(http_response response, const char* value)
 {
-	assert(NULL != response);
+	assert(response != NULL);
 	return general_header_set_via(response->general_header, value);
 }
 
 status_t response_set_warning(http_response response, const char* value)
 {
-	assert(NULL != response);
+	assert(response != NULL);
 	return general_header_set_warning(response->general_header, value);
 }
 
 void response_set_accept_ranges(http_response response, int value)
 {
-	assert(NULL != response);
+	assert(response != NULL);
 	assert(value == 0 || value == 1); /* send "none" or send "bytes" */
 
 	response->accept_ranges = value;
@@ -802,8 +802,8 @@ void response_set_accept_ranges(http_response response, int value)
 
 status_t response_set_etag(http_response response, const char* value)
 {
-	assert(NULL != response);
-	assert(NULL != value);
+	assert(response != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(response->etag, value))
 		return failure;
@@ -814,8 +814,8 @@ status_t response_set_etag(http_response response, const char* value)
 
 status_t response_set_location(http_response response, const char* value)
 {
-	assert(NULL != response);
-	assert(NULL != value);
+	assert(response != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(response->location, value))
 		return failure;
@@ -826,8 +826,8 @@ status_t response_set_location(http_response response, const char* value)
 
 status_t response_set_proxy_authenticate(http_response response, const char* value)
 {
-	assert(NULL != response);
-	assert(NULL != value);
+	assert(response != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(response->proxy_authenticate, value))
 		return failure;
@@ -838,7 +838,7 @@ status_t response_set_proxy_authenticate(http_response response, const char* val
 
 void response_set_retry_after(http_response response, time_t value)
 {
-	assert(NULL != response);
+	assert(response != NULL);
 	assert(value);
 
 	response->retry_after = value;
@@ -847,8 +847,8 @@ void response_set_retry_after(http_response response, time_t value)
 
 status_t response_set_server(http_response response, const char* value)
 {
-	assert(NULL != response);
-	assert(NULL != value);
+	assert(response != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(response->server, value))
 		return failure;
@@ -859,8 +859,8 @@ status_t response_set_server(http_response response, const char* value)
 
 status_t response_set_vary(http_response response, const char* value)
 {
-	assert(NULL != response);
-	assert(NULL != value);
+	assert(response != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(response->vary, value))
 		return failure;
@@ -871,8 +871,8 @@ status_t response_set_vary(http_response response, const char* value)
 
 status_t response_set_www_authenticate(http_response response, const char* value)
 {
-	assert(NULL != response);
-	assert(NULL != value);
+	assert(response != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(response->www_authenticate, value))
 		return failure;
@@ -883,67 +883,67 @@ status_t response_set_www_authenticate(http_response response, const char* value
 
 status_t response_set_allow(http_response response, const char* value)
 {
-	assert(NULL != response);
+	assert(response != NULL);
 	return entity_header_set_allow(response->entity_header, value);
 }
 
 status_t response_set_content_encoding(http_response response, const char* value)
 {
-	assert(NULL != response);
+	assert(response != NULL);
 	return entity_header_set_content_encoding(response->entity_header, value);
 }
 
 status_t response_set_content_language(http_response response, const char* value, meta_error e)
 {
-	assert(NULL != response);
+	assert(response != NULL);
 	return entity_header_set_content_language(response->entity_header, value, e);
 }
 
 void response_set_content_length(http_response response, size_t value)
 {
-	assert(NULL != response);
+	assert(response != NULL);
 	entity_header_set_content_length(response->entity_header, value);
 }
 
 status_t response_set_content_location(http_response response, const char* value)
 {
-	assert(NULL != response);
+	assert(response != NULL);
 	return entity_header_set_content_location(response->entity_header, value);
 }
 
 status_t response_set_content_md5(http_response response, const char* value)
 {
-	assert(NULL != response);
+	assert(response != NULL);
 	return entity_header_set_content_md5(response->entity_header, value);
 }
 
 status_t response_set_content_range(http_response response, const char* value)
 {
-	assert(NULL != response);
+	assert(response != NULL);
 	return entity_header_set_content_range(response->entity_header, value);
 }
 
 status_t response_set_content_type(http_response response, const char* value)
 {
-	assert(NULL != response);
+	assert(response != NULL);
 	return entity_header_set_content_type(response->entity_header, value);
 }
 
 void response_set_expires(http_response response, time_t value)
 {
-	assert(NULL != response);
+	assert(response != NULL);
 	entity_header_set_expires(response->entity_header, value);
 }
 
 void response_set_last_modified(http_response response, time_t value)
 {
-	assert(NULL != response);
+	assert(response != NULL);
 	entity_header_set_last_modified(response->entity_header, value);
 }
 
 void response_recycle(http_response p)
 {
-	assert(NULL != p);
+	assert(p != NULL);
 
 	/* Free cookies */
 	if (p->cookies) {

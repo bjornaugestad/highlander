@@ -29,7 +29,7 @@
 /* Ungrouped handlers */
 static status_t parse_connection(connection conn, const char* value, meta_error e)
 {
-	assert(NULL != value);
+	assert(value != NULL);
 	UNUSED(e);
 
 	if (strstr(value, "keep-alive"))
@@ -133,8 +133,8 @@ int parse_multivalued_fields(
 	char buf[100];
 	char* s;
 
-	assert(NULL != dest);
-	assert(NULL != value);
+	assert(dest != NULL);
+	assert(value != NULL);
 
 	while ((s = strchr(value, sep)) != NULL) {
 		/* The correct type would be ptrdiff_t,

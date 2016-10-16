@@ -584,11 +584,11 @@ http_request http_server_get_request(http_server srv)
 
 	assert(srv != NULL);
 
-	assert(NULL != srv);
-	assert(NULL != srv->requests);
+	assert(srv != NULL);
+	assert(srv->requests != NULL);
 
 	r = pool_get(srv->requests);
-	assert(NULL != r);
+	assert(r != NULL);
 	return r;
 }
 
@@ -596,11 +596,11 @@ http_response http_server_get_response(http_server srv)
 {
 	http_response r;
 
-	assert(NULL != srv);
-	assert(NULL != srv->requests);
+	assert(srv != NULL);
+	assert(srv->requests != NULL);
 
 	r = pool_get(srv->responses);
-	assert(NULL != r);
+	assert(r != NULL);
 	return r;
 }
 

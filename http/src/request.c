@@ -174,7 +174,7 @@ void request_free(http_request p)
 
 void request_recycle(http_request p)
 {
-	assert(NULL != p);
+	assert(p != NULL);
 
 	if (p->params != NULL) {
 		pair_free(p->params);
@@ -208,14 +208,14 @@ void request_recycle(http_request p)
 
 void request_set_method(http_request p, http_method method)
 {
-	assert(NULL != p);
+	assert(p != NULL);
 	p->method = method;
 }
 
 status_t request_set_uri(http_request p, const char *value)
 {
-	assert(NULL != p);
-	assert(NULL != value);
+	assert(p != NULL);
+	assert(value != NULL);
 	assert(strchr(value, '?') == NULL); /* Params must have been removed */
 
 	if (!cstring_set(p->uri, value))
@@ -227,7 +227,7 @@ status_t request_set_uri(http_request p, const char *value)
 
 void request_set_version(http_request p, http_version version)
 {
-	assert(NULL != p);
+	assert(p != NULL);
 	p->version = version;
 }
 
@@ -249,22 +249,22 @@ const char* request_get_referer(http_request p)
 
 http_method request_get_method(http_request p)
 {
-	assert(NULL != p);
+	assert(p != NULL);
 	return p->method;
 }
 
 http_version request_get_version(http_request p)
 {
-	assert(NULL != p);
+	assert(p != NULL);
 	return p->version;
 }
 
 status_t request_add_param(http_request p, const char *name, const char *value)
 {
-	assert(NULL != p);
-	assert(NULL != name);
+	assert(p != NULL);
+	assert(name != NULL);
 	assert(strlen(name) > 0);
-	assert(NULL != value);
+	assert(value != NULL);
 
 	if (NULL == p->params) {
 		if ((p->params = pair_new(20)) == NULL)
@@ -285,7 +285,7 @@ int request_get_parameter_count(const http_request p)
 
 const char* request_get_host(http_request p)
 {
-	assert(NULL != p);
+	assert(p != NULL);
 
 	if (request_flag_is_set(p, REQUEST_HOST_SET))
 		return c_str(p->host);
@@ -295,7 +295,7 @@ const char* request_get_host(http_request p)
 
 const char* request_get_parameter_name(http_request p, size_t i)
 {
-	assert(NULL != p);
+	assert(p != NULL);
 	return pair_get_name(p->params, i);
 }
 
@@ -315,7 +315,7 @@ const char* request_get_parameter_value(const http_request p, const char *pname)
 
 status_t request_add_cookie(http_request p, cookie c)
 {
-	assert(NULL != p);
+	assert(p != NULL);
 
 	if (NULL == p->cookies) {
 		if ((p->cookies = list_new()) == NULL)
@@ -328,7 +328,7 @@ status_t request_add_cookie(http_request p, cookie c)
 
 size_t request_get_cookie_count(const http_request p)
 {
-	assert(NULL != p);
+	assert(p != NULL);
 
 	if (NULL == p->cookies)
 		return 0;
@@ -338,15 +338,15 @@ size_t request_get_cookie_count(const http_request p)
 
 cookie request_get_cookie(const http_request p, size_t i)
 {
-	assert(NULL != p);
+	assert(p != NULL);
 
 	return list_get_item(p->cookies, i);
 }
 
 status_t request_set_accept(http_request r, const char *value, meta_error e)
 {
-	assert(NULL != r);
-	assert(NULL != value);
+	assert(r != NULL);
+	assert(value != NULL);
 
 	if (!cstring_concat(r->accept, value))
 		return set_os_error(e, errno);
@@ -357,8 +357,8 @@ status_t request_set_accept(http_request r, const char *value, meta_error e)
 
 status_t request_set_accept_charset(http_request r, const char *value, meta_error e)
 {
-	assert(NULL != r);
-	assert(NULL != value);
+	assert(r != NULL);
+	assert(value != NULL);
 
 	if (!cstring_concat(r->accept_charset, value))
 		return set_os_error(e, errno);
@@ -369,8 +369,8 @@ status_t request_set_accept_charset(http_request r, const char *value, meta_erro
 
 status_t request_set_accept_encoding(http_request r, const char *value, meta_error e)
 {
-	assert(NULL != r);
-	assert(NULL != value);
+	assert(r != NULL);
+	assert(value != NULL);
 
 	if (!cstring_concat(r->accept_encoding, value))
 		return set_os_error(e, errno);
@@ -381,8 +381,8 @@ status_t request_set_accept_encoding(http_request r, const char *value, meta_err
 
 status_t request_set_accept_language(http_request r, const char *value, meta_error e)
 {
-	assert(NULL != r);
-	assert(NULL != value);
+	assert(r != NULL);
+	assert(value != NULL);
 
 	if (!cstring_concat(r->accept_language, value))
 		return set_os_error(e, errno);
@@ -393,8 +393,8 @@ status_t request_set_accept_language(http_request r, const char *value, meta_err
 
 status_t request_set_authorization(http_request r, const char *value)
 {
-	assert(NULL != r);
-	assert(NULL != value);
+	assert(r != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(r->authorization, value))
 		return failure;
@@ -405,8 +405,8 @@ status_t request_set_authorization(http_request r, const char *value)
 
 status_t request_set_from(http_request r, const char *value)
 {
-	assert(NULL != r);
-	assert(NULL != value);
+	assert(r != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(r->from, value))
 		return failure;
@@ -417,7 +417,7 @@ status_t request_set_from(http_request r, const char *value)
 
 void request_set_if_modified_since(http_request r, time_t value)
 {
-	assert(NULL != r);
+	assert(r != NULL);
 	assert(value != (time_t)-1);
 
 	r->if_modified_since = value;
@@ -426,8 +426,8 @@ void request_set_if_modified_since(http_request r, time_t value)
 
 status_t request_set_referer(http_request r, const char *value)
 {
-	assert(NULL != r);
-	assert(NULL != value);
+	assert(r != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(r->referer, value))
 		return failure;
@@ -438,8 +438,8 @@ status_t request_set_referer(http_request r, const char *value)
 
 status_t request_set_user_agent(http_request r, const char *value)
 {
-	assert(NULL != r);
-	assert(NULL != value);
+	assert(r != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(r->user_agent, value))
 		return failure;
@@ -454,8 +454,8 @@ Not in use?
 
 int request_set_link(http_request r, const char *value)
 {
-	assert(NULL != r);
-	assert(NULL != value);
+	assert(r != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(r->link, value))
 		return set_os_error(e, ENOMEM);
@@ -466,8 +466,8 @@ int request_set_link(http_request r, const char *value)
 
 int request_set_title(http_request r, const char *value)
 {
-	assert(NULL != r);
-	assert(NULL != value);
+	assert(r != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(r->title, value))
 		return set_os_error(e, ENOMEM);
@@ -481,7 +481,7 @@ int request_set_title(http_request r, const char *value)
 
 status_t request_set_mime_version(http_request r, int major, int minor, meta_error e)
 {
-	assert(NULL != r);
+	assert(r != NULL);
 	assert(major);
 
 	/* We only understand MIME 1.0 */
@@ -496,8 +496,8 @@ status_t request_set_mime_version(http_request r, int major, int minor, meta_err
 
 status_t request_set_range(http_request r, const char *value)
 {
-	assert(NULL != r);
-	assert(NULL != value);
+	assert(r != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(r->range, value))
 		return failure;
@@ -508,8 +508,8 @@ status_t request_set_range(http_request r, const char *value)
 
 status_t request_set_te(http_request r, const char *value, meta_error e)
 {
-	assert(NULL != r);
-	assert(NULL != value);
+	assert(r != NULL);
+	assert(value != NULL);
 
 	if (!cstring_concat(r->te, value))
 		return set_os_error(e, errno);
@@ -520,8 +520,8 @@ status_t request_set_te(http_request r, const char *value, meta_error e)
 
 status_t request_set_expect(http_request r, const char *value)
 {
-	assert(NULL != r);
-	assert(NULL != value);
+	assert(r != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(r->expect, value))
 		return failure;
@@ -532,8 +532,8 @@ status_t request_set_expect(http_request r, const char *value)
 
 status_t request_set_host(http_request r, const char *value)
 {
-	assert(NULL != r);
-	assert(NULL != value);
+	assert(r != NULL);
+	assert(value != NULL);
 	assert(!request_flag_is_set(r, REQUEST_HOST_SET));
 
 	if (!cstring_set(r->host, value))
@@ -545,8 +545,8 @@ status_t request_set_host(http_request r, const char *value)
 
 status_t request_set_if_match(http_request r, const char *value)
 {
-	assert(NULL != r);
-	assert(NULL != value);
+	assert(r != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(r->if_match, value))
 		return failure;
@@ -557,8 +557,8 @@ status_t request_set_if_match(http_request r, const char *value)
 
 status_t request_set_if_none_match(http_request r, const char *value)
 {
-	assert(NULL != r);
-	assert(NULL != value);
+	assert(r != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(r->if_none_match, value))
 		return failure;
@@ -569,8 +569,8 @@ status_t request_set_if_none_match(http_request r, const char *value)
 
 status_t request_set_if_range(http_request r, const char *value)
 {
-	assert(NULL != r);
-	assert(NULL != value);
+	assert(r != NULL);
+	assert(value != NULL);
 
 	if (!cstring_set(r->if_range, value))
 		return failure;
@@ -581,7 +581,7 @@ status_t request_set_if_range(http_request r, const char *value)
 
 status_t request_set_if_unmodified_since(http_request r, time_t value)
 {
-	assert(NULL != r);
+	assert(r != NULL);
 	assert(value != (time_t)-1);
 
 	r->if_unmodified_since = value;
@@ -597,7 +597,7 @@ void request_set_max_forwards(http_request r, unsigned long value)
 
 static int request_flag_is_set(http_request r, flagtype flag)
 {
-	assert(NULL != r);
+	assert(r != NULL);
 	assert(flag > 0);
 
 	return r->flags & flag ? 1 : 0;
@@ -605,7 +605,7 @@ static int request_flag_is_set(http_request r, flagtype flag)
 
 static void request_set_flag(http_request r, flagtype flag)
 {
-	assert(NULL != r);
+	assert(r != NULL);
 	assert(flag > 0);
 
 	r->flags |= flag;
@@ -613,7 +613,7 @@ static void request_set_flag(http_request r, flagtype flag)
 
 static void request_clear_flags(http_request r)
 {
-	assert(NULL != r);
+	assert(r != NULL);
 	r->flags = 0;
 }
 
@@ -731,7 +731,7 @@ status_t request_set_entity(http_request p, void* entity, size_t cb)
 
 const char* request_get_user_agent(http_request p)
 {
-	assert(NULL != p);
+	assert(p != NULL);
 	if (request_flag_is_set(p, REQUEST_USER_AGENT_SET))
 		return c_str(p->user_agent);
 	else
@@ -969,8 +969,8 @@ static status_t req_parse_multivalued_fields(
 	char buf[100];
 	char* s;
 
-	assert(NULL != req);
-	assert(NULL != value);
+	assert(req != NULL);
+	assert(value != NULL);
 
 	while ((s = strchr(value, sep)) != NULL) {
 		/* The correct type would be ptrdiff_t,
@@ -995,8 +995,8 @@ static status_t req_parse_multivalued_fields(
 /* http request handlers */
 static status_t parse_authorization(http_request req, const char* value, meta_error e)
 {
-	assert(NULL != req);
-	assert(NULL != value);
+	assert(req != NULL);
+	assert(value != NULL);
 
 	if (!request_set_authorization(req, value))
 		return set_os_error(e, errno);
@@ -1006,8 +1006,8 @@ static status_t parse_authorization(http_request req, const char* value, meta_er
 
 static status_t parse_expect(http_request req, const char* value, meta_error e)
 {
-	assert(NULL != req);
-	assert(NULL != value);
+	assert(req != NULL);
+	assert(value != NULL);
 
 	if (!request_set_expect(req, value))
 		return set_os_error(e, errno);
@@ -1017,8 +1017,8 @@ static status_t parse_expect(http_request req, const char* value, meta_error e)
 
 static status_t parse_if_match(http_request req, const char* value, meta_error e)
 {
-	assert(NULL != req);
-	assert(NULL != value);
+	assert(req != NULL);
+	assert(value != NULL);
 
 	if (!request_set_if_match(req, value))
 		return set_os_error(e, errno);
@@ -1030,8 +1030,8 @@ static status_t parse_if_modified_since(http_request req, const char* value, met
 {
 	time_t d;
 
-	assert(NULL != req);
-	assert(NULL != value);
+	assert(req != NULL);
+	assert(value != NULL);
 
 	/* Parse date and create a time_t */
 	if ((d = parse_rfc822_date(value)) == (time_t)-1)
@@ -1043,8 +1043,8 @@ static status_t parse_if_modified_since(http_request req, const char* value, met
 
 static status_t parse_if_none_match(http_request req, const char* value, meta_error e)
 {
-	assert(NULL != req);
-	assert(NULL != value);
+	assert(req != NULL);
+	assert(value != NULL);
 
 	if (!request_set_if_none_match(req, value))
 		return set_os_error(e, errno);
@@ -1054,8 +1054,8 @@ static status_t parse_if_none_match(http_request req, const char* value, meta_er
 
 static status_t parse_if_range(http_request req, const char* value, meta_error e)
 {
-	assert(NULL != req);
-	assert(NULL != value);
+	assert(req != NULL);
+	assert(value != NULL);
 
 	if (!request_set_if_range(req, value))
 		return set_os_error(e, errno);
@@ -1067,8 +1067,8 @@ static status_t parse_max_forwards(http_request req, const char* value, meta_err
 {
 	unsigned long v;
 
-	assert(NULL != req);
-	assert(NULL != value);
+	assert(req != NULL);
+	assert(value != NULL);
 
 	if ((v = strtoul(value, NULL, 10)) == 0)
 		return set_http_error(e, HTTP_400_BAD_REQUEST);
@@ -1079,8 +1079,8 @@ static status_t parse_max_forwards(http_request req, const char* value, meta_err
 
 static status_t parse_proxy_authorization(http_request req, const char* value, meta_error e)
 {
-	assert(NULL != req);
-	assert(NULL != value);
+	assert(req != NULL);
+	assert(value != NULL);
 
 	if (!request_set_proxy_authorization(req, value))
 		return set_os_error(e, errno);
@@ -1092,8 +1092,8 @@ static status_t parse_if_unmodified_since(http_request req, const char* value, m
 {
 	time_t d;
 
-	assert(NULL != req);
-	assert(NULL != value);
+	assert(req != NULL);
+	assert(value != NULL);
 
 	/* Parse date and create a time_t */
 	if ((d = parse_rfc822_date(value)) == (time_t)-1)
@@ -1104,8 +1104,8 @@ static status_t parse_if_unmodified_since(http_request req, const char* value, m
 
 static status_t parse_range(http_request req, const char* value, meta_error e)
 {
-	assert(NULL != req);
-	assert(NULL != value);
+	assert(req != NULL);
+	assert(value != NULL);
 
 	if (!request_set_range(req, value))
 		return set_os_error(e, errno);
@@ -1115,8 +1115,8 @@ static status_t parse_range(http_request req, const char* value, meta_error e)
 
 static status_t parse_referer(http_request req, const char* value, meta_error e)
 {
-	assert(NULL != req);
-	assert(NULL != value);
+	assert(req != NULL);
+	assert(value != NULL);
 
 	if (!request_set_referer(req, value))
 		return set_os_error(e, errno);
@@ -1126,8 +1126,8 @@ static status_t parse_referer(http_request req, const char* value, meta_error e)
 
 static status_t parse_te(http_request req, const char* value, meta_error e)
 {
-	assert(NULL != req);
-	assert(NULL != value);
+	assert(req != NULL);
+	assert(value != NULL);
 	return req_parse_multivalued_fields(req, value, request_set_te, e);
 }
 
@@ -1135,8 +1135,8 @@ static status_t parse_mime_version(http_request r, const char* value, meta_error
 {
 	/* See rfc 2045 for syntax (MIME-Version=x.y) */
 	int major, minor;
-	assert(NULL != r);
-	assert(NULL != value);
+	assert(r != NULL);
+	assert(value != NULL);
 
 	major = 0;
 	while (*value != '\0' && *value != '.') {

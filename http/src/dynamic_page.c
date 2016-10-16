@@ -56,7 +56,7 @@ dynamic_page dynamic_new(const char* uri, PAGE_FUNCTION handler, page_attribute 
 
 void dynamic_free(dynamic_page p)
 {
-	assert(NULL != p);
+	assert(p != NULL);
 
 	if (p != NULL) {
 		attribute_free(p->attr);
@@ -67,28 +67,28 @@ void dynamic_free(dynamic_page p)
 
 const char* dynamic_get_uri(dynamic_page p)
 {
-	assert(NULL != p);
+	assert(p != NULL);
 	return c_str(p->uri);
 }
 
 status_t dynamic_set_uri(dynamic_page p, const char* value)
 {
-	assert(NULL != p);
-	assert(NULL != value);
+	assert(p != NULL);
+	assert(value != NULL);
 
 	return cstring_set(p->uri, value);
 }
 
 void dynamic_set_handler(dynamic_page p, PAGE_FUNCTION func)
 {
-	assert(NULL != p);
-	assert(NULL != func);
+	assert(p != NULL);
+	assert(func != NULL);
 	p->handler = func;
 }
 
 int dynamic_run(dynamic_page p, const http_request req, http_response response)
 {
-	assert(NULL != p);
+	assert(p != NULL);
 
 	return (*p->handler)(req, response);
 }
@@ -104,7 +104,7 @@ status_t dynamic_set_attributes(dynamic_page p, page_attribute a)
 
 page_attribute dynamic_get_attributes(dynamic_page p)
 {
-	assert(NULL != p);
+	assert(p != NULL);
 	return p->attr;
 }
 

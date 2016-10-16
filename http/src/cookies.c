@@ -75,40 +75,40 @@ void cookie_free(cookie p)
 
 status_t cookie_set_name(cookie c, const char *s)
 {
-	assert(NULL != c);
-	assert(NULL != s);
+	assert(c != NULL);
+	assert(s != NULL);
 
 	return cstring_set(c->name, s);
 }
 
 status_t cookie_set_value(cookie c, const char *s)
 {
-	assert(NULL != c);
-	assert(NULL != s);
+	assert(c != NULL);
+	assert(s != NULL);
 
 	return cstring_set(c->value, s);
 }
 
 status_t cookie_set_comment(cookie c, const char *s)
 {
-	assert(NULL != c);
-	assert(NULL != s);
+	assert(c != NULL);
+	assert(s != NULL);
 
 	return cstring_set(c->comment, s);
 }
 
 status_t cookie_set_domain(cookie c, const char *s)
 {
-	assert(NULL != c);
-	assert(NULL != s);
+	assert(c != NULL);
+	assert(s != NULL);
 
 	return cstring_set(c->domain, s);
 }
 
 status_t cookie_set_path(cookie c, const char *s)
 {
-	assert(NULL != c);
-	assert(NULL != s);
+	assert(c != NULL);
+	assert(s != NULL);
 
 	return cstring_set(c->path, s);
 }
@@ -117,14 +117,14 @@ void cookie_set_version(cookie c, int v)
 {
 	/* We only understand 0 and 1 */
 	assert(v == 0 || v == 1);
-	assert(NULL != c);
+	assert(c != NULL);
 
 	c->version = v;
 }
 
 void cookie_set_secure(cookie c, int v)
 {
-	assert(NULL != c);
+	assert(c != NULL);
 	assert(v == 0 || v == 1);
 
 	c->secure = v;
@@ -132,56 +132,56 @@ void cookie_set_secure(cookie c, int v)
 
 void cookie_set_max_age(cookie c, int v)
 {
-	assert(NULL != c);
+	assert(c != NULL);
 
 	c->max_age = v;
 }
 
 const char *cookie_get_name(cookie c)
 {
-	assert(NULL != c);
+	assert(c != NULL);
 	return c_str(c->name);
 }
 
 const char *cookie_get_value(cookie c)
 {
-	assert(NULL != c);
+	assert(c != NULL);
 	return c_str(c->value);
 }
 
 const char *cookie_get_comment(cookie c)
 {
-	assert(NULL != c);
+	assert(c != NULL);
 	return c_str(c->comment);
 }
 
 const char *cookie_get_domain(cookie c)
 {
-	assert(NULL != c);
+	assert(c != NULL);
 	return c_str(c->domain);
 }
 
 const char *cookie_get_path(cookie c)
 {
-	assert(NULL != c);
+	assert(c != NULL);
 	return c_str(c->path);
 }
 
 int cookie_get_version(cookie c)
 {
-	assert(NULL != c);
+	assert(c != NULL);
 	return c->version;
 }
 
 int cookie_get_secure(cookie c)
 {
-	assert(NULL != c);
+	assert(c != NULL);
 	return c->secure;
 }
 
 int cookie_get_max_age(cookie c)
 {
-	assert(NULL != c);
+	assert(c != NULL);
 	return c->max_age;
 }
 
@@ -416,8 +416,8 @@ status_t parse_new_cookie(http_request req, const char *value, meta_error e)
 {
 	cookie c;
 
-	assert(NULL != req);
-	assert(NULL != value);
+	assert(req != NULL);
+	assert(value != NULL);
 
 	if ((c = cookie_new()) == NULL)
 		return set_os_error(e, ENOMEM);

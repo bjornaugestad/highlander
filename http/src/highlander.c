@@ -176,7 +176,7 @@ status_t handle_dynamic(
 	int status = HTTP_200_OK;
 	http_version version;
 
-	assert(NULL != p);
+	assert(p != NULL);
 
 	version = request_get_version(req);
 	if (!fs_can_run(srv, req, p)) {

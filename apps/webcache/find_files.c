@@ -72,16 +72,16 @@ list find_new_files(const char* directories, cstring* patterns, size_t npatterns
     if (!walk_all_directories(directories, patterns, npatterns, lst, 1))
         goto err;
 
-	/* Now see if all files are int the cache */
-	i = list_first(lst); 
-	while (!list_end(i)) {
-		fileinfo fi = list_get(i);
-		assert(fi != NULL);
-		if (filecache_exists(g_filecache, fileinfo_alias(fi)))  
-			i = list_delete(lst, i, (dtor)fileinfo_free);
-		else 
-			i = list_next(i);
-	}
+    /* Now see if all files are int the cache */
+    i = list_first(lst); 
+    while (!list_end(i)) {
+        fileinfo fi = list_get(i);
+        assert(fi != NULL);
+        if (filecache_exists(g_filecache, fileinfo_alias(fi)))  
+            i = list_delete(lst, i, (dtor)fileinfo_free);
+        else 
+            i = list_next(i);
+    }
 
     return lst;
 
@@ -104,25 +104,25 @@ list find_modified_files(const char* directories, cstring* patterns, size_t npat
     if (!walk_all_directories(directories, patterns, npatterns, lst, 1))
         goto err;
 
-	/* Now see if all files are int the cache */
-	i = list_first(lst); 
-	while (!list_end(i)) {
-		fileinfo fi = list_get(i);
-		assert(fi != NULL);
+    /* Now see if all files are int the cache */
+    i = list_first(lst); 
+    while (!list_end(i)) {
+        fileinfo fi = list_get(i);
+        assert(fi != NULL);
 
-		diskfile = fileinfo_stat(fi);
-		assert(diskfile != NULL);
+        diskfile = fileinfo_stat(fi);
+        assert(diskfile != NULL);
 
-		if (!filecache_stat(g_filecache, fileinfo_alias(fi), &cachefile)
-		|| cachefile.st_mtime == diskfile->st_mtime)  {
-			verbose(3, "File %s is not modified\n", fileinfo_alias(fi));
-			i = list_delete(lst, i, (dtor)fileinfo_free);
-		}
-		else  {
-			verbose(2, "File %s is modified\n", fileinfo_alias(fi));
-			i = list_next(i);
-		}
-	}
+        if (!filecache_stat(g_filecache, fileinfo_alias(fi), &cachefile)
+        || cachefile.st_mtime == diskfile->st_mtime)  {
+            verbose(3, "File %s is not modified\n", fileinfo_alias(fi));
+            i = list_delete(lst, i, (dtor)fileinfo_free);
+        }
+        else  {
+            verbose(2, "File %s is modified\n", fileinfo_alias(fi));
+            i = list_next(i);
+        }
+    }
 
     return lst;
 
@@ -204,7 +204,7 @@ status_t walk_all_directories(const char* directories, cstring* patterns, size_t
 {
     cstring *pstr;
     size_t i, nelem;
-	status_t rc = success;
+    status_t rc = success;
     
     /* Split the directories argument and then walk each element in the path */
     if ( (nelem = cstring_split(&pstr, directories, " \t")) == 0)
@@ -214,9 +214,9 @@ status_t walk_all_directories(const char* directories, cstring* patterns, size_t
     for (i = 0; i < nelem; i++) {
         const char* rootdir = c_str(pstr[i]);
         if (!find_files(rootdir, rootdir, patterns, npatterns, lst, get_mimetype)) {
-			rc = failure;
-			break;
-		}
+            rc = failure;
+            break;
+        }
     }
 
     cstring_multifree(pstr, nelem);
@@ -226,35 +226,35 @@ status_t walk_all_directories(const char* directories, cstring* patterns, size_t
 
 static void get_basename(const char *name, const char *suffix, char *dest, size_t destsize)
 {
-	char *s;
-	size_t i;
+    char *s;
+    size_t i;
 
-	assert(name != NULL);
-	assert(dest != NULL);
-	assert(destsize > 1);
+    assert(name != NULL);
+    assert(dest != NULL);
+    assert(destsize > 1);
 
-	/* Locate the rightmost / to remove the directory part */
-	if ((s = strrchr(name, '/')) != NULL)
-		s++;	/* Skip the slash */
-	else
-		s = (char*)name; /* The cast is OK. :-) */
+    /* Locate the rightmost / to remove the directory part */
+    if ((s = strrchr(name, '/')) != NULL)
+        s++;    /* Skip the slash */
+    else
+        s = (char*)name; /* The cast is OK. :-) */
 
-	/* Now copy the filename part. */
-	strncpy(dest, s, destsize);
-	dest[destsize - 1] = '\0';
+    /* Now copy the filename part. */
+    strncpy(dest, s, destsize);
+    dest[destsize - 1] = '\0';
 
-	/* Locate the suffix, if any */
-	if (suffix == NULL || (s = strstr(dest, suffix)) == NULL)
-		return;
+    /* Locate the suffix, if any */
+    if (suffix == NULL || (s = strstr(dest, suffix)) == NULL)
+        return;
 
-	/* Be sure that the suffix actually is a suffix.
-	 * We do not want to remove .tar.gz from foo.tar.gz
-	 * if the suffix is .tar, so the suffix must be
-	 * at the end of the string.
-	 */
-	i = strlen(suffix);
-	if (s[i] == '\0')
-		*s = '\0';
+    /* Be sure that the suffix actually is a suffix.
+     * We do not want to remove .tar.gz from foo.tar.gz
+     * if the suffix is .tar, so the suffix must be
+     * at the end of the string.
+     */
+    i = strlen(suffix);
+    if (s[i] == '\0')
+        *s = '\0';
 }
 
 /*
