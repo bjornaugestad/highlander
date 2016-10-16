@@ -80,285 +80,285 @@
 
 /* Here is the response we are creating */
 struct http_response_tag {
-	http_version version;
-	int status; /* The http status code we send back */
+    http_version version;
+    int status; /* The http status code we send back */
 
-	general_header general_header;
-	entity_header entity_header;
+    general_header general_header;
+    entity_header entity_header;
 
-	/* Contains one bit for each field. "true" if field contains value. */
-	unsigned long flags;
+    /* Contains one bit for each field. "true" if field contains value. */
+    unsigned long flags;
 
-	/*
-	 * 4 of these fields are common to http 1.0 and http1.1
-	 * The fields are:
-	 *	location		See rfc1945, §10.11 for 1.0 doc
-	 *	server			See rfc1945, §10.14 for 1.0 doc
-	 *	www_authenticate	See rfc1945, §10.16 for 1.0 doc
-	 *	retry_after		See rfc1945, §D.2.8 for 1.0 doc
-	 *
-	 * All other fields are http 1.1 specific, but some are
-	 * commonly used as an extension of http 1.0, e.g. Host
-	 */
+    /*
+     * 4 of these fields are common to http 1.0 and http1.1
+     * The fields are:
+     *	location		See rfc1945, §10.11 for 1.0 doc
+     *	server			See rfc1945, §10.14 for 1.0 doc
+     *	www_authenticate	See rfc1945, §10.16 for 1.0 doc
+     *	retry_after		See rfc1945, §D.2.8 for 1.0 doc
+     *
+     * All other fields are http 1.1 specific, but some are
+     * commonly used as an extension of http 1.0, e.g. Host
+     */
 
-	unsigned long age;
-	int accept_ranges;			/* §14.5 */
-	cstring etag;				/* §14.19 */
-	cstring location;			/* §14.30 */
-	cstring proxy_authenticate;	/* §14.33 */
-	time_t retry_after;			/* §14.38 */
-	cstring server;				/* §14.39 */
-	cstring vary;				/* §14.44 */
-	cstring www_authenticate;	/* §14.47 */
+    unsigned long age;
+    int accept_ranges;			/* §14.5 */
+    cstring etag;				/* §14.19 */
+    cstring location;			/* §14.30 */
+    cstring proxy_authenticate;	/* §14.33 */
+    time_t retry_after;			/* §14.38 */
+    cstring server;				/* §14.39 */
+    cstring vary;				/* §14.44 */
+    cstring www_authenticate;	/* §14.47 */
 
-	/* Outgoing cookies */
-	list cookies;
+    /* Outgoing cookies */
+    list cookies;
 
-	/* We unfortunately need to store everything here to
-	 * support cookies properly */
-	cstring entity;
+    /* We unfortunately need to store everything here to
+     * support cookies properly */
+    cstring entity;
 
-	/* The page function can assign its own content buffer.	 */
-	void* content_buffer;
-	int content_buffer_in_use;
-	int content_free_when_done;
+    /* The page function can assign its own content buffer.	 */
+    void* content_buffer;
+    int content_buffer_in_use;
+    int content_free_when_done;
 
-	/* sometimes we want to send an entire file instead of
-	 * regular content. */
-	int send_file;
-	cstring path;
+    /* sometimes we want to send an entire file instead of
+     * regular content. */
+    int send_file;
+    cstring path;
 };
 
 static void response_set_flag(http_response p, unsigned long flag)
 {
-	p->flags |= flag;
+    p->flags |= flag;
 }
 
 static bool response_flag_isset(http_response p, unsigned long flag)
 {
-	return p->flags & flag;
+    return p->flags & flag;
 }
 
 static void response_clear_flags(http_response p)
 {
-	p->flags = 0;
+    p->flags = 0;
 }
 
 general_header response_get_general_header(http_response r)
 {
-	return r->general_header;
+    return r->general_header;
 }
 
 entity_header response_get_entity_header(http_response r)
 {
-	return r->entity_header;
+    return r->entity_header;
 }
 
 const char* response_get_entity(http_response p)
 {
-	assert(p != NULL);
+    assert(p != NULL);
 
-	if (p->content_buffer_in_use)
-		return p->content_buffer;
-	else
-		return c_str(p->entity);
+    if (p->content_buffer_in_use)
+        return p->content_buffer;
+    else
+        return c_str(p->entity);
 }
 
 void response_set_version(http_response r, http_version v)
 {
-	r->version = v;
+    r->version = v;
 }
 
 http_response response_new(void)
 {
-	http_response p;
-	cstring arr[8];
-	size_t nelem = sizeof arr / sizeof *arr;
+    http_response p;
+    cstring arr[8];
+    size_t nelem = sizeof arr / sizeof *arr;
 
-	if ((p = calloc(1, sizeof *p)) == NULL
-	|| !cstring_multinew(arr, nelem)) {
-		free(p);
-		return NULL;
-	}
+    if ((p = calloc(1, sizeof *p)) == NULL
+    || !cstring_multinew(arr, nelem)) {
+        free(p);
+        return NULL;
+    }
 
-	if ((p->general_header = general_header_new()) == NULL
-	||	(p->entity_header = entity_header_new()) == NULL) {
-		general_header_free(p->general_header);
-		cstring_multifree(arr, nelem);
-		free(p);
-		return NULL;
-	}
+    if ((p->general_header = general_header_new()) == NULL
+    ||	(p->entity_header = entity_header_new()) == NULL) {
+        general_header_free(p->general_header);
+        cstring_multifree(arr, nelem);
+        free(p);
+        return NULL;
+    }
 
-	if ((p->cookies = list_new()) == NULL) {
-		general_header_free(p->general_header);
-		entity_header_free(p->entity_header);
-		cstring_multifree(arr, nelem);
-		free(p);
-		return NULL;
-	}
+    if ((p->cookies = list_new()) == NULL) {
+        general_header_free(p->general_header);
+        entity_header_free(p->entity_header);
+        cstring_multifree(arr, nelem);
+        free(p);
+        return NULL;
+    }
 
 
-	p->version = VERSION_UNKNOWN;
-	p->status = 0;
-	p->flags = 0;
-	p->retry_after = (time_t)-1;
-	p->send_file = 0;
+    p->version = VERSION_UNKNOWN;
+    p->status = 0;
+    p->flags = 0;
+    p->retry_after = (time_t)-1;
+    p->send_file = 0;
 
-	p->etag = arr[0];
-	p->location = arr[1];
-	p->proxy_authenticate = arr[2];
-	p->server = arr[3];
-	p->vary = arr[4];
-	p->www_authenticate = arr[5];
-	p->entity = arr[6];
-	p->path = arr[7];
+    p->etag = arr[0];
+    p->location = arr[1];
+    p->proxy_authenticate = arr[2];
+    p->server = arr[3];
+    p->vary = arr[4];
+    p->www_authenticate = arr[5];
+    p->entity = arr[6];
+    p->path = arr[7];
 
-	/* Some defaults */
-	if (!response_set_content_type(p, "text/html")
-	|| !response_set_server(p, "Highlander")) {
-		response_free(p);
-		p = NULL;
-	}
+    /* Some defaults */
+    if (!response_set_content_type(p, "text/html")
+    || !response_set_server(p, "Highlander")) {
+        response_free(p);
+        p = NULL;
+    }
 
-	return p;
+    return p;
 }
 
 void response_set_status(http_response r, int status)
 {
-	assert(r != NULL);
+    assert(r != NULL);
 
-	r->status = status;
+    r->status = status;
 }
 
 void response_set_age(http_response r, unsigned long age)
 {
-	assert(r != NULL);
-	r->age = age;
-	response_set_flag(r, AGE);
+    assert(r != NULL);
+    r->age = age;
+    response_set_flag(r, AGE);
 }
 
 int response_get_status(http_response r)
 {
-	assert(r != NULL);
+    assert(r != NULL);
 
-	return r->status;
+    return r->status;
 }
 
 static status_t send_age(connection c, http_response p)
 {
-	return http_send_ulong(c, "Age: ", p->age);
+    return http_send_ulong(c, "Age: ", p->age);
 }
 
 static status_t send_etag(connection conn, http_response p)
 {
-	return http_send_field(conn, "ETag: ", p->etag);
+    return http_send_field(conn, "ETag: ", p->etag);
 }
 
 static status_t send_location(connection conn, http_response p)
 {
-	return http_send_field(conn, "Location: ", p->location);
+    return http_send_field(conn, "Location: ", p->location);
 }
 
 static status_t send_proxy_authenticate(connection conn, http_response p)
 {
-	return http_send_field(conn, "Proxy-Authenticate: ", p->proxy_authenticate);
+    return http_send_field(conn, "Proxy-Authenticate: ", p->proxy_authenticate);
 }
 
 static status_t send_server(connection conn, http_response p)
 {
-	return http_send_field(conn, "Server: ", p->server);
+    return http_send_field(conn, "Server: ", p->server);
 }
 
 static status_t send_vary(connection conn, http_response p)
 {
-	return http_send_field(conn, "Vary: ", p->vary);
+    return http_send_field(conn, "Vary: ", p->vary);
 }
 
 static status_t send_www_authenticate(connection conn, http_response p)
 {
-	return http_send_field(conn, "WWW-Authenticate: ", p->www_authenticate);
+    return http_send_field(conn, "WWW-Authenticate: ", p->www_authenticate);
 }
 
 
 static status_t send_retry_after(connection conn, http_response p)
 {
-	return http_send_date(conn, "Retry-After: ", p->retry_after);
+    return http_send_date(conn, "Retry-After: ", p->retry_after);
 }
 
 static status_t send_accept_ranges(connection conn, http_response p)
 {
-	size_t cch;
-	const char* s;
+    size_t cch;
+    const char* s;
 
-	if (p->accept_ranges == 1)
-		s = "Accept-Ranges: bytes\r\n";
-	else
-		s = "Accept-Ranges: none\r\n";
+    if (p->accept_ranges == 1)
+        s = "Accept-Ranges: bytes\r\n";
+    else
+        s = "Accept-Ranges: none\r\n";
 
-	cch = strlen(s);
-	return connection_write(conn, s, cch);
+    cch = strlen(s);
+    return connection_write(conn, s, cch);
 }
 
 
 static status_t response_send_header_fields(http_response p, connection conn)
 {
-	status_t status = success;
-	size_t i, cFields;
+    status_t status = success;
+    size_t i, cFields;
 
-	static const struct {
-		size_t flag;
-		status_t (*func)(connection, http_response);
-	} fields[] = {
-		{ AGE,					send_age },
-		{ ETAG,					send_etag },
-		{ LOCATION,				send_location },
-		{ PROXY_AUTHENTICATE,	send_proxy_authenticate },
-		{ SERVER,				send_server },
-		{ VARY,					send_vary },
-		{ WWW_AUTHENTICATE,		send_www_authenticate },
-		{ ACCEPT_RANGES,		send_accept_ranges },
-		{ RETRY_AFTER,			send_retry_after },
-	};
+    static const struct {
+        size_t flag;
+        status_t (*func)(connection, http_response);
+    } fields[] = {
+        { AGE,					send_age },
+        { ETAG,					send_etag },
+        { LOCATION,				send_location },
+        { PROXY_AUTHENTICATE,	send_proxy_authenticate },
+        { SERVER,				send_server },
+        { VARY,					send_vary },
+        { WWW_AUTHENTICATE,		send_www_authenticate },
+        { ACCEPT_RANGES,		send_accept_ranges },
+        { RETRY_AFTER,			send_retry_after },
+    };
 
-	assert(p != NULL);
-	assert(conn != NULL);
+    assert(p != NULL);
+    assert(conn != NULL);
 
-	/*
-	 * Some fields are required by http. We add them if the
-	 * user hasn't added them manually.
-	 */
-	if (!general_header_date_isset(p->general_header))
-		general_header_set_date(p->general_header, time(NULL));
+    /*
+     * Some fields are required by http. We add them if the
+     * user hasn't added them manually.
+     */
+    if (!general_header_date_isset(p->general_header))
+        general_header_set_date(p->general_header, time(NULL));
 
-	general_header_send_fields(p->general_header, conn);
-	entity_header_send_fields(p->entity_header, conn);
+    general_header_send_fields(p->general_header, conn);
+    entity_header_send_fields(p->entity_header, conn);
 
 
-	if (status) {
-		cFields = sizeof(fields) / sizeof(fields[0]);
-		for (i = 0; i < cFields; i++) {
-			if (response_flag_isset(p, fields[i].flag)) {
-				status = (*fields[i].func)(conn, p);
-				if (!status)
-					break;
-			}
-		}
-	}
+    if (status) {
+        cFields = sizeof(fields) / sizeof(fields[0]);
+        for (i = 0; i < cFields; i++) {
+            if (response_flag_isset(p, fields[i].flag)) {
+                status = (*fields[i].func)(conn, p);
+                if (!status)
+                    break;
+            }
+        }
+    }
 
-	return status;
+    return status;
 }
 
 /* return 1 if string needs to be quoted, 0 if not */
 static bool need_quote(const char* s)
 {
-	while (*s != '\0') {
-		if (!isalnum(*s) && *s != '_')
-			return true;
+    while (*s != '\0') {
+        if (!isalnum(*s) && *s != '_')
+            return true;
 
-		s++;
-	}
+        s++;
+    }
 
-	return false;
+    return false;
 }
 
 /*
@@ -371,25 +371,25 @@ static bool need_quote(const char* s)
  */
 static status_t strcat_quoted(cstring dest, const char* s)
 {
-	assert(s != NULL);
-	assert(dest != NULL);
+    assert(s != NULL);
+    assert(dest != NULL);
 
-	if (!cstring_charcat(dest, '\''))
-		return failure;
+    if (!cstring_charcat(dest, '\''))
+        return failure;
 
-	while (*s) {
-		if (*s == '\'') {
-			if (!cstring_charcat(dest, '\\'))
-				return failure;
-		}
+    while (*s) {
+        if (*s == '\'') {
+            if (!cstring_charcat(dest, '\\'))
+                return failure;
+        }
 
-		if (!cstring_charcat(dest, *s))
-			return failure;
+        if (!cstring_charcat(dest, *s))
+            return failure;
 
-		s++;
-	}
+        s++;
+    }
 
-	return cstring_charcat(dest, '\'');
+    return cstring_charcat(dest, '\'');
 }
 
 /*
@@ -398,626 +398,626 @@ static status_t strcat_quoted(cstring dest, const char* s)
  */
 static status_t create_cookie_string(cookie c, cstring str)
 {
-	const char* s;
-	int v;
+    const char* s;
+    int v;
 
-	if ((s = cookie_get_name(c)) == NULL)
-		return failure;
+    if ((s = cookie_get_name(c)) == NULL)
+        return failure;
 
-	if (!cstring_set(str, "Set-Cookie: "))
-		return failure;
+    if (!cstring_set(str, "Set-Cookie: "))
+        return failure;
 
-	if (!cstring_concat(str, s))
-		return failure;
+    if (!cstring_concat(str, s))
+        return failure;
 
-	/* Now get value and append. Remember to quote value if needed
-	 * NOTE: Netscape chokes, acc. to rfc2109, on quotes.
-	 * We therefore need to know the version and at least "quote when needed"
-	 */
-	s = cookie_get_value(c);
-	if (s) {
-		if (!cstring_charcat(str, '='))
-			return failure;
+    /* Now get value and append. Remember to quote value if needed
+     * NOTE: Netscape chokes, acc. to rfc2109, on quotes.
+     * We therefore need to know the version and at least "quote when needed"
+     */
+    s = cookie_get_value(c);
+    if (s) {
+        if (!cstring_charcat(str, '='))
+            return failure;
 
-		if (need_quote(c_str(str)) && !strcat_quoted(str, s))
-			return failure;
+        if (need_quote(c_str(str)) && !strcat_quoted(str, s))
+            return failure;
 
-		if (!cstring_concat(str, s))
-			return failure;
-	}
+        if (!cstring_concat(str, s))
+            return failure;
+    }
 
-	v = cookie_get_version(c);
-	if (!cstring_printf(str, 20, ";Version=%d", v))
-		return failure;
+    v = cookie_get_version(c);
+    if (!cstring_printf(str, 20, ";Version=%d", v))
+        return failure;
 
-	v = cookie_get_max_age(c);
-	if (v != MAX_AGE_NOT_SET
-	&& !cstring_printf(str, 20, ";Max-Age=%d", v))
-		return failure;
+    v = cookie_get_max_age(c);
+    if (v != MAX_AGE_NOT_SET
+    && !cstring_printf(str, 20, ";Max-Age=%d", v))
+        return failure;
 
-	v = cookie_get_secure(c);
-	if (!cstring_printf(str, 20, ";Secure=%d", v))
-		return failure;
+    v = cookie_get_secure(c);
+    if (!cstring_printf(str, 20, ";Secure=%d", v))
+        return failure;
 
-	s = cookie_get_domain(c);
-	if (s != NULL && !cstring_concat2(str, ";Domain=", s))
-		return failure;
+    s = cookie_get_domain(c);
+    if (s != NULL && !cstring_concat2(str, ";Domain=", s))
+        return failure;
 
-	s = cookie_get_comment(c);
-	if (s != NULL && !cstring_concat2(str, ";Comment=", s))
-		return failure;
+    s = cookie_get_comment(c);
+    if (s != NULL && !cstring_concat2(str, ";Comment=", s))
+        return failure;
 
-	s = cookie_get_path(c);
-	if (s != NULL && !cstring_concat2(str, ";Path=", s))
-		return failure;
+    s = cookie_get_path(c);
+    if (s != NULL && !cstring_concat2(str, ";Path=", s))
+        return failure;
 
-	return cstring_concat(str, "\r\n");
+    return cstring_concat(str, "\r\n");
 }
 
 static status_t send_cookie(cookie c, connection conn, meta_error e)
 {
-	cstring s;
-	size_t count;
+    cstring s;
+    size_t count;
 
-	assert(c != NULL);
-	assert(conn != NULL);
+    assert(c != NULL);
+    assert(conn != NULL);
 
-	if ((s = cstring_new()) == NULL)
-		return set_os_error(e, ENOMEM);
+    if ((s = cstring_new()) == NULL)
+        return set_os_error(e, ENOMEM);
 
-	if (!create_cookie_string(c, s)) {
-		cstring_free(s);
-		return set_os_error(e, ENOMEM);
-	}
+    if (!create_cookie_string(c, s)) {
+        cstring_free(s);
+        return set_os_error(e, ENOMEM);
+    }
 
-	count = cstring_length(s);
-	if (!connection_write(conn, c_str(s), count)) {
-		set_tcpip_error(e, errno);
-		cstring_free(s);
-		return failure;
-	}
+    count = cstring_length(s);
+    if (!connection_write(conn, c_str(s), count)) {
+        set_tcpip_error(e, errno);
+        cstring_free(s);
+        return failure;
+    }
 
-	cstring_free(s);
-	return success;
+    cstring_free(s);
+    return success;
 }
 
 static status_t response_send_cookies(http_response p, connection conn, meta_error e)
 {
-	list_iterator i;
+    list_iterator i;
 
-	assert(p != NULL);
-	assert(conn != NULL);
+    assert(p != NULL);
+    assert(conn != NULL);
 
-	for (i = list_first(p->cookies); !list_end(i); i = list_next(i)) {
-		cookie c;
+    for (i = list_first(p->cookies); !list_end(i); i = list_next(i)) {
+        cookie c;
 
-		c = list_get(i);
-		if (!send_cookie(c, conn, e))
-			return failure;
-	}
+        c = list_get(i);
+        if (!send_cookie(c, conn, e))
+            return failure;
+    }
 
-	return success;
+    return success;
 }
 
 
 static status_t response_send_header(
-	http_response response,
-	connection conn,
-	meta_error e)
+    http_response response,
+    connection conn,
+    meta_error e)
 {
-	if (response->version == VERSION_09)
-		/* No headers for http 0.9 */
-		return 0;
+    if (response->version == VERSION_09)
+        /* No headers for http 0.9 */
+        return 0;
 
-	/* Special stuff to support pers. conns in HTTP 1.0 */
-	if (connection_is_persistent(conn) 
-	&& response->version == VERSION_10
-	&& !response_set_connection(response, "Keep-Alive"))
-		return set_os_error(e, errno);
+    /* Special stuff to support pers. conns in HTTP 1.0 */
+    if (connection_is_persistent(conn) 
+    && response->version == VERSION_10
+    && !response_set_connection(response, "Keep-Alive"))
+        return set_os_error(e, errno);
 
-	if (!response_send_header_fields(response, conn))
-		return set_tcpip_error(e, errno);
+    if (!response_send_header_fields(response, conn))
+        return set_tcpip_error(e, errno);
 
-	/* Send cookies, if any */
-	if (response->cookies != NULL 
-	&& !response_send_cookies(response, conn, e))
-		return failure;
+    /* Send cookies, if any */
+    if (response->cookies != NULL 
+    && !response_send_cookies(response, conn, e))
+        return failure;
 
-	/* Send the \r\n separating all headers from an optional entity */
-	if (!connection_write(conn, "\r\n", 2))
-		return set_tcpip_error(e, errno);
+    /* Send the \r\n separating all headers from an optional entity */
+    if (!connection_write(conn, "\r\n", 2))
+        return set_tcpip_error(e, errno);
 
-	return success;
+    return success;
 }
 
 status_t response_add(const http_response p, const char* value)
 {
-	assert(p != NULL);
-	assert(value != NULL);
+    assert(p != NULL);
+    assert(value != NULL);
 
-	return cstring_concat(p->entity, value);
+    return cstring_concat(p->entity, value);
 }
 
 status_t response_add_char(http_response p, int c)
 {
-	assert(p != NULL);
-	return cstring_charcat(p->entity, c);
+    assert(p != NULL);
+    return cstring_charcat(p->entity, c);
 }
 
 status_t response_add_end(http_response response, const char* start, const char* end)
 {
-	return cstring_pcat(response->entity, start, end);
+    return cstring_pcat(response->entity, start, end);
 }
 
 void response_free(http_response p)
 {
-	if (p != NULL) {
-		/* Free cookies */
-		list_free(p->cookies, (void(*)(void*))cookie_free);
+    if (p != NULL) {
+        /* Free cookies */
+        list_free(p->cookies, (void(*)(void*))cookie_free);
 
-		general_header_free(p->general_header);
-		entity_header_free(p->entity_header);
-		cstring_free(p->etag);
-		cstring_free(p->location);
-		cstring_free(p->proxy_authenticate);
-		cstring_free(p->server);
-		cstring_free(p->vary);
-		cstring_free(p->www_authenticate);
-		cstring_free(p->entity);
-		cstring_free(p->path);
+        general_header_free(p->general_header);
+        entity_header_free(p->entity_header);
+        cstring_free(p->etag);
+        cstring_free(p->location);
+        cstring_free(p->proxy_authenticate);
+        cstring_free(p->server);
+        cstring_free(p->vary);
+        cstring_free(p->www_authenticate);
+        cstring_free(p->entity);
+        cstring_free(p->path);
 
-		free(p);
-	}
+        free(p);
+    }
 }
 
 status_t response_printf(http_response page, const size_t needs_max, const char* fmt, ...)
 {
-	status_t status;
-	va_list ap;
+    status_t status;
+    va_list ap;
 
-	assert(page != NULL);
-	assert(fmt != NULL);
+    assert(page != NULL);
+    assert(fmt != NULL);
 
-	va_start (ap, fmt);
-	status = cstring_vprintf(page->entity, needs_max, fmt, ap);
-	va_end(ap);
+    va_start (ap, fmt);
+    status = cstring_vprintf(page->entity, needs_max, fmt, ap);
+    va_end(ap);
 
-	return status;
+    return status;
 }
 
 
 status_t response_set_cookie(http_response response, cookie new_cookie)
 {
-	list_iterator i;
-	const char* nameNew;
+    list_iterator i;
+    const char* nameNew;
 
-	nameNew = cookie_get_name(new_cookie);
+    nameNew = cookie_get_name(new_cookie);
 
-	/* Lookup cookie to check for duplicates */
-	for (i = list_first(response->cookies); !list_end(i); i = list_next(i)) {
-		const char* nameOld;
-		cookie c;
+    /* Lookup cookie to check for duplicates */
+    for (i = list_first(response->cookies); !list_end(i); i = list_next(i)) {
+        const char* nameOld;
+        cookie c;
 
-		c = list_get(i);
-		assert(c != NULL);
-		nameOld = cookie_get_name(c);
-		if (0 == strcmp(nameNew, nameOld)) {
-			/* We have a duplicate */
-			errno = EINVAL;
-			return failure;
-		}
-	}
+        c = list_get(i);
+        assert(c != NULL);
+        nameOld = cookie_get_name(c);
+        if (0 == strcmp(nameNew, nameOld)) {
+            /* We have a duplicate */
+            errno = EINVAL;
+            return failure;
+        }
+    }
 
-	if (!list_add(response->cookies, new_cookie))
-		return failure;
+    if (!list_add(response->cookies, new_cookie))
+        return failure;
 
-	return success;
+    return success;
 }
 
 status_t http_send_date(connection conn, const char* name, time_t value)
 {
-	char date[100];
-	size_t cb;
-	struct tm t, *ptm = &t;
+    char date[100];
+    size_t cb;
+    struct tm t, *ptm = &t;
 
-	assert(name != NULL);
+    assert(name != NULL);
 
-	cb = strlen(name);
-	if (connection_write(conn, name, cb)) {
-		gmtime_r(&value, ptm);
-		cb = strftime(date, sizeof(date), "%a, %d %b %Y %H:%M:%S GMT\r\n", ptm);
-		return connection_write(conn, date, cb);
-	}
+    cb = strlen(name);
+    if (connection_write(conn, name, cb)) {
+        gmtime_r(&value, ptm);
+        cb = strftime(date, sizeof(date), "%a, %d %b %Y %H:%M:%S GMT\r\n", ptm);
+        return connection_write(conn, date, cb);
+    }
 
-	return failure;
+    return failure;
 }
 
 status_t http_send_string(connection conn, const char* s)
 {
-	assert(s != NULL);
+    assert(s != NULL);
 
-	size_t cb = strlen(s);
-	return connection_write(conn, s, cb);
+    size_t cb = strlen(s);
+    return connection_write(conn, s, cb);
 }
 
 status_t http_send_ulong(connection conn, const char* name, unsigned long value)
 {
-	char val[1000];
-	size_t cb = snprintf(val, sizeof val, "%s%lu", name, value);
-	if (cb >= sizeof val)
-		return failure;
+    char val[1000];
+    size_t cb = snprintf(val, sizeof val, "%s%lu", name, value);
+    if (cb >= sizeof val)
+        return failure;
 
-	return connection_write(conn, val, cb);
+    return connection_write(conn, val, cb);
 }
 
 status_t http_send_field(connection conn, const char* name, cstring value)
 {
-	size_t cb;
+    size_t cb;
 
-	assert(conn != NULL);
-	assert(name != NULL);
-	assert(value != NULL);
+    assert(conn != NULL);
+    assert(name != NULL);
+    assert(value != NULL);
 
-	cb = strlen(name);
-	if (!connection_write(conn, name, cb))
-		return failure;
+    cb = strlen(name);
+    if (!connection_write(conn, name, cb))
+        return failure;
 
-	cb = cstring_length(value);
-	if (!connection_write(conn, c_str(value), cb))
-		return failure;
+    cb = cstring_length(value);
+    if (!connection_write(conn, c_str(value), cb))
+        return failure;
 
-	return connection_write(conn, "\r\n", 2);
+    return connection_write(conn, "\r\n", 2);
 }
 
 size_t response_get_content_length(http_response p)
 {
-	size_t contentlen = 0;
+    size_t contentlen = 0;
 
-	assert(p != NULL);
-	assert(p->entity != NULL);
+    assert(p != NULL);
+    assert(p->entity != NULL);
 
-	if (entity_header_content_length_isset(p->entity_header)) {
-		contentlen = entity_header_get_content_length(p->entity_header);
-	}
-	else {
-		/* Shot in the dark, will not work for static pages */
-		contentlen = cstring_length(p->entity);
-	}
+    if (entity_header_content_length_isset(p->entity_header)) {
+        contentlen = entity_header_get_content_length(p->entity_header);
+    }
+    else {
+        /* Shot in the dark, will not work for static pages */
+        contentlen = cstring_length(p->entity);
+    }
 
-	return contentlen;
+    return contentlen;
 }
 
 
 status_t response_set_connection(http_response response, const char* value)
 {
-	assert(response != NULL);
+    assert(response != NULL);
 
-	return general_header_set_connection(response->general_header, value);
+    return general_header_set_connection(response->general_header, value);
 }
 
 void response_set_date(http_response response, time_t value)
 {
-	assert(response != NULL);
-	general_header_set_date(response->general_header, value);
+    assert(response != NULL);
+    general_header_set_date(response->general_header, value);
 }
 
 status_t response_set_pragma(http_response response, const char* value)
 {
-	assert(response != NULL);
-	return general_header_set_pragma(response->general_header, value);
+    assert(response != NULL);
+    return general_header_set_pragma(response->general_header, value);
 }
 
 status_t response_set_trailer(http_response response, const char* value)
 {
-	assert(response != NULL);
-	return general_header_set_trailer(response->general_header, value);
+    assert(response != NULL);
+    return general_header_set_trailer(response->general_header, value);
 }
 
 status_t response_set_transfer_encoding(http_response response, const char* value)
 {
-	assert(response != NULL);
-	return general_header_set_transfer_encoding(response->general_header, value);
+    assert(response != NULL);
+    return general_header_set_transfer_encoding(response->general_header, value);
 }
 
 void response_set_cachecontrol_public(http_response response)
 {
-	assert(response != NULL);
-	general_header_set_public(response->general_header);
+    assert(response != NULL);
+    general_header_set_public(response->general_header);
 }
 
 void response_set_cachecontrol_private(http_response response)
 {
-	assert(response != NULL);
-	general_header_set_private(response->general_header);
+    assert(response != NULL);
+    general_header_set_private(response->general_header);
 }
 
 void response_set_cachecontrol_no_cache(http_response response)
 {
-	assert(response != NULL);
-	general_header_set_no_cache(response->general_header);
+    assert(response != NULL);
+    general_header_set_no_cache(response->general_header);
 }
 
 void response_set_cachecontrol_no_store(http_response response)
 {
-	assert(response != NULL);
-	general_header_set_no_store(response->general_header);
+    assert(response != NULL);
+    general_header_set_no_store(response->general_header);
 }
 
 void response_set_cachecontrol_no_transform(http_response response)
 {
-	assert(response != NULL);
-	general_header_set_no_transform(response->general_header);
+    assert(response != NULL);
+    general_header_set_no_transform(response->general_header);
 }
 
 void response_set_cachecontrol_must_revalidate(http_response response)
 {
-	assert(response != NULL);
-	general_header_set_must_revalidate(response->general_header);
+    assert(response != NULL);
+    general_header_set_must_revalidate(response->general_header);
 }
 
 void response_set_cachecontrol_proxy_revalidate(http_response response)
 {
-	assert(response != NULL);
-	general_header_set_proxy_revalidate(response->general_header);
+    assert(response != NULL);
+    general_header_set_proxy_revalidate(response->general_header);
 }
 
 void response_set_cachecontrol_max_age(http_response response, int value)
 {
-	assert(response != NULL);
-	general_header_set_max_age(response->general_header, value);
+    assert(response != NULL);
+    general_header_set_max_age(response->general_header, value);
 }
 
 void response_set_cachecontrol_s_maxage(http_response response, int value)
 {
-	assert(response != NULL);
-	general_header_set_s_maxage(response->general_header, value);
+    assert(response != NULL);
+    general_header_set_s_maxage(response->general_header, value);
 }
 
 status_t response_set_upgrade(http_response response, const char* value)
 {
-	assert(response != NULL);
-	return general_header_set_upgrade(response->general_header, value);
+    assert(response != NULL);
+    return general_header_set_upgrade(response->general_header, value);
 }
 
 status_t response_set_via(http_response response, const char* value)
 {
-	assert(response != NULL);
-	return general_header_set_via(response->general_header, value);
+    assert(response != NULL);
+    return general_header_set_via(response->general_header, value);
 }
 
 status_t response_set_warning(http_response response, const char* value)
 {
-	assert(response != NULL);
-	return general_header_set_warning(response->general_header, value);
+    assert(response != NULL);
+    return general_header_set_warning(response->general_header, value);
 }
 
 void response_set_accept_ranges(http_response response, int value)
 {
-	assert(response != NULL);
-	assert(value == 0 || value == 1); /* send "none" or send "bytes" */
+    assert(response != NULL);
+    assert(value == 0 || value == 1); /* send "none" or send "bytes" */
 
-	response->accept_ranges = value;
-	response_set_flag(response, ACCEPT_RANGES);
+    response->accept_ranges = value;
+    response_set_flag(response, ACCEPT_RANGES);
 }
 
 status_t response_set_etag(http_response response, const char* value)
 {
-	assert(response != NULL);
-	assert(value != NULL);
+    assert(response != NULL);
+    assert(value != NULL);
 
-	if (!cstring_set(response->etag, value))
-		return failure;
+    if (!cstring_set(response->etag, value))
+        return failure;
 
-	response_set_flag(response, ETAG);
-	return success;
+    response_set_flag(response, ETAG);
+    return success;
 }
 
 status_t response_set_location(http_response response, const char* value)
 {
-	assert(response != NULL);
-	assert(value != NULL);
+    assert(response != NULL);
+    assert(value != NULL);
 
-	if (!cstring_set(response->location, value))
-		return failure;
+    if (!cstring_set(response->location, value))
+        return failure;
 
-	response_set_flag(response, LOCATION);
-	return success;
+    response_set_flag(response, LOCATION);
+    return success;
 }
 
 status_t response_set_proxy_authenticate(http_response response, const char* value)
 {
-	assert(response != NULL);
-	assert(value != NULL);
+    assert(response != NULL);
+    assert(value != NULL);
 
-	if (!cstring_set(response->proxy_authenticate, value))
-		return failure;
+    if (!cstring_set(response->proxy_authenticate, value))
+        return failure;
 
-	response_set_flag(response, PROXY_AUTHENTICATE);
-	return success;
+    response_set_flag(response, PROXY_AUTHENTICATE);
+    return success;
 }
 
 void response_set_retry_after(http_response response, time_t value)
 {
-	assert(response != NULL);
-	assert(value);
+    assert(response != NULL);
+    assert(value);
 
-	response->retry_after = value;
-	response_set_flag(response, RETRY_AFTER);
+    response->retry_after = value;
+    response_set_flag(response, RETRY_AFTER);
 }
 
 status_t response_set_server(http_response response, const char* value)
 {
-	assert(response != NULL);
-	assert(value != NULL);
+    assert(response != NULL);
+    assert(value != NULL);
 
-	if (!cstring_set(response->server, value))
-		return failure;
+    if (!cstring_set(response->server, value))
+        return failure;
 
-	response_set_flag(response, SERVER);
-	return success;
+    response_set_flag(response, SERVER);
+    return success;
 }
 
 status_t response_set_vary(http_response response, const char* value)
 {
-	assert(response != NULL);
-	assert(value != NULL);
+    assert(response != NULL);
+    assert(value != NULL);
 
-	if (!cstring_set(response->vary, value))
-		return failure;
+    if (!cstring_set(response->vary, value))
+        return failure;
 
-	response_set_flag(response, VARY);
-	return success;
+    response_set_flag(response, VARY);
+    return success;
 }
 
 status_t response_set_www_authenticate(http_response response, const char* value)
 {
-	assert(response != NULL);
-	assert(value != NULL);
+    assert(response != NULL);
+    assert(value != NULL);
 
-	if (!cstring_set(response->www_authenticate, value))
-		return failure;
+    if (!cstring_set(response->www_authenticate, value))
+        return failure;
 
-	response_set_flag(response, WWW_AUTHENTICATE);
-	return success;
+    response_set_flag(response, WWW_AUTHENTICATE);
+    return success;
 }
 
 status_t response_set_allow(http_response response, const char* value)
 {
-	assert(response != NULL);
-	return entity_header_set_allow(response->entity_header, value);
+    assert(response != NULL);
+    return entity_header_set_allow(response->entity_header, value);
 }
 
 status_t response_set_content_encoding(http_response response, const char* value)
 {
-	assert(response != NULL);
-	return entity_header_set_content_encoding(response->entity_header, value);
+    assert(response != NULL);
+    return entity_header_set_content_encoding(response->entity_header, value);
 }
 
 status_t response_set_content_language(http_response response, const char* value, meta_error e)
 {
-	assert(response != NULL);
-	return entity_header_set_content_language(response->entity_header, value, e);
+    assert(response != NULL);
+    return entity_header_set_content_language(response->entity_header, value, e);
 }
 
 void response_set_content_length(http_response response, size_t value)
 {
-	assert(response != NULL);
-	entity_header_set_content_length(response->entity_header, value);
+    assert(response != NULL);
+    entity_header_set_content_length(response->entity_header, value);
 }
 
 status_t response_set_content_location(http_response response, const char* value)
 {
-	assert(response != NULL);
-	return entity_header_set_content_location(response->entity_header, value);
+    assert(response != NULL);
+    return entity_header_set_content_location(response->entity_header, value);
 }
 
 status_t response_set_content_md5(http_response response, const char* value)
 {
-	assert(response != NULL);
-	return entity_header_set_content_md5(response->entity_header, value);
+    assert(response != NULL);
+    return entity_header_set_content_md5(response->entity_header, value);
 }
 
 status_t response_set_content_range(http_response response, const char* value)
 {
-	assert(response != NULL);
-	return entity_header_set_content_range(response->entity_header, value);
+    assert(response != NULL);
+    return entity_header_set_content_range(response->entity_header, value);
 }
 
 status_t response_set_content_type(http_response response, const char* value)
 {
-	assert(response != NULL);
-	return entity_header_set_content_type(response->entity_header, value);
+    assert(response != NULL);
+    return entity_header_set_content_type(response->entity_header, value);
 }
 
 void response_set_expires(http_response response, time_t value)
 {
-	assert(response != NULL);
-	entity_header_set_expires(response->entity_header, value);
+    assert(response != NULL);
+    entity_header_set_expires(response->entity_header, value);
 }
 
 void response_set_last_modified(http_response response, time_t value)
 {
-	assert(response != NULL);
-	entity_header_set_last_modified(response->entity_header, value);
+    assert(response != NULL);
+    entity_header_set_last_modified(response->entity_header, value);
 }
 
 void response_recycle(http_response p)
 {
-	assert(p != NULL);
+    assert(p != NULL);
 
-	/* Free cookies */
-	if (p->cookies) {
-		list_free(p->cookies, (void(*)(void*))cookie_free);
-		p->cookies = list_new();
-	}
+    /* Free cookies */
+    if (p->cookies) {
+        list_free(p->cookies, (void(*)(void*))cookie_free);
+        p->cookies = list_new();
+    }
 
-	general_header_recycle(p->general_header);
-	entity_header_recycle(p->entity_header);
-	cstring_recycle(p->entity);
-	cstring_recycle(p->path);
-	response_clear_flags(p);
-	if (!response_set_content_type(p, "text/html"))
-		warning("Probably out of memory\n");
+    general_header_recycle(p->general_header);
+    entity_header_recycle(p->entity_header);
+    cstring_recycle(p->entity);
+    cstring_recycle(p->path);
+    response_clear_flags(p);
+    if (!response_set_content_type(p, "text/html"))
+        warning("Probably out of memory\n");
 
-	#if 0
-	if (p->content_buffer_in_use && p->content_free_when_done) {
-		free(p->content_buffer);
-		p->content_buffer = 0;
-	}
-	#endif
-	p->content_buffer_in_use = 0;
-	p->content_free_when_done = 0;
-	p->send_file = 0;
+    #if 0
+    if (p->content_buffer_in_use && p->content_free_when_done) {
+        free(p->content_buffer);
+        p->content_buffer = 0;
+    }
+    #endif
+    p->content_buffer_in_use = 0;
+    p->content_free_when_done = 0;
+    p->send_file = 0;
 
-	cstring_recycle(p->etag);
-	cstring_recycle(p->location);
-	cstring_recycle(p->proxy_authenticate);
-	cstring_recycle(p->server);
-	cstring_recycle(p->vary);
-	cstring_recycle(p->www_authenticate);
+    cstring_recycle(p->etag);
+    cstring_recycle(p->location);
+    cstring_recycle(p->proxy_authenticate);
+    cstring_recycle(p->server);
+    cstring_recycle(p->vary);
+    cstring_recycle(p->www_authenticate);
 }
 
 void response_set_content_buffer(http_response p, void* data, size_t cb)
 {
-	response_set_flag(p, CONTENT_LENGTH);
-	p->content_buffer_in_use = 1;
-	p->content_buffer = data;
-	response_set_content_length(p, cb);
+    response_set_flag(p, CONTENT_LENGTH);
+    p->content_buffer_in_use = 1;
+    p->content_buffer = data;
+    response_set_content_length(p, cb);
 }
 
 void response_set_allocated_content_buffer(
-	http_response p,
-	void* src,
-	size_t n)
+    http_response p,
+    void* src,
+    size_t n)
 {
-	response_set_flag(p, CONTENT_LENGTH);
-	p->content_free_when_done = 1;
-	p->content_buffer_in_use = 1;
-	p->content_buffer = src;
-	response_set_content_length(p, n);
+    response_set_flag(p, CONTENT_LENGTH);
+    p->content_free_when_done = 1;
+    p->content_buffer_in_use = 1;
+    p->content_buffer = src;
+    response_set_content_length(p, n);
 }
 
 
 status_t response_send_file(http_response p, const char *path, const char* ctype, meta_error e)
 {
-	struct stat st;
-	assert(p != NULL);
-	assert(path != NULL);
-	assert(ctype != NULL);
+    struct stat st;
+    assert(p != NULL);
+    assert(path != NULL);
+    assert(ctype != NULL);
 
-	if (stat(path, &st))
-		return 0;
+    if (stat(path, &st))
+        return 0;
 
-	if (!response_set_content_type(p, ctype))
-		return set_os_error(e, errno);
+    if (!response_set_content_type(p, ctype))
+        return set_os_error(e, errno);
 
-	response_set_content_length(p, (size_t)st.st_size);
-	if (cstring_set(p->path, path)) {
-		p->send_file = 1;
-		return success;
-	}
+    response_set_content_length(p, (size_t)st.st_size);
+    if (cstring_set(p->path, path)) {
+        p->send_file = 1;
+        return success;
+    }
 
-	return set_os_error(e, errno);
+    return set_os_error(e, errno);
 }
 
 /*
@@ -1027,117 +1027,117 @@ status_t response_send_file(http_response p, const char *path, const char* ctype
  */
 static int send_entire_file(connection conn, const char *path, size_t *pcb)
 {
-	int fd, xsuccess = 1;
-	char buf[8192];
-	ssize_t cbRead;
+    int fd, xsuccess = 1;
+    char buf[8192];
+    ssize_t cbRead;
 
-	if ((fd = open(path, O_RDONLY)) == -1)
-		return 0;
+    if ((fd = open(path, O_RDONLY)) == -1)
+        return 0;
 
 // Note that sendfile() usage must change when using ssl. (probably)
 // boa 20130204
 #if 0
 #ifdef HAVE_SENDFILE
-	{
-		off_t offset = 0;
-		int fd_out = connection_get_fd(conn);
-		struct stat st;
-		if (fstat(fd, &st) == -1) {
-			close(fd);
-			return 0;
-		}
+    {
+        off_t offset = 0;
+        int fd_out = connection_get_fd(conn);
+        struct stat st;
+        if (fstat(fd, &st) == -1) {
+            close(fd);
+            return 0;
+        }
 
-		connection_flush(conn);
-		if (sendfile(fd_out, fd, &offset, st.st_size) == -1) {
-			if (errno == EINVAL || errno == ENOSYS) { /* see man page for sendfile */
-				goto fallback;
-			}
+        connection_flush(conn);
+        if (sendfile(fd_out, fd, &offset, st.st_size) == -1) {
+            if (errno == EINVAL || errno == ENOSYS) { /* see man page for sendfile */
+                goto fallback;
+            }
 
-			close(fd);
-			return 0;
-		}
-		else {
-			close(fd);
-			return 1;
-		}
-	}
+            close(fd);
+            return 0;
+        }
+        else {
+            close(fd);
+            return 1;
+        }
+    }
 
 fallback:
 
 #endif
 #endif
 
-	*pcb = 0;
-	while ((cbRead = read(fd, buf, sizeof buf)) > 0) {
-		*pcb += (size_t)cbRead;
-		if (!connection_write(conn, buf, (size_t)cbRead))
-			xsuccess = 0;
-		else if (!connection_flush(conn))
-			xsuccess = 0;
+    *pcb = 0;
+    while ((cbRead = read(fd, buf, sizeof buf)) > 0) {
+        *pcb += (size_t)cbRead;
+        if (!connection_write(conn, buf, (size_t)cbRead))
+            xsuccess = 0;
+        else if (!connection_flush(conn))
+            xsuccess = 0;
 
-		if (!xsuccess)
-			break;
-	}
+        if (!xsuccess)
+            break;
+    }
 
-	close(fd);
-	return xsuccess;
+    close(fd);
+    return xsuccess;
 }
 
 
 static status_t
 response_send_entity(http_response r, connection conn, size_t *pcb)
 {
-	status_t rc = success;
+    status_t rc = success;
 
-	if (r->content_buffer_in_use) {
-		size_t cb = response_get_content_length(r);
-		*pcb = cb;
-		if (cb > (64*1024)) {
-			int timeout = 1;
-			int retries = cb / 1024;
+    if (r->content_buffer_in_use) {
+        size_t cb = response_get_content_length(r);
+        *pcb = cb;
+        if (cb > (64*1024)) {
+            int timeout = 1;
+            int retries = cb / 1024;
 
-			rc = connection_write_big_buffer(
-				conn,
-				r->content_buffer,
-				cb,
-				timeout,
-				retries);
-		}
-		else
-			rc = connection_write(conn, r->content_buffer, cb);
+            rc = connection_write_big_buffer(
+                conn,
+                r->content_buffer,
+                cb,
+                timeout,
+                retries);
+        }
+        else
+            rc = connection_write(conn, r->content_buffer, cb);
 
-		if (r->content_free_when_done) {
-			free((void*)r->content_buffer);
-			r->content_buffer = NULL;
-		}
+        if (r->content_free_when_done) {
+            free((void*)r->content_buffer);
+            r->content_buffer = NULL;
+        }
 
-		if (!rc)
-			return failure;
-	}
-	else if (r->send_file) {
-		if (!send_entire_file(conn, c_str(r->path), pcb))
-			return failure;
-	}
-	else {
-		const char* entity = response_get_entity(r);
-		*pcb = response_get_content_length(r);
-		if (!connection_write(conn, entity, *pcb))
-			return failure;
-	}
+        if (!rc)
+            return failure;
+    }
+    else if (r->send_file) {
+        if (!send_entire_file(conn, c_str(r->path), pcb))
+            return failure;
+    }
+    else {
+        const char* entity = response_get_entity(r);
+        *pcb = response_get_content_length(r);
+        if (!connection_write(conn, entity, *pcb))
+            return failure;
+    }
 
-	return success;
+    return success;
 }
 
 #if 0
 static int write_406(connection conn, http_version v)
 {
-	int code = 406;
+    int code = 406;
 
-	/* http 1.0 has no 406, so we send a 400 instead */
-	if (v != VERSION_11)
-		code = 400;
+    /* http 1.0 has no 406, so we send a 400 instead */
+    if (v != VERSION_11)
+        code = 400;
 
-	return send_status_code(conn, code, v);
+    return send_status_code(conn, code, v);
 }
 
 /*
@@ -1147,18 +1147,18 @@ static int write_406(connection conn, http_version v)
  */
 static int http_send_content(int status)
 {
-	switch (status) {
-		case HTTP_200_OK:
-		case HTTP_400_BAD_REQUEST:
-		case HTTP_402_PAYMENT_REQUIRED:
-		case HTTP_403_FORBIDDEN:
-		case HTTP_404_NOT_FOUND:
-		case HTTP_405_METHOD_NOT_ALLOWED:
-		case HTTP_406_NOT_ACCEPTABLE:
-			return 1;
-		default:
-			return 0;
-	}
+    switch (status) {
+        case HTTP_200_OK:
+        case HTTP_400_BAD_REQUEST:
+        case HTTP_402_PAYMENT_REQUIRED:
+        case HTTP_403_FORBIDDEN:
+        case HTTP_404_NOT_FOUND:
+        case HTTP_405_METHOD_NOT_ALLOWED:
+        case HTTP_406_NOT_ACCEPTABLE:
+            return 1;
+        default:
+            return 0;
+    }
 }
 #endif
 
@@ -1174,239 +1174,239 @@ static int http_send_content(int status)
  */
 status_t response_send(http_response r, connection c, meta_error e, size_t *pcb)
 {
-	/* NOTE: 20060103
-	 * I have rewritten lots of stuff today and added general_header
-	 * and entity_header members. Due to that change, we need to double
-	 * check a few things here, before we start sending data to the client.
-	 * First of all we must set the correct content_length in the
-	 * entity_header.
-	 */
-	if (!entity_header_content_length_isset(r->entity_header)) {
-		/* Shot in the dark, will not work for static pages */
-		entity_header_set_content_length(r->entity_header, cstring_length(r->entity));
-	}
+    /* NOTE: 20060103
+     * I have rewritten lots of stuff today and added general_header
+     * and entity_header members. Due to that change, we need to double
+     * check a few things here, before we start sending data to the client.
+     * First of all we must set the correct content_length in the
+     * entity_header.
+     */
+    if (!entity_header_content_length_isset(r->entity_header)) {
+        /* Shot in the dark, will not work for static pages */
+        entity_header_set_content_length(r->entity_header, cstring_length(r->entity));
+    }
 
 
-	if (!send_status_code(c, r->status, r->version))
-		return set_tcpip_error(e, errno);
+    if (!send_status_code(c, r->status, r->version))
+        return set_tcpip_error(e, errno);
 
-	if (r->status != HTTP_200_OK && r->status != HTTP_404_NOT_FOUND) {
-		/* NOTE: Fix this later. Other statuses than 200 should also return
-		 * headers and content. It's done this way now since I'm in the
-		 * middle of a rather big rewrite...
-		 * boa, 2003-11-26
-		 */
+    if (r->status != HTTP_200_OK && r->status != HTTP_404_NOT_FOUND) {
+        /* NOTE: Fix this later. Other statuses than 200 should also return
+         * headers and content. It's done this way now since I'm in the
+         * middle of a rather big rewrite...
+         * boa, 2003-11-26
+         */
 
-		/* NOTE 2, 2003-12-15: OK, Now is the time to fix this, but WTF was
-		 * I supposed to do here? I cannot recall what the problem was. :-(
-		 * I assume that it was related to the fact that some status codes
-		 * implies that the entity is sent along with the status code,
-		 * and other status codes do not send the entity. Not that *I*
-		 * currently send anything but 200 and 404,
-		 * but even 404 implies a body.Hmm...
-		 * I've added the line below as a Q&D fix.
-		 */
-		response_send_header(r, c, e);
-		return failure;
-	}
+        /* NOTE 2, 2003-12-15: OK, Now is the time to fix this, but WTF was
+         * I supposed to do here? I cannot recall what the problem was. :-(
+         * I assume that it was related to the fact that some status codes
+         * implies that the entity is sent along with the status code,
+         * and other status codes do not send the entity. Not that *I*
+         * currently send anything but 200 and 404,
+         * but even 404 implies a body.Hmm...
+         * I've added the line below as a Q&D fix.
+         */
+        response_send_header(r, c, e);
+        return failure;
+    }
 
-	if (!response_send_header(r, c, e))
-		return failure;
+    if (!response_send_header(r, c, e))
+        return failure;
 
-	if (!response_send_entity(r, c, pcb))
-		return set_tcpip_error(e, errno);
+    if (!response_send_entity(r, c, pcb))
+        return set_tcpip_error(e, errno);
 
-	return success;
+    return success;
 }
 
 const char* response_get_connection(http_response response)
 {
-	assert(response != NULL);
-	return general_header_get_connection(response->general_header);
+    assert(response != NULL);
+    return general_header_get_connection(response->general_header);
 }
 
 status_t response_td(http_response page, const char* text)
 {
-	return cstring_concat3(page->entity, "<td>", text, "</td>\n");
+    return cstring_concat3(page->entity, "<td>", text, "</td>\n");
 }
 
 status_t response_br(http_response response)
 {
-	assert(response != NULL);
-	return cstring_concat(response->entity, "<br>");
+    assert(response != NULL);
+    return cstring_concat(response->entity, "<br>");
 }
 
 status_t response_hr(http_response response)
 {
-	assert(response != NULL);
-	return cstring_concat(response->entity, "<hr>");
+    assert(response != NULL);
+    return cstring_concat(response->entity, "<hr>");
 }
 
 status_t response_href(http_response response, const char* ref, const char* text)
 {
-	size_t cb;
-	const char* fmt = "<a href=\"%s\">%s</a>";
+    size_t cb;
+    const char* fmt = "<a href=\"%s\">%s</a>";
 
-	assert(response != NULL);
-	assert(ref != NULL);
-	assert(text != NULL);
+    assert(response != NULL);
+    assert(ref != NULL);
+    assert(text != NULL);
 
-	/* We need cb bytes, more or less. %s*2 == 4 bytes more than we need,
-	 * + 1 for the null character. This is therefore OK.
-	 */
-	cb = strlen(ref) + strlen(text) + strlen(fmt);
-	return cstring_printf(response->entity, cb, fmt, ref, text);
+    /* We need cb bytes, more or less. %s*2 == 4 bytes more than we need,
+     * + 1 for the null character. This is therefore OK.
+     */
+    cb = strlen(ref) + strlen(text) + strlen(fmt);
+    return cstring_printf(response->entity, cb, fmt, ref, text);
 }
 
 status_t response_p (http_response response, const char* s)
 {
-	assert(response != NULL);
-	assert(s != NULL);
+    assert(response != NULL);
+    assert(s != NULL);
 
-	return cstring_concat3(response->entity, "<p>", s, "</p>\n");
+    return cstring_concat3(response->entity, "<p>", s, "</p>\n");
 }
 
 status_t response_h1(http_response response, const char* s)
 {
-	assert(response != NULL);
-	assert(s != NULL);
+    assert(response != NULL);
+    assert(s != NULL);
 
-	return cstring_concat3(response->entity, "<h1>", s, "</h1>\n");
+    return cstring_concat3(response->entity, "<h1>", s, "</h1>\n");
 }
 
 status_t response_h2(http_response response, const char* s)
 {
-	assert(response != NULL);
-	assert(s != NULL);
+    assert(response != NULL);
+    assert(s != NULL);
 
-	return cstring_concat3(response->entity, "<h2>", s, "</h2>\n");
+    return cstring_concat3(response->entity, "<h2>", s, "</h2>\n");
 }
 
 status_t response_h3(http_response response, const char* s)
 {
-	assert(response != NULL);
-	assert(s != NULL);
+    assert(response != NULL);
+    assert(s != NULL);
 
-	return cstring_concat3(response->entity, "<h3>", s, "</h3>\n");
+    return cstring_concat3(response->entity, "<h3>", s, "</h3>\n");
 }
 
 status_t response_h4(http_response response, const char* s)
 {
-	assert(response != NULL);
-	assert(s != NULL);
+    assert(response != NULL);
+    assert(s != NULL);
 
-	return cstring_concat3(response->entity, "<h4>", s, "</h4>\n");
+    return cstring_concat3(response->entity, "<h4>", s, "</h4>\n");
 }
 
 status_t response_h5(http_response response, const char* s)
 {
-	assert(response != NULL);
-	assert(s != NULL);
+    assert(response != NULL);
+    assert(s != NULL);
 
-	return cstring_concat3(response->entity, "<h5>", s, "</h5>\n");
+    return cstring_concat3(response->entity, "<h5>", s, "</h5>\n");
 }
 
 status_t response_h6(http_response response, const char* s)
 {
-	assert(response != NULL);
-	assert(s != NULL);
+    assert(response != NULL);
+    assert(s != NULL);
 
-	return cstring_concat3(response->entity, "<h6>", s, "</h6>\n");
+    return cstring_concat3(response->entity, "<h6>", s, "</h6>\n");
 }
 
 status_t response_h7(http_response response, const char* s)
 {
-	assert(response != NULL);
-	assert(s != NULL);
+    assert(response != NULL);
+    assert(s != NULL);
 
-	return cstring_concat3(response->entity, "<h7>", s, "</h7>\n");
+    return cstring_concat3(response->entity, "<h7>", s, "</h7>\n");
 }
 
 status_t response_h8(http_response response, const char* s)
 {
-	assert(response != NULL);
-	assert(s != NULL);
+    assert(response != NULL);
+    assert(s != NULL);
 
-	return cstring_concat3(response->entity, "<h8>", s, "</h8>\n");
+    return cstring_concat3(response->entity, "<h8>", s, "</h8>\n");
 }
 
 status_t response_h9(http_response response, const char* s)
 {
-	assert(response != NULL);
-	assert(s != NULL);
+    assert(response != NULL);
+    assert(s != NULL);
 
-	assert(s != NULL);
+    assert(s != NULL);
 
-	return cstring_concat3(response->entity, "<h9>", s, "</h9>\n");
+    return cstring_concat3(response->entity, "<h9>", s, "</h9>\n");
 }
 
 status_t response_js_messagebox(http_response response, const char* text)
 {
-	const char* start = "<script language=\"javascript\">\nalert(\"";
-	const char* end = "\");\n</script>\n";
+    const char* start = "<script language=\"javascript\">\nalert(\"";
+    const char* end = "\");\n</script>\n";
 
-	assert(response != NULL);
-	assert(text != NULL);
+    assert(response != NULL);
+    assert(text != NULL);
 
-	return cstring_concat3(response->entity, start, text, end);
+    return cstring_concat3(response->entity, start, text, end);
 }
 
 /* response field functions */
 static status_t parse_age(http_response r, const char* value, meta_error e)
 {
-	unsigned long v;
-	assert(r != NULL);
-	assert(value != NULL);
+    unsigned long v;
+    assert(r != NULL);
+    assert(value != NULL);
 
-	if (!toulong(value, &v))
-		return set_http_error(e, HTTP_400_BAD_REQUEST);
+    if (!toulong(value, &v))
+        return set_http_error(e, HTTP_400_BAD_REQUEST);
 
-	response_set_age(r, v);
-	return success;
+    response_set_age(r, v);
+    return success;
 }
 
 static status_t parse_etag(http_response r, const char* value, meta_error e)
 {
-	assert(r != NULL);
-	assert(value != NULL);
+    assert(r != NULL);
+    assert(value != NULL);
 
-	if (!response_set_etag(r, value))
-		return set_os_error(e, errno);
+    if (!response_set_etag(r, value))
+        return set_os_error(e, errno);
 
-	return success;
+    return success;
 }
 
 static status_t parse_location(http_response r, const char* value, meta_error e)
 {
-	assert(r != NULL);
-	assert(value != NULL);
+    assert(r != NULL);
+    assert(value != NULL);
 
-	if (!response_set_location(r, value))
-		return set_os_error(e, errno);
+    if (!response_set_location(r, value))
+        return set_os_error(e, errno);
 
-	return success;
+    return success;
 }
 
 static status_t parse_www_authenticate(http_response r, const char* value, meta_error e)
 {
-	assert(r != NULL);
-	assert(value != NULL);
+    assert(r != NULL);
+    assert(value != NULL);
 
-	if (!response_set_www_authenticate(r, value))
-		return set_os_error(e, errno);
+    if (!response_set_www_authenticate(r, value))
+        return set_os_error(e, errno);
 
-	return success;
+    return success;
 }
 
 static status_t parse_server(http_response r, const char* value, meta_error e)
 {
-	assert(r != NULL);
-	assert(value != NULL);
+    assert(r != NULL);
+    assert(value != NULL);
 
-	if (!response_set_server(r, value))
-		return set_os_error(e, errno);
+    if (!response_set_server(r, value))
+        return set_os_error(e, errno);
 
-	return success;
+    return success;
 }
 
 /*
@@ -1416,30 +1416,30 @@ static status_t parse_server(http_response r, const char* value, meta_error e)
  */
 static status_t parse_accept_ranges(http_response r, const char* value, meta_error e)
 {
-	assert(r != NULL);
-	assert(value != NULL);
+    assert(r != NULL);
+    assert(value != NULL);
 
-	(void)e;
+    (void)e;
 
-	if (strcmp(value, "bytes") == 0)
-		response_set_accept_ranges(r, 1);
-	else if (strcmp(value, "none") == 0)
-		response_set_accept_ranges(r, 0);
+    if (strcmp(value, "bytes") == 0)
+        response_set_accept_ranges(r, 1);
+    else if (strcmp(value, "none") == 0)
+        response_set_accept_ranges(r, 0);
 
 
-	/* Silently ignore other range units */
-	return success;
+    /* Silently ignore other range units */
+    return success;
 }
 
 static status_t parse_proxy_authenticate(http_response r, const char* value, meta_error e)
 {
-	assert(r != NULL);
-	assert(value != NULL);
+    assert(r != NULL);
+    assert(value != NULL);
 
-	if (!response_set_proxy_authenticate(r, value))
-		return set_os_error(e, errno);
+    if (!response_set_proxy_authenticate(r, value))
+        return set_os_error(e, errno);
 
-	return success;
+    return success;
 }
 
 /*
@@ -1448,64 +1448,64 @@ static status_t parse_proxy_authenticate(http_response r, const char* value, met
  */
 static status_t parse_retry_after(http_response r, const char* value, meta_error e)
 {
-	time_t t;
-	long delta;
+    time_t t;
+    long delta;
 
-	assert(r != NULL);
-	assert(value != NULL);
+    assert(r != NULL);
+    assert(value != NULL);
 
-	if ((t = parse_rfc822_date(value)) != (time_t)-1)
-		response_set_retry_after(r, t);
-	else if ((delta = atol(value)) <= 0)
-		return set_http_error(e, HTTP_400_BAD_REQUEST);
-	else
-		response_set_retry_after(r, delta);
+    if ((t = parse_rfc822_date(value)) != (time_t)-1)
+        response_set_retry_after(r, t);
+    else if ((delta = atol(value)) <= 0)
+        return set_http_error(e, HTTP_400_BAD_REQUEST);
+    else
+        response_set_retry_after(r, delta);
 
-	return success;
+    return success;
 }
 
 static status_t parse_vary(http_response r, const char* value, meta_error e)
 {
-	assert(r != NULL);
-	assert(value != NULL);
+    assert(r != NULL);
+    assert(value != NULL);
 
-	if (!response_set_vary(r, value))
-		return set_os_error(e, errno);
+    if (!response_set_vary(r, value))
+        return set_os_error(e, errno);
 
-	return success;
+    return success;
 }
 static const struct response_mapper {
-	const char* name;
-	status_t (*handler)(http_response req, const char* value, meta_error e);
+    const char* name;
+    status_t (*handler)(http_response req, const char* value, meta_error e);
 } response_header_fields[] = {
-	{ "accept-ranges", parse_accept_ranges },
-	{ "age", parse_age },
-	{ "etag", parse_etag },
-	{ "location", parse_location },
-	{ "proxy-authenticate", parse_proxy_authenticate },
-	{ "retry-after", parse_retry_after },
-	{ "server", parse_server },
-	{ "vary", parse_vary },
-	{ "www-authenticate", parse_www_authenticate }
+    { "accept-ranges", parse_accept_ranges },
+    { "age", parse_age },
+    { "etag", parse_etag },
+    { "location", parse_location },
+    { "proxy-authenticate", parse_proxy_authenticate },
+    { "retry-after", parse_retry_after },
+    { "server", parse_server },
+    { "vary", parse_vary },
+    { "www-authenticate", parse_www_authenticate }
 };
 
 int find_response_header(const char* name)
 {
-	int i, nelem = sizeof response_header_fields / sizeof *response_header_fields;
-	for (i = 0; i < nelem; i++) {
-		if (strcmp(response_header_fields[i].name, name) == 0)
-			return i;
-	}
+    int i, nelem = sizeof response_header_fields / sizeof *response_header_fields;
+    for (i = 0; i < nelem; i++) {
+        if (strcmp(response_header_fields[i].name, name) == 0)
+            return i;
+    }
 
-	return -1;
+    return -1;
 }
 
 status_t parse_response_header(int idx, http_response req, const char* value, meta_error e)
 {
-	assert(idx >= 0);
-	assert((size_t)idx < sizeof response_header_fields / sizeof *response_header_fields);
+    assert(idx >= 0);
+    assert((size_t)idx < sizeof response_header_fields / sizeof *response_header_fields);
 
-	return response_header_fields[idx].handler(req, value, e);
+    return response_header_fields[idx].handler(req, value, e);
 }
 
 /* The response status line(§6.1) is
@@ -1514,48 +1514,48 @@ status_t parse_response_header(int idx, http_response req, const char* value, me
  */
 static status_t read_response_status_line(http_response response, connection conn, meta_error e)
 {
-	char *s, buf[CCH_STATUSLINE_MAX + 1];
-	int status_code;
-	enum http_version version;
+    char *s, buf[CCH_STATUSLINE_MAX + 1];
+    int status_code;
+    enum http_version version;
 
-	if (!read_line(conn, buf, sizeof(buf) - 1, e))
-		return failure;
+    if (!read_line(conn, buf, sizeof(buf) - 1, e))
+        return failure;
 
-	/* The string must start with either HTTP/1.0 or HTTP/1.1 SP */
-	if (strstr(buf, "HTTP/1.0 ") == buf)
-		version = VERSION_10;
-	else if (strstr(buf, "HTTP/1.1 ") == buf)
-		version = VERSION_11;
-	else
-		return set_http_error(e, HTTP_400_BAD_REQUEST);
+    /* The string must start with either HTTP/1.0 or HTTP/1.1 SP */
+    if (strstr(buf, "HTTP/1.0 ") == buf)
+        version = VERSION_10;
+    else if (strstr(buf, "HTTP/1.1 ") == buf)
+        version = VERSION_11;
+    else
+        return set_http_error(e, HTTP_400_BAD_REQUEST);
 
-	/* Skip version and first SP */
-	s = buf + 9;
+    /* Skip version and first SP */
+    s = buf + 9;
 
-	/* Double check that we still have the right format.
-	 * s[0], s[1] and s[2] MUST be a digit, s[3] MUST be a space
-	 */
-	if (!isdigit((int)s[0])
-	|| !isdigit((int)s[1])
-	|| !isdigit((int)s[2])
-	|| !isspace((int)s[3]))
-		return set_http_error(e, HTTP_400_BAD_REQUEST);
+    /* Double check that we still have the right format.
+     * s[0], s[1] and s[2] MUST be a digit, s[3] MUST be a space
+     */
+    if (!isdigit((int)s[0])
+    || !isdigit((int)s[1])
+    || !isdigit((int)s[2])
+    || !isspace((int)s[3]))
+        return set_http_error(e, HTTP_400_BAD_REQUEST);
 
-	status_code
-		= (s[0] - '0') * 100
-		+ (s[1] - '0') * 10
-		+ (s[2] - '0') * 1;
+    status_code
+        = (s[0] - '0') * 100
+        + (s[1] - '0') * 10
+        + (s[2] - '0') * 1;
 
-	/* Skip status code and SP */
-	s += 4;
+    /* Skip status code and SP */
+    s += 4;
 
-	/* We need the reason-phrase */
-	if (*s == '\0')
-		return set_http_error(e, HTTP_400_BAD_REQUEST);
+    /* We need the reason-phrase */
+    if (*s == '\0')
+        return set_http_error(e, HTTP_400_BAD_REQUEST);
 
-	response_set_status(response, status_code);
-	response_set_version(response, version);
-	return success;
+    response_set_status(response, status_code);
+    response_set_version(response, version);
+    return success;
 }
 
 /* Reads all (if any) http header fields */
@@ -1563,58 +1563,57 @@ static status_t
 read_response_header_fields(connection conn, http_response response, meta_error e)
 {
 
-	for (;;) {
-		char buf[CCH_FIELDNAME_MAX + CCH_FIELDVALUE_MAX + 10];
-		char name[CCH_FIELDNAME_MAX + 1];
-		char value[CCH_FIELDVALUE_MAX + 1];
+    for (;;) {
+        char buf[CCH_FIELDNAME_MAX + CCH_FIELDVALUE_MAX + 10];
+        char name[CCH_FIELDNAME_MAX + 1];
+        char value[CCH_FIELDVALUE_MAX + 1];
 
-		if (!read_line(conn, buf, sizeof buf, e))
-			return failure;
+        if (!read_line(conn, buf, sizeof buf, e))
+            return failure;
 
-		if (strlen(buf) == 0) {
-			/*
-			 * An empty buffer means that we have read the \r\n sequence
-			 * separating header fields from entities or terminating the
-			 * message. This means that there is no more header
-			 * fields to read.
-			 */
-			return success;
-		}
+        if (strlen(buf) == 0) {
+            /*
+             * An empty buffer means that we have read the \r\n sequence
+             * separating header fields from entities or terminating the
+             * message. This means that there is no more header
+             * fields to read.
+             */
+            return success;
+        }
 
-		if (!get_field_name(buf, name, sizeof name)
-		|| !get_field_value(buf, value, sizeof value))
-			return set_http_error(e, HTTP_400_BAD_REQUEST);
+        if (!get_field_name(buf, name, sizeof name)
+        || !get_field_value(buf, value, sizeof value))
+            return set_http_error(e, HTTP_400_BAD_REQUEST);
 
-		fs_lower(name);
-		if (!parse_response_headerfield(name, value, response, e))
-			return failure;
-	}
+        fs_lower(name);
+        if (!parse_response_headerfield(name, value, response, e))
+            return failure;
+    }
 }
 
 static bool allws(char *s)
 {
-	while (isspace(*s))
-		s++;
+    while (isspace(*s))
+        s++;
 
-	return *s == '\0';
+    return *s == '\0';
 }
 
 static status_t get_chunklen(connection conn, size_t *len)
 {
-	char buf[1024];
+    char buf[1024];
 
-	if (!connection_gets(conn, buf, sizeof buf))
-		return failure;
+    if (!connection_gets(conn, buf, sizeof buf))
+        return failure;
 
-	if (allws(buf) && !connection_gets(conn, buf, sizeof buf))
-		return failure;
+    if (allws(buf) && !connection_gets(conn, buf, sizeof buf))
+        return failure;
 
-	ltrim(buf);
-	rtrim(buf);
+    ltrim(buf);
+    rtrim(buf);
 
-	return hextosize_t(buf, len);
+    return hextosize_t(buf, len);
 }
-
 
 
 /* Chunked responses start with a chunk length on a separate line,
@@ -1625,166 +1624,166 @@ static status_t get_chunklen(connection conn, size_t *len)
  * the total size up front.
  */
 static status_t read_chunked_response(http_response this, connection conn,
-	size_t max_contentlen, meta_error e)
+    size_t max_contentlen, meta_error e)
 {
-	size_t chunklen, ntotal = 0;
-	ssize_t nread;
-	char *content = NULL, *tmp;
-	
-	for (;;) {
-		if (!get_chunklen(conn, &chunklen))
-			return failure;
+    size_t chunklen, ntotal = 0;
+    ssize_t nread;
+    char *content = NULL, *tmp;
+    
+    for (;;) {
+        if (!get_chunklen(conn, &chunklen))
+            return failure;
 
-		if (chunklen == 0)
-			break;
+        if (chunklen == 0)
+            break;
 
-		if (ntotal + chunklen > max_contentlen) {
-			free(content);
-			return set_app_error(e, ENOSPC);
-		}
+        if (ntotal + chunklen > max_contentlen) {
+            free(content);
+            return set_app_error(e, ENOSPC);
+        }
 
-		// Make sure we have memory to read into
-		tmp = realloc(content, ntotal + chunklen);
-		if (tmp == NULL) {
-			free(content);
-			return set_os_error(e, ENOSPC);
-		}
+        // Make sure we have memory to read into
+        tmp = realloc(content, ntotal + chunklen);
+        if (tmp == NULL) {
+            free(content);
+            return set_os_error(e, ENOSPC);
+        }
 
-		content = tmp;
+        content = tmp;
 
-		// Now read the chunk off the socket.
-		// Big chunks may cause timeout, so we loop
-		for(;;) {
-			nread = connection_read(conn, content + ntotal, chunklen);
-			if (nread < 0) {
-				free(content);
-				return failure;
-			}
+        // Now read the chunk off the socket.
+        // Big chunks may cause timeout, so we loop
+        for (;;) {
+            nread = connection_read(conn, content + ntotal, chunklen);
+            if (nread < 0) {
+                free(content);
+                return failure;
+            }
 
-			ntotal += nread;
-			chunklen -= nread;
-			if (chunklen == 0)
-				break;
-		}
-	}
+            ntotal += nread;
+            chunklen -= nread;
+            if (chunklen == 0)
+                break;
+        }
+    }
 
-	response_set_allocated_content_buffer(this, content, ntotal);
-	return success;
+    response_set_allocated_content_buffer(this, content, ntotal);
+    return success;
 }
 
 status_t response_receive(
-	http_response response,
-	connection conn,
-	size_t max_contentlen,
-	meta_error e)
+    http_response response,
+    connection conn,
+    size_t max_contentlen,
+    meta_error e)
 {
-	general_header gh = response_get_general_header(response);
-	entity_header eh = response_get_entity_header(response);
-	size_t contentlen;
-	void *content;
-	ssize_t nread;
+    general_header gh = response_get_general_header(response);
+    entity_header eh = response_get_entity_header(response);
+    size_t contentlen;
+    void *content;
+    ssize_t nread;
 
-	if (!read_response_status_line(response, conn, e))
-		return failure;
+    if (!read_response_status_line(response, conn, e))
+        return failure;
 
-	/* Now read and parse all fields (if any) */
-	if (!read_response_header_fields(conn, response, e))
-		return failure;
+    /* Now read and parse all fields (if any) */
+    if (!read_response_header_fields(conn, response, e))
+        return failure;
 
-	/* Now we hopefully have a content-length field. See if we can read
-	 * it or if it is too big. */
-	if (entity_header_content_length_isset(eh)) {
-		contentlen = entity_header_get_content_length(eh);
-		if (contentlen == 0)
-			return success;
+    /* Now we hopefully have a content-length field. See if we can read
+     * it or if it is too big. */
+    if (entity_header_content_length_isset(eh)) {
+        contentlen = entity_header_get_content_length(eh);
+        if (contentlen == 0)
+            return success;
 
-		if (contentlen > max_contentlen)
-			return set_app_error(e, ENOSPC);
-	}
-	else if (general_header_is_chunked_message(gh)) {
-		return read_chunked_response(response, conn, max_contentlen, e);
-	}
-	else {
-		/* No content length, then we MUST deal with a version 1.0 server.
-		 * Read until max_contentlen is reached or socket is closed.  */
-		contentlen = max_contentlen;
-	}
+        if (contentlen > max_contentlen)
+            return set_app_error(e, ENOSPC);
+    }
+    else if (general_header_is_chunked_message(gh)) {
+        return read_chunked_response(response, conn, max_contentlen, e);
+    }
+    else {
+        /* No content length, then we MUST deal with a version 1.0 server.
+         * Read until max_contentlen is reached or socket is closed.  */
+        contentlen = max_contentlen;
+    }
 
-	if ((content = malloc(contentlen)) == NULL)
-		return set_os_error(e, errno);
+    if ((content = malloc(contentlen)) == NULL)
+        return set_os_error(e, errno);
 
-	if ((nread = connection_read(conn, content, contentlen)) == -1) {
-		free(content);
-		return set_os_error(e, errno);
-	}
+    if ((nread = connection_read(conn, content, contentlen)) == -1) {
+        free(content);
+        return set_os_error(e, errno);
+    }
 
-	response_set_allocated_content_buffer(response, content, nread);
-	return success;
+    response_set_allocated_content_buffer(response, content, nread);
+    return success;
 }
 
 int response_dump(http_response r, void *file)
 {
-	FILE *f = file;
+    FILE *f = file;
 
-	/* Now our own fields */
-	const char* version = "Unknown";
-	switch (r->version) {
-		case VERSION_09:
-			version = "HTTP 0.9";
-			break;
+    /* Now our own fields */
+    const char* version = "Unknown";
+    switch (r->version) {
+        case VERSION_09:
+            version = "HTTP 0.9";
+            break;
 
-		case VERSION_10:
-			version = "HTTP/1.0";
-			break;
+        case VERSION_10:
+            version = "HTTP/1.0";
+            break;
 
-		case VERSION_11:
-			version = "HTTP/1.1";
-			break;
+        case VERSION_11:
+            version = "HTTP/1.1";
+            break;
 
-		case VERSION_UNKNOWN:
-		default:
-			version = "Unknown";
-			break;
-	}
+        case VERSION_UNKNOWN:
+        default:
+            version = "Unknown";
+            break;
+    }
 
-	fprintf(f, "Version: %s\n", version);
-	fprintf(f, "Status-Code: %d\n", r->status);
+    fprintf(f, "Version: %s\n", version);
+    fprintf(f, "Status-Code: %d\n", r->status);
 
-	if (response_flag_isset(r, AGE))
-		fprintf(f, "Age: %lu\n", r->age);
+    if (response_flag_isset(r, AGE))
+        fprintf(f, "Age: %lu\n", r->age);
 
-	general_header_dump(r->general_header, f);
-	entity_header_dump(r->entity_header, f);
+    general_header_dump(r->general_header, f);
+    entity_header_dump(r->entity_header, f);
 
-	if (response_flag_isset(r, ACCEPT_RANGES))
-		fprintf(f, "Accept-Ranges: %d\n", r->accept_ranges);
+    if (response_flag_isset(r, ACCEPT_RANGES))
+        fprintf(f, "Accept-Ranges: %d\n", r->accept_ranges);
 
-	if (response_flag_isset(r, ETAG))
-		fprintf(f, "ETag: %s\n", c_str(r->etag));
+    if (response_flag_isset(r, ETAG))
+        fprintf(f, "ETag: %s\n", c_str(r->etag));
 
-	if (response_flag_isset(r, LOCATION))
-		fprintf(f, "Location: %s\n", c_str(r->location));
+    if (response_flag_isset(r, LOCATION))
+        fprintf(f, "Location: %s\n", c_str(r->location));
 
-	if (response_flag_isset(r, PROXY_AUTHENTICATE))
-		fprintf(f, "Proxy-Authenticate: %s\n", c_str(r->proxy_authenticate));
+    if (response_flag_isset(r, PROXY_AUTHENTICATE))
+        fprintf(f, "Proxy-Authenticate: %s\n", c_str(r->proxy_authenticate));
 
-	if (response_flag_isset(r, RETRY_AFTER))
-		fprintf(f, "Retry-After: %lu\n", (unsigned long)r->retry_after);
+    if (response_flag_isset(r, RETRY_AFTER))
+        fprintf(f, "Retry-After: %lu\n", (unsigned long)r->retry_after);
 
-	if (response_flag_isset(r, SERVER))
-		fprintf(f, "Server: %s\n", c_str(r->server));
+    if (response_flag_isset(r, SERVER))
+        fprintf(f, "Server: %s\n", c_str(r->server));
 
-	if (response_flag_isset(r, VARY))
-		fprintf(f, "Vary: %s\n", c_str(r->vary));
+    if (response_flag_isset(r, VARY))
+        fprintf(f, "Vary: %s\n", c_str(r->vary));
 
-	if (response_flag_isset(r, WWW_AUTHENTICATE))
-		fprintf(f, "WWW-Authenticate: %s\n", c_str(r->www_authenticate));
+    if (response_flag_isset(r, WWW_AUTHENTICATE))
+        fprintf(f, "WWW-Authenticate: %s\n", c_str(r->www_authenticate));
 
-	list_iterator li;
-	for (li = list_first(r->cookies); !list_end(li); li = list_next(li)) {
-		cookie c = list_get(li);
-		cookie_dump(c, f);
-	}
+    list_iterator li;
+    for (li = list_first(r->cookies); !list_end(li); li = list_next(li)) {
+        cookie c = list_get(li);
+        cookie_dump(c, f);
+    }
 
-	return 1;
+    return 1;
 }

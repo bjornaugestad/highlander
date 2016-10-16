@@ -73,11 +73,11 @@ typedef struct fileinfo_tag* fileinfo;
  * key when we add other properties in the other caches.
  */
 struct filecache_tag {
-	stringmap filenames;
-	cache metacache; /* For struct stat entries */
-	pthread_rwlock_t lock;
-	size_t nelem;
-	size_t bytes;
+    stringmap filenames;
+    cache metacache; /* For struct stat entries */
+    pthread_rwlock_t lock;
+    size_t nelem;
+    size_t bytes;
 };
 
 fileinfo fileinfo_new(void) __attribute__((malloc));
@@ -85,31 +85,31 @@ fileinfo fileinfo_new(void) __attribute__((malloc));
 void fileinfo_free(fileinfo p);
 
 const struct stat* fileinfo_stat(fileinfo p)
-	__attribute__((nonnull(1)));
+    __attribute__((nonnull(1)));
 
 const char *fileinfo_name(fileinfo p)
-	__attribute__((nonnull(1)));
+    __attribute__((nonnull(1)));
 
 const char *fileinfo_alias(fileinfo p)
-	__attribute__((nonnull(1)));
+    __attribute__((nonnull(1)));
 
 const char *fileinfo_mimetype(fileinfo p)
-	__attribute__((nonnull(1)));
+    __attribute__((nonnull(1)));
 
 void fileinfo_set_stat(fileinfo p, const struct stat* pst)
-	__attribute__((nonnull(1, 2)));
+    __attribute__((nonnull(1, 2)));
 
 status_t fileinfo_set_name(fileinfo p, const char *s)
-	__attribute__((warn_unused_result))
-	__attribute__((nonnull(1, 2)));
+    __attribute__((warn_unused_result))
+    __attribute__((nonnull(1, 2)));
 
 status_t fileinfo_set_alias(fileinfo p, const char *s)
-	__attribute__((warn_unused_result))
-	__attribute__((nonnull(1, 2)));
+    __attribute__((warn_unused_result))
+    __attribute__((nonnull(1, 2)));
 
 status_t fileinfo_set_mimetype(fileinfo p, const char *s)
-	__attribute__((warn_unused_result))
-	__attribute__((nonnull(1, 2)));
+    __attribute__((warn_unused_result))
+    __attribute__((nonnull(1, 2)));
 
 
 /*
@@ -124,7 +124,7 @@ status_t fileinfo_set_mimetype(fileinfo p, const char *s)
  * and not the max number of elements in the cache.
  */
 filecache filecache_new(size_t nelem, size_t bytes)
-	__attribute__((malloc));
+    __attribute__((malloc));
 
 /*
  * Frees a filecache previously created with filecache_new()
@@ -150,7 +150,7 @@ void filecache_free(filecache fc);
  *
  */
 status_t filecache_add(filecache fc, fileinfo finfo, int pin, unsigned long* pid)
-	__attribute__((nonnull(1, 2, 4)));
+    __attribute__((nonnull(1, 2, 4)));
 
 
 /* Return the stringmap member.
@@ -158,7 +158,7 @@ status_t filecache_add(filecache fc, fileinfo finfo, int pin, unsigned long* pid
  */
 static inline stringmap filecache_filenames(filecache fc)
 {
-	return fc->filenames;
+    return fc->filenames;
 }
 
 
@@ -169,7 +169,7 @@ static inline stringmap filecache_filenames(filecache fc)
  * immediately after a call to this function.
  */
 int filecache_invalidate(filecache fc)
-	__attribute__((nonnull(1)));
+    __attribute__((nonnull(1)));
 
 /*
  * Returns the percentage of files read from disk versus
@@ -178,33 +178,33 @@ int filecache_invalidate(filecache fc)
  * @see filecache_get
  */
 double filecache_hitratio(filecache fc)
-	__attribute__((nonnull(1)));
+    __attribute__((nonnull(1)));
 
 /*
  * Gets a file from the cache.
  */
 status_t filecache_get(filecache fc, const char *filename,
-	void** pdata, size_t* pcb)
-	__attribute__((warn_unused_result))
-	__attribute__((nonnull(1, 2, 3, 4)));
+    void** pdata, size_t* pcb)
+    __attribute__((warn_unused_result))
+    __attribute__((nonnull(1, 2, 3, 4)));
 
 status_t filecache_get_mime_type(filecache fc, const char *filename,
-	char mime[], size_t cb)
-	__attribute__((warn_unused_result))
-	__attribute__((nonnull(1, 2, 3)));
+    char mime[], size_t cb)
+    __attribute__((warn_unused_result))
+    __attribute__((nonnull(1, 2, 3)));
 
 
 /* Returns 1 if a file exists, 0 if not */
 int filecache_exists(filecache fc, const char *filename)
-	__attribute__((nonnull(1, 2)));
+    __attribute__((nonnull(1, 2)));
 
 /*
  * Return a pointer to a struct stat object from the time we added
  * the file to the filecache, or NULL if the file isn't found.
  */
 status_t filecache_stat(filecache fc, const char *filename, struct stat* p)
-	__attribute__((warn_unused_result))
-	__attribute__((nonnull(1, 2, 3)));
+    __attribute__((warn_unused_result))
+    __attribute__((nonnull(1, 2, 3)));
 
 
 /* Call fn once for each element in the filecache, providing name of file
@@ -212,14 +212,14 @@ status_t filecache_stat(filecache fc, const char *filename, struct stat* p)
  * Function locks the filecache, so beware of deadlocks.
  */
 int filecache_foreach(filecache fc, int(*fn)(const char*s, void *arg), void *arg)
-	__attribute__((nonnull(1, 2, 3)));
+    __attribute__((nonnull(1, 2, 3)));
 
 /*
  * Return a pointer to the fileinfo metadata struct for a file, or NULL
  * if the file doesn't exist.
  */
 fileinfo filecache_fileinfo(filecache fc, const char *alias)
-	__attribute__((nonnull(1, 2)));
+    __attribute__((nonnull(1, 2)));
 
 
 #endif

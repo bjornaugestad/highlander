@@ -32,127 +32,127 @@
  * We store 1 of these per time unit.
  */
 struct handler {
-	size_t nthreads;
+    size_t nthreads;
 
-	/* Callback function pointer */
-	int (*callback)(void *buffer, void *arg);
+    /* Callback function pointer */
+    int (*callback)(void *buffer, void *arg);
 
-	/* Extra argument to callback */
-	void *arg;
+    /* Extra argument to callback */
+    void *arg;
 
-	/* Our own pthread_t, one for each thread within time unit */
-	pthread_t* threads;
+    /* Our own pthread_t, one for each thread within time unit */
+    pthread_t* threads;
 };
 
 /*
  * The Time Shared Buffer ADT
  */
 struct tsb_tag {
-	/* duration of one time unit, in milliseconds */
-	size_t unit_duration;
+    /* duration of one time unit, in milliseconds */
+    size_t unit_duration;
 
-	/* Units per frame */
-	size_t units_per_frame;
+    /* Units per frame */
+    size_t units_per_frame;
 
-	/* Generic pointer to the time shared buffer */
-	void *buffer;
+    /* Generic pointer to the time shared buffer */
+    void *buffer;
 
-	struct timeval epoch;
+    struct timeval epoch;
 
-	/* Pointer to the handlers, one for each time unit in the frame.
-	 * If the nthreads member is 0, then the entry is invalid.
-	 */
-	struct handler* handlers;
+    /* Pointer to the handlers, one for each time unit in the frame.
+     * If the nthreads member is 0, then the entry is invalid.
+     */
+    struct handler* handlers;
 
-	/*
-	 * The threads test this flag for shutdown notification.
-	 */
-	int shutdown_flag;
+    /*
+     * The threads test this flag for shutdown notification.
+     */
+    int shutdown_flag;
 };
 
 
 tsb* tsb_new(size_t unit_duration, size_t units_per_frame, void *buffer)
 {
-	tsb* p;
+    tsb* p;
 
-	assert(unit_duration != 0);
-	assert(units_per_frame != 0);
+    assert(unit_duration != 0);
+    assert(units_per_frame != 0);
 
-	if ((p = malloc(sizeof *p)) == NULL
-	||	(p->handlers = malloc(sizeof *p->handlers * units_per_frame)) == NULL) {
-		free(p);
-		p = NULL;
-	}
-	else {
-		p->unit_duration = unit_duration;
-		p->units_per_frame = units_per_frame;
-		p->buffer = buffer;
-		p->shutdown_flag = 0;
-		memset(p->handlers, '\0', sizeof *p->handlers * units_per_frame);
-	}
+    if ((p = malloc(sizeof *p)) == NULL
+    ||	(p->handlers = malloc(sizeof *p->handlers * units_per_frame)) == NULL) {
+        free(p);
+        p = NULL;
+    }
+    else {
+        p->unit_duration = unit_duration;
+        p->units_per_frame = units_per_frame;
+        p->buffer = buffer;
+        p->shutdown_flag = 0;
+        memset(p->handlers, '\0', sizeof *p->handlers * units_per_frame);
+    }
 
-	return p;
+    return p;
 }
 
 void tsb_free(tsb* p)
 {
-	size_t i;
-	assert(p != NULL);
-	assert(p->shutdown_flag); /* Don't free before shutdown */
+    size_t i;
+    assert(p != NULL);
+    assert(p->shutdown_flag); /* Don't free before shutdown */
 
-	for (i = 0; i < p->units_per_frame; i++) {
-		if (p->handlers[i].threads != NULL)
-			free(p->handlers[i].threads);
-	}
+    for (i = 0; i < p->units_per_frame; i++) {
+        if (p->handlers[i].threads != NULL)
+            free(p->handlers[i].threads);
+    }
 
-	free(p->handlers);
-	free(p);
+    free(p->handlers);
+    free(p);
 }
 
 const struct timeval* tsb_get_epoch(tsb* p)
 {
-	assert(p != NULL);
-	return &p->epoch;
+    assert(p != NULL);
+    return &p->epoch;
 }
 
 size_t tsb_get_unit_duration(tsb* p)
 {
-	assert(p != NULL);
-	return p->unit_duration;
+    assert(p != NULL);
+    return p->unit_duration;
 }
 
 size_t tsb_get_units_per_frame(tsb* p)
 {
-	assert(p != NULL);
-	return p->units_per_frame;
+    assert(p != NULL);
+    return p->units_per_frame;
 }
 
 void *tsb_get_buffer(tsb* p)
 {
-	assert(p != NULL);
-	return p->buffer;
+    assert(p != NULL);
+    return p->buffer;
 }
 
 int tsb_set_threads(
-	tsb *p,
-	size_t iunit,
-	size_t nthreads,
-	int (*callback)(void *buf, void *arg),
-	void *arg)
+    tsb *p,
+    size_t iunit,
+    size_t nthreads,
+    int (*callback)(void *buf, void *arg),
+    void *arg)
 {
-	assert(p != NULL);
-	assert(p->handlers != NULL);
-	assert(iunit < p->units_per_frame);
-	assert(nthreads > 0);
-	assert(callback != NULL);
+    assert(p != NULL);
+    assert(p->handlers != NULL);
+    assert(iunit < p->units_per_frame);
+    assert(nthreads > 0);
+    assert(callback != NULL);
 
-	p->handlers[iunit].nthreads = nthreads;
-	p->handlers[iunit].callback = callback;
-	p->handlers[iunit].arg = arg;
-	if ((p->handlers[iunit].threads = calloc(nthreads, sizeof *p->handlers[iunit].threads)) == NULL)
-		return 0;
+    p->handlers[iunit].nthreads = nthreads;
+    p->handlers[iunit].callback = callback;
+    p->handlers[iunit].arg = arg;
+    if ((p->handlers[iunit].threads = calloc(nthreads, sizeof *p->handlers[iunit].threads)) == NULL)
+        return 0;
 
-	return 1;
+    return 1;
 }
 
 /*
@@ -160,26 +160,26 @@ int tsb_set_threads(
  * Recall that a unit == time unit, which is specified in milliseconds
  */
 static size_t units_since_epoch(
-	struct timeval* epoch,
-	struct timeval* now,
-	size_t unit_duration)
+    struct timeval* epoch,
+    struct timeval* now,
+    size_t unit_duration)
 {
-	struct timeval diff;
-	size_t ms, units;
+    struct timeval diff;
+    size_t ms, units;
 
-	/* Compute difference in time */
-	timersub(now, epoch, &diff);
+    /* Compute difference in time */
+    timersub(now, epoch, &diff);
 
-	/* Now we have time elapsed since (our) epoch.
-	 * How many units have passed?
-	 */
-	units = diff.tv_sec * (1000 / unit_duration);
+    /* Now we have time elapsed since (our) epoch.
+     * How many units have passed?
+     */
+    units = diff.tv_sec * (1000 / unit_duration);
 
-	/* Now for the microseconds */
-	ms = (diff.tv_usec / 1000);
+    /* Now for the microseconds */
+    ms = (diff.tv_usec / 1000);
 
-	units += (ms / unit_duration);
-	return units;
+    units += (ms / unit_duration);
+    return units;
 }
 
 /*
@@ -188,28 +188,28 @@ static size_t units_since_epoch(
  * of unit_duration ms, so beware of overflows.
  */
 static void unit_to_timeval(
-	struct timeval* epoch,
-	struct timeval* dest,
-	size_t unit,
-	size_t unit_duration)
+    struct timeval* epoch,
+    struct timeval* dest,
+    size_t unit,
+    size_t unit_duration)
 {
-	struct timeval tv;
-	size_t rest, seconds, units_per_second;
+    struct timeval tv;
+    size_t rest, seconds, units_per_second;
 
-	units_per_second = 1000/ unit_duration;
-	assert(units_per_second != 0);
+    units_per_second = 1000/ unit_duration;
+    assert(units_per_second != 0);
 
-	seconds = (unit / units_per_second);
-	rest = (unit % units_per_second);
+    seconds = (unit / units_per_second);
+    rest = (unit % units_per_second);
 
-	tv.tv_sec = seconds;
+    tv.tv_sec = seconds;
 
-	/*
-	 * Resolution is in ms, but usec is in us. We multiply with 1000
-	 * to get things right.
-	 */
-	tv.tv_usec = (rest * unit_duration * 1000);
-	timeradd(epoch, &tv, dest);
+    /*
+     * Resolution is in ms, but usec is in us. We multiply with 1000
+     * to get things right.
+     */
+    tv.tv_usec = (rest * unit_duration * 1000);
+    timeradd(epoch, &tv, dest);
 }
 
 /*
@@ -217,34 +217,34 @@ static void unit_to_timeval(
  * things to a timespec struct and nanosleep() for a while.
  */
 static void timeval_sleep(
-	struct timeval* now,
-	struct timeval* when)
+    struct timeval* now,
+    struct timeval* when)
 {
-	struct timeval diff;
-	struct timespec ts;
+    struct timeval diff;
+    struct timespec ts;
 
-	timersub(when, now, &diff);
+    timersub(when, now, &diff);
 
-	ts.tv_sec = diff.tv_sec;
-	ts.tv_nsec = diff.tv_usec * 1000;
+    ts.tv_sec = diff.tv_sec;
+    ts.tv_nsec = diff.tv_usec * 1000;
 
-	nanosleep(&ts, NULL);
+    nanosleep(&ts, NULL);
 }
 
 size_t tsb_get_current_unit(tsb* p)
 {
-	struct timeval now;
+    struct timeval now;
 
-	assert(p != NULL);
+    assert(p != NULL);
 
-	gettimeofday(&now, NULL);
-	return units_since_epoch(&p->epoch, &now, p->unit_duration);
+    gettimeofday(&now, NULL);
+    return units_since_epoch(&p->epoch, &now, p->unit_duration);
 }
 
 size_t tsb_get_current_frame(tsb* p)
 {
-	assert(p != NULL);
-	return tsb_get_current_unit(p) / p->units_per_frame;
+    assert(p != NULL);
+    return tsb_get_current_unit(p) / p->units_per_frame;
 }
 
 
@@ -254,187 +254,187 @@ size_t tsb_get_current_frame(tsb* p)
  * accept only one argument, we need a separate struct.
  */
 struct args {
-	size_t iunit;
-	tsb* ptsb;
+    size_t iunit;
+    tsb* ptsb;
 };
 
 static void *threadfunc(void *arg)
 {
-	struct args* parg = arg;
-	struct timeval now, next;
-	size_t units, offset;
-	int rc;
+    struct args* parg = arg;
+    struct timeval now, next;
+    size_t units, offset;
+    int rc;
 
-	/* Loop until shutdown */
-	while (!parg->ptsb->shutdown_flag) {
+    /* Loop until shutdown */
+    while (!parg->ptsb->shutdown_flag) {
 
-		/* What time is it right now? */
-		gettimeofday(&now, NULL);
+        /* What time is it right now? */
+        gettimeofday(&now, NULL);
 
-		/* How many time units have passed? */
-		units = units_since_epoch(
-			&parg->ptsb->epoch,
-			&now,
-			parg->ptsb->unit_duration);
+        /* How many time units have passed? */
+        units = units_since_epoch(
+            &parg->ptsb->epoch,
+            &now,
+            parg->ptsb->unit_duration);
 
-		/* Now we need to know if we're supposed to wait for
-		 * a unit within the current frame or for a unit within
-		 * the next frame. I guess we always wait for the next frame
-		 * since we supposedly already have waited for the unit
-		 * in the current frame. This means that we add x units plus
-		 * our own offset. x is the number of units which are left in
-		 * the current frame. Easier than we may think, since all we
-		 * have to do is mod the number of units.
-		 */
-		offset = units % parg->ptsb->units_per_frame;
-		units += parg->ptsb->units_per_frame - offset;
+        /* Now we need to know if we're supposed to wait for
+         * a unit within the current frame or for a unit within
+         * the next frame. I guess we always wait for the next frame
+         * since we supposedly already have waited for the unit
+         * in the current frame. This means that we add x units plus
+         * our own offset. x is the number of units which are left in
+         * the current frame. Easier than we may think, since all we
+         * have to do is mod the number of units.
+         */
+        offset = units % parg->ptsb->units_per_frame;
+        units += parg->ptsb->units_per_frame - offset;
 
-		/* Now add our own offset */
-		units += parg->iunit;
+        /* Now add our own offset */
+        units += parg->iunit;
 
-		/* Convert the index to a proper timeval */
-		unit_to_timeval(
-			&parg->ptsb->epoch,
-			&next,
-			units,
-			parg->ptsb->unit_duration);
+        /* Convert the index to a proper timeval */
+        unit_to_timeval(
+            &parg->ptsb->epoch,
+            &next,
+            units,
+            parg->ptsb->unit_duration);
 
-		/* Now sleep until we reach the proper slot */
-		timeval_sleep(&now, &next);
+        /* Now sleep until we reach the proper slot */
+        timeval_sleep(&now, &next);
 
-		/* And finally we're ready to call the callback function */
-		rc = parg->ptsb->handlers[parg->iunit].callback(
-			parg->ptsb->buffer,
-			parg->ptsb->handlers[parg->iunit].arg);
+        /* And finally we're ready to call the callback function */
+        rc = parg->ptsb->handlers[parg->iunit].callback(
+            parg->ptsb->buffer,
+            parg->ptsb->handlers[parg->iunit].arg);
 
-		/* Exit if error in callback function */
-		if (rc == 0)
-			break;
-	}
+        /* Exit if error in callback function */
+        if (rc == 0)
+            break;
+    }
 
-	free(arg);
-	return NULL;
+    free(arg);
+    return NULL;
 }
 
 int tsb_start(tsb* p)
 {
-	size_t i, j;
-	int err;
+    size_t i, j;
+    int err;
 
-	assert(p != NULL);
-	assert(p->handlers != NULL);
+    assert(p != NULL);
+    assert(p->handlers != NULL);
 
-	/* Set our epoch */
-	gettimeofday(&p->epoch, NULL);
+    /* Set our epoch */
+    gettimeofday(&p->epoch, NULL);
 
-	/* Start all threads */
-	for (i = 0; i < p->units_per_frame; i++) {
-		for (j = 0; j < p->handlers[i].nthreads; j++) {
-			struct args* pargs;
-			if ((pargs = malloc(sizeof *pargs)) == NULL)
-				return 0;
+    /* Start all threads */
+    for (i = 0; i < p->units_per_frame; i++) {
+        for (j = 0; j < p->handlers[i].nthreads; j++) {
+            struct args* pargs;
+            if ((pargs = malloc(sizeof *pargs)) == NULL)
+                return 0;
 
-			pargs->iunit = i;
-			pargs->ptsb = p;
-			err = pthread_create(&p->handlers[i].threads[j], NULL, threadfunc, pargs);
-			if (err)
-				return 0;
-		}
-	}
+            pargs->iunit = i;
+            pargs->ptsb = p;
+            err = pthread_create(&p->handlers[i].threads[j], NULL, threadfunc, pargs);
+            if (err)
+                return 0;
+        }
+    }
 
-	return 1;
+    return 1;
 }
 
 int tsb_stop(tsb* p)
 {
-	size_t i, j;
+    size_t i, j;
 
-	assert(p != NULL);
+    assert(p != NULL);
 
-	/* Shut down the threads */
-	p->shutdown_flag = 1;
+    /* Shut down the threads */
+    p->shutdown_flag = 1;
 
-	/* Now wait for the threads to finish */
-	for (i = 0; i < p->units_per_frame; i++) {
-		for (j = 0; j < p->handlers[i].nthreads; j++) {
-			pthread_join(p->handlers[i].threads[j], NULL);
-		}
-	}
+    /* Now wait for the threads to finish */
+    for (i = 0; i < p->units_per_frame; i++) {
+        for (j = 0; j < p->handlers[i].nthreads; j++) {
+            pthread_join(p->handlers[i].threads[j], NULL);
+        }
+    }
 
-	return 1;
+    return 1;
 }
 
 #ifdef CHECK_TSB
 
 #include <stdio.h>
 struct t {
-	char foo[100];
+    char foo[100];
 };
 
 /* Will just enhance output by printing start of frame message: */
 static int firstslot(void *buf, void *arg)
 {
-	(void)buf;
-	(void)arg;
-	fprintf(stderr, "START OF FRAME\n");
-	return 1;
+    (void)buf;
+    (void)arg;
+    fprintf(stderr, "START OF FRAME\n");
+    return 1;
 }
 
 static int mywriter(void *buf, void *arg)
 {
-	struct timeval tv;
-	double t;
+    struct timeval tv;
+    double t;
 
-	(void)buf;
-	(void)arg;
-	gettimeofday(&tv, NULL);
-	t = tv.tv_sec + (tv.tv_usec * 1.0 / 1000000);
+    (void)buf;
+    (void)arg;
+    gettimeofday(&tv, NULL);
+    t = tv.tv_sec + (tv.tv_usec * 1.0 / 1000000);
 
-	fprintf(stderr, "I am in writer callback, time is: %f\n", t);
-	return 1;
+    fprintf(stderr, "I am in writer callback, time is: %f\n", t);
+    return 1;
 }
 
 static int myreader(void *buf, void *arg)
 {
-	struct timeval tv;
-	double t;
+    struct timeval tv;
+    double t;
 
-	(void)buf;
-	(void)arg;
-	gettimeofday(&tv, NULL);
-	t = tv.tv_sec + (tv.tv_usec * 1.0 / 1000000);
+    (void)buf;
+    (void)arg;
+    gettimeofday(&tv, NULL);
+    t = tv.tv_sec + (tv.tv_usec * 1.0 / 1000000);
 
-	fprintf(stderr, "I am in reader callback, time is: %f\n", t);
-	return 1;
+    fprintf(stderr, "I am in reader callback, time is: %f\n", t);
+    return 1;
 }
 #define UNIT_DURATION 50
 #define UNITS_PER_FRAME 40
 
 int main(void)
 {
-	char buf[1024];
+    char buf[1024];
 
-	tsb* p;
+    tsb* p;
 
-	p = tsb_new(UNIT_DURATION, UNITS_PER_FRAME, buf);
-	assert(p != NULL);
+    p = tsb_new(UNIT_DURATION, UNITS_PER_FRAME, buf);
+    assert(p != NULL);
 
-	tsb_set_threads(p, 0, 1, firstslot, NULL);
-	tsb_set_threads(p, 2, 1, mywriter, NULL);
-	tsb_set_threads(p, 4, 1, mywriter, NULL);
-	tsb_set_threads(p, 6, 1, mywriter, NULL);
-	tsb_set_threads(p, 7, 1, mywriter, NULL);
-	tsb_set_threads(p, 8, 1, mywriter, NULL);
-	tsb_set_threads(p, 20, 4, myreader, NULL);
+    tsb_set_threads(p, 0, 1, firstslot, NULL);
+    tsb_set_threads(p, 2, 1, mywriter, NULL);
+    tsb_set_threads(p, 4, 1, mywriter, NULL);
+    tsb_set_threads(p, 6, 1, mywriter, NULL);
+    tsb_set_threads(p, 7, 1, mywriter, NULL);
+    tsb_set_threads(p, 8, 1, mywriter, NULL);
+    tsb_set_threads(p, 20, 4, myreader, NULL);
 
-	tsb_start(p);
+    tsb_start(p);
 
-	/* Let threads run for a while */
-	sleep(20);
+    /* Let threads run for a while */
+    sleep(20);
 
-	tsb_stop(p);
-	tsb_free(p);
-	return 0;
+    tsb_stop(p);
+    tsb_free(p);
+    return 0;
 }
 
 #endif

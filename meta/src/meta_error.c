@@ -28,189 +28,189 @@
 #include <meta_misc.h>
 
 enum meta_error_group {
-	meg_unknown,
-	meg_tcpip,		/* network related error */
-	meg_protocol,	/* Protocol, e.g. HTTP, syntax/semantic error */
-	meg_app,		/* Some application error, unable to handle */
-	meg_os,			/* Some call to the OS failed */
-	meg_db,			/* some database error */
-	meg_other		/* Other errors */
+    meg_unknown,
+    meg_tcpip,		/* network related error */
+    meg_protocol,	/* Protocol, e.g. HTTP, syntax/semantic error */
+    meg_app,		/* Some application error, unable to handle */
+    meg_os,			/* Some call to the OS failed */
+    meg_db,			/* some database error */
+    meg_other		/* Other errors */
 };
 
 /*
  * Implementation of the meta_error ADT.
  */
 struct meta_error_tag {
-	enum meta_error_group group;
-	int code;
-	char message[META_ERROR_MESSAGE_MAX + 1];
+    enum meta_error_group group;
+    int code;
+    char message[META_ERROR_MESSAGE_MAX + 1];
 };
 
 
 meta_error meta_error_new(void)
 {
-	meta_error e;
+    meta_error e;
 
-	e = calloc(1, sizeof *e);
-	return e;
+    e = calloc(1, sizeof *e);
+    return e;
 }
 
 void meta_error_free(meta_error e)
 {
-	free(e);
+    free(e);
 }
 
 status_t set_tcpip_error(meta_error e, int val)
 {
-	assert(e != NULL);
+    assert(e != NULL);
 
-	e->group = meg_tcpip;
-	e->code = val;
+    e->group = meg_tcpip;
+    e->code = val;
 
-	return failure;
+    return failure;
 }
 
 status_t set_http_error(meta_error e, int val)
 {
-	if (e != NULL) {
-		e->group = meg_protocol;
-		e->code = val;
-	}
+    if (e != NULL) {
+        e->group = meg_protocol;
+        e->code = val;
+    }
 
-	return failure;
+    return failure;
 }
 
 status_t set_app_error(meta_error e, int val)
 {
-	if (e != NULL) {
-		e->group = meg_app;
-		e->code = val;
-	}
+    if (e != NULL) {
+        e->group = meg_app;
+        e->code = val;
+    }
 
-	return failure;
+    return failure;
 }
 
 status_t set_os_error(meta_error e, int val)
 {
-	if (e != NULL) {
-		e->group = meg_os;
-		e->code = val;
-	}
+    if (e != NULL) {
+        e->group = meg_os;
+        e->code = val;
+    }
 
-	return failure;
+    return failure;
 }
 
 status_t set_db_error(meta_error e, int val)
 {
-	if (e != NULL) {
-		e->group = meg_db;
-		e->code = val;
-	}
+    if (e != NULL) {
+        e->group = meg_db;
+        e->code = val;
+    }
 
-	return failure;
+    return failure;
 }
 
 status_t set_other_error(meta_error e, int val)
 {
-	if (e != NULL) {
-		e->group = meg_other;
-		e->code = val;
-	}
+    if (e != NULL) {
+        e->group = meg_other;
+        e->code = val;
+    }
 
-	return failure;
+    return failure;
 }
 
 int is_tcpip_error(meta_error e)
 {
-	assert(e != NULL);
-	return e->group == meg_tcpip;
+    assert(e != NULL);
+    return e->group == meg_tcpip;
 }
 
 int is_db_error(meta_error e)
 {
-	assert(e != NULL);
-	return e->group == meg_db;
+    assert(e != NULL);
+    return e->group == meg_db;
 }
 
 int is_protocol_error(meta_error e)
 {
-	assert(e != NULL);
-	return e->group == meg_protocol;
+    assert(e != NULL);
+    return e->group == meg_protocol;
 }
 
 int is_app_error(meta_error e)
 {
-	assert(e != NULL);
-	return e->group == meg_app;
+    assert(e != NULL);
+    return e->group == meg_app;
 }
 
 int is_os_error(meta_error e)
 {
-	assert(e != NULL);
-	return e->group == meg_os;
+    assert(e != NULL);
+    return e->group == meg_os;
 }
 
 int is_other_error(meta_error e)
 {
-	assert(e != NULL);
-	return e->group == meg_other;
+    assert(e != NULL);
+    return e->group == meg_other;
 }
 
 int get_error_code(meta_error e)
 {
-	assert(e != NULL);
-	return e->code;
+    assert(e != NULL);
+    return e->code;
 }
 
 
 void set_error_message(meta_error e, const char *msg)
 {
-	if (e != NULL) {
-		strncpy(e->message, msg, sizeof e->message);
-		e->message[sizeof e->message - 1] = '\0';
-	}
+    if (e != NULL) {
+        strncpy(e->message, msg, sizeof e->message);
+        e->message[sizeof e->message - 1] = '\0';
+    }
 }
 
 int has_error_message(meta_error e)
 {
-	assert(e != NULL);
-	return strlen(e->message) > 0;
+    assert(e != NULL);
+    return strlen(e->message) > 0;
 }
 
 const char *get_error_message(meta_error e)
 {
-	assert(e != NULL);
-	return e->message;
+    assert(e != NULL);
+    return e->message;
 
 }
 
 void die_with_error(meta_error e, const char *fmt, ...)
 {
-	va_list ap;
-	int rc;
+    va_list ap;
+    int rc;
 
-	va_start(ap, fmt);
+    va_start(ap, fmt);
 
-	if (is_tcpip_error(e))
-		syslog(LOG_ERR, "A tcp/ip error has occured");
-	else if (is_protocol_error(e))
-		syslog(LOG_ERR, "A protocol error has occured");
-	else if (is_app_error(e))
-		syslog(LOG_ERR, "A application error has occured");
-	else if (is_os_error(e))
-		syslog(LOG_ERR, "A os error has occured");
-	else if (is_db_error(e))
-		syslog(LOG_ERR, "A database error has occured");
-	else if (is_other_error(e))
-		syslog(LOG_ERR, "An unknown error has occured");
+    if (is_tcpip_error(e))
+        syslog(LOG_ERR, "A tcp/ip error has occured");
+    else if (is_protocol_error(e))
+        syslog(LOG_ERR, "A protocol error has occured");
+    else if (is_app_error(e))
+        syslog(LOG_ERR, "A application error has occured");
+    else if (is_os_error(e))
+        syslog(LOG_ERR, "A os error has occured");
+    else if (is_db_error(e))
+        syslog(LOG_ERR, "A database error has occured");
+    else if (is_other_error(e))
+        syslog(LOG_ERR, "An unknown error has occured");
 
-	if (has_error_message(e))
-		syslog(LOG_ERR, "Error message: %s", get_error_message(e));
-	else if ((rc = get_error_code(e)) != 0)
-		syslog(LOG_ERR, "Possible error: %d %s\n", rc, strerror(rc));
+    if (has_error_message(e))
+        syslog(LOG_ERR, "Error message: %s", get_error_message(e));
+    else if ((rc = get_error_code(e)) != 0)
+        syslog(LOG_ERR, "Possible error: %d %s\n", rc, strerror(rc));
 
-	meta_vsyslog(LOG_ERR, fmt, ap);
-	va_end(ap);
+    meta_vsyslog(LOG_ERR, fmt, ap);
+    va_end(ap);
 
-	exit(EXIT_FAILURE);
+    exit(EXIT_FAILURE);
 }

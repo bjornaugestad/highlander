@@ -50,21 +50,21 @@ extern "C" {
 typedef struct membuf_tag *membuf;
 
 struct membuf_tag {
-	size_t size;
+    size_t size;
 
-	/* These two member are used when reading and writing
-	 * from/to the buffer. We always append data to the buffer
-	 * and we always read from the start of the buffer. So
-	 * Bytes available for reading is written - read, and bytes
-	 * available for writing is size - written. If we try to
-	 * write more than there's room for at the end of the buffer
-	 * *and* written == read, then the membuf_write() function will
-	 * do an automatic reset of the buffer and start writing
-	 * from the beginning of the buffer.
-	 */
-	size_t written;
-	size_t read;
-	char *data;
+    /* These two member are used when reading and writing
+     * from/to the buffer. We always append data to the buffer
+     * and we always read from the start of the buffer. So
+     * Bytes available for reading is written - read, and bytes
+     * available for writing is size - written. If we try to
+     * write more than there's room for at the end of the buffer
+     * *and* written == read, then the membuf_write() function will
+     * do an automatic reset of the buffer and start writing
+     * from the beginning of the buffer.
+     */
+    size_t written;
+    size_t read;
+    char *data;
 };
 
 
@@ -82,50 +82,50 @@ void membuf_dump(membuf this, void *filep);
  * store the data.
  */
 size_t membuf_write(membuf mb, const void *src, size_t count)
-	__attribute__((nonnull(1, 2)));
+    __attribute__((nonnull(1, 2)));
 
 /*
  * Read up to count bytes from the buffer and place them in dest.
  * Returns the number of bytes read, or 0 if no data was available to read.
  */
 size_t membuf_read(membuf, void *dest, size_t count)
-	__attribute__((nonnull(1, 2)));
+    __attribute__((nonnull(1, 2)));
 
 /*
  * Return the number of bytes available for reading from the membuf buffer.
  */
 static inline size_t membuf_canread(membuf mb)
 {
-	assert(mb != NULL);
-	assert(mb->written >= mb->read);
-	assert(mb->written - mb->read <= mb->size);
+    assert(mb != NULL);
+    assert(mb->written >= mb->read);
+    assert(mb->written - mb->read <= mb->size);
 
-	return mb->written - mb->read;
+    return mb->written - mb->read;
 }
 
 static inline void membuf_set_written(membuf mb, size_t cb)
 {
-	assert(mb->written == 0);
-	mb->written = cb;
+    assert(mb->written == 0);
+    mb->written = cb;
 }
 
 /* Return the number of bytes available for writing.  */
 static inline size_t membuf_canwrite(membuf mb)
 {
-	assert(mb != NULL);
+    assert(mb != NULL);
 
-	/* Report full size if next write will reset anyway */
-	if (mb->read == mb->written)
-		return mb->size;
-	else
-		return mb->size - mb->written;
+    /* Report full size if next write will reset anyway */
+    if (mb->read == mb->written)
+        return mb->size;
+    else
+        return mb->size - mb->written;
 }
 
 /* Empties the content of the buffer.  */
 static inline void membuf_reset(membuf mb)
 {
-	assert(mb != NULL);
-	mb->read = mb->written = 0;
+    assert(mb != NULL);
+    mb->read = mb->written = 0;
 }
 
 
@@ -138,14 +138,14 @@ static inline void membuf_reset(membuf mb)
  */
 static inline status_t membuf_unget(membuf mb)
 {
-	assert(mb != NULL);
+    assert(mb != NULL);
 
-	if (mb->read > 0) {
-		mb->read--;
-		return success;
-	}
+    if (mb->read > 0) {
+        mb->read--;
+        return success;
+    }
 
-	return failure;
+    return failure;
 }
 
 /*
@@ -155,8 +155,8 @@ static inline status_t membuf_unget(membuf mb)
  */
 static inline void *membuf_data(membuf mb)
 {
-	assert(mb != NULL);
-	return mb->data;
+    assert(mb != NULL);
+    return mb->data;
 }
 
 /*
@@ -170,8 +170,8 @@ static inline void *membuf_data(membuf mb)
  */
 static inline void membuf_set(membuf mb, int c)
 {
-	assert(mb != NULL);
-	memset(mb->data, c, mb->size);
+    assert(mb != NULL);
+    memset(mb->data, c, mb->size);
 }
 
 /*
@@ -182,8 +182,8 @@ static inline void membuf_set(membuf mb, int c)
  */
 static inline size_t membuf_size(membuf mb)
 {
-	assert(mb != NULL);
-	return mb->size;
+    assert(mb != NULL);
+    return mb->size;
 }
 
 #ifdef __cplusplus

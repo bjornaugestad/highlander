@@ -33,7 +33,7 @@
 
 // We store our values here, in LSB order. 
 typedef struct {
-	uint64_t value[META_BIGNUM_SIZE] __attribute__((aligned(8)));
+    uint64_t value[META_BIGNUM_SIZE] __attribute__((aligned(8)));
 } bignum;
 
 // Create a new bignum object. Return NULL if length of val mod 8 isn't zero.

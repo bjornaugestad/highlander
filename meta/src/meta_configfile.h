@@ -32,33 +32,33 @@ extern "C" {
 typedef struct configfile_tag* configfile;
 
 configfile configfile_read(const char *path)
-	__attribute__((malloc));
+    __attribute__((malloc));
 
 bool configfile_exists(configfile cf, const char *name)
-	__attribute__((nonnull(1, 2)));
+    __attribute__((nonnull(1, 2)));
 
 status_t configfile_get_string(configfile cf, const char *name,
-	char *value, size_t cb)
-	__attribute__((nonnull(1, 2, 3)))
-	__attribute__((warn_unused_result));
+    char *value, size_t cb)
+    __attribute__((nonnull(1, 2, 3)))
+    __attribute__((warn_unused_result));
 
 status_t configfile_get_long(configfile cf, const char *name, long *value)
-	__attribute__((nonnull(1, 2, 3)))
-	__attribute__((warn_unused_result));
+    __attribute__((nonnull(1, 2, 3)))
+    __attribute__((warn_unused_result));
 
 status_t configfile_get_ulong(configfile cf, const char *name,
-	unsigned long *value)
-	__attribute__((nonnull(1, 2, 3)))
-	__attribute__((warn_unused_result));
+    unsigned long *value)
+    __attribute__((nonnull(1, 2, 3)))
+    __attribute__((warn_unused_result));
 
 status_t configfile_get_int(configfile cf, const char *name, int *value)
-	__attribute__((nonnull(1, 2, 3)))
-	__attribute__((warn_unused_result));
+    __attribute__((nonnull(1, 2, 3)))
+    __attribute__((warn_unused_result));
 
 status_t configfile_get_uint(configfile cf, const char *name, 
-	unsigned int *value) 
-	__attribute__((nonnull(1, 2, 3)))
-	__attribute__((warn_unused_result));
+    unsigned int *value) 
+    __attribute__((nonnull(1, 2, 3)))
+    __attribute__((warn_unused_result));
 
 
 void configfile_free(configfile cf);

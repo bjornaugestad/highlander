@@ -20,42 +20,41 @@
  *	b) A Field value may span multiple lines.
  * Which means that we must read-ahead one byte after the \r\n and look
  * for either SP or HT.
-	I am not sure if we want to support wrapped lines,
-	as it may cause a lot of waiting in poll(). Imagine
-	that the client sends
-		GET / HTTP/1.0
-		Connection: Keep-Alive
-	We read the Get and the Connection lines. Then what?
-	Do we then want to look for another char after the last line?
-	The client didn't send one, so we end up in poll() and
-	wait for a timeout :-(
+    I am not sure if we want to support wrapped lines,
+    as it may cause a lot of waiting in poll(). Imagine
+    that the client sends
+        GET / HTTP/1.0
+        Connection: Keep-Alive
+    We read the Get and the Connection lines. Then what?
+    Do we then want to look for another char after the last line?
+    The client didn't send one, so we end up in poll() and
+    wait for a timeout :-(
  */
 status_t read_line(connection conn, char* buf, size_t cchMax, meta_error e)
 {
-	int c;
-	size_t i = 0;
+    int c;
+    size_t i = 0;
 
-	while (i < cchMax) {
-		if (!connection_getc(conn, &c))
-			return set_tcpip_error(e, errno);
+    while (i < cchMax) {
+        if (!connection_getc(conn, &c))
+            return set_tcpip_error(e, errno);
 
-		if (c == '\r') {
-			/* We got a \r. Look for \n */
-			buf[i] = '\0';
+        if (c == '\r') {
+            /* We got a \r. Look for \n */
+            buf[i] = '\0';
 
-			if (!connection_getc(conn, &c))
-				return set_tcpip_error(e, errno);
+            if (!connection_getc(conn, &c))
+                return set_tcpip_error(e, errno);
 
-			if (c != '\n')
-				return set_http_error(e, HTTP_400_BAD_REQUEST);
+            if (c != '\n')
+                return set_http_error(e, HTTP_400_BAD_REQUEST);
 
-			return success;
-		}
+            return success;
+        }
 
-		buf[i++] = c;
-	}
+        buf[i++] = c;
+    }
 
-	/* The buffer provided was too small. */
-	return set_app_error(e, ENOSPC);
+    /* The buffer provided was too small. */
+    return set_app_error(e, ENOSPC);
 }
-

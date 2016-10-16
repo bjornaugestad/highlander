@@ -125,11 +125,11 @@ void *tsb_get_buffer(tsb* p);
  * just return 0.
  */
 int tsb_set_threads(
-	tsb *p,
-	size_t iunit, /* Run thread(s) when iunit within frame starts */
-	size_t nthreads,
-	int (*callback)(void *buf, void *arg),
-	void *arg);
+    tsb *p,
+    size_t iunit, /* Run thread(s) when iunit within frame starts */
+    size_t nthreads,
+    int (*callback)(void *buf, void *arg),
+    void *arg);
 
 
 /*

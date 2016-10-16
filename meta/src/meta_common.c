@@ -33,49 +33,49 @@ int meta_indent_level = 0;
 
 static void indent(int levels)
 {
-	while (levels-- > 0)
-		putchar('\t');
+    while (levels-- > 0)
+        putchar('\t');
 }
 
 void verbose(int level, const char *fmt, ...)
 {
-	if (level <= meta_verbose_level) {
-		indent(meta_indent_level);
-		va_list ap;
-		va_start(ap, fmt);
-		vprintf(fmt, ap);
-		va_end(ap);
-	}
+    if (level <= meta_verbose_level) {
+        indent(meta_indent_level);
+        va_list ap;
+        va_start(ap, fmt);
+        vprintf(fmt, ap);
+        va_end(ap);
+    }
 }
 
 void die(const char *fmt, ...)
 {
-	va_list ap;
+    va_list ap;
 
-	va_start(ap, fmt);
-	meta_vsyslog(LOG_ERR, fmt, ap);
-	va_end(ap);
-	exit(EXIT_FAILURE);
+    va_start(ap, fmt);
+    meta_vsyslog(LOG_ERR, fmt, ap);
+    va_end(ap);
+    exit(EXIT_FAILURE);
 }
 
 void die_perror(const char *fmt, ...)
 {
-	va_list ap;
+    va_list ap;
 
-	fprintf(stderr, "%s", strerror(errno));
-	va_start(ap, fmt);
-	vfprintf(stderr, fmt, ap);
-	va_end(ap);
+    fprintf(stderr, "%s", strerror(errno));
+    va_start(ap, fmt);
+    vfprintf(stderr, fmt, ap);
+    va_end(ap);
 
-	exit(EXIT_FAILURE);
+    exit(EXIT_FAILURE);
 }
 
 void warning(const char *fmt, ...)
 {
-	va_list ap;
-	va_start(ap, fmt);
-	meta_vsyslog(LOG_WARNING, fmt, ap);
-	va_end(ap);
+    va_list ap;
+    va_start(ap, fmt);
+    meta_vsyslog(LOG_WARNING, fmt, ap);
+    va_end(ap);
 }
 
 /*
@@ -85,7 +85,7 @@ void warning(const char *fmt, ...)
  */
 void meta_vsyslog(int class, const char *fmt, va_list ap)
 {
-	char err[1000];
+    char err[1000];
     vsnprintf(err, sizeof err, fmt, ap);
 
     // We need a destination regime as we sometimes need to see messages on console.
@@ -99,37 +99,36 @@ void meta_vsyslog(int class, const char *fmt, va_list ap)
 
 void fs_lower(char *s)
 {
-	assert(NULL != s);
+    assert(NULL != s);
 
-	while (*s != '\0') {
-		if (isupper((int)*s))
-			*s = tolower((int)*s);
+    while (*s != '\0') {
+        if (isupper((int)*s))
+            *s = tolower((int)*s);
 
-		s++;
-	}
+        s++;
+    }
 }
 
 static int meta_debug_enabled;
 
 void meta_enable_debug_output(void)
 {
-	meta_debug_enabled = 1;
+    meta_debug_enabled = 1;
 }
 
 void meta_disable_debug_output(void)
 {
-	meta_debug_enabled = 0;
+    meta_debug_enabled = 0;
 }
 
 void debugimpl(const char *fmt, ...)
 {
 
-	if (meta_debug_enabled) {
-		va_list ap;
+    if (meta_debug_enabled) {
+        va_list ap;
 
-		va_start(ap, fmt);
-		vfprintf(stderr, fmt, ap);
-		va_end(ap);
-	}
+        va_start(ap, fmt);
+        vfprintf(stderr, fmt, ap);
+        va_end(ap);
+    }
 }
-

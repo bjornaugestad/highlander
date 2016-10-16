@@ -133,20 +133,20 @@ void cookie_free(cookie c);
 
 time_t parse_rfc822_date(const char *s);
 status_t send_status_code(
-	connection conn,
-	int status_code,
-	http_version version);
+    connection conn,
+    int status_code,
+    http_version version);
 
 int http_status_code(int error);
 
 
 status_t handle_dynamic(
-	connection conn,
-	http_server srv,
-	dynamic_page p,
-	http_request req,
-	http_response response,
-	meta_error e);
+    connection conn,
+    http_server srv,
+    dynamic_page p,
+    http_request req,
+    http_response response,
+    meta_error e);
 
 general_header general_header_new(void);
 void general_header_free(general_header p);
@@ -261,23 +261,23 @@ bool entity_header_last_modified_isset(entity_header eh);
 
 void request_set_connection(http_request req, connection c);
 status_t parse_request_headerfield(
-	connection conn,
-	const char *fieldname,
-	const char *value,
-	http_request req,
-	meta_error e);
+    connection conn,
+    const char *fieldname,
+    const char *value,
+    http_request req,
+    meta_error e);
 
 status_t parse_response_headerfield(
-	const char* name,
-	const char* value,
-	http_response req,
-	meta_error e);
+    const char* name,
+    const char* value,
+    http_response req,
+    meta_error e);
 
 int parse_multivalued_fields(
-	void *dest,
-	const char* value,
-	int(*set_func)(void *dest, const char* value, meta_error e),
-	meta_error e);
+    void *dest,
+    const char* value,
+    int(*set_func)(void *dest, const char* value, meta_error e),
+    meta_error e);
 
 /* Return an index in the entity header array,
  * or -1 if the field was not found. */
@@ -297,18 +297,18 @@ status_t parse_request_header(int idx, http_request req, const char* value, meta
 
 int find_response_header(const char* name);
 status_t parse_response_header(int idx, http_response req,
-	const char* value, meta_error e)
-	__attribute__((warn_unused_result));
+    const char* value, meta_error e)
+    __attribute__((warn_unused_result));
 
 /* Function prototypes for handler functions */
 status_t parse_cookie(http_request r, const char* s, meta_error e)
-	__attribute__((warn_unused_result));
+    __attribute__((warn_unused_result));
 
 status_t parse_new_cookie(http_request r, const char* s, meta_error e)
-	__attribute__((warn_unused_result));
+    __attribute__((warn_unused_result));
 
 status_t parse_old_cookie(http_request r, const char* s, meta_error e)
-	__attribute__((warn_unused_result));
+    __attribute__((warn_unused_result));
 
 status_t cookie_dump(cookie c,  void *file);
 

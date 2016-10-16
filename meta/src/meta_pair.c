@@ -28,176 +28,176 @@
  * Local helper structure.
  */
 struct element {
-	char *name;
-	char *value;
+    char *name;
+    char *value;
 };
 
 /*
  * Implementation of the meta_pair ADT
  */
 struct pair_tag {
-	struct element* element;
-	size_t nelem;
-	size_t used;
+    struct element* element;
+    size_t nelem;
+    size_t used;
 };
 
 /* Small helper returning the index to an element or 0 if not found */
 static int pair_find(pair p, const char *name, size_t* pi)
 {
-	assert(p != NULL);
-	assert(name != NULL);
+    assert(p != NULL);
+    assert(name != NULL);
 
-	for (*pi = 0; *pi < p->used; (*pi)++) {
-		if (0 == strcmp(p->element[*pi].name, name))
-			return 1;
-	}
+    for (*pi = 0; *pi < p->used; (*pi)++) {
+        if (0 == strcmp(p->element[*pi].name, name))
+            return 1;
+    }
 
-	return 0;
+    return 0;
 }
 
 pair pair_new(size_t nelem)
 {
-	pair p;
+    pair p;
 
-	assert(nelem > 0);
+    assert(nelem > 0);
 
-	if ((p = malloc(sizeof *p)) == NULL)
-		return NULL;
+    if ((p = malloc(sizeof *p)) == NULL)
+        return NULL;
 
-	if ((p->element = calloc(nelem, sizeof *p->element)) == NULL) {
-		free(p);
-		return NULL;
-	}
+    if ((p->element = calloc(nelem, sizeof *p->element)) == NULL) {
+        free(p);
+        return NULL;
+    }
 
-	p->used = 0;
-	p->nelem = nelem;
+    p->used = 0;
+    p->nelem = nelem;
 
-	return p;
+    return p;
 }
 
 void pair_free(pair p)
 {
-	size_t i;
+    size_t i;
 
-	if (p == NULL)
-		return;
+    if (p == NULL)
+        return;
 
-	for (i = 0; i < p->used; i++) {
-		free(p->element[i].name);
-		free(p->element[i].value);
-	}
+    for (i = 0; i < p->used; i++) {
+        free(p->element[i].name);
+        free(p->element[i].value);
+    }
 
-	free(p->element);
-	free(p);
+    free(p->element);
+    free(p);
 }
 
 static status_t pair_extend(pair p, size_t addcount)
 {
-	struct element* new;
+    struct element* new;
 
-	assert(p != NULL);
+    assert(p != NULL);
 
-	new = realloc(p->element, sizeof *p->element * (p->nelem + addcount));
-	if (new == NULL)
-		return failure;
+    new = realloc(p->element, sizeof *p->element * (p->nelem + addcount));
+    if (new == NULL)
+        return failure;
 
-	p->element = new;
-	p->nelem += addcount;
-	return success;
+    p->element = new;
+    p->nelem += addcount;
+    return success;
 }
 
 size_t pair_size(pair p)
 {
-	assert(p != NULL);
+    assert(p != NULL);
 
-	return p->used;
+    return p->used;
 }
 
 const char *pair_get_value_by_index(pair p, size_t i)
 {
-	assert(p != NULL);
-	assert(i < p->nelem);
+    assert(p != NULL);
+    assert(i < p->nelem);
 
-	return p->element[i].value;
+    return p->element[i].value;
 }
 
 /* Returns pointer to value if name exists, else NULL */
 const char *pair_get(pair p, const char *name)
 {
-	size_t i;
+    size_t i;
 
-	assert(p != NULL);
-	assert(name != NULL);
+    assert(p != NULL);
+    assert(name != NULL);
 
-	if (!pair_find(p, name, &i))
-		return NULL;
+    if (!pair_find(p, name, &i))
+        return NULL;
 
-	return p->element[i].value;
+    return p->element[i].value;
 }
 
 
 /* overwrites an existing value. Adds a new entry if needed.  */
 status_t pair_set(pair p, const char *name, const char *value)
 {
-	size_t i, oldlen, newlen;
+    size_t i, oldlen, newlen;
 
-	assert(p != NULL);
-	assert(name != NULL);
+    assert(p != NULL);
+    assert(name != NULL);
 
-	if (!pair_find(p, name, &i))
-		return pair_add(p, name, value);
+    if (!pair_find(p, name, &i))
+        return pair_add(p, name, value);
 
-	/* Modify existing value */
-	oldlen = strlen(p->element[i].value);
-	newlen = strlen(value);
-	if (oldlen < newlen) {
-		char *s = realloc(p->element[i].value, newlen + 1);
-		if (NULL == s)
-			return failure;
+    /* Modify existing value */
+    oldlen = strlen(p->element[i].value);
+    newlen = strlen(value);
+    if (oldlen < newlen) {
+        char *s = realloc(p->element[i].value, newlen + 1);
+        if (NULL == s)
+            return failure;
 
-		p->element[i].value = s;
-	}
+        p->element[i].value = s;
+    }
 
-	strcpy(p->element[i].value, value);
-	return success;
+    strcpy(p->element[i].value, value);
+    return success;
 }
 
 status_t pair_add(pair p, const char *name, const char *value)
 {
-	struct element* new; /* Just a helper to beautify the code */
-	size_t namelen, valuelen;
+    struct element* new; /* Just a helper to beautify the code */
+    size_t namelen, valuelen;
 
-	assert(p != NULL);
-	assert(name != NULL);
+    assert(p != NULL);
+    assert(name != NULL);
 
-	/* Resize when needed */
-	if (p->used == p->nelem && !pair_extend(p, p->nelem * 2))
-		return failure;
+    /* Resize when needed */
+    if (p->used == p->nelem && !pair_extend(p, p->nelem * 2))
+        return failure;
 
-	/* Assign the helper */
-	new = &p->element[p->used];
-	namelen = strlen(name) + 1;
-	valuelen = strlen(value) + 1;
-	if ((new->name = malloc(namelen)) == NULL)
-		return failure;
+    /* Assign the helper */
+    new = &p->element[p->used];
+    namelen = strlen(name) + 1;
+    valuelen = strlen(value) + 1;
+    if ((new->name = malloc(namelen)) == NULL)
+        return failure;
 
-	if ((new->value = malloc(valuelen)) == NULL) {
-		free(new->name);
-		return failure;
-	}
+    if ((new->value = malloc(valuelen)) == NULL) {
+        free(new->name);
+        return failure;
+    }
 
-	memcpy(new->name, name, namelen);
-	memcpy(new->value, value, valuelen);
-	p->used++;
-	return success;
+    memcpy(new->name, name, namelen);
+    memcpy(new->value, value, valuelen);
+    p->used++;
+    return success;
 }
 
 const char *pair_get_name(pair p, size_t idx)
 {
-	assert(p != NULL);
-	assert(idx < p->used);
+    assert(p != NULL);
+    assert(idx < p->used);
 
-	return p->element[idx].name;
+    return p->element[idx].name;
 }
 
 #ifdef CHECK_PAIR
@@ -205,60 +205,60 @@ const char *pair_get_name(pair p, size_t idx)
 
 int main(void)
 {
-	pair p;
-	size_t i, j, niter = 100, nelem = 10;
-	char name[1024], value[1024];
-	const char *pval;
+    pair p;
+    size_t i, j, niter = 100, nelem = 10;
+    char name[1024], value[1024];
+    const char *pval;
 
-	for (i = 0; i < niter; i++) {
-		if ((p = pair_new(nelem)) == NULL)
-			return 1;
+    for (i = 0; i < niter; i++) {
+        if ((p = pair_new(nelem)) == NULL)
+            return 1;
 
-		/* Add a bunch of pairs */
-		for (j = 0; j < nelem * 2; j++) {
-			sprintf(name, "name %lu", (unsigned long)j);
-			sprintf(value, "value %lu", (unsigned long)j);
-			if (!pair_add(p, name, value))
-				return 1;
-		}
+        /* Add a bunch of pairs */
+        for (j = 0; j < nelem * 2; j++) {
+            sprintf(name, "name %lu", (unsigned long)j);
+            sprintf(value, "value %lu", (unsigned long)j);
+            if (!pair_add(p, name, value))
+                return 1;
+        }
 
-		/* Locate the same pairs and compare the returned value */
-		for (j = 0; j < nelem * 2; j++) {
-			sprintf(name, "name %lu", (unsigned long)j);
-			sprintf(value, "value %lu", (unsigned long)j);
-			if ((pval = pair_get(p, name)) == NULL)
-				return 1;
-			else if (strcmp(pval, value) != 0)
-				return 1;
-		}
+        /* Locate the same pairs and compare the returned value */
+        for (j = 0; j < nelem * 2; j++) {
+            sprintf(name, "name %lu", (unsigned long)j);
+            sprintf(value, "value %lu", (unsigned long)j);
+            if ((pval = pair_get(p, name)) == NULL)
+                return 1;
+            else if (strcmp(pval, value) != 0)
+                return 1;
+        }
 
-		/* Manually extend the pair and then try again */
-		if (!pair_extend(p, nelem * 2))
-			return 1;
+        /* Manually extend the pair and then try again */
+        if (!pair_extend(p, nelem * 2))
+            return 1;
 
-		/* Add a bunch of pairs */
-		for (j = 0; j < nelem * 3; j++) {
-			sprintf(name, "name %lu", (unsigned long)j);
-			sprintf(value, "value %lu", (unsigned long)j);
-			if (!pair_add(p, name, value))
-				return 1;
-		}
+        /* Add a bunch of pairs */
+        for (j = 0; j < nelem * 3; j++) {
+            sprintf(name, "name %lu", (unsigned long)j);
+            sprintf(value, "value %lu", (unsigned long)j);
+            if (!pair_add(p, name, value))
+                return 1;
+        }
 
-		/* Locate the same pairs and compare the returned value */
-		for (j = 0; j < nelem * 3; j++) {
-			sprintf(name, "name %lu", (unsigned long)j);
-			sprintf(value, "value %lu", (unsigned long)j);
-			if ((pval = pair_get(p, name)) == NULL)
-				return 1;
-			else if (strcmp(pval, value) != 0)
-				return 1;
-		}
+        /* Locate the same pairs and compare the returned value */
+        for (j = 0; j < nelem * 3; j++) {
+            sprintf(name, "name %lu", (unsigned long)j);
+            sprintf(value, "value %lu", (unsigned long)j);
+            if ((pval = pair_get(p, name)) == NULL)
+                return 1;
+            else if (strcmp(pval, value) != 0)
+                return 1;
+        }
 
 
-		pair_free(p);
+        pair_free(p);
 
-	}
+    }
 
-	return 0;
+    return 0;
 }
 #endif

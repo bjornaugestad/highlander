@@ -79,10 +79,10 @@ const char *get_mime_type(const char *filename);
  * @param iWord			 zero-based index of word to copy
  */
 status_t get_word_from_string(
-	const char *string,
-	char word[],
-	size_t cchWordMax,
-	size_t iWord) __attribute__((warn_unused_result));
+    const char *string,
+    char word[],
+    size_t cchWordMax,
+    size_t iWord) __attribute__((warn_unused_result));
 
 /*
  * Copies one word from 'input' and places it in 'word'.
@@ -90,10 +90,10 @@ status_t get_word_from_string(
  * Terminates 'word' with a '\0' if enough space was available.
  */
 status_t copy_word(
-	const char *input,
-	char word[],
-	int separator,
-	size_t cchWordMax) __attribute__((warn_unused_result));
+    const char *input,
+    char word[],
+    int separator,
+    size_t cchWordMax) __attribute__((warn_unused_result));
 
 #if !defined(min) && !defined(max)
 #define min(a, b) ((a) < (b) ? (a) : (b))
