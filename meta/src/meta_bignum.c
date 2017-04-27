@@ -398,7 +398,7 @@ static const char halfval[513] =
 #ifdef BIGNUM_SPEED
 int main(void)
 {
-    size_t i, niter = 1000 * 1000;
+    size_t i, niter = 1 * 1000;
     bignum max, zero, dest, half;
 
     if (!bignum_set(&max, maxval))
@@ -429,7 +429,7 @@ int main(void)
     bignum tmpn, bi;
     char tmp[100];
 
-    for (i = 1; i <=1000; i++) {
+    for (i = 1; i <=100; i++) {
         sprintf(tmp, "%04zx", i);
         if (!bignum_set(&bi, tmp))
             die("WTF?");

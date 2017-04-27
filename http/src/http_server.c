@@ -1187,7 +1187,7 @@ static void check_response_time(void)
     pthread_t t;
     int err;
     clock_t start, stop;
-    double duration, max_duration = 0.002;
+    double duration, max_duration = 0.004;
 
     if ((err = pthread_create(&t, NULL, serverthread, srv)))
         die("Could not start server thread\n");
