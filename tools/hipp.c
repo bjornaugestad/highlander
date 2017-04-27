@@ -1,6 +1,6 @@
 /*
  * libhighlander - A HTTP and TCP server-side library
- * Copyright (C) 2013 B. Augestad, bjorn.augestad@gmail.com
+ * Copyright (C) 2013 B. Augestad, bjorn@augestad.online
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -42,7 +42,7 @@
  * Line length: 2048
  *
  * Version: 0.0.1
- * Author : bjorn.augestad@gmail.com
+ * Author : bjorn@augestad.online
  */
 
 #define _GNU_SOURCE
