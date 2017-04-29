@@ -40,7 +40,7 @@ list list_new(void)
     return p;
 }
 
-void list_free(list lst, void(*dtor)(void*))
+void list_free(list lst, void(*dtorp)(void*))
 {
     list p;
 
@@ -49,8 +49,8 @@ void list_free(list lst, void(*dtor)(void*))
 
     /* Free data for all items except the first. */
     for (p = lst->next; p != NULL; p = p->next) {
-        if (dtor != 0)
-            dtor(p->data);
+        if (dtorp != 0)
+            dtorp(p->data);
     }
 
     /* Free the list itself */

@@ -97,18 +97,6 @@ void meta_vsyslog(int class, const char *fmt, va_list ap)
     }
 }
 
-void fs_lower(char *s)
-{
-    assert(NULL != s);
-
-    while (*s != '\0') {
-        if (isupper((int)*s))
-            *s = tolower((int)*s);
-
-        s++;
-    }
-}
-
 static int meta_debug_enabled;
 
 void meta_enable_debug_output(void)

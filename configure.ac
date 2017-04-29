@@ -4,9 +4,6 @@ AC_CONFIG_AUX_DIR([extras])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE
 AM_EXTRA_RECURSIVE_TARGETS([foo])
-LT_INIT([dlopen])
-AC_PROG_LIBTOOL
-LT_PREREQ([2.2])
 
 
 AC_CONFIG_SRCDIR([http/src/internals.h])
@@ -15,6 +12,7 @@ AC_CONFIG_SRCDIR([http/src/internals.h])
 # Checks for programs.
 AC_PROG_CC
 AC_PROG_CC_C_O
+AC_PROG_RANLIB
 AM_PROG_CC_C_O
 
 # Checks for header files.

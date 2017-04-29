@@ -1,7 +1,7 @@
 #AUTOMAKE_OPTIONS=subdir-objects
 
 # The main target
-lib_LTLIBRARIES=libmeta.la libmetad.la
+lib_LIBRARIES=libmeta.a libmetad.a
 
 include_HEADERS=\
 	cstring.h\
@@ -32,12 +32,10 @@ include_HEADERS=\
 	meta_error.h\
 	meta_wlock.h\
 	meta_convert.h\
+	tcp_server.h\
 	threadpool.h
 
-libmeta_la_LDFLAGS=-release $(PACKAGE_VERSION) -version-info 0:0:0
-libmetad_la_LDFLAGS=-release $(PACKAGE_VERSION) -version-info 0:0:0
-
-libmeta_la_SOURCES=\
+libmeta_a_SOURCES=\
 	meta_common.c\
 	meta_bignum.c\
 	meta_sampler.c\
@@ -68,7 +66,7 @@ libmeta_la_SOURCES=\
 	meta_convert.c\
 	meta_stringmap.c
 
-libmetad_la_SOURCES=$(libmeta_la_SOURCES)
+libmetad_a_SOURCES=$(libmeta_a_SOURCES)
 
 # Flags.
 # -D_BSD_SOURCE is to get the prototype for strerror_r.
@@ -79,7 +77,7 @@ libmeta_a_CFLAGS=\
 	-I$(srcdir)\
 	-I$(top_srcdir)/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\
-	-O2 -Wall --Wno-long-long  -ftree-vectorize -Wno-inline\
+	-O2 -Wall -Wno-long-long  -ftree-vectorize -Wno-inline\
     -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
 
 libmetad_a_CFLAGS=\

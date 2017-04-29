@@ -1,7 +1,7 @@
 #AUTOMAKE_OPTIONS=subdir-objects
 
 # The main target
-lib_LTLIBRARIES=libhighlander.la libhighlanderd.la
+lib_LIBRARIES=libhighlander.a libhighlanderd.a
 
 include_HEADERS=\
 	rfc1738.h\
@@ -11,10 +11,7 @@ include_HEADERS=\
 noinst_HEADERS=\
 	internals.h
 
-libhighlander_la_LDFLAGS=-release $(PACKAGE_VERSION) -version-info 0:0:0
-libhighlanderd_la_LDFLAGS=-release $(PACKAGE_VERSION) -version-info 0:0:0
-
-libhighlander_la_SOURCES=\
+libhighlander_a_SOURCES=\
 	http.c\
 	rfc1738.c\
 	attribute.c\
@@ -36,13 +33,13 @@ libhighlander_la_SOURCES=\
 	entity_header.c\
 	send_status_code.c
 
-libhighlanderd_la_SOURCES=$(libhighlander_la_SOURCES)
+libhighlanderd_a_SOURCES=$(libhighlander_a_SOURCES)
 
 # Flags.
 # -D_BSD_SOURCE is to get the prototype for strerror_r.
 # _SVID_SOURCE will do the same thing.
 
-libhighlander_la_CFLAGS=\
+libhighlander_a_CFLAGS=\
 	-D_GNU_SOURCE -std=gnu99 -pthread\
 	-DNDEBUG\
 	-I$(srcdir)\
@@ -51,7 +48,7 @@ libhighlander_la_CFLAGS=\
 	-O2 -Wextra -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
     -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
 
-libhighlanderd_la_CFLAGS=\
+libhighlanderd_a_CFLAGS=\
 	-D_GNU_SOURCE -std=gnu99 -pthread\
 	-I$(srcdir)\
 	-I$(top_srcdir)/meta/src\
@@ -60,7 +57,7 @@ libhighlanderd_la_CFLAGS=\
     -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
 
 if WITH_VALGRIND
-libhighlander_la_CFLAGS+=-DWITH_VALGRIND=1 
+libhighlander_a_CFLAGS+=-DWITH_VALGRIND=1 
 endif
 
 TESTS=\
@@ -88,7 +85,7 @@ cookie_check_CFLAGS=-DCHECK_COOKIE $(AM_CFLAGS)\
 	-I$(top_srcdir)/meta/src
 
 cookie_check_LDADD=-lhighlander -lmeta -lpthread
-cookie_check_LDFLAGS=-L$(top_srcdir)/meta/src
+cookie_check_LDFLAGS=-L$(top_srcdir)/http/src -L$(top_srcdir)/meta/src
 
 rfc1738_check_SOURCES=rfc1738.c
 rfc1738_check_CFLAGS=-DCHECK_RFC1738 $(AM_CFLAGS)

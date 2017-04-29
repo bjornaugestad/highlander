@@ -168,7 +168,7 @@ status_t bignum_sub(bignum *dest, const bignum *a, const bignum *b)
 }
 
 // Left-shift one bit. Return error on overflow
-void bignum_lshift(bignum *p)
+static void bignum_lshift(bignum *p)
 {
     size_t i;
     uint64_t prevcarry = 0, carry = 0;

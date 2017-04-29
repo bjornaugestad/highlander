@@ -280,6 +280,18 @@ const char *get_mime_type(const char *filename)
     return "application/octet-stream";
 }
 
+void fs_lower(char *s)
+{
+    assert(NULL != s);
+
+    while (*s != '\0') {
+        if (isupper((int)*s))
+            *s = tolower((int)*s);
+
+        s++;
+    }
+}
+
 
 #ifdef CHECK_MISCFUNC
 
