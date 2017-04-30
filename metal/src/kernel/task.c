@@ -314,4 +314,3 @@ void task_set_instance(task p, int instance)
     assert(p != NULL);
     p->instance = instance;
 }
-

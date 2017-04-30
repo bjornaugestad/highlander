@@ -23,14 +23,13 @@ int show_about(http_request req, http_response page)
 
     (void)req;
     if (!add_page_start(page, PAGE_ABOUT))
-		return HTTP_500_INTERNAL_SERVER_ERROR;
+        return HTTP_500_INTERNAL_SERVER_ERROR;
 
     if (!response_add(page, html))
-		return HTTP_500_INTERNAL_SERVER_ERROR;
+        return HTTP_500_INTERNAL_SERVER_ERROR;
 
     if (!add_page_end(page, NULL))
-		return HTTP_500_INTERNAL_SERVER_ERROR;
+        return HTTP_500_INTERNAL_SERVER_ERROR;
 
     return 0;
 }
-

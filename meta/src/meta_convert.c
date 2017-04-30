@@ -422,5 +422,3 @@ int main(void)
 }
 
 #endif
-
-

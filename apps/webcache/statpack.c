@@ -232,96 +232,96 @@ int show_stats(http_request req, http_response page)
     || !response_add(page, "<tr><td>Requests served</td>\n")
     || !response_td(page, buf)
     || !response_td(page, wip))
-		goto err;
+        goto err;
 
     sprintf(buf, "%llu", bytes);
     if (!response_add(page, "<tr><td>Bytes sent</td>\n")
     || !response_td(page, buf)
     || !response_td(page, wip))
-		goto err;
+        goto err;
 
     sprintf(buf, "%lu", (unsigned long)_200);
     if (!response_add(page, "<tr><td>status code 200</td>\n")
     || !response_td(page, buf)
     || !response_td(page, wip))
-		goto err;
+        goto err;
 
     sprintf(buf, "%lu", (unsigned long)_304);
     if (!response_add(page, "<tr><td>status code 304</td>\n")
     || !response_td(page, buf)
     || !response_td(page, wip))
-		goto err;
+        goto err;
 
     sprintf(buf, "%lu", (unsigned long)_400);
     if (!response_add(page, "<tr><td>status code 400</td>\n")
     || !response_td(page, buf)
     || !response_td(page, wip))
-		goto err;
+        goto err;
 
 
     sprintf(buf, "%lu", (unsigned long)_404);
     if (!response_add(page, "<tr><td>status code 404</td>\n")
     || !response_td(page, buf)
     || !response_td(page, wip))
-		goto err;
+        goto err;
 
     sprintf(buf, "%lu", (unsigned long)_500);
     if (!response_add(page, "<tr><td>status code 500</td>\n")
     || !response_td(page, buf)
     || !response_td(page, wip))
-		goto err;
+        goto err;
 
     sprintf(buf, "%lu", (unsigned long)added);
     if (!response_add(page, "<tr><td><b>TCP server counters</b></td></tr>\n")
     || !response_add(page, "<tr><td>Connection requests accepted</td>\n")
     || !response_td(page, buf)
     || !response_td(page, wip))
-		goto err;
+        goto err;
 
     sprintf(buf, "%lu", (unsigned long)blocked);
     if (!response_add(page, "<tr><td>Connection requests blocked</td>\n")
     || !response_td(page, buf)
     || !response_td(page, wip))
-		goto err;
+        goto err;
 
     sprintf(buf, "%lu", (unsigned long)discarded);
     if (!response_add(page, "<tr><td>Connection requests discarded</td>\n")
     || !response_td(page, buf)
     || !response_td(page, wip))
-		goto err;
+        goto err;
 
     sprintf(buf, "%lu", (unsigned long)poll_intr);
     if (!response_add(page, "<tr><td>poll() was interrupted</td>\n")
     || !response_td(page, buf)
     || !response_td(page, wip))
-		goto err;
+        goto err;
 
     sprintf(buf, "%lu", (unsigned long)poll_again);
     if (!response_add(page, "<tr><td>poll() returned EAGAIN</td>\n")
     || !response_td(page, buf)
     || !response_td(page, wip))
-		goto err;
+        goto err;
 
     sprintf(buf, "%lu", (unsigned long)accept_failed);
     if (!response_add(page, "<tr><td>accept() returned -1</td>\n")
     || !response_td(page, buf)
     || !response_td(page, wip))
-		goto err;
+        goto err;
 
     sprintf(buf, "%lu", (unsigned long)denied_clients);
     if (!response_add(page, "<tr><td>Denied clients</td>\n")
     || !response_td(page, buf)
     || !response_td(page, wip))
-		goto err;
+        goto err;
 
     if (!response_add(page, "</table>\n")
     || !add_page_end(page, NULL))
-		goto err;
+        goto err;
 
     sampler_free(dup);
     return 0;
 
 err:
     sampler_free(dup);
-	return HTTP_500_INTERNAL_SERVER_ERROR;
+    return HTTP_500_INTERNAL_SERVER_ERROR;
 }

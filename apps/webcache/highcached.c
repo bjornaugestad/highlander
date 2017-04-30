@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
 
     verbose(1, "Waiting for shutdown signal(TERM)\n");
     if (!process_wait_for_shutdown(p))
-		die("Failed to wait for shutdown: %s\n", strerror(errno));
+        die("Failed to wait for shutdown: %s\n", strerror(errno));
 
     verbose(1, "Shutdown signal(TERM) received\n");
 
@@ -224,10 +224,10 @@ static void configure_admin_server(http_server s, const char* configfilename)
 
     http_server_set_port(s, port);
     if (!http_server_set_host(s, host))
-		die("Out of memory. That's odd...\n");
+        die("Out of memory. That's odd...\n");
 
     if (!http_server_alloc(s))
-		die("Could not allocate memory for admin server");
+        die("Could not allocate memory for admin server");
 
     if (!http_server_add_page(s, "/", handle_main, NULL)
     || !http_server_add_page(s, "/index.html", handle_main, NULL)
@@ -238,7 +238,7 @@ static void configure_admin_server(http_server s, const char* configfilename)
     || !http_server_add_page(s, "/about", show_about, NULL)
     || !http_server_add_page(s, "/webcache_logo.gif", show_webcache_logo_gif, NULL)
     || !http_server_add_page(s, "/webcache_styles.css", show_webcache_styles_css, NULL))
-		die("Coult not add pages to the admin server.");
+        die("Coult not add pages to the admin server.");
 
     configfile_free(cf);
 }
@@ -257,9 +257,9 @@ int handle_main(http_request req, http_response page)
     (void)req;
 
     if (add_page_start(page, PAGE_MAIN) 
-	&& response_add(page, html)
+    && response_add(page, html)
     && add_page_end(page, NULL))
-		return 0;
+        return 0;
 
-	return HTTP_500_INTERNAL_SERVER_ERROR;
+    return HTTP_500_INTERNAL_SERVER_ERROR;
 }

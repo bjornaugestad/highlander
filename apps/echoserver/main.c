@@ -7,35 +7,35 @@
 
 static void* fn(void* arg)
 {
-	connection c = arg;
-	char buf[1024];
+    connection c = arg;
+    char buf[1024];
 
-	while (connection_gets(c, buf, sizeof buf)) {
-		if (!connection_puts(c, buf) || !connection_flush(c))
-			warning("Could not echo input.\n");
-	}
+    while (connection_gets(c, buf, sizeof buf)) {
+        if (!connection_puts(c, buf) || !connection_flush(c))
+            warning("Could not echo input.\n");
+    }
 
-	return NULL;
+    return NULL;
 }
 
 int main(void)
 {
-	process p = process_new("echoserver");
-	tcp_server srv = tcp_server_new();
+    process p = process_new("echoserver");
+    tcp_server srv = tcp_server_new();
 
-	tcp_server_init(srv);
-	tcp_server_set_service_function(srv, fn, NULL);
-	tcp_server_start_via_process(p, srv);
+    tcp_server_init(srv);
+    tcp_server_set_service_function(srv, fn, NULL);
+    tcp_server_start_via_process(p, srv);
 
-	if (!process_start(p, 0))
-		exit(1);
+    if (!process_start(p, 0))
+        exit(1);
 
-	if (!process_wait_for_shutdown(p)) {
-		perror("process_wait_for_shutdown");
-		exit(EXIT_FAILURE);
-	}
+    if (!process_wait_for_shutdown(p)) {
+        perror("process_wait_for_shutdown");
+        exit(EXIT_FAILURE);
+    }
 
-	tcp_server_free(srv);
-	process_free(p);
-	return 0;
+    tcp_server_free(srv);
+    process_free(p);
+    return 0;
 }

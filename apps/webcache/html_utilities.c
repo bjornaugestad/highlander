@@ -23,10 +23,10 @@ status_t show_file_list(http_response page, const char* desc, list lst)
         "</table>\n";
 
     if (!response_p(page, desc))
-		return failure;
+        return failure;
 
     if (!response_add(page, table_start))
-		return failure;
+        return failure;
 
     for (i = list_first(lst); !list_end(i); i = list_next(i)) {
         fileinfo fi = list_get(i);
@@ -36,20 +36,20 @@ status_t show_file_list(http_response page, const char* desc, list lst)
         if (!response_add(page, "<tr>\n")
         || !response_td(page, fileinfo_name(fi))
         || !response_td(page, fileinfo_alias(fi)))
-			return failure;
+            return failure;
 
         sprintf(buf, "%d", (int)pst->st_size);
         if (!response_td(page, buf))
-			return failure;
+            return failure;
 
         localtime_r(&pst->st_mtime, &t);
         asctime_r(&t, buf);
         if (!response_td(page, buf) || !response_add(page, "</tr>\n"))
-			return failure;
+            return failure;
     }
 
     if (!response_add(page, table_end))
-		return failure;
+        return failure;
 
     return success;
 }
@@ -71,10 +71,10 @@ static struct {
 
     size_t cb, i, nelem = sizeof items / sizeof *items;
     const char* formatstring = 
-		"<li id='%s' class='%s'>\n\t<a href='%s' title='%s'>%s</a>\n</li>\n";
+        "<li id='%s' class='%s'>\n\t<a href='%s' title='%s'>%s</a>\n</li>\n";
 
     if (!response_add(page, "<ul id='menulist'>\n"))
-		return failure;
+        return failure;
 
 
     for (i = 0; i < nelem; i++) {
@@ -91,16 +91,16 @@ static struct {
             + 30; /* for safety reasons */
 
         if (!response_printf(page, cb, formatstring, items[i].id,
-			sel, items[i].href, items[i].title, items[i].text, items[i].id))
-			return failure;
+            sel, items[i].href, items[i].title, items[i].text, items[i].id))
+            return failure;
 
         if (!response_add_char(page, '\n'))
-			return failure;
+            return failure;
 
     }
 
     if (!response_add(page, "</ul>\n"))
-		return failure;
+        return failure;
 
     /* That's the main tabs. Now throw in a second ul with one item, /about, 
      * and place it on the line below.
@@ -108,7 +108,7 @@ static struct {
 
     const char* about = "<ul id='aboutline'><li><a href='/about' title='About the Highlander Web Cache'>about</a></li></ul>";
     if (!response_add(page, about))
-		return failure;
+        return failure;
 
     return success;
 }
@@ -134,10 +134,10 @@ status_t add_page_start(http_response page, int pageid)
         ;
 
     if (!response_add(page, html))
-		return failure;
+        return failure;
 
     if (!add_menubar(page, pageid))
-		return failure;
+        return failure;
 
     return success;
 }
@@ -157,11 +157,10 @@ status_t add_page_end(http_response page, const char* msg)
     const char*tail = "</html>\n";
 
     if (!response_add(page, html))
-		return failure;
+        return failure;
 
     if (msg != NULL && *msg != '\0' && !response_js_messagebox(page, msg))
-		return failure;
+        return failure;
 
-	return response_add(page, tail);
+    return response_add(page, tail);
 }
-

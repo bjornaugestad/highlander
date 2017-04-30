@@ -93,7 +93,7 @@ static int handle_requests(const http_request req, http_response page)
         size_t cb = strlen(uri) + strlen(abspath) + 100;
         rc = HTTP_404_NOT_FOUND;
         if (!response_printf(page, cb, "%s(%s): Not found", uri, abspath))
-			rc = HTTP_500_INTERNAL_SERVER_ERROR;
+            rc = HTTP_500_INTERNAL_SERVER_ERROR;
     }
     else if (S_ISDIR(st.st_mode)) {
         if (show_directory(page, abspath, &uri[1]))  /* Remove leading / */
@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
     if (!http_server_add_page(g_server, "/folder.gif", show_folder_gif, NULL)
     || !http_server_add_page(g_server, "/document.png", show_document_png, NULL)
     || !http_server_add_page(g_server, "/about.html", show_about_html, NULL))
-		die("Could not add pages to web server.");
+        die("Could not add pages to web server.");
 
     http_server_set_default_page_handler(g_server, handle_requests);
 
@@ -182,9 +182,9 @@ int main(int argc, char *argv[])
     }
 
     if (!process_wait_for_shutdown(p)) {
-		perror("process_wait_for_shutdown");
-		exit(EXIT_FAILURE);
-	}
+        perror("process_wait_for_shutdown");
+        exit(EXIT_FAILURE);
+    }
 
     process_free(p);
     http_server_free(g_server);
@@ -210,7 +210,7 @@ static status_t show_directory_as_html(http_response page, list lst, const char 
     list_iterator i;
     struct tm t;
     int cb;
-	status_t ok;
+    status_t ok;
 
     assert(lst != NULL);
 
@@ -229,7 +229,7 @@ static status_t show_directory_as_html(http_response page, list lst, const char 
         struct dirinfo *p = list_get(i);
 
         if (!response_add(page, "<tr>\n"))
-			return failure;
+            return failure;
 
         /* Create _link, which is uri + name */
         cb = snprintf(_link, sizeof _link, "%s%s%s",
@@ -248,27 +248,27 @@ static status_t show_directory_as_html(http_response page, list lst, const char 
         else
             ok = response_add(page, "<td><img align='middle' border=0 src='/document.png'>");
 
-		if (!ok)
-			return failure;
+        if (!ok)
+            return failure;
 
         /* How many bytes do we need to print this? */
         cb = snprintf(NULL, 0, "<a href='%s'>%s</a></td>\n", encoded_link, p->name);
 
         if (!response_printf(page, cb + 4, "<a href='%s'>%s</a></td>\n", encoded_link, p->name)
-		|| !response_printf(page, 100, "<td align='right'>%lu</td>", p->st.st_size))
-			return failure;
-			
+        || !response_printf(page, 100, "<td align='right'>%lu</td>", p->st.st_size))
+            return failure;
+            
 
         if (gmtime_r(&p->st.st_mtime, &t) != NULL) {
             char sz[1024];
 
             strftime(sz, sizeof(sz), "%d/%m/%Y %H:%M:%S GMT", &t);
             if (!response_td(page, sz))
-				return failure;
+                return failure;
         }
 
         if (!response_add(page, "</tr>\n"))
-			return failure;
+            return failure;
     }
 
     return add_html_footer(page);

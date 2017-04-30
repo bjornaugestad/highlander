@@ -4,7 +4,6 @@
  */
 
 
-
 /**
  * bin2c - Create a C representation of something binary.
  * The input is normally an image, and the output is always 
@@ -56,212 +55,212 @@ int g_basename_only = 0;
 
 int main(int ac, char** av)
 {
-	extern char *optarg;
-	int i, c;
-	const char *sourcefile = NULL, *headerfile = NULL, *includefile = NULL;
-	FILE *source, *header;
+    extern char *optarg;
+    int i, c;
+    const char *sourcefile = NULL, *headerfile = NULL, *includefile = NULL;
+    FILE *source, *header;
 
-	while( (c = getopt(ac, av, "bai:TvVt:c:h:")) != EOF) {
-		switch(c) {
-			case 'a':
-				g_create_access_function = 1;
-				break;
-			
-			case 'b':
-				g_basename_only = 1;
-			case 'c':
-				sourcefile = optarg;
-				break;
-			
-			case 'h':
-				headerfile = optarg;
-				break;
+    while ( (c = getopt(ac, av, "bai:TvVt:c:h:")) != EOF) {
+        switch (c) {
+            case 'a':
+                g_create_access_function = 1;
+                break;
+            
+            case 'b':
+                g_basename_only = 1;
+            case 'c':
+                sourcefile = optarg;
+                break;
+            
+            case 'h':
+                headerfile = optarg;
+                break;
 
-			case 'i':
-				includefile = optarg;
-				break;
+            case 'i':
+                includefile = optarg;
+                break;
 
-			case 't':
-				g_content_type = optarg;
-				break;
+            case 't':
+                g_content_type = optarg;
+                break;
 
-			case 'T':
-				g_store_as_text = 1;
-				break;
+            case 'T':
+                g_store_as_text = 1;
+                break;
 
-			case 'v':
-				g_verbose = 1;
-				break;
+            case 'v':
+                g_verbose = 1;
+                break;
 
-			case 'V':
-				g_veryverbose = 1;
-				break;
+            case 'V':
+                g_veryverbose = 1;
+                break;
 
-			default:
-				show_usage();
-				break;
-		}
-	}
+            default:
+                show_usage();
+                break;
+        }
+    }
 
-	/* If no filenames were provided */
-	if(optind == ac) {
-		show_usage();
-		exit(EXIT_FAILURE);
-	}
+    /* If no filenames were provided */
+    if (optind == ac) {
+        show_usage();
+        exit(EXIT_FAILURE);
+    }
 
-	/*
-	 * Now for some semantics. We can generate the header file without 
-	 * specifying the type, but we need the type if we generate the source file.
-	 * bin2c can generate just the header, just the source file, or both header 
-	 * and source. It is meaningless to generate nothing...
-	 */
-	if(sourcefile == NULL && headerfile == NULL) {
-		fprintf(stderr, "You should generate something.\n");
-		show_usage();
-		exit(EXIT_FAILURE);
-	}
+    /*
+     * Now for some semantics. We can generate the header file without 
+     * specifying the type, but we need the type if we generate the source file.
+     * bin2c can generate just the header, just the source file, or both header 
+     * and source. It is meaningless to generate nothing...
+     */
+    if (sourcefile == NULL && headerfile == NULL) {
+        fprintf(stderr, "You should generate something.\n");
+        show_usage();
+        exit(EXIT_FAILURE);
+    }
 
-	/* We need content type if we generate source */
-	if(sourcefile != NULL && g_content_type == NULL) {
-		fprintf(stderr, "Please specify content type\n");
-		show_usage();
-		exit(EXIT_FAILURE);
-	}
+    /* We need content type if we generate source */
+    if (sourcefile != NULL && g_content_type == NULL) {
+        fprintf(stderr, "Please specify content type\n");
+        show_usage();
+        exit(EXIT_FAILURE);
+    }
 
-	/* We need -i includefile if -h header isn't provided and we generate source .
-	 * It is confusing to provide both -i and -h, so we disallow that. -h wins. 
-	 */
-	if(sourcefile != NULL) {
-		if((headerfile == NULL && includefile == NULL)
-		|| (headerfile != NULL && includefile != NULL)) {
-			fprintf(stderr, "Please provide either -i includefile or -h headerfile\n");
-			exit(EXIT_FAILURE);
-		}
+    /* We need -i includefile if -h header isn't provided and we generate source .
+     * It is confusing to provide both -i and -h, so we disallow that. -h wins. 
+     */
+    if (sourcefile != NULL) {
+        if ((headerfile == NULL && includefile == NULL)
+        || (headerfile != NULL && includefile != NULL)) {
+            fprintf(stderr, "Please provide either -i includefile or -h headerfile\n");
+            exit(EXIT_FAILURE);
+        }
 
-		/*
-		 * The test above should assert that one and only 
-		 * one file is provided. 
-		 */
-		if (headerfile != NULL)
-			includefile = headerfile;
-	}
+        /*
+         * The test above should assert that one and only 
+         * one file is provided. 
+         */
+        if (headerfile != NULL)
+            includefile = headerfile;
+    }
 
-	source = NULL;
-	if(sourcefile != NULL && (source = fopen(sourcefile, "w")) == NULL) {
-		perror(sourcefile);
-		exit(EXIT_FAILURE);
-	}
+    source = NULL;
+    if (sourcefile != NULL && (source = fopen(sourcefile, "w")) == NULL) {
+        perror(sourcefile);
+        exit(EXIT_FAILURE);
+    }
 
-	header = NULL;
-	if(headerfile != NULL && (header = fopen(headerfile, "w")) == NULL) {
-		perror(headerfile);
-		exit(EXIT_FAILURE);
-	}
+    header = NULL;
+    if (headerfile != NULL && (header = fopen(headerfile, "w")) == NULL) {
+        perror(headerfile);
+        exit(EXIT_FAILURE);
+    }
 
-	if(source != NULL) {
-		start_source(source, includefile);
-		for(i = optind; i < ac; i++)
-			create_arrays(av[i], source);
+    if (source != NULL) {
+        start_source(source, includefile);
+        for (i = optind; i < ac; i++)
+            create_arrays(av[i], source);
 
-		for(i = optind; i < ac; i++)
-			create_implementations(av[i], source);
+        for (i = optind; i < ac; i++)
+            create_implementations(av[i], source);
 
-		end_source(source);
-		fclose(source);
-	}
+        end_source(source);
+        fclose(source);
+    }
 
-	if(header != NULL) {
-		start_header(header, headerfile);
-	
-		for(i = optind; i < ac; i++)
-			create_declarations(av[i], header);
+    if (header != NULL) {
+        start_header(header, headerfile);
+    
+        for (i = optind; i < ac; i++)
+            create_declarations(av[i], header);
 
-		end_header(header);
-		fclose(header);
-	}
+        end_header(header);
+        fclose(header);
+    }
 
-	if(g_veryverbose) {
-		for(i = optind; i < ac; i++)
-			create_calls(av[i]);
-	}
+    if (g_veryverbose) {
+        for (i = optind; i < ac; i++)
+            create_calls(av[i]);
+    }
 
-	return 0;
+    return 0;
 }
 
 void create_bin_arrays(const char* filename, FILE *f);
 void create_text_arrays(const char* filename, FILE *f);
 void create_arrays(const char* filename, FILE *f) 
 {
-	if(g_store_as_text) 
-		create_text_arrays(filename, f);
-	else
-		create_bin_arrays(filename, f);
+    if (g_store_as_text) 
+        create_text_arrays(filename, f);
+    else
+        create_bin_arrays(filename, f);
 }
 
 static void remove_trailing_newline(char *sz)
 {
-	size_t n = strlen(sz);
-	while(n-- > 0 && isspace(sz[n]))
-			sz[n] = '\0';
+    size_t n = strlen(sz);
+    while (n-- > 0 && isspace(sz[n]))
+            sz[n] = '\0';
 }
 
 void create_text_arrays(const char* filename, FILE *f) 
 {
-	char *s, sz[20480];
-	FILE *fin;
+    char *s, sz[20480];
+    FILE *fin;
 
-	if( (fin = fopen(filename, "r")) == NULL) {
-		perror(filename);
-		exit(EXIT_FAILURE);
-	}
+    if ( (fin = fopen(filename, "r")) == NULL) {
+        perror(filename);
+        exit(EXIT_FAILURE);
+    }
 
-	fprintf(f, "\nstatic const unsigned char x%s[] = \n", base(filename));
-	while(fgets(sz, sizeof sz, fin)) {
-		remove_trailing_newline(sz);
-		s = sz;
-		fputc('"', f);
-		while(*s) {
-			if(*s == '"')
-				fprintf(f, "\\%c", *s);
-			else
-				fputc(*s, f);
-			s++;
-		}
-		fprintf(f, "\\n\"\n");
-	}
+    fprintf(f, "\nstatic const unsigned char x%s[] = \n", base(filename));
+    while (fgets(sz, sizeof sz, fin)) {
+        remove_trailing_newline(sz);
+        s = sz;
+        fputc('"', f);
+        while (*s) {
+            if (*s == '"')
+                fprintf(f, "\\%c", *s);
+            else
+                fputc(*s, f);
+            s++;
+        }
+        fprintf(f, "\\n\"\n");
+    }
 
-	fclose(fin);
-	fprintf(f, "\n;\n");
+    fclose(fin);
+    fprintf(f, "\n;\n");
 }
 
 void create_bin_arrays(const char* filename, FILE *f) 
 {
-	int fd, printed;
-	size_t cb;
-	unsigned char line[2048];
+    int fd, printed;
+    size_t cb;
+    unsigned char line[2048];
 
-	if( (fd = open(filename, O_RDONLY)) == -1) {
-		perror(filename);
-		exit(EXIT_FAILURE);
-	}
+    if ( (fd = open(filename, O_RDONLY)) == -1) {
+        perror(filename);
+        exit(EXIT_FAILURE);
+    }
 
-	fprintf(f, "\nstatic const unsigned char x%s[] = {\n", base(filename));
+    fprintf(f, "\nstatic const unsigned char x%s[] = {\n", base(filename));
 
-	printed = 0;
-	while( (cb = read(fd, line, sizeof line)) > 0) {
-		size_t i;
-		for(i = 0; i < cb; i++) {
-			printed += fprintf(f, "%d,", line[i]);
+    printed = 0;
+    while ( (cb = read(fd, line, sizeof line)) > 0) {
+        size_t i;
+        for (i = 0; i < cb; i++) {
+            printed += fprintf(f, "%d,", line[i]);
 
-			if(printed > 72) {
-				fprintf(f, "\n");
-				printed = 0;
-			}
-		}
-	}
+            if (printed > 72) {
+                fprintf(f, "\n");
+                printed = 0;
+            }
+        }
+    }
 
-	fprintf(f, "\n};\n\n");
-	close(fd);
+    fprintf(f, "\n};\n\n");
+    close(fd);
 }
 
 
@@ -289,129 +288,128 @@ static const char *usage2 =
 "\t   of the embedded object.\n"
 ;
 
-	printf("%s%s\n", usage1, usage2);
+    printf("%s%s\n", usage1, usage2);
 }
 
 
 const char *base(const char *s)
 {
-	static char bf[2048];
-	size_t i;
+    static char bf[2048];
+    size_t i;
 
-	if(g_basename_only) {
-		/* Copy only the filename to the buffer bf. */
-		const char* end = s + strlen(s);
-		while(end > s && *end != '/')
-			end--;
+    if (g_basename_only) {
+        /* Copy only the filename to the buffer bf. */
+        const char* end = s + strlen(s);
+        while (end > s && *end != '/')
+            end--;
 
-		if(*end == '/')
-			end++;
+        if (*end == '/')
+            end++;
 
-		strcpy(bf, end);
-	}
-	else {
-		strcpy(bf, s);
-	}
+        strcpy(bf, end);
+    }
+    else {
+        strcpy(bf, s);
+    }
 
-	i = 0;
-	while(bf[i] != '\0') {
-		if(!isalnum(bf[i]))
-			bf[i] = '_';
-		i++;
-	}
+    i = 0;
+    while (bf[i] != '\0') {
+        if (!isalnum(bf[i]))
+            bf[i] = '_';
+        i++;
+    }
 
-	return bf;
+    return bf;
 }
 
 void create_implementations(const char* filename, FILE *f)
 {
-	const char *name = base(filename);
+    const char *name = base(filename);
 
-	if(g_create_access_function && g_store_as_text) {
-		fprintf(f, "const unsigned char* get_x%s(void)\n", name);
-		fprintf(f, "{\n");
-		fprintf(f, "\treturn x%s;\n", name);
-		fprintf(f, "}\n");
-	}
+    if (g_create_access_function && g_store_as_text) {
+        fprintf(f, "const unsigned char* get_x%s(void)\n", name);
+        fprintf(f, "{\n");
+        fprintf(f, "\treturn x%s;\n", name);
+        fprintf(f, "}\n");
+    }
 
-	fprintf(f, "int show_%s(http_request request, http_response response)\n",
-		name);
-	fprintf(f, "{\n");
-	fprintf(f, "\t(void)request;\n");
-	fprintf(f, "\tif (!response_set_content_type(response, \"%s\"))\n", g_content_type);
-	fprintf(f, "\t\treturn HTTP_500_INTERNAL_SERVER_ERROR;\n");
-	fprintf(f, "\n");
+    fprintf(f, "int show_%s(http_request request, http_response response)\n",
+        name);
+    fprintf(f, "{\n");
+    fprintf(f, "\t(void)request;\n");
+    fprintf(f, "\tif (!response_set_content_type(response, \"%s\"))\n", g_content_type);
+    fprintf(f, "\t\treturn HTTP_500_INTERNAL_SERVER_ERROR;\n");
+    fprintf(f, "\n");
 
-	fprintf(f, "\tresponse_set_content_buffer(response, (void*)x%s, sizeof(x%s));\n",
-		name, name);
-	fprintf(f,"\treturn 0;\n");
-	fprintf(f, "}\n\n");
+    fprintf(f, "\tresponse_set_content_buffer(response, (void*)x%s, sizeof(x%s));\n",
+        name, name);
+    fprintf(f,"\treturn 0;\n");
+    fprintf(f, "}\n\n");
 }
 
 void start_source(FILE *f, const char *headerfile)
 {
-	fprintf(f, "#include <highlander.h>\n");
-	fprintf(f, "#include \"%s\"\n", headerfile);
+    fprintf(f, "#include <highlander.h>\n");
+    fprintf(f, "#include \"%s\"\n", headerfile);
 }
 
 void start_header(FILE *f, const char *filename)
 {
-	char *s, guard[2048];
+    char *s, guard[2048];
 
-	strcpy(guard, filename);
+    strcpy(guard, filename);
 
-	/* Create uppercase and replace [./] with _ */
-	s = guard;
-	while(*s) {
-		if(islower(*s))
-			*s = toupper(*s);
-		else if (!isalnum(*s))
-			*s = '_';
-		
-		s++;
-	}
+    /* Create uppercase and replace [./] with _ */
+    s = guard;
+    while (*s) {
+        if (islower(*s))
+            *s = toupper(*s);
+        else if (!isalnum(*s))
+            *s = '_';
+        
+        s++;
+    }
 
-	fprintf(f, "#ifndef %s\n", guard);
-	fprintf(f, "#define %s\n\n", guard);
-	fprintf(f, "\n");
-	
-	fprintf(f, "#ifdef __cplusplus\n");
-	fprintf(f, "extern \"C\" {\n");
-	fprintf(f, "#endif\n");
-	fprintf(f, "\n");
+    fprintf(f, "#ifndef %s\n", guard);
+    fprintf(f, "#define %s\n\n", guard);
+    fprintf(f, "\n");
+    
+    fprintf(f, "#ifdef __cplusplus\n");
+    fprintf(f, "extern \"C\" {\n");
+    fprintf(f, "#endif\n");
+    fprintf(f, "\n");
 }
 
 void end_source(FILE *f)
 {
-	(void)f;
+    (void)f;
 }
 
 void end_header(FILE *f)
 {
-	fprintf(f, "\n");
-	fprintf(f, "#ifdef __cplusplus\n");
-	fprintf(f, "}\n");
-	fprintf(f, "#endif\n");
-	fprintf(f, "\n");
+    fprintf(f, "\n");
+    fprintf(f, "#ifdef __cplusplus\n");
+    fprintf(f, "}\n");
+    fprintf(f, "#endif\n");
+    fprintf(f, "\n");
 
-	fprintf(f, "\n#endif\n");
+    fprintf(f, "\n#endif\n");
 }
 
 void create_declarations(const char* filename, FILE *f)
 {
-	const char *name = base(filename);
+    const char *name = base(filename);
 
-	if(g_create_access_function && g_store_as_text) {
-		fprintf(f, "const unsigned char* get_x%s(void);\n", name);
-	}
+    if (g_create_access_function && g_store_as_text) {
+        fprintf(f, "const unsigned char* get_x%s(void);\n", name);
+    }
 
-	fprintf(f, "int show_%s(http_request request, http_response response);\n",
-		name);
+    fprintf(f, "int show_%s(http_request request, http_response response);\n",
+        name);
 }
 
 void create_calls(const char* filename)
 {
-	printf("\thttp_server_add_page(s, \"/%s\", show_%s, NULL);\n",
-		filename, base(filename));
+    printf("\thttp_server_add_page(s, \"/%s\", show_%s, NULL);\n",
+        filename, base(filename));
 }
-
