@@ -161,8 +161,7 @@ http_response response_new(void)
     cstring arr[8];
     size_t nelem = sizeof arr / sizeof *arr;
 
-    if ((p = calloc(1, sizeof *p)) == NULL
-    || !cstring_multinew(arr, nelem)) {
+    if ((p = calloc(1, sizeof *p)) == NULL || !cstring_multinew(arr, nelem)) {
         free(p);
         return NULL;
     }
@@ -348,12 +347,10 @@ static bool need_quote(const char* s)
 }
 
 /*
- * How do we quote? We use ' in version 1.
- * How about ' in the value. Do we escape them or do
- * we double-quote them? (\' or '' ) I have to guess here,
- * since rfc2109 is VERY silent on this issue. We go for \'
- * since most browsers/servers are written in C and
- * C programmers tend to escape stuff.
+ * How do we quote? We use ' in version 1.  What about ' in the value? Do we
+ * escape them or do we double-quote them? (\' or '' ) I have to guess here,
+ * since rfc2109 is VERY silent on this issue. We go for \' since most
+ * browsers/servers are written in C and C programmers tend to escape stuff.
  */
 static status_t strcat_quoted(cstring dest, const char* s)
 {
@@ -417,8 +414,7 @@ static status_t create_cookie_string(cookie c, cstring str)
         return failure;
 
     v = cookie_get_max_age(c);
-    if (v != MAX_AGE_NOT_SET
-    && !cstring_printf(str, 20, ";Max-Age=%d", v))
+    if (v != MAX_AGE_NOT_SET && !cstring_printf(str, 20, ";Max-Age=%d", v))
         return failure;
 
     v = cookie_get_secure(c);
@@ -440,7 +436,7 @@ static status_t create_cookie_string(cookie c, cstring str)
     return cstring_concat(str, "\r\n");
 }
 
-static status_t send_cookie(cookie c, connection conn, meta_error e)
+static status_t send_cookie(cookie c, connection conn, error e)
 {
     cstring s;
     size_t count;
@@ -467,7 +463,8 @@ static status_t send_cookie(cookie c, connection conn, meta_error e)
     return success;
 }
 
-static status_t response_send_cookies(http_response p, connection conn, meta_error e)
+static status_t response_send_cookies(http_response p, connection conn, 
+    error e)
 {
     list_iterator i;
 
@@ -489,7 +486,7 @@ static status_t response_send_cookies(http_response p, connection conn, meta_err
 static status_t response_send_header(
     http_response response,
     connection conn,
-    meta_error e)
+    error e)
 {
     if (response->version == VERSION_09)
         /* No headers for http 0.9 */
@@ -879,7 +876,7 @@ status_t response_set_content_encoding(http_response response, const char* value
     return entity_header_set_content_encoding(response->entity_header, value);
 }
 
-status_t response_set_content_language(http_response response, const char* value, meta_error e)
+status_t response_set_content_language(http_response response, const char* value, error e)
 {
     assert(response != NULL);
     return entity_header_set_content_language(response->entity_header, value, e);
@@ -984,7 +981,7 @@ void response_set_allocated_content_buffer(
 }
 
 
-status_t response_send_file(http_response p, const char *path, const char* ctype, meta_error e)
+status_t response_send_file(http_response p, const char *path, const char* ctype, error e)
 {
     struct stat st;
     assert(p != NULL);
@@ -1078,22 +1075,18 @@ response_send_entity(http_response r, connection conn, size_t *pcb)
     if (r->content_buffer_in_use) {
         size_t cb = response_get_content_length(r);
         *pcb = cb;
-        if (cb > (64*1024)) {
+        if (cb > 64 * 1024) {
             int timeout = 1;
             int retries = cb / 1024;
 
-            rc = connection_write_big_buffer(
-                conn,
-                r->content_buffer,
-                cb,
-                timeout,
-                retries);
+            rc = connection_write_big_buffer(conn, r->content_buffer,
+                cb, timeout, retries);
         }
         else
             rc = connection_write(conn, r->content_buffer, cb);
 
         if (r->content_free_when_done) {
-            free((void*)r->content_buffer);
+            free(r->content_buffer);
             r->content_buffer = NULL;
         }
 
@@ -1158,7 +1151,7 @@ static int http_send_content(int status)
  * First we send the HTTP status code, then the HTTP header fields, and last
  * but not least, the entity itself.
  */
-status_t response_send(http_response r, connection c, meta_error e, size_t *pcb)
+status_t response_send(http_response r, connection c, error e, size_t *pcb)
 {
     /* NOTE: 20060103
      * I have rewritten lots of stuff today and added general_header
@@ -1338,7 +1331,7 @@ status_t response_js_messagebox(http_response response, const char* text)
 }
 
 /* response field functions */
-static status_t parse_age(http_response r, const char* value, meta_error e)
+static status_t parse_age(http_response r, const char* value, error e)
 {
     unsigned long v;
     assert(r != NULL);
@@ -1351,7 +1344,7 @@ static status_t parse_age(http_response r, const char* value, meta_error e)
     return success;
 }
 
-static status_t parse_etag(http_response r, const char* value, meta_error e)
+static status_t parse_etag(http_response r, const char* value, error e)
 {
     assert(r != NULL);
     assert(value != NULL);
@@ -1362,7 +1355,7 @@ static status_t parse_etag(http_response r, const char* value, meta_error e)
     return success;
 }
 
-static status_t parse_location(http_response r, const char* value, meta_error e)
+static status_t parse_location(http_response r, const char* value, error e)
 {
     assert(r != NULL);
     assert(value != NULL);
@@ -1373,7 +1366,7 @@ static status_t parse_location(http_response r, const char* value, meta_error e)
     return success;
 }
 
-static status_t parse_www_authenticate(http_response r, const char* value, meta_error e)
+static status_t parse_www_authenticate(http_response r, const char* value, error e)
 {
     assert(r != NULL);
     assert(value != NULL);
@@ -1384,7 +1377,7 @@ static status_t parse_www_authenticate(http_response r, const char* value, meta_
     return success;
 }
 
-static status_t parse_server(http_response r, const char* value, meta_error e)
+static status_t parse_server(http_response r, const char* value, error e)
 {
     assert(r != NULL);
     assert(value != NULL);
@@ -1400,7 +1393,7 @@ static status_t parse_server(http_response r, const char* value, meta_error e)
  * The only range unit defined by HTTP 1.1 is "bytes", and we MAY ignore 
  * all others.
  */
-static status_t parse_accept_ranges(http_response r, const char* value, meta_error e)
+static status_t parse_accept_ranges(http_response r, const char* value, error e)
 {
     assert(r != NULL);
     assert(value != NULL);
@@ -1417,7 +1410,7 @@ static status_t parse_accept_ranges(http_response r, const char* value, meta_err
     return success;
 }
 
-static status_t parse_proxy_authenticate(http_response r, const char* value, meta_error e)
+static status_t parse_proxy_authenticate(http_response r, const char* value, error e)
 {
     assert(r != NULL);
     assert(value != NULL);
@@ -1432,7 +1425,7 @@ static status_t parse_proxy_authenticate(http_response r, const char* value, met
  * The value can be either a rfc822 date or an integer value representing delta(seconds).
  * TODO: We need a way to separate between delta and absolute time.
  */
-static status_t parse_retry_after(http_response r, const char* value, meta_error e)
+static status_t parse_retry_after(http_response r, const char* value, error e)
 {
     time_t t;
     long delta;
@@ -1450,7 +1443,7 @@ static status_t parse_retry_after(http_response r, const char* value, meta_error
     return success;
 }
 
-static status_t parse_vary(http_response r, const char* value, meta_error e)
+static status_t parse_vary(http_response r, const char* value, error e)
 {
     assert(r != NULL);
     assert(value != NULL);
@@ -1460,19 +1453,20 @@ static status_t parse_vary(http_response r, const char* value, meta_error e)
 
     return success;
 }
-static const struct response_mapper {
+
+static const struct {
     const char* name;
-    status_t (*handler)(http_response req, const char* value, meta_error e);
+    status_t (*handler)(http_response req, const char* value, error e);
 } response_header_fields[] = {
-    { "accept-ranges", parse_accept_ranges },
-    { "age", parse_age },
-    { "etag", parse_etag },
-    { "location", parse_location },
+    { "accept-ranges",      parse_accept_ranges },
+    { "age",                parse_age },
+    { "etag",               parse_etag },
+    { "location",           parse_location },
     { "proxy-authenticate", parse_proxy_authenticate },
-    { "retry-after", parse_retry_after },
-    { "server", parse_server },
-    { "vary", parse_vary },
-    { "www-authenticate", parse_www_authenticate }
+    { "retry-after",        parse_retry_after },
+    { "server",             parse_server },
+    { "vary",               parse_vary },
+    { "www-authenticate",   parse_www_authenticate }
 };
 
 int find_response_header(const char* name)
@@ -1486,7 +1480,7 @@ int find_response_header(const char* name)
     return -1;
 }
 
-status_t parse_response_header(int idx, http_response req, const char* value, meta_error e)
+status_t parse_response_header(int idx, http_response req, const char* value, error e)
 {
     assert(idx >= 0);
     assert((size_t)idx < sizeof response_header_fields / sizeof *response_header_fields);
@@ -1498,7 +1492,7 @@ status_t parse_response_header(int idx, http_response req, const char* value, me
  *		HTTP-Version SP Status-Code SP Reason-Phrase CRLF
  * It is the first line in all HTTP responses.
  */
-static status_t read_response_status_line(http_response response, connection conn, meta_error e)
+static status_t read_response_status_line(http_response response, connection conn, error e)
 {
     char *s, buf[CCH_STATUSLINE_MAX + 1];
     int status_code;
@@ -1546,7 +1540,7 @@ static status_t read_response_status_line(http_response response, connection con
 
 /* Reads all (if any) http header fields */
 static status_t
-read_response_header_fields(connection conn, http_response response, meta_error e)
+read_response_header_fields(connection conn, http_response response, error e)
 {
 
     for (;;) {
@@ -1557,15 +1551,11 @@ read_response_header_fields(connection conn, http_response response, meta_error 
         if (!read_line(conn, buf, sizeof buf, e))
             return failure;
 
-        if (strlen(buf) == 0) {
-            /*
-             * An empty buffer means that we have read the \r\n sequence
-             * separating header fields from entities or terminating the
-             * message. This means that there is no more header
-             * fields to read.
-             */
+        // An empty buffer means that we have read the \r\n sequence
+        // separating header fields from entities or terminating the
+        // message. This means that there are no more header fields to read.
+        if (strlen(buf) == 0)
             return success;
-        }
 
         if (!get_field_name(buf, name, sizeof name)
         || !get_field_value(buf, value, sizeof value))
@@ -1610,7 +1600,7 @@ static status_t get_chunklen(connection conn, size_t *len)
  * the total size up front.
  */
 static status_t read_chunked_response(http_response this, connection conn,
-    size_t max_contentlen, meta_error e)
+    size_t max_contentlen, error e)
 {
     size_t chunklen, ntotal = 0;
     ssize_t nread;
@@ -1657,11 +1647,8 @@ static status_t read_chunked_response(http_response this, connection conn,
     return success;
 }
 
-status_t response_receive(
-    http_response response,
-    connection conn,
-    size_t max_contentlen,
-    meta_error e)
+status_t response_receive(http_response response, connection conn,
+    size_t max_contentlen, error e)
 {
     general_header gh = response_get_general_header(response);
     entity_header eh = response_get_entity_header(response);

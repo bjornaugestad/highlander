@@ -67,7 +67,7 @@ static status_t send_disk_file(
     connection conn,
     http_request req,
     http_response response,
-    meta_error e)
+    error e)
 {
     size_t i;
     const char *uri, *docroot;
@@ -157,7 +157,7 @@ status_t handle_dynamic(
     dynamic_page p,
     http_request req,
     http_response response,
-    meta_error e)
+    error e)
 {
     int status = HTTP_200_OK;
     http_version version;
@@ -240,11 +240,11 @@ static status_t serviceConnection2(
     connection conn,
     http_request request,
     http_response response,
-    meta_error e)
+    error e)
 {
     dynamic_page dp;
     size_t cbSent;
-    int status, error = 0;
+    int status, iserror = 0;
     size_t max_posted_content = http_server_get_post_limit(srv);
 
     while (!http_server_shutting_down(srv)) {
@@ -256,7 +256,7 @@ static status_t serviceConnection2(
          * protocol error, we try to send a response back to the client
          * and close the connection. If it is anything else(tcp/ip, os)
          * we stop processing.  */
-        error = !request_receive(request, conn, max_posted_content, e);
+        iserror = !request_receive(request, conn, max_posted_content, e);
 
         /* So far, so good. We have a valid HTTP request.
          * Now see if we can locate a page handler function for it.
@@ -264,19 +264,19 @@ static status_t serviceConnection2(
          * http_server has a default page handler. If neither is true,
          * then the page was not found(404).
          */
-        if (error)
+        if (iserror)
             ;
         else if ((dp = http_server_lookup(srv, request)) != NULL) {
             if (!handle_dynamic(conn, srv, dp, request, response, e))
-                error = 1;
+                iserror = 1;
         }
         else if (http_server_can_read_files(srv)) {
             if (!send_disk_file(srv, conn, request, response, e))
-                error = 1;
+                iserror = 1;
         }
         else if (http_server_has_default_page_handler(srv)) {
             if (!http_server_run_default_page_handler(conn, srv, request, response, e))
-                error = 1;
+                iserror = 1;
         }
         else {
             /* We didn't find the page */
@@ -285,7 +285,7 @@ static status_t serviceConnection2(
                 return failure;
         }
 
-        if (error) {
+        if (iserror) {
             if (is_protocol_error(e)) {
                 status = get_error_code(e);
                 response_set_status(response, status);
@@ -358,7 +358,7 @@ void* serviceConnection(void* psa)
     http_request request;
     http_response response;
 
-    meta_error e = meta_error_new();
+    error e = error_new();
     if (e == NULL)
         return NULL;
 
@@ -376,11 +376,11 @@ void* serviceConnection(void* psa)
     http_server_recycle_request(srv, request);
     http_server_recycle_response(srv, response);
 
-    meta_error_free(e);
+    error_free(e);
     return (void*)(intptr_t)ok;
 }
 
-int http_status_code(int error)
+int http_status_code(int iserror)
 {
-    return error >= HTTP_STATUS_MIN && error <= HTTP_STATUS_MAX;
+    return iserror >= HTTP_STATUS_MIN && iserror <= HTTP_STATUS_MAX;
 }

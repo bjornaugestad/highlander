@@ -30,7 +30,7 @@
     The client didn't send one, so we end up in poll() and
     wait for a timeout :-(
  */
-status_t read_line(connection conn, char* buf, size_t cchMax, meta_error e)
+status_t read_line(connection conn, char* buf, size_t cchMax, error e)
 {
     int c;
     size_t i = 0;

@@ -171,17 +171,17 @@ int cookie_get_max_age(cookie c)
     return c->max_age;
 }
 
-/* TODO: Replace cstring with char* and drop the meta_error.
+/* TODO: Replace cstring with char* and drop the error.
  * Reason? Well, it may be possible to flood the incoming data
  * in some way, so we reduce the use of resizeable strings.
  * With fixed buffer sizes, we can always return HTTP_BAD_REQUEST
- * so we do not need meta_error.
+ * so we do not need error.
  */
 static status_t get_cookie_attribute(
     const char *s,
     const char *attribute,	/* $Version, $Path, $Secure or $Domain */
     cstring value,		/* Store result here */
-    meta_error e)
+    error e)
 {
     char *location;
     size_t i;
@@ -234,7 +234,7 @@ static status_t get_cookie_attribute(
  *	   so that we can switch the support for illegal cookie tags on and off.
  *	   To summarize; we now support "Cookie: \r\n".
  */
-status_t parse_cookie(http_request req, const char *value, meta_error e)
+status_t parse_cookie(http_request req, const char *value, error e)
 {
     /* Locate version */
     char *s;
@@ -265,7 +265,7 @@ static status_t parse_cookie_attr(
     const char *input,
     const char *look_for,
     status_t (*set_attr)(cookie, const char*),
-    meta_error e)
+    error e)
 {
     cstring str;
 
@@ -287,7 +287,7 @@ static status_t parse_cookie_attr(
  * add name and value to the cookie .
  * Returns 1 on success, else a http error do
  */
-static status_t parse_new_cookie_name(cookie c, const char *input, meta_error e)
+static status_t parse_new_cookie_name(cookie c, const char *input, error e)
 {
     const char *s, *s2;
     cstring str;
@@ -341,7 +341,7 @@ static status_t parse_new_cookie_name(cookie c, const char *input, meta_error e)
     return success;
 }
 
-static status_t parse_new_cookie_secure(cookie c, const char *value, meta_error e)
+static status_t parse_new_cookie_secure(cookie c, const char *value, error e)
 {
     int secure;
     cstring str;
@@ -365,17 +365,17 @@ static status_t parse_new_cookie_secure(cookie c, const char *value, meta_error 
     return success;
 }
 
-static status_t parse_new_cookie_domain(cookie c, const char *value, meta_error e)
+static status_t parse_new_cookie_domain(cookie c, const char *value, error e)
 {
     return parse_cookie_attr(c, value, "$Domain", cookie_set_domain, e);
 }
 
-static status_t parse_new_cookie_path(cookie c, const char *value, meta_error e)
+static status_t parse_new_cookie_path(cookie c, const char *value, error e)
 {
     return parse_cookie_attr(c, value, "$Path", cookie_set_path, e);
 }
 
-static status_t parse_new_cookie_version(cookie c, const char *value, meta_error e)
+static status_t parse_new_cookie_version(cookie c, const char *value, error e)
 {
     int version;
     cstring str;
@@ -398,7 +398,7 @@ static status_t parse_new_cookie_version(cookie c, const char *value, meta_error
     return success;
 }
 
-status_t parse_new_cookie(http_request req, const char *value, meta_error e)
+status_t parse_new_cookie(http_request req, const char *value, error e)
 {
     cookie c;
 
@@ -436,7 +436,7 @@ status_t parse_new_cookie(http_request req, const char *value, meta_error e)
  * The old cookie format is (hopefully) name=value
  * where value may be quoted.
  */
-status_t parse_old_cookie(http_request req, const char *input, meta_error e)
+status_t parse_old_cookie(http_request req, const char *input, error e)
 {
     cookie c = NULL;
     cstring name = NULL, value = NULL;

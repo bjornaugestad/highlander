@@ -15,6 +15,7 @@
 #include <netinet/in.h>
 #include <regex.h>
 
+#include <openssl/ssl.h>
 
 #include <meta_pool.h>
 #include <meta_atomic.h>
@@ -76,7 +77,7 @@ struct tcp_server_tag {
      * We precompile a regexp pattern and store it here
      * for fast verification of access. */
     regex_t allowed_clients;
-    int pattern_compiled;
+    bool pattern_compiled;
 
     /* The pool of read/write buffers */
     pool read_buffers;
@@ -162,7 +163,7 @@ tcp_server tcp_server_new(void)
         p->nthreads = 10;
         p->port = 2000;
         p->sock = NULL;
-        p->pattern_compiled = 0;
+        p->pattern_compiled = false;
         p->host = NULL;
 
         p->queue = NULL;
@@ -203,7 +204,7 @@ void tcp_server_free(tcp_server srv)
         /* Free the regex struct */
         if (srv->pattern_compiled) {
             regfree(&srv->allowed_clients);
-            srv->pattern_compiled = 0;
+            srv->pattern_compiled = false;
         }
 
         atomic_ulong_destroy(&srv->sum_poll_intr);
@@ -322,7 +323,7 @@ status_t tcp_server_allow_clients(tcp_server srv, const char *filter)
         return failure;
     }
 
-    srv->pattern_compiled = 1;
+    srv->pattern_compiled = true;
     return success;
 }
 
@@ -332,7 +333,7 @@ void tcp_server_clear_client_filter(tcp_server srv)
 
     if (srv->pattern_compiled) {
         regfree(&srv->allowed_clients);
-        srv->pattern_compiled = 0;
+        srv->pattern_compiled = false;
     }
 }
 
@@ -561,7 +562,7 @@ status_t tcp_server_get_root_resources(tcp_server srv)
     if (srv->host != NULL)
         hostname = c_str(srv->host);
 
-    srv->sock = create_server_socket(srv->unix_socket, hostname, srv->port);
+    srv->sock = create_server_socket(hostname, srv->port);
     if (srv->sock == NULL)
         return failure;
 

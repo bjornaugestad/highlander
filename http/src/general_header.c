@@ -867,7 +867,7 @@ status_t general_header_send_fields(general_header gh, connection c)
  * Returns success if OK, even if the directive wasn't understood.
  * This is to 'accept' extensions from 14.9.6
  */
-static status_t set_cache_control(general_header gh, const char* s, meta_error e)
+static status_t set_cache_control(general_header gh, const char* s, error e)
 {
     /*
      * We have 2 types of cache-request-directives, with and
@@ -938,7 +938,7 @@ static status_t set_cache_control(general_header gh, const char* s, meta_error e
     return success;
 }
 
-static status_t parse_transfer_encoding(general_header gh, const char* value, meta_error e)
+static status_t parse_transfer_encoding(general_header gh, const char* value, error e)
 {
     if (!general_header_set_transfer_encoding(gh, value))
         return set_os_error(e, errno);
@@ -946,7 +946,7 @@ static status_t parse_transfer_encoding(general_header gh, const char* value, me
     return success;
 }
 
-static status_t parse_pragma(general_header gh, const char* value, meta_error e)
+static status_t parse_pragma(general_header gh, const char* value, error e)
 {
     UNUSED(e);
 
@@ -967,7 +967,7 @@ static status_t parse_pragma(general_header gh, const char* value, meta_error e)
  * A response may even contain more than one warning. Do we care? We're neither
  * a client nor a proxy ATM, so just store the value.
  */
-static status_t parse_warning(general_header gh, const char* value, meta_error e)
+static status_t parse_warning(general_header gh, const char* value, error e)
 {
     assert(gh != NULL);
     assert(value != NULL);
@@ -978,7 +978,7 @@ static status_t parse_warning(general_header gh, const char* value, meta_error e
     return success;
 }
 
-static status_t parse_cache_control(general_header gh, const char* value, meta_error e)
+static status_t parse_cache_control(general_header gh, const char* value, error e)
 {
     char* s;
 
@@ -1016,7 +1016,7 @@ static status_t parse_cache_control(general_header gh, const char* value, meta_e
     return set_cache_control(gh, value, e);
 }
 
-static status_t parse_date(general_header gh, const char* value, meta_error e)
+static status_t parse_date(general_header gh, const char* value, error e)
 {
     time_t d;
     assert(gh != NULL);
@@ -1037,7 +1037,7 @@ static status_t parse_date(general_header gh, const char* value, meta_error e)
  * Update 20070918: Being strict is not the best solution. From now on
  * we accept "keep-alive" and any other value is interpreted as "close".
  */
-static status_t parse_connection(general_header gh, const char* value, meta_error e)
+static status_t parse_connection(general_header gh, const char* value, error e)
 {
     assert(gh != NULL);
     assert(value != NULL);
@@ -1051,7 +1051,7 @@ static status_t parse_connection(general_header gh, const char* value, meta_erro
     return success;
 }
 
-static status_t parse_trailer(general_header gh, const char* value, meta_error e)
+static status_t parse_trailer(general_header gh, const char* value, error e)
 {
     assert(gh != NULL);
     assert(value != NULL);
@@ -1062,7 +1062,7 @@ static status_t parse_trailer(general_header gh, const char* value, meta_error e
     return success;
 }
 
-static status_t parse_upgrade(general_header gh, const char* value, meta_error e)
+static status_t parse_upgrade(general_header gh, const char* value, error e)
 {
     assert(gh != NULL);
     assert(value != NULL);
@@ -1081,7 +1081,7 @@ static status_t parse_upgrade(general_header gh, const char* value, meta_error e
     return success;
 }
 
-static status_t parse_via(general_header gh, const char* value, meta_error e)
+static status_t parse_via(general_header gh, const char* value, error e)
 {
     assert(gh != NULL);
     assert(value != NULL);
@@ -1095,7 +1095,7 @@ static status_t parse_via(general_header gh, const char* value, meta_error e)
 
 static const struct {
     const char* name;
-    status_t (*handler)(general_header gh, const char* value, meta_error e);
+    status_t (*handler)(general_header gh, const char* value, error e);
 } general_header_fields[] = {
     { "cache-control",		parse_cache_control },
     { "date",				parse_date },
@@ -1120,7 +1120,7 @@ int find_general_header(const char* name)
 
     return -1;
 }
-status_t parse_general_header(int idx, general_header gh, const char* value, meta_error e)
+status_t parse_general_header(int idx, general_header gh, const char* value, error e)
 {
     assert(idx >= 0);
     assert((size_t)idx < sizeof general_header_fields / sizeof *general_header_fields);

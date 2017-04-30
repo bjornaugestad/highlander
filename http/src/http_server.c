@@ -880,7 +880,7 @@ status_t http_server_run_default_page_handler(
     http_server s,
     http_request request,
     http_response response,
-    meta_error e)
+    error e)
 {
     dynamic_page p;
     const char* uri;

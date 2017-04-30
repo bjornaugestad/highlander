@@ -29,7 +29,7 @@ int timeout_reads = 400, timeout_writes = 50;
 int nretries_read = 8, nretries_write = 4;
 
 
-static void die_meta_error(const char* context, meta_error e)
+static void die_meta_error(const char* context, error e)
 {
     fprintf(stderr, "%s:", context);
     if (has_error_message(e))
@@ -132,7 +132,7 @@ void* threadfunc(void* arg)
 
     membuf rb = membuf_new(10000);
     membuf wb = membuf_new(10000);
-    meta_error e = meta_error_new();
+    error e = error_new();
 
     connection_assign_read_buffer(c, rb);
     connection_assign_write_buffer(c, wb);
@@ -180,7 +180,7 @@ void* threadfunc(void* arg)
     connection_free(c);
     membuf_free(rb);
     membuf_free(wb);
-    meta_error_free(e);
+    error_free(e);
 
     return NULL;
 }

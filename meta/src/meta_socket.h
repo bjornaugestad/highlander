@@ -16,7 +16,7 @@ extern "C" {
 
 typedef struct meta_socket_tag *meta_socket;
 
-meta_socket sock_socket(int unix_socket)
+meta_socket sock_socket(void)
     __attribute__((malloc));
 
 status_t sock_listen(meta_socket p, int backlog)
@@ -55,7 +55,7 @@ status_t sock_set_nonblock(meta_socket p)
 status_t sock_clear_nonblock(meta_socket p)
     __attribute__((nonnull(1)));
 
-meta_socket create_server_socket(int unix_socket, const char *host, int port)
+meta_socket create_server_socket(const char *host, int port)
     __attribute__((malloc))
     __attribute__((warn_unused_result));
 

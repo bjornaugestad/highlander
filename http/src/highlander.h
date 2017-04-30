@@ -435,7 +435,7 @@ status_t request_set_uri(http_request r, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t request_set_mime_version(http_request request, int major, int minor, meta_error e)
+status_t request_set_mime_version(http_request request, int major, int minor, error e)
     __attribute__((nonnull(1)))
     __attribute__((warn_unused_result));
 
@@ -476,19 +476,19 @@ status_t request_set_www_authenticate(http_request r, const char *value)
     __attribute__((nonnull(1)))
     __attribute__((warn_unused_result));
 
-status_t request_set_accept(http_request r, const char *value, meta_error e)
+status_t request_set_accept(http_request r, const char *value, error e)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t request_set_accept_charset(http_request r, const char *value, meta_error e)
+status_t request_set_accept_charset(http_request r, const char *value, error e)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t request_set_accept_encoding(http_request r, const char *value, meta_error e)
+status_t request_set_accept_encoding(http_request r, const char *value, error e)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t request_set_accept_language(http_request r, const char *value, meta_error e)
+status_t request_set_accept_language(http_request r, const char *value, error e)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
@@ -542,7 +542,7 @@ status_t request_set_referer(http_request r, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t request_set_te(http_request r, const char *value, meta_error e)
+status_t request_set_te(http_request r, const char *value, error e)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
@@ -554,11 +554,11 @@ status_t request_add_cookie(http_request r, cookie c)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t request_send(http_request r, connection c, meta_error e)
+status_t request_send(http_request r, connection c, error e)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t request_receive(http_request r, connection c, size_t max_posted_content, meta_error e)
+status_t request_receive(http_request r, connection c, size_t max_posted_content, error e)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
@@ -698,7 +698,7 @@ status_t response_set_content_encoding(http_response response, const char* value
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t response_set_content_language(http_response response, const char* value, meta_error e)
+status_t response_set_content_language(http_response response, const char* value, error e)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
@@ -756,17 +756,17 @@ status_t response_js_messagebox(http_response response, const char* text)
     __attribute__((warn_unused_result));
 
 
-status_t response_send_file(http_response response, const char *path, const char* type, meta_error e)
+status_t response_send_file(http_response response, const char *path, const char* type, error e)
     __attribute__((nonnull(1, 2, 3)))
     __attribute__((warn_unused_result));
 
 
 /* Send the complete response to the client */
-status_t response_send(http_response r, connection c, meta_error e, size_t *pcb)
+status_t response_send(http_response r, connection c, error e, size_t *pcb)
     __attribute__((nonnull(1, 2, 4)))
     __attribute__((warn_unused_result));
 
-status_t response_receive(http_response r, connection c, size_t max_content, meta_error e)
+status_t response_receive(http_response r, connection c, size_t max_content, error e)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 

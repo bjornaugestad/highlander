@@ -16,7 +16,7 @@ AC_PROG_RANLIB
 AM_PROG_CC_C_O
 
 # Checks for header files.
-#AC_CHECK_HEADERS([arpa/inet.h fcntl.h limits.h netdb.h netinet/in.h sys/socket.h syslog.h unistd.h])
+AC_CHECK_HEADERS([openssl/ssl.h arpa/inet.h fcntl.h limits.h netdb.h netinet/in.h sys/socket.h syslog.h unistd.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_MODE_T

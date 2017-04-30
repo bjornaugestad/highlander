@@ -13,7 +13,7 @@
 #include "internals.h"
 
 /* Ungrouped handlers */
-static status_t parse_connection(connection conn, const char* value, meta_error e)
+static status_t parse_connection(connection conn, const char* value, error e)
 {
     assert(value != NULL);
     UNUSED(e);
@@ -34,7 +34,7 @@ static status_t parse_connection(connection conn, const char* value, meta_error 
  */
 static const struct connection_mapper {
     const char* name;
-    status_t (*handler)(connection req, const char* value, meta_error e);
+    status_t (*handler)(connection req, const char* value, error e);
 } connection_map[] = {
     { "connection",			parse_connection },
 };
@@ -49,7 +49,7 @@ status_t parse_request_headerfield(
     const char* name,
     const char* value,
     http_request req,
-    meta_error e)
+    error e)
 {
     size_t i, n;
     int idx;
@@ -85,7 +85,7 @@ status_t parse_response_headerfield(
     const char* name,
     const char* value,
     http_response req,
-    meta_error e)
+    error e)
 {
     int idx;
 
@@ -112,8 +112,8 @@ status_t parse_response_headerfield(
 int parse_multivalued_fields(
     void *dest,
     const char* value,
-    int(*set_func)(void* dest, const char* value, meta_error e),
-    meta_error e)
+    int(*set_func)(void* dest, const char* value, error e),
+    error e)
 {
     const int sep = ',';
     char buf[100];

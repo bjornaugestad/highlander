@@ -88,13 +88,13 @@ void http_server_add_logentry(http_server srv, connection conn, http_request req
 /* Handles the default page */
 bool http_server_has_default_page_handler(http_server s);
 
-status_t http_server_run_default_page_handler(connection conn, http_server s, http_request request, http_response response, meta_error e);
+status_t http_server_run_default_page_handler(connection conn, http_server s, http_request request, http_response response, error e);
 status_t http_send_field(connection conn, const char* name, cstring value);
 status_t http_send_date(connection conn, const char* name, time_t value);
 status_t http_send_ulong(connection conn, const char* name, unsigned long value);
 status_t http_send_string(connection conn, const char* s);
 
-status_t read_line(connection conn, char* buf, size_t cchMax, meta_error e);
+status_t read_line(connection conn, char* buf, size_t cchMax, error e);
 /*
  * A field name, in HTTP, is everything to the left of : in
  * header fields like "name: value". We copy the name part here.
@@ -132,7 +132,7 @@ status_t handle_dynamic(
     dynamic_page p,
     http_request req,
     http_response response,
-    meta_error e);
+    error e);
 
 general_header general_header_new(void);
 void general_header_free(general_header p);
@@ -212,7 +212,7 @@ status_t entity_header_send_fields(entity_header eh, connection c);
 
 status_t entity_header_set_allow(entity_header eh, const char *value);
 status_t entity_header_set_content_encoding(entity_header eh, const char *value);
-status_t entity_header_set_content_language(entity_header eh, const char *value, meta_error e);
+status_t entity_header_set_content_language(entity_header eh, const char *value, error e);
 void entity_header_set_content_length(entity_header eh, size_t value);
 status_t entity_header_set_content_location(entity_header eh, const char *value);
 status_t entity_header_set_content_md5(entity_header eh, const char *value);
@@ -251,24 +251,24 @@ status_t parse_request_headerfield(
     const char *fieldname,
     const char *value,
     http_request req,
-    meta_error e);
+    error e);
 
 status_t parse_response_headerfield(
     const char* name,
     const char* value,
     http_response req,
-    meta_error e);
+    error e);
 
 int parse_multivalued_fields(
     void *dest,
     const char* value,
-    int(*set_func)(void *dest, const char* value, meta_error e),
-    meta_error e);
+    int(*set_func)(void *dest, const char* value, error e),
+    error e);
 
 /* Return an index in the entity header array,
  * or -1 if the field was not found. */
 int find_entity_header(const char* name);
-status_t parse_entity_header(int idx, entity_header gh, const char* value, meta_error e);
+status_t parse_entity_header(int idx, entity_header gh, const char* value, error e);
 
 /*
  * The general header fields are shared between http requests and http
@@ -276,24 +276,24 @@ status_t parse_entity_header(int idx, entity_header gh, const char* value, meta_
  * This function itself returns -1 if the field was NOT a general header field
  */
 int find_general_header(const char* name);
-status_t parse_general_header(int idx, general_header gh, const char* value, meta_error e);
+status_t parse_general_header(int idx, general_header gh, const char* value, error e);
 
 int find_request_header(const char* name);
-status_t parse_request_header(int idx, http_request req, const char* value, meta_error e);
+status_t parse_request_header(int idx, http_request req, const char* value, error e);
 
 int find_response_header(const char* name);
 status_t parse_response_header(int idx, http_response req,
-    const char* value, meta_error e)
+    const char* value, error e)
     __attribute__((warn_unused_result));
 
 /* Function prototypes for handler functions */
-status_t parse_cookie(http_request r, const char* s, meta_error e)
+status_t parse_cookie(http_request r, const char* s, error e)
     __attribute__((warn_unused_result));
 
-status_t parse_new_cookie(http_request r, const char* s, meta_error e)
+status_t parse_new_cookie(http_request r, const char* s, error e)
     __attribute__((warn_unused_result));
 
-status_t parse_old_cookie(http_request r, const char* s, meta_error e)
+status_t parse_old_cookie(http_request r, const char* s, error e)
     __attribute__((warn_unused_result));
 
 status_t cookie_dump(cookie c,  void *file);

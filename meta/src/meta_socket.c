@@ -15,6 +15,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <fcntl.h>
+#include <openssl/ssl.h>
 
 #ifdef _XOPEN_SOURCE_EXTENDED
 #include <arpa/inet.h>
@@ -25,7 +26,6 @@
 
 struct meta_socket_tag {
     int fd;
-    int unix_socket;
 };
 
 
@@ -213,7 +213,6 @@ static status_t sock_bind_inet(meta_socket this, const char *hostname, int port)
     socklen_t cb = (socklen_t)sizeof my_addr;
 
     assert(this != NULL);
-    assert(!this->unix_socket);
     assert(this->fd >= 0);
     assert(port > 0);
 
@@ -242,48 +241,17 @@ static status_t sock_bind_inet(meta_socket this, const char *hostname, int port)
     return success;
 }
 
-static status_t sock_bind_unix(meta_socket this, const char *path)
-{
-    struct sockaddr_un my_addr;
-    socklen_t cb = (socklen_t)sizeof(my_addr);
-
-    assert(this != NULL);
-    assert(this->unix_socket);
-    assert(this->fd >= 0);
-    assert(path != NULL);
-    assert(strlen(path) > 0);
-
-    // + 1 in case we map anon paths. That requires an extra byte.
-    assert(strlen(path) + 1 < sizeof my_addr.sun_path);
-
-    memset(&my_addr, '\0', sizeof(my_addr));
-    my_addr.sun_family = AF_UNIX;
-
-    if (*path == '/')
-        strcpy(my_addr.sun_path, path);
-    else
-        strcpy(my_addr.sun_path + 1, path);
-
-    if (bind(this->fd, (struct sockaddr *)&my_addr, cb) == -1)
-        return failure;
-
-    return success;
-}
-
 status_t sock_bind(meta_socket this, const char *hostname, int port)
 {
     assert(this != NULL);
 
-    if (this->unix_socket)
-        return sock_bind_unix(this, hostname);
-    else
-        return sock_bind_inet(this, hostname, port);
+    return sock_bind_inet(this, hostname, port);
 }
 
-meta_socket sock_socket(int unix_socket)
+meta_socket sock_socket(void)
 {
     meta_socket this;
-    int af = unix_socket ? AF_UNIX : AF_INET;
+    int af = AF_INET;
 
     if ((this = malloc(sizeof *this)) == NULL)
         return NULL;
@@ -293,7 +261,6 @@ meta_socket sock_socket(int unix_socket)
         return NULL;
     }
 
-    this->unix_socket = unix_socket;
     return this;
 }
 
@@ -308,11 +275,11 @@ status_t sock_listen(meta_socket this, int backlog)
     return success;
 }
 
-meta_socket create_server_socket(int unix_socket, const char *host, int port)
+meta_socket create_server_socket(const char *host, int port)
 {
     meta_socket this;
 
-    if ((this = sock_socket(unix_socket)) == NULL)
+    if ((this = sock_socket()) == NULL)
         return NULL;
 
     if (sock_set_reuseaddr(this)
@@ -343,7 +310,7 @@ meta_socket create_client_socket(const char *host, int port)
     sa.sin_port = htons(port);
 
     /* Open a socket to the server */
-    if ((this = sock_socket(0)) == NULL)
+    if ((this = sock_socket()) == NULL)
         return NULL;
 
     /* Connect to the server. */

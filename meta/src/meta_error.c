@@ -13,7 +13,7 @@
 #include <meta_error.h>
 #include <meta_misc.h>
 
-enum meta_error_group {
+enum error_group {
     meg_unknown,
     meg_tcpip,		/* network related error */
     meg_protocol,	/* Protocol, e.g. HTTP, syntax/semantic error */
@@ -24,29 +24,29 @@ enum meta_error_group {
 };
 
 /*
- * Implementation of the meta_error ADT.
+ * Implementation of the error ADT.
  */
-struct meta_error_tag {
-    enum meta_error_group group;
+struct error_tag {
+    enum error_group group;
     int code;
     char message[META_ERROR_MESSAGE_MAX + 1];
 };
 
 
-meta_error meta_error_new(void)
+error error_new(void)
 {
-    meta_error e;
+    error e;
 
     e = calloc(1, sizeof *e);
     return e;
 }
 
-void meta_error_free(meta_error e)
+void error_free(error e)
 {
     free(e);
 }
 
-status_t set_tcpip_error(meta_error e, int val)
+status_t set_tcpip_error(error e, int val)
 {
     assert(e != NULL);
 
@@ -56,7 +56,7 @@ status_t set_tcpip_error(meta_error e, int val)
     return failure;
 }
 
-status_t set_http_error(meta_error e, int val)
+status_t set_http_error(error e, int val)
 {
     if (e != NULL) {
         e->group = meg_protocol;
@@ -66,7 +66,7 @@ status_t set_http_error(meta_error e, int val)
     return failure;
 }
 
-status_t set_app_error(meta_error e, int val)
+status_t set_app_error(error e, int val)
 {
     if (e != NULL) {
         e->group = meg_app;
@@ -76,7 +76,7 @@ status_t set_app_error(meta_error e, int val)
     return failure;
 }
 
-status_t set_os_error(meta_error e, int val)
+status_t set_os_error(error e, int val)
 {
     if (e != NULL) {
         e->group = meg_os;
@@ -86,7 +86,7 @@ status_t set_os_error(meta_error e, int val)
     return failure;
 }
 
-status_t set_db_error(meta_error e, int val)
+status_t set_db_error(error e, int val)
 {
     if (e != NULL) {
         e->group = meg_db;
@@ -96,7 +96,7 @@ status_t set_db_error(meta_error e, int val)
     return failure;
 }
 
-status_t set_other_error(meta_error e, int val)
+status_t set_other_error(error e, int val)
 {
     if (e != NULL) {
         e->group = meg_other;
@@ -106,50 +106,50 @@ status_t set_other_error(meta_error e, int val)
     return failure;
 }
 
-int is_tcpip_error(meta_error e)
+int is_tcpip_error(error e)
 {
     assert(e != NULL);
     return e->group == meg_tcpip;
 }
 
-int is_db_error(meta_error e)
+int is_db_error(error e)
 {
     assert(e != NULL);
     return e->group == meg_db;
 }
 
-int is_protocol_error(meta_error e)
+int is_protocol_error(error e)
 {
     assert(e != NULL);
     return e->group == meg_protocol;
 }
 
-int is_app_error(meta_error e)
+int is_app_error(error e)
 {
     assert(e != NULL);
     return e->group == meg_app;
 }
 
-int is_os_error(meta_error e)
+int is_os_error(error e)
 {
     assert(e != NULL);
     return e->group == meg_os;
 }
 
-int is_other_error(meta_error e)
+int is_other_error(error e)
 {
     assert(e != NULL);
     return e->group == meg_other;
 }
 
-int get_error_code(meta_error e)
+int get_error_code(error e)
 {
     assert(e != NULL);
     return e->code;
 }
 
 
-void set_error_message(meta_error e, const char *msg)
+void set_error_message(error e, const char *msg)
 {
     if (e != NULL) {
         strncpy(e->message, msg, sizeof e->message);
@@ -157,20 +157,20 @@ void set_error_message(meta_error e, const char *msg)
     }
 }
 
-int has_error_message(meta_error e)
+int has_error_message(error e)
 {
     assert(e != NULL);
     return strlen(e->message) > 0;
 }
 
-const char *get_error_message(meta_error e)
+const char *get_error_message(error e)
 {
     assert(e != NULL);
     return e->message;
 
 }
 
-void die_with_error(meta_error e, const char *fmt, ...)
+void die_with_error(error e, const char *fmt, ...)
 {
     va_list ap;
     int rc;
