@@ -1694,7 +1694,7 @@ status_t response_receive(http_response response, connection conn,
     return success;
 }
 
-int response_dump(http_response r, void *file)
+void response_dump(http_response r, void *file)
 {
     FILE *f = file;
 
@@ -1757,6 +1757,4 @@ int response_dump(http_response r, void *file)
         cookie c = list_get(li);
         cookie_dump(c, f);
     }
-
-    return 1;
 }

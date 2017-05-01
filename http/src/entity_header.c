@@ -67,7 +67,7 @@ entity_header entity_header_new(void)
     entity_header p;
     cstring arr[7];
 
-    if ((p = calloc(1, sizeof *p)) == NULL)
+    if ((p = malloc(sizeof *p)) == NULL)
         return NULL;
 
     if (!cstring_multinew(arr, sizeof arr / sizeof *arr)) {
@@ -83,6 +83,10 @@ entity_header entity_header_new(void)
     p->content_md5 = arr[4];
     p->content_type = arr[5];
     p->content_range = arr[6];
+
+    p->content_length = 0;
+    p->expires = 0;
+    p->last_modified = 0;
 
     return p;
 }
@@ -437,7 +441,6 @@ status_t entity_header_send_fields(entity_header eh, connection c)
     }
 
     return rc;
-
 }
 
 /* Parsing functions */
@@ -447,6 +450,7 @@ static status_t parse_content_encoding(entity_header eh, const char* value, erro
 {
     assert(eh != NULL);
     assert(value != NULL);
+
     /*
      * §14.11
      * Used as a modifier to the Content-Type
@@ -514,8 +518,7 @@ static status_t eh_parse_multivalued_fields(
     assert(value != NULL);
 
     while ((s = strchr(value, sep)) != NULL) {
-        /* The correct type would be ptrdiff_t,
-         * but -ansi -pedantic complains */
+        /* The correct type would be ptrdiff_t, but -ansi -pedantic complains */
         size_t span = (size_t)(s - value);
         if (span + 1 > sizeof buf) {
             /* We don't want buffer overflow... */
@@ -536,8 +539,7 @@ static status_t eh_parse_multivalued_fields(
 
 /*
  * Notes: The language tags are defined in RFC1766, and there are 
- * too many to check.
- * Anything goes, IOW.
+ * too many to check. Anything goes, IOW.
  */
 static status_t parse_content_language(entity_header eh, const char* value, error e)
 {
@@ -644,21 +646,19 @@ status_t parse_entity_header(int idx, entity_header gh, const char* value, error
     return entity_header_fields[idx].handler(gh, value, e);
 }
 
-
 int find_entity_header(const char* name)
 {
     int i, n = sizeof entity_header_fields / sizeof *entity_header_fields;
 
     for (i = 0; i < n; i++) {
-        if (strcmp(entity_header_fields[i].name, name) == 0) {
+        if (strcmp(entity_header_fields[i].name, name) == 0)
             return i;
-        }
     }
 
     return -1;
 }
 
-int entity_header_dump(entity_header eh, void *file)
+void entity_header_dump(entity_header eh, void *file)
 {
     FILE *f = file;
     char datebuf[100];
@@ -697,6 +697,4 @@ int entity_header_dump(entity_header eh, void *file)
 
     if (entity_header_flag_is_set(eh, ENTITY_HEADER_LAST_MODIFIED_SET))
         fprintf(f, "\tlast_modified: %s", ctime_r(&eh->last_modified, datebuf));
-
-    return 1;
-    }
+}

@@ -1128,8 +1128,7 @@ status_t parse_general_header(int idx, general_header gh, const char* value, err
     return general_header_fields[idx].handler(gh, value, e);
 }
 
-
-int general_header_dump(general_header gh, void *file)
+void general_header_dump(general_header gh, void *file)
 {
     FILE *f = file;
     char date[100];
@@ -1170,6 +1169,4 @@ int general_header_dump(general_header gh, void *file)
 
     if (general_header_warning_isset(gh))
         fprintf(f, "\twarning: %s\n", c_str(gh->warning));
-
-    return 1;
 }

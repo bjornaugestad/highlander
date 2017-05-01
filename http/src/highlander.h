@@ -579,9 +579,9 @@ general_header response_get_general_header(http_response r);
 entity_header response_get_entity_header(http_response r);
 
 /* Note that file argument *MUST* be a FILE* */
-int response_dump(http_response r, void *file);
-int general_header_dump(general_header gh, void *file);
-int entity_header_dump(entity_header gh, void *file);
+void response_dump(http_response r, void *file);
+void general_header_dump(general_header gh, void *file);
+void entity_header_dump(entity_header gh, void *file);
 
 const char* response_get_connection(http_response response);
 const char*	response_get_entity(http_response p);

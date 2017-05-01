@@ -29,7 +29,7 @@ int timeout_reads = 400, timeout_writes = 50;
 int nretries_read = 8, nretries_write = 4;
 
 
-static void die_meta_error(const char* context, error e)
+static void die_error(const char* context, error e)
 {
     fprintf(stderr, "%s:", context);
     if (has_error_message(e))
@@ -154,11 +154,11 @@ void* threadfunc(void* arg)
     for (int i = 0; i < g_nrequests; i++) {
         verbose(1, "Sending request for uri %s\n", g_uri);
         if (!request_send(request, c, e)) 
-            die_meta_error("Could not send request to server", e);
+            die_error("Could not send request to server", e);
 
         /* Now read the response back from the server */
         if (!response_receive(response, c, 10 * 1024 * 1024, e)) 
-            die_meta_error("Could not receive response from server", e);
+            die_error("Could not receive response from server", e);
 
         verbose(1, "Got response from server.\n");
 
@@ -188,7 +188,6 @@ void* threadfunc(void* arg)
 int main(int argc, char *argv[])
 {
     parse_commandline(argc, argv);
-
 
     if (g_nthreads == 1)
         threadfunc(NULL);
