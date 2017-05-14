@@ -54,13 +54,13 @@ void array_free(array a, dtor free_fn)
 
 size_t array_nelem(array a)
 {
-    assert(NULL != a);
+    assert(a != NULL);
     return a->nused;
 }
 
 void *array_get(array a, size_t ielem)
 {
-    assert(NULL != a);
+    assert(a != NULL);
     assert(ielem < array_nelem(a));
 
     if (ielem >= a->nused)
@@ -74,7 +74,7 @@ status_t array_extend(array a, size_t nmemb)
     void *tmp;
     size_t n, size;
 
-    assert(NULL != a);
+    assert(a != NULL);
     assert(nmemb > 0);
 
     n = a->nallocated + nmemb;
@@ -90,7 +90,7 @@ status_t array_extend(array a, size_t nmemb)
 
 status_t array_add(array a, void *elem)
 {
-    assert(NULL != a);
+    assert(a != NULL);
 
     if (a->nused == a->nallocated) {
         if (!a->can_grow || !array_extend(a, a->nused))

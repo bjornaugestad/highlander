@@ -110,16 +110,16 @@ void cstring_reverse(cstring s) __attribute__((nonnull(1)));
 
 static inline const char *c_str(cstring s)
 {
-    assert(NULL != s);
-    assert(NULL != s->data);
+    assert(s != NULL);
+    assert(s->data != NULL);
 
     return s->data;
 }
 
 static inline size_t cstring_length(cstring s)
 {
-    assert(NULL != s);
-    assert(NULL != s->data);
+    assert(s != NULL);
+    assert(s->data != NULL);
     assert(strlen(s->data) == s->len);
 
     return s->len;
@@ -135,18 +135,18 @@ static inline void cstring_free(cstring s)
 
 static inline int cstring_compare(cstring s, const char *str)
 {
-    assert(NULL != s);
-    assert(NULL != str);
-    assert(NULL != s->data);
+    assert(s != NULL);
+    assert(str != NULL);
+    assert(s->data != NULL);
 
     return strcmp(s->data, str);
 }
 
 static inline int cstring_casecompare(cstring s, const char *str)
 {
-    assert(NULL != s);
-    assert(NULL != str);
-    assert(NULL != s->data);
+    assert(s != NULL);
+    assert(str != NULL);
+    assert(s->data != NULL);
 
     return strcasecmp(s->data, str);
 }
@@ -154,8 +154,8 @@ static inline int cstring_casecompare(cstring s, const char *str)
 
 static inline void cstring_recycle(cstring s)
 {
-    assert(NULL != s);
-    assert(NULL != s->data);
+    assert(s != NULL);
+    assert(s->data != NULL);
 
     *s->data = '\0';
     s->len = 0;

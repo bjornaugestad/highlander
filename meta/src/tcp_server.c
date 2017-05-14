@@ -403,7 +403,7 @@ static status_t accept_new_connections(tcp_server this, meta_socket sock)
     struct sockaddr_in addr;
     connection conn;
 
-    assert(NULL != this);
+    assert(this != NULL);
     assert(sock != NULL);
 
     /* Make the socket non-blocking so that accept() won't block */
@@ -564,7 +564,7 @@ status_t tcp_server_start(tcp_server this)
 {
     status_t rc;
 
-    assert(NULL != this);
+    assert(this != NULL);
 
     if (!accept_new_connections(this, this->sock)) {
         sock_close(this->sock);
@@ -581,31 +581,31 @@ status_t tcp_server_start(tcp_server this)
 
 void tcp_server_set_port(tcp_server this, int port)
 {
-    assert(NULL != this);
+    assert(this != NULL);
     this->port = port;
 }
 
 void tcp_server_set_queue_size(tcp_server this, size_t size)
 {
-    assert(NULL != this);
+    assert(this != NULL);
     this->queue_size = size;
 }
 
 void tcp_server_set_block_when_full(tcp_server this, int block_when_full)
 {
-    assert(NULL != this);
+    assert(this != NULL);
     this->block_when_full = block_when_full;
 }
 
 void tcp_server_set_worker_threads(tcp_server this, size_t count)
 {
-    assert(NULL != this);
+    assert(this != NULL);
     this->nthreads = count;
 }
 
 void tcp_server_set_timeout(tcp_server this, int reads, int writes, int accepts)
 {
-    assert(NULL != this);
+    assert(this != NULL);
 
     this->timeout_writes = writes;
     this->timeout_reads = reads;
@@ -614,7 +614,7 @@ void tcp_server_set_timeout(tcp_server this, int reads, int writes, int accepts)
 
 void tcp_server_set_retries(tcp_server this, int reads, int writes)
 {
-    assert(NULL != this);
+    assert(this != NULL);
     this->retries_writes = writes;
     this->retries_reads = reads;
 }
@@ -624,8 +624,8 @@ void tcp_server_set_service_function(
     void *(*func)(void*),
     void *arg)
 {
-    assert(NULL != this);
-    assert(NULL != func);
+    assert(this != NULL);
+    assert(func != NULL);
 
     this->service_func = func;
     this->service_arg = arg;

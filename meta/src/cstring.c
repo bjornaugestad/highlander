@@ -66,8 +66,8 @@ status_t cstring_vprintf(cstring dest, size_t needs_max, const char *fmt, va_lis
      */
     needs_max++;
 
-    assert(NULL != dest);
-    assert(NULL != dest->data);
+    assert(dest != NULL);
+    assert(dest->data != NULL);
     assert(dest->len == strlen(dest->data));
 
     if (!has_room_for(dest, needs_max) && !cstring_extend(dest, needs_max))
@@ -90,8 +90,8 @@ status_t cstring_printf(cstring dest, size_t needs_max, const char *fmt, ...)
     status_t status;
     va_list ap;
 
-    assert(NULL != dest);
-    assert(NULL != fmt);
+    assert(dest != NULL);
+    assert(fmt != NULL);
 
     va_start(ap, fmt);
     status = cstring_vprintf(dest, needs_max, fmt, ap);
@@ -125,8 +125,8 @@ status_t cstring_concat(cstring dest, const char *src)
 {
     size_t cb;
 
-    assert(NULL != src);
-    assert(NULL != dest);
+    assert(src != NULL);
+    assert(dest != NULL);
 
     cb = strlen(src);
     if (!has_room_for(dest, cb) && !cstring_extend(dest, cb))
@@ -142,7 +142,7 @@ status_t cstring_concat(cstring dest, const char *src)
 
 status_t cstring_charcat(cstring dest, int c)
 {
-    assert(NULL != dest);
+    assert(dest != NULL);
 
     if (!has_room_for(dest, 1) && !cstring_extend(dest, 1))
         return failure;
@@ -202,9 +202,9 @@ status_t cstring_set(cstring dest, const char *src)
 {
     size_t n;
 
-    assert(NULL != dest);
-    assert(NULL != dest->data);
-    assert(NULL != src);
+    assert(dest != NULL);
+    assert(dest->data != NULL);
+    assert(src != NULL);
 
     cstring_recycle(dest);
     n = strlen(src);
@@ -222,9 +222,9 @@ status_t cstring_nset(cstring dest, const char *src, const size_t cch)
 {
     size_t len;
 
-    assert(NULL != dest);
-    assert(NULL != dest->data);
-    assert(NULL != src);
+    assert(dest != NULL);
+    assert(dest->data != NULL);
+    assert(src != NULL);
 
     cstring_recycle(dest);
     len = strlen(src);
@@ -244,9 +244,9 @@ status_t cstring_nset(cstring dest, const char *src, const size_t cch)
 
 status_t cstring_concat2(cstring dest, const char *s1, const char *s2)
 {
-    assert(NULL != dest);
-    assert(NULL != s1);
-    assert(NULL != s2);
+    assert(dest != NULL);
+    assert(s1 != NULL);
+    assert(s2 != NULL);
 
     if (cstring_concat(dest, s1) && cstring_concat(dest, s2))
         return success;
@@ -257,10 +257,10 @@ status_t cstring_concat2(cstring dest, const char *s1, const char *s2)
 status_t cstring_concat3(cstring dest, const char *s1, const char *s2,
     const char *s3)
 {
-    assert(NULL != dest);
-    assert(NULL != s1);
-    assert(NULL != s2);
-    assert(NULL != s3);
+    assert(dest != NULL);
+    assert(s1 != NULL);
+    assert(s2 != NULL);
+    assert(s3 != NULL);
 
     if (cstring_concat(dest, s1)
     && cstring_concat(dest, s2)

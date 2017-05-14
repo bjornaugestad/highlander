@@ -83,8 +83,8 @@ void pool_free(pool this, dtor free_fn)
 
 void pool_add(pool this, void *resource)
 {
-    assert(NULL != this);
-    assert(NULL != resource);
+    assert(this != NULL);
+    assert(resource != NULL);
     assert(this->nelem < this->size);
 
     pthread_mutex_lock(&this->mutex);
@@ -98,7 +98,7 @@ status_t pool_get(pool this, void **ppres)
     void *resource = NULL;
     int error = 0;
 
-    assert(NULL != this);
+    assert(this != NULL);
 
     error = pthread_mutex_lock(&this->mutex);
     if (error)
@@ -136,8 +136,8 @@ status_t pool_recycle(pool this, void *resource)
     size_t i;
     int error = 0;
 
-    assert(NULL != this);
-    assert(NULL != resource);
+    assert(this != NULL);
+    assert(resource != NULL);
 
     error = pthread_mutex_lock(&this->mutex);
     if (error)

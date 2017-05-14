@@ -210,8 +210,8 @@ status_t threadpool_add_work(threadpool pool,
     struct work* wp;
     int err;
 
-    assert(NULL != pool);
-    assert(NULL != workfn);
+    assert(pool != NULL);
+    assert(workfn != NULL);
 
     if ((err = pthread_mutex_lock(&pool->queue_lock)))
         return fail(err);
