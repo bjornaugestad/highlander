@@ -47,7 +47,7 @@ static void show_help(void)
     printf("   -t n thread count. Default is 1 threads.\n");
     printf("   -r n request count. Default is 1 requests per thread.\n");
     printf("   -H print response header\n");
-    printf("   -H print response header\n");
+    printf("   -C print response content\n");
     printf("   -T ms Timeout in millisecs\n");
     printf("   -R n  Number of retries per read/write op\n");
     printf("   -v Be verbose\n");
@@ -114,10 +114,10 @@ void parse_commandline(int argc, char *argv[])
 
 static void print_response_contents(http_response response)
 {
-    size_t n = 10, cb = response_get_content_length(response);
+    size_t cb = response_get_content_length(response);
     const char* s = response_get_entity(response);
     
-    while (n-- && cb--)
+    while (cb--)
         putchar(*s++);
 }
 
@@ -127,18 +127,18 @@ void* threadfunc(void* arg)
 
     http_request request = request_new();
     http_response response = response_new();
-    connection c = connection_new(timeout_reads, timeout_writes, 
+    connection conn = connection_new(timeout_reads, timeout_writes, 
         nretries_read, nretries_write, NULL);
 
     membuf rb = membuf_new(10000);
     membuf wb = membuf_new(10000);
     error e = error_new();
 
-    connection_assign_read_buffer(c, rb);
-    connection_assign_write_buffer(c, wb);
+    connection_assign_read_buffer(conn, rb);
+    connection_assign_write_buffer(conn, wb);
 
     verbose(1, "Connecting to host %s at port %d\n", g_hostname, g_port);
-    if (!connection_connect(c, g_hostname, g_port)) {
+    if (!connection_connect(conn, g_hostname, g_port)) {
         fprintf(stderr, "Could not connect to %s:%d\n", g_hostname, g_port);
         pthread_exit(NULL);
     }
@@ -153,11 +153,11 @@ void* threadfunc(void* arg)
 
     for (int i = 0; i < g_nrequests; i++) {
         verbose(1, "Sending request for uri %s\n", g_uri);
-        if (!request_send(request, c, e)) 
+        if (!request_send(request, conn, e)) 
             die_error("Could not send request to server", e);
 
         /* Now read the response back from the server */
-        if (!response_receive(response, c, 10 * 1024 * 1024, e)) 
+        if (!response_receive(response, conn, 10 * 1024 * 1024, e)) 
             die_error("Could not receive response from server", e);
 
         verbose(1, "Got response from server.\n");
@@ -174,10 +174,10 @@ void* threadfunc(void* arg)
     request_free(request);
     response_free(response);
 
-    if (!connection_close(c))
+    if (!connection_close(conn))
         warning("Could not close connection\n");
 
-    connection_free(c);
+    connection_free(conn);
     membuf_free(rb);
     membuf_free(wb);
     error_free(e);

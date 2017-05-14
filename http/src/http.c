@@ -1,5 +1,6 @@
 #include <errno.h>
 #include <stdio.h>
+#include <sys/time.h>
 
 #include <highlander.h>
 #include <internals.h>
@@ -30,18 +31,18 @@
     The client didn't send one, so we end up in poll() and
     wait for a timeout :-(
  */
-status_t read_line(connection conn, char* buf, size_t cchMax, error e)
+status_t read_line(connection conn, char* dest, size_t destsize, error e)
 {
     int c;
     size_t i = 0;
 
-    while (i < cchMax) {
+    while (i < destsize) {
         if (!connection_getc(conn, &c))
             return set_tcpip_error(e, errno);
 
         if (c == '\r') {
             /* We got a \r. Look for \n */
-            buf[i] = '\0';
+            dest[i] = '\0';
 
             if (!connection_getc(conn, &c))
                 return set_tcpip_error(e, errno);
@@ -52,7 +53,7 @@ status_t read_line(connection conn, char* buf, size_t cchMax, error e)
             return success;
         }
 
-        buf[i++] = c;
+        dest[i++] = c;
     }
 
     /* The buffer provided was too small. */

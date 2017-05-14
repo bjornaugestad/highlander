@@ -23,7 +23,7 @@ int main(void)
         die("Could not allocate resources\n");
 
     if (!http_server_add_page(s, "/", page_handler, NULL))
-        die("Coult not add page.\n");
+        die("Could not add page.\n");
 
     if (!http_server_get_root_resources(s))
         die("Could not get root resources\n");

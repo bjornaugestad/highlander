@@ -153,15 +153,21 @@ status_t sock_write(meta_socket this, const char *buf, size_t count, int timeout
  *	If the # of bytes requested are > one packet and poll()
  *	returns when the first packet returns, we must retry to
  *	get the second packet.
+ *
+ * update 20170514: This sucks. Why? Because the caller doesn't
+ * know how many bytes are available. All the caller can do, is
+ * to say the _max_ number of bytes to read, i.e., the buffer size.
+ * If we require count bytes each time, we end up timing out
+ * every damn time, if 'count' is greater than number of bytes
+ * available. 
+ *
+ * Therefore, return whatever we have as soon as possible. If
+ * the data is fragmented, then the protocol handler must handle
+ * those cases. 
  */
-ssize_t sock_read(
-    meta_socket this,
-    char *dest,
-    size_t count,
-    int timeout,
-    int nretries)
+ssize_t sock_read(meta_socket this, char *dest, size_t count, int timeout, int nretries)
 {
-    ssize_t nread, nreadsum = 0;
+    ssize_t nread;
 
     assert(this != NULL);
     assert(this->fd >= 0);
@@ -170,32 +176,24 @@ ssize_t sock_read(
     assert(dest != NULL);
 
     do {
-        size_t cbToRead = count - nreadsum;
-
         if (!wait_for_data(this, timeout)) {
-            if (errno == EAGAIN) {
+            if (errno == EAGAIN)
                 continue; // Try again.
-            }
 
             return -1;
         }
 
-        if ((nread = read(this->fd, &dest[nreadsum], cbToRead)) > 0) {
-            nreadsum += nread;
-            if (nreadsum == (ssize_t)count) {
-                return nreadsum; // we're done
-            }
-
-            cbToRead = count - nreadsum;
-        }
+        // Return data asap, even if partial
+        if ((nread = read(this->fd, dest, count)) > 0)
+            return nread;
 
         if (nread == -1 && errno != EAGAIN) {
             /* An error occured. Uncool. */
             return -1;
         }
-    } while(nreadsum < (ssize_t)count && nretries--);
+    } while (nretries--);
 
-    return nreadsum;
+    return -1; // We timed out
 }
 
 
