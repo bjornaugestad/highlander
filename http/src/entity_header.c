@@ -8,6 +8,7 @@
 #include <errno.h>
 
 #include <meta_misc.h>
+#include <meta_convert.h>
 
 #include <highlander.h>
 #include <internals.h>
@@ -485,7 +486,7 @@ static status_t parse_content_length(entity_header eh, const char* value, error 
     assert(eh != NULL);
     assert(value != NULL);
 
-    if (!string2size_t(value, &len))
+    if (!tosize_t(value, &len))
         return set_http_error(e, HTTP_400_BAD_REQUEST);
 
     entity_header_set_content_length(eh, (unsigned long)len);

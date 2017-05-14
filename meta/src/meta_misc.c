@@ -22,44 +22,28 @@
 
 #include <meta_misc.h>
 
-status_t string2size_t(const char *s, size_t *val)
+int find_word(const char *s, size_t wordidx)
 {
+    const char *str = s;
+
     assert(s != NULL);
-    assert(val != NULL);
-
-    *val = 0;
-    while (*s) {
-        if (!isdigit((int)*s))
-            return failure;
-
-        *val = (*val * 10) + (*s - '0');
-        s++;
-    }
-
-    return success;
-}
-
-int find_word(const char *s, size_t iWord)
-{
-    const char *string = s;
 
     /* Loop 0..n times to skip words */
-    assert(s != NULL);
-    while (iWord--) {
+    while (wordidx--) {
         /* Skip until one space */
-        while (*string != '\0' && *string != ' ')
-            string++;
+        while (*str != '\0' && *str != ' ')
+            str++;
 
         /* Skip the space(even multiple) */
-        while (*string != '\0' && *string == ' ')
-            string++;
+        while (*str != '\0' && *str == ' ')
+            str++;
     }
 
-    /* if index out of range */
-    if (*string == '\0')
+    /* if index out of range (or empty input string) */
+    if (*str == '\0')
         return -1;
 
-    return string - s;
+    return str - s;
 }
 
 int get_word_count(const char *s)
@@ -92,11 +76,8 @@ int get_word_count(const char *s)
     return n;
 }
 
-status_t get_word_from_string(
-    const char *src,
-    char dest[],
-    size_t destsize,
-    size_t iWord)		/* zero-based index of dest to copy */
+status_t get_word_from_string(const char *src, char *dest,
+    size_t destsize, size_t wordidx)
 {
     int i;
 
@@ -104,9 +85,9 @@ status_t get_word_from_string(
     assert(dest != NULL);
     assert(destsize > 1);
 
-    i = find_word(src, iWord);
+    i = find_word(src, wordidx);
 
-    /* if index out of range */
+    /* if wordidx out of range */
     if (i == -1)
         return fail(ERANGE);
 
