@@ -108,6 +108,8 @@ cstring cstring_substring(cstring src, size_t from, size_t to)
 
 void cstring_reverse(cstring s) __attribute__((nonnull(1)));
 
+__attribute__((warn_unused_result))
+__attribute__((nonnull(1)))
 static inline const char *c_str(cstring s)
 {
     assert(s != NULL);
@@ -116,6 +118,8 @@ static inline const char *c_str(cstring s)
     return s->data;
 }
 
+__attribute__((warn_unused_result))
+__attribute__((nonnull(1)))
 static inline size_t cstring_length(cstring s)
 {
     assert(s != NULL);
@@ -125,6 +129,7 @@ static inline size_t cstring_length(cstring s)
     return s->len;
 }
 
+__attribute__((nonnull(1)))
 static inline void cstring_free(cstring s)
 {
     if (s != NULL) {
@@ -133,6 +138,8 @@ static inline void cstring_free(cstring s)
     }
 }
 
+__attribute__((nonnull(1, 2)))
+__attribute__((warn_unused_result))
 static inline int cstring_compare(cstring s, const char *str)
 {
     assert(s != NULL);
@@ -142,6 +149,8 @@ static inline int cstring_compare(cstring s, const char *str)
     return strcmp(s->data, str);
 }
 
+__attribute__((nonnull(1, 2)))
+__attribute__((warn_unused_result))
 static inline int cstring_casecompare(cstring s, const char *str)
 {
     assert(s != NULL);
@@ -152,6 +161,7 @@ static inline int cstring_casecompare(cstring s, const char *str)
 }
 
 
+__attribute__((nonnull(1)))
 static inline void cstring_recycle(cstring s)
 {
     assert(s != NULL);
@@ -165,7 +175,9 @@ static inline void cstring_recycle(cstring s)
  * of items in the array. Each item must be freed separately.
  * delim can contain any number of characters, see strcspn()
  */
-size_t cstring_split(cstring** dest, const char *src, const char *delim);
+size_t cstring_split(cstring** dest, const char *src, const char *delim)
+    __attribute__((warn_unused_result))
+    __attribute__((nonnull(1, 2, 3)));
 
 /* Free multiple cstrings with one call. Note that pstr itself will
  * not be freed. */
