@@ -6,7 +6,6 @@ lib_LIBRARIES=libmeta.a libmetad.a
 include_HEADERS=\
 	cstring.h\
 	meta_atomic.h\
-	meta_bignum.h\
 	meta_sampler.h\
 	meta_common.h\
 	meta_ticker.h\
@@ -37,7 +36,6 @@ include_HEADERS=\
 
 libmeta_a_SOURCES=\
 	meta_common.c\
-	meta_bignum.c\
 	meta_sampler.c\
 	meta_wlock.c\
 	meta_ticker.c\
@@ -94,8 +92,6 @@ endif
 
 TESTS=\
 	convert_check\
-	bignum_check\
-	bignum_speed\
 	sampler_check\
 	bitset_check\
 	fifo_check\
@@ -117,8 +113,6 @@ TESTS=\
 
 check_PROGRAMS=\
 	convert_check\
-	bignum_check\
-	bignum_speed\
 	slotbuf_check\
 	sampler_check\
 	list_check\
@@ -143,12 +137,6 @@ AM_CFLAGS=-p -pg -Wall --std=gnu99 -Wextra -Werror -O0
 tcp_server_check_SOURCES=tcp_server.c threadpool.c meta_membuf.c meta_pool.c\
 	meta_socket.c connection.c meta_process.c cstring.c meta_common.c
 tcp_server_check_CFLAGS=-DCHECK_TCP_SERVER $(AM_CFLAGS) 
-
-bignum_check_SOURCES=meta_bignum.c meta_common.c
-bignum_check_CFLAGS=-DBIGNUM_CHECK $(AM_CFLAGS)  -O0
-
-bignum_speed_SOURCES=meta_bignum.c meta_common.c
-bignum_speed_CFLAGS=-DBIGNUM_SPEED -O3 -DNDEBUG -std=gnu99
 
 list_check_SOURCES=meta_list.c
 list_check_CFLAGS=-DLIST_CHECK $(AM_CFLAGS) 
