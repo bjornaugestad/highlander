@@ -81,13 +81,12 @@ status_t cstring_pcat(cstring dest, const char *start, const char *end)
     __attribute__((nonnull(1, 2, 3)))
     __attribute__((warn_unused_result));
 
-status_t cstring_printf(cstring dest, size_t needs_max, const char *fmt, ...)
-    __attribute__((nonnull(1, 3)))
-    __attribute__((format(printf, 3, 4))) 
+status_t cstring_printf(cstring dest, const char *fmt, ...)
+    __attribute__((nonnull(1, 2)))
+    __attribute__((format(printf, 2, 3))) 
     __attribute__((warn_unused_result));
 
-status_t cstring_vprintf(cstring dest, size_t needs_max,
-    const char *fmt, va_list ap) 
+status_t cstring_vprintf(cstring dest, const char *fmt, va_list ap) 
     __attribute__((nonnull(1, 3)))
     __attribute__((warn_unused_result));
 

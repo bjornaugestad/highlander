@@ -736,9 +736,9 @@ status_t response_add_end(http_response response, const char* start, const char*
     __attribute__((nonnull(1, 2, 3)))
     __attribute__((warn_unused_result));
 
-status_t response_printf(http_response response, size_t size, const char* format, ...)
-    __attribute__ ((format(printf, 3, 4)))
-    __attribute__((nonnull(1, 3)))
+status_t response_printf(http_response response, const char* format, ...)
+    __attribute__ ((format(printf, 2, 3)))
+    __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
 void response_set_content_buffer(http_response response, void* src, size_t n)

@@ -69,7 +69,7 @@ static struct {
     { PAGE_CONFIGFILE,"id",  "/configuration", "Configuration", "View the configuration file in use" },
 };
 
-    size_t cb, i, nelem = sizeof items / sizeof *items;
+    size_t i, nelem = sizeof items / sizeof *items;
     const char* formatstring = 
         "<li id='%s' class='%s'>\n\t<a href='%s' title='%s'>%s</a>\n</li>\n";
 
@@ -82,15 +82,7 @@ static struct {
         if (items[i].pageid == pageid) 
             sel = "selected";
 
-        cb  = strlen(items[i].id) 
-            + strlen(items[i].href) 
-            + strlen(items[i].text) 
-            + strlen(items[i].title) 
-            + strlen(formatstring)
-            + strlen(sel)
-            + 30; /* for safety reasons */
-
-        if (!response_printf(page, cb, formatstring, items[i].id,
+        if (!response_printf(page, formatstring, items[i].id,
             sel, items[i].href, items[i].title, items[i].text, items[i].id))
             return failure;
 

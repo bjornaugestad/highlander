@@ -212,13 +212,10 @@ status_t add_html_header(http_response page, const char *uri)
         "	<th>Name</th><th>Size</th><th>Modified</th>\n"
         ;
 
-    size_t cb;
-
     if (page == NULL || uri == NULL || strlen(uri) == 0)
         return 0;
     
-    cb = strlen(header) + strlen(uri) + 10;
-    return response_printf(page, cb, header, uri);
+    return response_printf(page, header, uri);
 }
 
 static status_t add_html_footer(http_response page)
@@ -282,11 +279,8 @@ static status_t show_directory_as_html(http_response page, list lst, const char 
         if (!ok)
             return failure;
 
-        /* How many bytes do we need to print this? */
-        cb = snprintf(NULL, 0, "<a href='%s'>%s</a></td>\n", encoded_link, p->name);
-
-        if (!response_printf(page, cb + 4, "<a href='%s'>%s</a></td>\n", encoded_link, p->name)
-        || !response_printf(page, 100, "<td align='right'>%lu</td>", p->st.st_size))
+        if (!response_printf(page, "<a href='%s'>%s</a></td>\n", encoded_link, p->name)
+        || !response_printf(page, "<td align='right'>%lu</td>", p->st.st_size))
             return failure;
             
 
@@ -383,9 +377,8 @@ static int handle_requests(const http_request req, http_response page)
         rc = HTTP_500_INTERNAL_SERVER_ERROR;
     }
     else if (stat(abspath, &st)) {
-        size_t cb = strlen(uri) + strlen(abspath) + 100;
         rc = HTTP_404_NOT_FOUND;
-        if (!response_printf(page, cb, "%s(%s): Not found", uri, abspath))
+        if (!response_printf(page, "%s(%s): Not found", uri, abspath))
             rc = HTTP_500_INTERNAL_SERVER_ERROR;
     }
     else if (S_ISDIR(st.st_mode)) {

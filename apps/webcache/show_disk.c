@@ -209,9 +209,9 @@ static int show_file_summary(http_request req, http_response page)
     nnew = list_size(new);
 
     if (response_add(page, "<table columns=2><th>Text</th><th>Count</th>\n")
-    && response_printf(page, 100, "<tr><td>New files</td><td>%zu</td>\n", nnew)
-    && response_printf(page, 100, "<tr><td>Modified files</td><td>%zu</td>\n", nmod)
-    && response_printf(page, 100, "<tr><td>Deleted files</td><td>%zu</td>\n", ndel)
+    && response_printf(page, "<tr><td>New files</td><td>%zu</td>\n", nnew)
+    && response_printf(page, "<tr><td>Modified files</td><td>%zu</td>\n", nmod)
+    && response_printf(page, "<tr><td>Deleted files</td><td>%zu</td>\n", ndel)
     && response_add(page, "</table>")
     && add_page_end(page, NULL))
         rc = HTTP_200_OK;

@@ -405,15 +405,15 @@ static status_t create_cookie_string(cookie c, cstring str)
     }
 
     v = cookie_get_version(c);
-    if (!cstring_printf(str, 20, ";Version=%d", v))
+    if (!cstring_printf(str, ";Version=%d", v))
         return failure;
 
     v = cookie_get_max_age(c);
-    if (v != MAX_AGE_NOT_SET && !cstring_printf(str, 20, ";Max-Age=%d", v))
+    if (v != MAX_AGE_NOT_SET && !cstring_printf(str, ";Max-Age=%d", v))
         return failure;
 
     v = cookie_get_secure(c);
-    if (!cstring_printf(str, 20, ";Secure=%d", v))
+    if (!cstring_printf(str, ";Secure=%d", v))
         return failure;
 
     s = cookie_get_domain(c);
@@ -545,8 +545,7 @@ void response_free(http_response p)
     }
 }
 
-status_t response_printf(http_response page, const size_t needs_max,
-    const char* fmt, ...)
+status_t response_printf(http_response page, const char* fmt, ...)
 {
     status_t status;
     va_list ap;
@@ -555,7 +554,7 @@ status_t response_printf(http_response page, const size_t needs_max,
     assert(fmt != NULL);
 
     va_start (ap, fmt);
-    status = cstring_vprintf(page->entity, needs_max, fmt, ap);
+    status = cstring_vprintf(page->entity, fmt, ap);
     va_end(ap);
 
     return status;
@@ -1141,18 +1140,13 @@ status_t response_hr(http_response response)
 
 status_t response_href(http_response response, const char* ref, const char* text)
 {
-    size_t cb;
     const char* fmt = "<a href=\"%s\">%s</a>";
 
     assert(response != NULL);
     assert(ref != NULL);
     assert(text != NULL);
 
-    /* We need cb bytes, more or less. %s*2 == 4 bytes more than we need,
-     * + 1 for the null character. This is therefore OK.
-     */
-    cb = strlen(ref) + strlen(text) + strlen(fmt);
-    return cstring_printf(response->entity, cb, fmt, ref, text);
+    return cstring_printf(response->entity, fmt, ref, text);
 }
 
 status_t response_p (http_response response, const char* s)

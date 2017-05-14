@@ -140,8 +140,7 @@ int html_menu_render(html_menu m, cstring buffer)
 
     if (text != NULL) {
         if (link != NULL) {
-            size_t cb = strlen(link) + strlen(text) + 100;
-            if (!cstring_printf(buffer, cb, "<a href='%s'>%s</a><br>\n", link, text))
+            if (!cstring_printf(buffer, "<a href='%s'>%s</a><br>\n", link, text))
                 return 0;
         }
         else if (!cstring_concat(buffer, text))

@@ -57,24 +57,23 @@ status_t cstring_extend(cstring s, size_t size)
     return success;
 }
 
-status_t cstring_vprintf(cstring dest, size_t needs_max, const char *fmt, va_list ap)
+status_t cstring_vprintf(cstring dest, const char *fmt, va_list ap)
 {
     int i;
+    size_t size;
 
-    /* Adjust the size of needs_max. vsnprintf includes the '\0'
-     * in its computation, so vprintf(,,,strlen(x), "%s", x) fails.
-     */
-    needs_max++;
+
+    size = vsnprintf(NULL, 0, fmt, ap);
 
     assert(dest != NULL);
     assert(dest->data != NULL);
     assert(dest->len == strlen(dest->data));
 
-    if (!has_room_for(dest, needs_max) && !cstring_extend(dest, needs_max))
+    if (!has_room_for(dest, size) && !cstring_extend(dest, size))
         return failure;
 
     /* We append the new data, therefore the & */
-    i = vsnprintf(&dest->data[dest->len], needs_max, fmt, ap);
+    i = vsnprintf(&dest->data[dest->len], size, fmt, ap);
 
     /* We do not know the length of the data after vsnprintf()
      * We therefore recompute the len member.
@@ -85,7 +84,7 @@ status_t cstring_vprintf(cstring dest, size_t needs_max, const char *fmt, va_lis
     return success;
 }
 
-status_t cstring_printf(cstring dest, size_t needs_max, const char *fmt, ...)
+status_t cstring_printf(cstring dest, const char *fmt, ...)
 {
     status_t status;
     va_list ap;
@@ -94,7 +93,7 @@ status_t cstring_printf(cstring dest, size_t needs_max, const char *fmt, ...)
     assert(fmt != NULL);
 
     va_start(ap, fmt);
-    status = cstring_vprintf(dest, needs_max, fmt, ap);
+    status = cstring_vprintf(dest, fmt, ap);
     va_end(ap);
 
     return status;

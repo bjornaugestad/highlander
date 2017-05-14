@@ -69,7 +69,6 @@ void html_buffer_free(html_buffer b)
 
 status_t html_anchor(html_buffer b, const char* url, const char* text)
 {
-    size_t cb;
     const char* template = "<a href=\"%s\">%s</a>";
 
     assert(b != NULL);
@@ -78,12 +77,7 @@ status_t html_anchor(html_buffer b, const char* url, const char* text)
     assert(strlen(url) != 0);
     assert(strlen(text) != 0);
 
-    /* How many bytes do we need? This computation includes %s twice
-     * and therefore returns (actual_value + 4). That's ok.
-     */
-    cb = strlen(url) + strlen(text) + strlen(template) + 1;
-
-    return cstring_printf(b->buffer, cb, template, url, text);
+    return cstring_printf(b->buffer, template, url, text);
 }
 
 status_t html_address_start(html_buffer b)
@@ -190,9 +184,7 @@ status_t html_table_start(html_buffer b, size_t ncol)
 {
     assert(b != NULL);
     if (ncol > 0)
-        return cstring_printf(
-            b->buffer,
-            100,
+        return cstring_printf(b->buffer,
             "<table columns='%lu'>",
             (unsigned long)ncol);
     else
@@ -552,12 +544,12 @@ status_t html_img(
     }
 
     if (height > 0) {
-        if (!cstring_printf(b->buffer, 100, " height='%lu'", (unsigned long)height))
+        if (!cstring_printf(b->buffer, " height='%lu'", (unsigned long)height))
             return 0;
     }
 
     if (width > 0) {
-        if (!cstring_printf(b->buffer, 100, " width='%lu'", (unsigned long)width))
+        if (!cstring_printf(b->buffer, " width='%lu'", (unsigned long)width))
             return 0;
     }
 
@@ -567,7 +559,6 @@ status_t html_img(
 
 status_t html_label(html_buffer b, const char* _for, const char* text)
 {
-    size_t cb;
     const char* template = "<label for='%s'>%s</label>";
 
     assert(b != NULL);
@@ -576,8 +567,7 @@ status_t html_label(html_buffer b, const char* _for, const char* text)
     assert(strlen(_for) > 0);
     assert(strlen(text) > 0);
 
-    cb = strlen(template) + strlen(_for) + strlen(text) + 1;
-    return cstring_printf(b->buffer, cb, template, _for, text);
+    return cstring_printf(b->buffer, template, _for, text);
 }
 
 status_t html_meta(html_buffer b, const char* s)
@@ -657,11 +647,7 @@ status_t html_optgroup_start(html_buffer b, const char* label)
     assert(b != NULL);
 
     if (label != NULL)
-        return cstring_printf(
-            b->buffer,
-            strlen(label) + 50,
-            "<optgroup label=\"%s\">",
-            label);
+        return cstring_printf(b->buffer, "<optgroup label=\"%s\">", label);
     else
         return cstring_concat(b->buffer, "<optgroup>");
 }
