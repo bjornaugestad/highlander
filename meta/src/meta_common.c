@@ -83,6 +83,7 @@ void meta_vsyslog(int class, const char *fmt, va_list ap)
     }
 }
 
+#ifndef NDEBUG
 static int meta_debug_enabled;
 
 void meta_enable_debug_output(void)
@@ -106,3 +107,4 @@ void debugimpl(const char *fmt, ...)
         va_end(ap);
     }
 }
+#endif

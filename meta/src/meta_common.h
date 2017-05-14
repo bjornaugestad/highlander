@@ -60,7 +60,8 @@ void die_perror(const char *fmt, ...)
 /*
  * Debugging: Do we need it? Well, it's handy, at least in debug
  * builds. Let's utilize vararg macros and strip debug info from
- * non-debug builds.
+ * non-debug builds. For security reasons, all release builds must
+ * be stripped of both debugging functions and textual information.
  */
 #ifdef NDEBUG
 #define debug(...)

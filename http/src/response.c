@@ -16,10 +16,6 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifdef HAVE_SENDFILE
-#include <sys/sendfile.h>
-#endif
-
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -158,10 +154,10 @@ void response_set_version(http_response r, http_version v)
 http_response response_new(void)
 {
     http_response p;
-    cstring arr[8];
-    size_t nelem = sizeof arr / sizeof *arr;
+    cstring strings[8];
+    size_t nstrings = sizeof strings / sizeof *strings;
 
-    if ((p = calloc(1, sizeof *p)) == NULL || !cstring_multinew(arr, nelem)) {
+    if ((p = calloc(1, sizeof *p)) == NULL || !cstring_multinew(strings, nstrings)) {
         free(p);
         return NULL;
     }
@@ -169,7 +165,7 @@ http_response response_new(void)
     if ((p->general_header = general_header_new()) == NULL
     ||	(p->entity_header = entity_header_new()) == NULL) {
         general_header_free(p->general_header);
-        cstring_multifree(arr, nelem);
+        cstring_multifree(strings, nstrings);
         free(p);
         return NULL;
     }
@@ -177,11 +173,10 @@ http_response response_new(void)
     if ((p->cookies = list_new()) == NULL) {
         general_header_free(p->general_header);
         entity_header_free(p->entity_header);
-        cstring_multifree(arr, nelem);
+        cstring_multifree(strings, nstrings);
         free(p);
         return NULL;
     }
-
 
     p->version = VERSION_UNKNOWN;
     p->status = 0;
@@ -189,14 +184,14 @@ http_response response_new(void)
     p->retry_after = (time_t)-1;
     p->send_file = 0;
 
-    p->etag = arr[0];
-    p->location = arr[1];
-    p->proxy_authenticate = arr[2];
-    p->server = arr[3];
-    p->vary = arr[4];
-    p->www_authenticate = arr[5];
-    p->entity = arr[6];
-    p->path = arr[7];
+    p->etag = strings[0];
+    p->location = strings[1];
+    p->proxy_authenticate = strings[2];
+    p->server = strings[3];
+    p->vary = strings[4];
+    p->www_authenticate = strings[5];
+    p->entity = strings[6];
+    p->path = strings[7];
 
     /* Some defaults */
     if (!response_set_content_type(p, "text/html")
@@ -482,15 +477,12 @@ static status_t response_send_cookies(http_response p, connection conn,
     return success;
 }
 
-
-static status_t response_send_header(
-    http_response response,
-    connection conn,
-    error e)
+static status_t response_send_header(http_response response,
+    connection conn, error e)
 {
     if (response->version == VERSION_09)
         /* No headers for http 0.9 */
-        return 0;
+        return failure;
 
     /* Special stuff to support pers. conns in HTTP 1.0 */
     if (connection_is_persistent(conn) 
@@ -553,7 +545,8 @@ void response_free(http_response p)
     }
 }
 
-status_t response_printf(http_response page, const size_t needs_max, const char* fmt, ...)
+status_t response_printf(http_response page, const size_t needs_max,
+    const char* fmt, ...)
 {
     status_t status;
     va_list ap;
@@ -927,7 +920,7 @@ void response_recycle(http_response p)
 
     /* Free cookies */
     if (p->cookies) {
-        list_free(p->cookies, (void(*)(void*))cookie_free);
+        list_free(p->cookies, (dtor)cookie_free);
         p->cookies = list_new();
     }
 
@@ -939,12 +932,6 @@ void response_recycle(http_response p)
     if (!response_set_content_type(p, "text/html"))
         warning("Probably out of memory\n");
 
-    #if 0
-    if (p->content_buffer_in_use && p->content_free_when_done) {
-        free(p->content_buffer);
-        p->content_buffer = 0;
-    }
-    #endif
     p->content_buffer_in_use = 0;
     p->content_free_when_done = 0;
     p->send_file = 0;
@@ -986,7 +973,7 @@ status_t response_send_file(http_response p, const char *path, const char* ctype
     assert(ctype != NULL);
 
     if (stat(path, &st))
-        return 0;
+        return failure;
 
     if (!response_set_content_type(p, ctype))
         return set_os_error(e, errno);
@@ -1004,65 +991,33 @@ status_t response_send_file(http_response p, const char *path, const char* ctype
  * Send the entire contents of a file to the client.
  * Note that we manually call connection_flush(). This is done so that
  * we won't run out of retry attempts when sending big files.
+ * (yes, I know sendfile() exists. See git log)
  */
-static int send_entire_file(connection conn, const char *path, size_t *pcb)
+static status_t send_entire_file(connection conn, const char *path, size_t *pcb)
 {
-    int fd, xsuccess = 1;
+    int fd;
+    status_t retval = success;
     char buf[8192];
-    ssize_t cbRead;
+    ssize_t nread;
 
     if ((fd = open(path, O_RDONLY)) == -1)
-        return 0;
-
-// Note that sendfile() usage must change when using ssl. (probably)
-// boa 20130204
-#if 0
-#ifdef HAVE_SENDFILE
-    {
-        off_t offset = 0;
-        int fd_out = connection_get_fd(conn);
-        struct stat st;
-        if (fstat(fd, &st) == -1) {
-            close(fd);
-            return 0;
-        }
-
-        connection_flush(conn);
-        if (sendfile(fd_out, fd, &offset, st.st_size) == -1) {
-            if (errno == EINVAL || errno == ENOSYS) { /* see man page for sendfile */
-                goto fallback;
-            }
-
-            close(fd);
-            return 0;
-        }
-        else {
-            close(fd);
-            return 1;
-        }
-    }
-
-fallback:
-
-#endif
-#endif
+        return failure;
 
     *pcb = 0;
-    while ((cbRead = read(fd, buf, sizeof buf)) > 0) {
-        *pcb += (size_t)cbRead;
-        if (!connection_write(conn, buf, (size_t)cbRead))
-            xsuccess = 0;
+    while ((nread = read(fd, buf, sizeof buf)) > 0) {
+        *pcb += (size_t)nread;
+        if (!connection_write(conn, buf, (size_t)nread))
+            retval = failure;
         else if (!connection_flush(conn))
-            xsuccess = 0;
+            retval = failure;
 
-        if (!xsuccess)
+        if (!retval)
             break;
     }
 
     close(fd);
-    return xsuccess;
+    return retval;
 }
-
 
 static status_t
 response_send_entity(http_response r, connection conn, size_t *pcb)
@@ -1103,40 +1058,6 @@ response_send_entity(http_response r, connection conn, size_t *pcb)
 
     return success;
 }
-
-#if 0
-static int write_406(connection conn, http_version v)
-{
-    int code = 406;
-
-    /* http 1.0 has no 406, so we send a 400 instead */
-    if (v != VERSION_11)
-        code = 400;
-
-    return send_status_code(conn, code, v);
-}
-
-/*
- * It is meaningful for some status codes to send content, not
- * so meaningful for others. This function tests to see if
- * we should send the content buffer or not.
- */
-static int http_send_content(int status)
-{
-    switch (status) {
-        case HTTP_200_OK:
-        case HTTP_400_BAD_REQUEST:
-        case HTTP_402_PAYMENT_REQUIRED:
-        case HTTP_403_FORBIDDEN:
-        case HTTP_404_NOT_FOUND:
-        case HTTP_405_METHOD_NOT_ALLOWED:
-        case HTTP_406_NOT_ACCEPTABLE:
-            return 1;
-        default:
-            return 0;
-    }
-}
-#endif
 
 /*
  * Returns failure and sets e to the proper HTTP error code if a http error 
@@ -1468,8 +1389,8 @@ static const struct {
 
 int find_response_header(const char* name)
 {
-    int i, nelem = sizeof response_header_fields / sizeof *response_header_fields;
-    for (i = 0; i < nelem; i++) {
+    int i, n = sizeof response_header_fields / sizeof *response_header_fields;
+    for (i = 0; i < n; i++) {
         if (strcmp(response_header_fields[i].name, name) == 0)
             return i;
     }

@@ -57,11 +57,7 @@ status_t cstring_extend(cstring s, size_t size)
     return success;
 }
 
-status_t cstring_vprintf(
-    cstring dest,
-    size_t needs_max,
-    const char *fmt,
-    va_list ap)
+status_t cstring_vprintf(cstring dest, size_t needs_max, const char *fmt, va_list ap)
 {
     int i;
 
@@ -258,10 +254,7 @@ status_t cstring_concat2(cstring dest, const char *s1, const char *s2)
     return failure;
 }
 
-status_t cstring_concat3(
-    cstring dest,
-    const char *s1,
-    const char *s2,
+status_t cstring_concat3(cstring dest, const char *s1, const char *s2,
     const char *s3)
 {
     assert(NULL != dest);
