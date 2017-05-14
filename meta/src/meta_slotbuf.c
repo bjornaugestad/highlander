@@ -19,116 +19,116 @@ struct slotbuf_tag {
 
 slotbuf slotbuf_new(size_t size, int can_overwrite, dtor pfn)
 {
-    slotbuf new;
+    slotbuf p;
 
     assert(size > 0);
 
-    if ((new = malloc(sizeof *new)) == NULL)
+    if ((p = malloc(sizeof *p)) == NULL)
         return NULL;
 
-    if ((new->data = calloc(size, sizeof *new->data)) == NULL) {
-        free(new);
+    if ((p->data = calloc(size, sizeof *p->data)) == NULL) {
+        free(p);
         return NULL;
     }
 
-    new->can_overwrite = can_overwrite;
-    new->size = size;
-    pthread_mutex_init(&new->lock, NULL);
-    new->pfn = pfn;
+    p->can_overwrite = can_overwrite;
+    p->size = size;
+    pthread_mutex_init(&p->lock, NULL);
+    p->pfn = pfn;
 
-    return new;
+    return p;
 }
 
-void slotbuf_free(slotbuf this)
+void slotbuf_free(slotbuf p)
 {
     size_t i;
 
-    if (this == NULL)
+    if (p == NULL)
         return;
 
-    for (i = 0; i < this->size; i++) {
-        if (this->data[i] != NULL && this->pfn != NULL)
-            this->pfn(this->data[i]);
+    for (i = 0; i < p->size; i++) {
+        if (p->data[i] != NULL && p->pfn != NULL)
+            p->pfn(p->data[i]);
     }
 
-    free(this->data);
-    pthread_mutex_destroy(&this->lock);
-    free(this);
+    free(p->data);
+    pthread_mutex_destroy(&p->lock);
+    free(p);
 }
 
-status_t slotbuf_set(slotbuf this, size_t i, void *value)
+status_t slotbuf_set(slotbuf p, size_t i, void *value)
 {
     size_t idx;
-    assert(this != NULL);
+    assert(p != NULL);
 
-    idx = i % this->size;
-    if (this->data[idx] != NULL) {
-        if (!this->can_overwrite)
+    idx = i % p->size;
+    if (p->data[idx] != NULL) {
+        if (!p->can_overwrite)
             return failure;
 
-        if (this->pfn != NULL)
-            this->pfn(this->data[idx]);
+        if (p->pfn != NULL)
+            p->pfn(p->data[idx]);
     }
 
-    this->data[idx] = value;
+    p->data[idx] = value;
     return success;
 }
 
-void *slotbuf_get(slotbuf this, size_t i)
+void *slotbuf_get(slotbuf p, size_t i)
 {
     size_t idx;
     void *data;
 
-    assert(this != NULL);
+    assert(p != NULL);
 
-    idx = i % this->size;
-    data = this->data[idx];
-    this->data[idx] = NULL;
+    idx = i % p->size;
+    data = p->data[idx];
+    p->data[idx] = NULL;
     return data;
 }
 
-size_t slotbuf_nelem(slotbuf this)
+size_t slotbuf_nelem(slotbuf p)
 {
     size_t i, n;
 
-    assert(this != NULL);
+    assert(p != NULL);
 
-    for (i = n = 0; i < this->size; i++)
-        if (this->data[i] != NULL)
+    for (i = n = 0; i < p->size; i++)
+        if (p->data[i] != NULL)
             n++;
 
     return n;
 }
 
-void *slotbuf_peek(slotbuf this, size_t i)
+void *slotbuf_peek(slotbuf p, size_t i)
 {
     size_t idx;
-    assert(this != NULL);
+    assert(p != NULL);
 
-    idx = i % this->size;
-    return this->data[idx];
+    idx = i % p->size;
+    return p->data[idx];
 }
 
-bool slotbuf_has_data(slotbuf this, size_t i)
+bool slotbuf_has_data(slotbuf p, size_t i)
 {
     size_t idx;
-    assert(this != NULL);
+    assert(p != NULL);
 
-    idx = i % this->size;
-    return this->data[idx] != NULL;
+    idx = i % p->size;
+    return p->data[idx] != NULL;
 }
 
-void slotbuf_lock(slotbuf this)
+void slotbuf_lock(slotbuf p)
 {
-    assert(this != NULL);
-    if (pthread_mutex_lock(&this->lock))
+    assert(p != NULL);
+    if (pthread_mutex_lock(&p->lock))
         abort();
 }
 
-void slotbuf_unlock(slotbuf this)
+void slotbuf_unlock(slotbuf p)
 {
-    assert(this != NULL);
-    if (pthread_mutex_unlock(&this->lock))
+    assert(p != NULL);
+    if (pthread_mutex_unlock(&p->lock))
         abort();
 }
 

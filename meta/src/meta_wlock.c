@@ -53,10 +53,8 @@ status_t wlock_lock(wlock p)
 
     assert(p != NULL);
 
-    if ((err = pthread_mutex_lock(&p->lock))) {
-        errno = err;
-        return failure;
-    }
+    if ((err = pthread_mutex_lock(&p->lock)))
+        return fail(err);
 
     return success;
 }
@@ -67,10 +65,8 @@ status_t wlock_unlock(wlock p)
 
     assert(p != NULL);
 
-    if ((err = pthread_mutex_unlock(&p->lock))) {
-        errno = err;
-        return failure;
-    }
+    if ((err = pthread_mutex_unlock(&p->lock)))
+        return fail(err);
 
     return success;
 }
@@ -81,10 +77,8 @@ status_t wlock_signal(wlock p)
 
     assert(p != NULL);
 
-    if ((err = pthread_cond_signal(&p->condvar))) {
-        errno = err;
-        return failure;
-    }
+    if ((err = pthread_cond_signal(&p->condvar)))
+        return fail(err);
 
     return success;
 }
@@ -95,10 +89,9 @@ status_t wlock_broadcast(wlock p)
 
     assert(p != NULL);
 
-    if ((err = pthread_cond_broadcast(&p->condvar))) {
-        errno = err;
-        return failure;
-    }
+    if ((err = pthread_cond_broadcast(&p->condvar)))
+        return fail(err);
+    
     return success;
 }
 
@@ -109,10 +102,8 @@ status_t wlock_wait(wlock p)
     assert(p != NULL);
 
     /* wait for someone to signal us */
-    if ((err = pthread_cond_wait(&p->condvar, &p->lock))) {
-        errno = err;
-        return failure;
-    }
+    if ((err = pthread_cond_wait(&p->condvar, &p->lock)))
+        return fail(err);
 
     return success;
 }

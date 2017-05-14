@@ -170,7 +170,7 @@ status_t fifo_write_signal(fifo p, void *data)
         return failure;
 
     if (!fifo_add(p, data)) {
-        fifo_unlock(p);
+        (void)fifo_unlock(p);
         return failure;
     }
 
@@ -196,9 +196,8 @@ status_t fifo_wait_cond(fifo p)
      * No data means that fifo_wake() was called.
      */
     if (fifo_nelem(p) == 0) {
-        errno = ENOENT;
         fifo_unlock(p);
-        return failure;
+        return fail(ENOENT);
     }
 
     return success;

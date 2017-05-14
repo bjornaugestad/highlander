@@ -176,10 +176,8 @@ status_t http_server_set_documentroot(http_server s, const char* docroot)
     assert(docroot != NULL);
 
     len = strlen(docroot) + 1;
-    if (len > sizeof s->documentroot) {
-        errno = ENOSPC;
-        return failure;
-    }
+    if (len > sizeof s->documentroot)
+        return fail(ENOSPC);
 
     memcpy(s->documentroot, docroot, len);
     return success;
@@ -660,10 +658,8 @@ status_t http_server_set_logfile(http_server srv, const char *name)
     assert(srv->logfile == NULL); /* Do not call twice */
 
     n = strlen(name) + 1;
-    if (n > sizeof srv->logfile_name) {
-        errno = ENOSPC;
-        return failure;
-    }
+    if (n > sizeof srv->logfile_name)
+        return fail(ENOSPC);
 
     memcpy(srv->logfile_name, name, n);
     srv->logging = 1;

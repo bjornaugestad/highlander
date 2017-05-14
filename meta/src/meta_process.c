@@ -133,10 +133,8 @@ status_t process_add_object_to_start(
     assert(run_func != NULL);
     assert(shutdown_func != NULL);
 
-    if (this->objects_used == MAX_OBJECTS) {
-        errno = ENOSPC;
-        return failure;
-    }
+    if (this->objects_used == MAX_OBJECTS)
+        return fail(ENOSPC);
 
     this->objects[this->objects_used].object = object;
     this->objects[this->objects_used].do_func = do_func;
@@ -251,7 +249,7 @@ static void *shutdown_thread(void *arg)
 
 static status_t handle_shutdown(process this)
 {
-    int error;
+    int err;
 
     /* Block the signals we handle before creating threads */
     if (!set_signals_to_block()) {
@@ -260,10 +258,9 @@ static status_t handle_shutdown(process this)
     }
 
     /* start the shutdown thread */
-    if ((error = pthread_create(&this->sdt, NULL, shutdown_thread, this))) {
-        debug("Could not create debug thread\n");
-        errno = error;
-        return failure;
+    if ((err = pthread_create(&this->sdt, NULL, shutdown_thread, this))) {
+        debug("Could not create shutdown thread\n");
+        return fail(err);
     }
 
     return success;
@@ -450,14 +447,12 @@ status_t process_start(process this, int fork_and_close)
 status_t process_wait_for_shutdown(process this)
 {
     size_t i;
-    int error;
+    int err;
 
     assert(this != NULL);
     assert(this->sdt);
-    if ((error = pthread_join(this->sdt, NULL))) {
-        errno = error;
-        return failure;
-    }
+    if ((err = pthread_join(this->sdt, NULL)))
+        return fail(err);
 
     /* Now that the shutdown thread has exited, it
      * is time to wait for the started objects.
@@ -466,10 +461,8 @@ status_t process_wait_for_shutdown(process this)
         struct srv* srv = &this->objects[i];
         void *pfoo = &srv->exitcode;
         assert(srv->tid);
-        if ((error = pthread_join(srv->tid, &pfoo))) {
-            errno = error;
-            return failure;
-        }
+        if ((err = pthread_join(srv->tid, &pfoo)))
+            return fail(err);
     }
 
     return success;

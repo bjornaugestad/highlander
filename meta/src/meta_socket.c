@@ -138,10 +138,8 @@ status_t sock_write(meta_socket this, const char *buf, size_t count, int timeout
     } while(count > 0 && nretries--);
 
     /* If not able to write and no errors detected, we have a timeout */
-    if ((ssize_t)count != 0) {
-        errno = EAGAIN;
-        return failure;
-    }
+    if (count != 0)
+        return fail(EAGAIN);
 
     return success;
 }

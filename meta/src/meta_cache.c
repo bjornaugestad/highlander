@@ -191,10 +191,8 @@ static status_t make_space(cache c, size_t cb)
     assert(c != NULL);
 
     /* Can the item fit at all? */
-    if (cb > c->max_bytes) {
-        errno = ENOSPC;
-        return failure;
-    }
+    if (cb > c->max_bytes)
+        return fail(ENOSPC);
 
     for (;;) {
         /* Do we have space? */
@@ -223,10 +221,8 @@ static status_t make_space(cache c, size_t cb)
     }
 
     /* We failed to free enough objects */
-    errno = ENOSPC;
-    return failure;
+    return fail(ENOSPC);
 }
-
 
 status_t cache_add(cache c, size_t id, void *data, size_t cb, int pin)
 {
@@ -386,10 +382,8 @@ status_t cache_remove(cache c, size_t id)
     assert(c != NULL);
 
     i = find_entry(c, id);
-    if (list_end(i)) {
-        errno = ENOENT;
-        return failure;
-    }
+    if (list_end(i))
+        return fail(ENOENT);
 
     assert(c->hashtable[id % c->nelem] != NULL);
     assert(cache_exists(c, id));

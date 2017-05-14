@@ -584,11 +584,8 @@ status_t response_set_cookie(http_response response, cookie new_cookie)
         c = list_get(i);
         assert(c != NULL);
         nameOld = cookie_get_name(c);
-        if (0 == strcmp(nameNew, nameOld)) {
-            /* We have a duplicate */
-            errno = EINVAL;
-            return failure;
-        }
+        if (0 == strcmp(nameNew, nameOld))
+            return fail(EINVAL); /* We have a duplicate */
     }
 
     if (!list_add(response->cookies, new_cookie))

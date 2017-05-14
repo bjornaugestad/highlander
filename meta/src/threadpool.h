@@ -20,6 +20,7 @@ threadpool threadpool_new(
     size_t num_worker_threads,
     size_t max_queue_size,
     bool block_when_full)
+    __attribute__((warn_unused_result))
     __attribute__((malloc));
 
 status_t threadpool_add_work(
@@ -32,6 +33,7 @@ status_t threadpool_add_work(
 
     void (*cleanupfn)(void*, void*),
     void *cleanup_arg)
+    __attribute__((warn_unused_result))
     __attribute__((nonnull(1, 4, 5)));
 
 
@@ -39,12 +41,15 @@ status_t threadpool_destroy(threadpool tp, bool finish)
     __attribute__((warn_unused_result));
 
 unsigned long threadpool_sum_blocked(threadpool p)
+    __attribute__((warn_unused_result))
     __attribute__((nonnull(1)));
 
 unsigned long threadpool_sum_discarded(threadpool p)
+    __attribute__((warn_unused_result))
     __attribute__((nonnull(1)));
 
 unsigned long threadpool_sum_added(threadpool p)
+    __attribute__((warn_unused_result))
     __attribute__((nonnull(1)));
 
 #ifdef __cplusplus

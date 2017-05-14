@@ -318,10 +318,8 @@ status_t tcp_server_allow_clients(tcp_server srv, const char *filter)
 
     tcp_server_clear_client_filter(srv);
 
-    if ((err = regcomp(&srv->allowed_clients, filter, flags)) != 0) {
-        errno = err;
-        return failure;
-    }
+    if ((err = regcomp(&srv->allowed_clients, filter, flags)) != 0)
+        return fail(err);
 
     srv->pattern_compiled = true;
     return success;

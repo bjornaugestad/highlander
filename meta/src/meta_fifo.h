@@ -34,15 +34,19 @@ status_t fifo_add(fifo p, void *data)
     __attribute__((warn_unused_result));
 
 size_t fifo_nelem(fifo p)
+    __attribute__((warn_unused_result))
     __attribute__((nonnull(1)));
 
 size_t fifo_free_slot_count(fifo p)
+    __attribute__((warn_unused_result))
     __attribute__((nonnull(1)));
 
 void *fifo_get(fifo p)
+    __attribute__((warn_unused_result))
     __attribute__((nonnull(1)));
 
 void *fifo_peek(fifo p, size_t i)
+    __attribute__((warn_unused_result))
     __attribute__((nonnull(1)));
 
 status_t fifo_write_signal(fifo p, void *data) 

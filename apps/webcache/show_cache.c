@@ -30,7 +30,9 @@ static size_t reload_cache(void)
             fileinfo fi = list_get(li);
 
             /* Now filecache owns the fileinfo objects */
-            filecache_add(g_filecache, fi, 1, &id);
+            if (!filecache_add(g_filecache, fi, 1, &id))
+                goto err;
+
             files++;
         }
     }

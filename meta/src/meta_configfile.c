@@ -198,15 +198,11 @@ status_t configfile_get_string(configfile cf, const char *name, char *value, siz
     assert(value != NULL);
     assert(cb > 1);
 
-    if ((pnv = find(cf, name)) == NULL) {
-        errno = ENOENT;
-        return failure;
-    }
+    if ((pnv = find(cf, name)) == NULL)
+        return fail(ENOENT);
 
-    if (strlen(pnv->value) + 1 > cb) {
-        errno = ENOSPC;
-        return failure;
-    }
+    if (strlen(pnv->value) + 1 > cb)
+        return fail(ENOSPC);
 
     strcpy(value, pnv->value);
     return success;
@@ -268,10 +264,8 @@ status_t configfile_get_uint(configfile cf, const char *name, unsigned int *valu
     if (!configfile_get_ulong(cf, name, &tmp))
         return failure;
 
-    if (tmp > UINT_MAX) {
-        errno = EINVAL;
-        return failure;
-    }
+    if (tmp > UINT_MAX)
+        return fail(EINVAL);
 
     *value = (unsigned int)tmp;
     return success;
@@ -288,10 +282,8 @@ status_t configfile_get_int(configfile cf, const char *name, int *value)
     if (!configfile_get_long(cf, name, &tmp))
         return failure;
 
-    if (tmp < INT_MIN || tmp > INT_MAX) {
-        errno = EINVAL;
-        return failure;
-    }
+    if (tmp < INT_MIN || tmp > INT_MAX)
+        return fail(EINVAL);
 
     *value = (int)tmp;
     return success;

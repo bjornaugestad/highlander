@@ -107,10 +107,8 @@ status_t get_word_from_string(
     i = find_word(src, iWord);
 
     /* if index out of range */
-    if (i == -1) {
-        errno = ERANGE;
-        return failure;
-    }
+    if (i == -1)
+        return fail(ERANGE);
 
     /* copy the word */
     src += i;
@@ -160,10 +158,8 @@ status_t copy_word(
     while (*src != '\0' && *src != separator && i < destsize)
         dest[i++] = *src++;
 
-    if (i == destsize) {
-        errno = ENOSPC;
-        return failure;
-    }
+    if (i == destsize)
+        return fail(ENOSPC);
 
     dest[i] = '\0';
     return success;
@@ -205,10 +201,8 @@ status_t get_extension(const char *src, char *dest, size_t destsize)
         dest[i--] = *end--;
     }
 
-    if (i == 0) {
-        errno = ENOSPC;
-        return failure;
-    }
+    if (i == 0)
+        return fail(ENOSPC);
 
     if (found)
         memmove(dest, &dest[i + 1], destsize - i);

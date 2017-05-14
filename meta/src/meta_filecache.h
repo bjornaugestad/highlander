@@ -71,15 +71,19 @@ fileinfo fileinfo_new(void) __attribute__((malloc));
 void fileinfo_free(fileinfo p);
 
 const struct stat* fileinfo_stat(fileinfo p)
+    __attribute__((warn_unused_result))
     __attribute__((nonnull(1)));
 
 const char *fileinfo_name(fileinfo p)
+    __attribute__((warn_unused_result))
     __attribute__((nonnull(1)));
 
 const char *fileinfo_alias(fileinfo p)
+    __attribute__((warn_unused_result))
     __attribute__((nonnull(1)));
 
 const char *fileinfo_mimetype(fileinfo p)
+    __attribute__((warn_unused_result))
     __attribute__((nonnull(1)));
 
 void fileinfo_set_stat(fileinfo p, const struct stat* pst)
@@ -136,6 +140,7 @@ void filecache_free(filecache fc);
  *
  */
 status_t filecache_add(filecache fc, fileinfo finfo, int pin, unsigned long* pid)
+    __attribute__((warn_unused_result))
     __attribute__((nonnull(1, 2, 4)));
 
 
@@ -205,6 +210,7 @@ int filecache_foreach(filecache fc, int(*fn)(const char*s, void *arg), void *arg
  * if the file doesn't exist.
  */
 fileinfo filecache_fileinfo(filecache fc, const char *alias)
+    __attribute__((warn_unused_result))
     __attribute__((nonnull(1, 2)));
 
 

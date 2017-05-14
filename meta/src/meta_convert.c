@@ -17,10 +17,8 @@ status_t toint(const char *src, int *dest)
     if (!tolong(src, &res))
         return failure;
 
-    if (res < INT_MIN || res > INT_MAX) {
-        errno = ERANGE;
-        return failure;
-    }
+    if (res < INT_MIN || res > INT_MAX)
+        return fail(ERANGE);
 
     *dest = (int)res;
     return success;
@@ -36,10 +34,8 @@ status_t touint(const char *src, unsigned *dest)
     if (!toulong(src, &res))
         return failure;
 
-    if (res > UINT_MAX) {
-        errno = ERANGE;
-        return failure;
-    }
+    if (res > UINT_MAX)
+        return fail(ERANGE);
 
     *dest = (unsigned)res;
     return success;
@@ -67,16 +63,11 @@ status_t tolong(const char *src, long *dest)
     if (res == 0 && errno == EINVAL)
         return failure;
 
-    if (endp == src) {
-        // empty string
-        errno = EINVAL;
-        return failure;
-    }
+    if (endp == src)
+        return fail(EINVAL); // empty string
 
-    if (*endp != '\0') {
-        errno = EINVAL; // trailing chars
-        return failure;
-    }
+    if (*endp != '\0')
+        return fail(EINVAL); // trailing chars
 
     errno = old_errno;
     *dest = res;
@@ -102,16 +93,11 @@ status_t toulong(const char *src, unsigned long *dest)
     if (res == 0 && errno == EINVAL)
         return failure;
 
-    if (endp == src) {
-        // empty string
-        errno = EINVAL;
-        return failure;
-    }
+    if (endp == src)
+        return fail(EINVAL); // empty string
 
-    if (*endp != '\0') {
-        errno = EINVAL; // trailing chars
-        return failure;
-    }
+    if (*endp != '\0')
+        return fail(EINVAL); // trailing chars
 
     errno = old_errno;
     *dest = res;
@@ -130,10 +116,8 @@ status_t tosize_t(const char *src, size_t *dest)
     old_errno = errno;
     errno = 0;
 
-    if (*src == '-') {
-        errno = EINVAL;
-        return failure;
-    }
+    if (*src == '-')
+        return fail(EINVAL);
     
     res = strtoull(src, &endp, 10);
     if (res == ULLONG_MAX && errno == ERANGE)
@@ -142,21 +126,14 @@ status_t tosize_t(const char *src, size_t *dest)
     if (res == 0 && errno == EINVAL)
         return failure;
 
-    if (endp == src) {
-        // empty string
-        errno = EINVAL;
-        return failure;
-    }
+    if (endp == src)
+        return fail(EINVAL); // empty string
 
-    if (*endp != '\0') {
-        errno = EINVAL; // trailing chars
-        return failure;
-    }
+    if (*endp != '\0')
+        return fail(EINVAL); // trailing chars
 
-    if (res > SIZE_MAX) {
-        errno = ERANGE;
-        return failure;
-    }
+    if (res > SIZE_MAX)
+        return fail(ERANGE);
 
     errno = old_errno;
     *dest = res;
@@ -175,10 +152,8 @@ status_t hextosize_t(const char *src, size_t *dest)
     old_errno = errno;
     errno = 0;
     
-    if (*src == '-') {
-        errno = EINVAL;
-        return failure;
-    }
+    if (*src == '-')
+        return fail(EINVAL);
     
     res = strtoull(src, &endp, 16);
     if (res == ULONG_MAX && errno == ERANGE)
@@ -187,21 +162,14 @@ status_t hextosize_t(const char *src, size_t *dest)
     if (res == 0 && errno == EINVAL)
         return failure;
 
-    if (endp == src) {
-        // empty string
-        errno = EINVAL;
-        return failure;
-    }
+    if (endp == src)
+        return fail(EINVAL); // empty string
 
-    if (*endp != '\0') {
-        errno = EINVAL; // trailing chars
-        return failure;
-    }
+    if (*endp != '\0')
+        return fail(EINVAL); // trailing chars
 
-    if (res > SIZE_MAX) {
-        errno = ERANGE;
-        return failure;
-    }
+    if (res > SIZE_MAX)
+        return fail(ERANGE);
 
     errno = old_errno;
     *dest = res;
@@ -224,16 +192,11 @@ status_t tofloat(const char *src, float *dest)
     if (errno == ERANGE)
         return failure;
 
-    if (endp == src) {
-        // empty string
-        errno = EINVAL;
-        return failure;
-    }
+    if (endp == src)
+        return fail(EINVAL); // empty string
 
-    if (*endp != '\0') {
-        errno = EINVAL; // trailing chars
-        return failure;
-    }
+    if (*endp != '\0')
+        return fail(EINVAL); // trailing chars
 
     errno = old_errno;
     *dest = res;
@@ -256,16 +219,11 @@ status_t todouble(const char *src, double *dest)
     if (errno == ERANGE)
         return failure;
 
-    if (endp == src) {
-        // empty string
-        errno = EINVAL;
-        return failure;
-    }
+    if (endp == src)
+        return fail(EINVAL); // empty string
 
-    if (*endp != '\0') {
-        errno = EINVAL; // trailing chars
-        return failure;
-    }
+    if (*endp != '\0')
+        return fail(EINVAL); // trailing chars
 
     errno = old_errno;
     *dest = res;

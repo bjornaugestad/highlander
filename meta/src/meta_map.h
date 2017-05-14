@@ -78,12 +78,10 @@ int map_delete(map m, const char *key)
 int map_foreach(map m, void *args, int(*f)(void *args, char *key, void *data))
     __attribute__((nonnull(1)));
 
-map_iterator map_first(map m)
-    __attribute__((nonnull(1)));
-
-map_iterator map_next(map_iterator mi);
-char *map_key(map_iterator mi);
-void *map_value(map_iterator mi);
+map_iterator map_first(map m)            __attribute__((nonnull(1)));
+map_iterator map_next(map_iterator mi)   __attribute__((warn_unused_result));
+char*        map_key(map_iterator mi)    __attribute__((warn_unused_result));
+void*        map_value(map_iterator mi)  __attribute__((warn_unused_result));
 
 /*
  * returns 1 if no more entries exist. map_next(mi) would then return NULL.

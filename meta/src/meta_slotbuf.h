@@ -6,6 +6,19 @@
 #ifndef META_SLOTBUF_H
 #define META_SLOTBUF_H
 
+/*
+ * What's this slotbuf thing anyway? A slot buffer is
+ * a set of slots indexed by an integer, but the index is
+ * adjusted to fit.
+ *
+ *     actual_index = index % nslots
+ *
+ * This means that we can use slotbufs for many things, like
+ * an array indexed by an increasing value. 
+ *
+ * Not sure how usable this ADT is. Maybe archive it?
+ */
+
 #include <stdbool.h>
 #include <stddef.h>
 
