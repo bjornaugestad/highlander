@@ -46,36 +46,6 @@ int find_word(const char *s, size_t wordidx)
     return str - s;
 }
 
-int get_word_count(const char *s)
-{
-    int n = 0;
-    int last_was_space = 0;
-
-    assert(s != NULL);
-
-    /* Remove leading ws */
-    while (*s == ' ')
-        s++;
-
-    if (*s != '\0')
-        n++;
-
-    while (*s != '\0') {
-        if (*s == ' ') {
-            if (!last_was_space)
-                n++;
-
-            last_was_space = 1;
-        }
-        else
-            last_was_space = 0;
-
-        s++;
-    }
-
-    return n;
-}
-
 status_t get_word_from_string(const char *src, char *dest,
     size_t destsize, size_t wordidx)
 {
@@ -243,7 +213,7 @@ const char *get_mime_type(const char *filename)
 
 void fs_lower(char *s)
 {
-    assert(NULL != s);
+    assert(s != NULL);
 
     while (*s != '\0') {
         if (isupper((int)*s))

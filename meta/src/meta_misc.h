@@ -23,16 +23,6 @@ void ltrim(char *s);
 void rtrim(char *s);
 
 /*
- * Returns the # of words, separated by space, in the string.
- * "foo" is 1
- * "foo bar" is 2
- * " foo	 bar		" is 2 as well
- * Note that this function is for alnums and space only.
- * It counts e.g. \t and \n as words.
- */
-int get_word_count(const char *s);
-
-/*
  * Returns an index to the first char in a word within the string.
  * returns -1 if index is invalid.
  * Example:
