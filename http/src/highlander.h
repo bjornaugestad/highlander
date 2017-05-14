@@ -787,7 +787,7 @@ status_t response_href(http_response response, const char* ref, const char* text
     __attribute__((nonnull(1, 2, 3)))
     __attribute__((warn_unused_result));
 
-status_t response_p (http_response response, const char* s)
+status_t response_p(http_response response, const char* s)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
@@ -831,11 +831,11 @@ status_t response_td(http_response response, const char* text)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-
-#define a2p(a, b)	response_add(a, b)
-
 /* attributes */
-page_attribute attribute_new(void);
+page_attribute attribute_new(void)
+    __attribute__((malloc))
+    __attribute__((warn_unused_result));
+
 void attribute_free(page_attribute a);
 
 status_t attribute_set_media_type(page_attribute a, const char* value)
@@ -860,41 +860,32 @@ status_t attribute_set_encoding(page_attribute a, const char* value)
 
 
 const char*	attribute_get_language(page_attribute a)
+    __attribute__((warn_unused_result))
     __attribute__((nonnull(1)));
 
 const char*	attribute_get_charset(page_attribute a)
+    __attribute__((warn_unused_result))
     __attribute__((nonnull(1)));
 
 const char*	attribute_get_encoding(page_attribute a)
+    __attribute__((warn_unused_result))
     __attribute__((nonnull(1)));
 
 const char*	attribute_get_media_type(page_attribute a)
+    __attribute__((warn_unused_result))
     __attribute__((nonnull(1)));
 
 
 /* performance counters */
 /* These seven functions are wrapper functions for the tcp_server
  * performance counters. */
-unsigned long http_server_sum_blocked(http_server s)
-    __attribute__((nonnull(1)));
-
-unsigned long http_server_sum_discarded(http_server s)
-    __attribute__((nonnull(1)));
-
-unsigned long http_server_sum_added(http_server s)
-    __attribute__((nonnull(1)));
-
-unsigned long http_server_sum_poll_intr(http_server p)
-    __attribute__((nonnull(1)));
-
-unsigned long http_server_sum_poll_again(http_server p)
-    __attribute__((nonnull(1)));
-
-unsigned long http_server_sum_accept_failed(http_server p)
-    __attribute__((nonnull(1)));
-
-unsigned long http_server_sum_denied_clients(http_server p)
-    __attribute__((nonnull(1)));
+unsigned long http_server_sum_blocked(http_server s)        __attribute__((nonnull(1)));
+unsigned long http_server_sum_discarded(http_server s)      __attribute__((nonnull(1)));
+unsigned long http_server_sum_added(http_server s)          __attribute__((nonnull(1)));
+unsigned long http_server_sum_poll_intr(http_server p)      __attribute__((nonnull(1)));
+unsigned long http_server_sum_poll_again(http_server p)     __attribute__((nonnull(1)));
+unsigned long http_server_sum_accept_failed(http_server p)  __attribute__((nonnull(1)));
+unsigned long http_server_sum_denied_clients(http_server p) __attribute__((nonnull(1)));
 
 
 #ifdef __cplusplus
