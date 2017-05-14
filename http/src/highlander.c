@@ -5,6 +5,7 @@
 
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <sys/types.h>
@@ -104,7 +105,7 @@ static status_t send_disk_file(
 
     /* We need space for the absolute path */
     i += strlen(uri) + 2; /* 2 is one for slash and one for \0 */
-    if (i >= sizeof(filename))
+    if (i >= sizeof filename)
         return set_http_error(e, HTTP_400_BAD_REQUEST);
 
     /* Create the path */
@@ -117,7 +118,7 @@ static status_t send_disk_file(
     if (S_ISREG(st.st_mode))
         ;
     else if (S_ISDIR(st.st_mode)) {
-        /* BUG? If docroot+uri+index.html > sizeof(filename) we have issues */
+        /* BUG? If docroot+uri+index.html > sizeof filename we have issues */
         strcat(filename, "/index.html");
         if (stat(filename, &st))
             return set_http_error(e, HTTP_404_NOT_FOUND);

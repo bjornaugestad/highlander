@@ -262,7 +262,7 @@ static status_t show_directory_as_html(http_response page, list lst, const char 
         if (gmtime_r(&p->st.st_mtime, &t) != NULL) {
             char sz[1024];
 
-            strftime(sz, sizeof(sz), "%d/%m/%Y %H:%M:%S GMT", &t);
+            strftime(sz, sizeof sz, "%d/%m/%Y %H:%M:%S GMT", &t);
             if (!response_td(page, sz))
                 return failure;
         }

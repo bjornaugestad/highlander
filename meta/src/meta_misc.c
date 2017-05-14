@@ -252,7 +252,7 @@ const char *get_mime_type(const char *filename)
         { "gif",	"image/gif" },
     };
 
-    size_t i, nelem = sizeof(map) / sizeof(map[0]);
+    size_t i, nelem = sizeof map / sizeof *map;
     char ext[100];
 
     if (get_extension(filename, ext, sizeof ext)) {

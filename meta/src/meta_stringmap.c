@@ -326,21 +326,22 @@ static const char *data[] = {
     "threadpool.h", "threadpool.o"
 };
 
-    size_t i;
+    size_t i, n;
     unsigned long id;
     stringmap sm;
 
     sm = stringmap_new(10);
     assert(sm != NULL);
 
-    for (i = 0; i < sizeof(data) / sizeof(data[0]); i++) {
+    n = sizeof data / sizeof *data;
+    for (i = 0; i < n; i++) {
         if (!stringmap_add(sm, data[i], &id)) {
             fprintf(stderr, "Error adding item %d\n", (int)i);
             exit(EXIT_FAILURE);
         }
     }
 
-    for (i = 0; i < sizeof(data) / sizeof(data[0]); i++) {
+    for (i = 0; i < n; i++) {
         if (stringmap_exists(sm, data[i])) {
             if (!stringmap_get_id(sm, data[i], &id)) {
                 fprintf(stderr, "Could not retrieve id for item %s\n", data[i]);

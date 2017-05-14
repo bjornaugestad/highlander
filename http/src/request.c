@@ -903,7 +903,7 @@ status_t request_get_field_value_by_name(http_request request, const char *name,
     for (i = 0; i < fieldcount; i++) {
         char sz[10240];
 
-        if (!request_get_field_name(request, i, sz, sizeof(sz) - 1))
+        if (!request_get_field_name(request, i, sz, sizeof sz - 1))
             return failure;
 
         if (strcmp(sz, name) == 0)
@@ -1635,10 +1635,10 @@ static http_method get_method(const char* str)
         { "POST", METHOD_POST, }
     };
 
-    size_t i, cMethods = sizeof(methods) / sizeof(methods[0]);
+    size_t i, n = sizeof methods / sizeof *methods;
     http_method method = METHOD_UNKNOWN;
 
-    for (i = 0; i < cMethods; i++) {
+    for (i = 0; i < n; i++) {
         if (0 == strcmp(methods[i].str, str)) {
             method = methods[i].id;
             break;
@@ -1659,7 +1659,7 @@ static http_version get_version(const char* s)
     };
 
     http_version version = VERSION_UNKNOWN;
-    size_t i, n = sizeof(versions) / sizeof(versions[0]);
+    size_t i, n = sizeof versions / sizeof *versions;
 
     for (i = 0; i < n; i++) {
         if (0 == strcmp(s, versions[i].str)) {
@@ -1954,7 +1954,7 @@ read_request_line(connection conn, http_request request, error e)
 {
     char buf[CCH_REQUESTLINE_MAX + 1] = {0};
 
-    if (read_line(conn, buf, sizeof(buf) - 1, e))
+    if (read_line(conn, buf, sizeof buf - 1, e))
         return parse_request_line(buf, request, e);
 
     /* remap error message to something more meaningful in current context */

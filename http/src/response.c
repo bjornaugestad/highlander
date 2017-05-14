@@ -288,7 +288,7 @@ static status_t send_accept_ranges(connection conn, http_response p)
 static status_t response_send_header_fields(http_response p, connection conn)
 {
     status_t status = success;
-    size_t i, cFields;
+    size_t i, n;
 
     static const struct {
         size_t flag;
@@ -320,8 +320,8 @@ static status_t response_send_header_fields(http_response p, connection conn)
 
 
     if (status) {
-        cFields = sizeof(fields) / sizeof(fields[0]);
-        for (i = 0; i < cFields; i++) {
+        n = sizeof fields / sizeof *fields;
+        for (i = 0; i < n; i++) {
             if (response_flag_isset(p, fields[i].flag)) {
                 status = (*fields[i].func)(conn, p);
                 if (!status)
@@ -608,7 +608,7 @@ status_t http_send_date(connection conn, const char* name, time_t value)
     cb = strlen(name);
     if (connection_write(conn, name, cb)) {
         gmtime_r(&value, ptm);
-        cb = strftime(date, sizeof(date), "%a, %d %b %Y %H:%M:%S GMT\r\n", ptm);
+        cb = strftime(date, sizeof date, "%a, %d %b %Y %H:%M:%S GMT\r\n", ptm);
         return connection_write(conn, date, cb);
     }
 
@@ -1498,7 +1498,7 @@ static status_t read_response_status_line(http_response response, connection con
     int status_code;
     enum http_version version;
 
-    if (!read_line(conn, buf, sizeof(buf) - 1, e))
+    if (!read_line(conn, buf, sizeof buf - 1, e))
         return failure;
 
     /* The string must start with either HTTP/1.0 or HTTP/1.1 SP */

@@ -76,7 +76,7 @@ sampler sampler_new(size_t entities, size_t values)
          */
         s->idx = s->nvalue - 1;
 
-        cb = values * sizeof(*s->entities[0].data);
+        cb = values * sizeof *s->entities[0].data;
         for (i = 0; i < entities; i++) {
             if ((s->entities[i].data = malloc(cb)) == NULL)
                 goto err;

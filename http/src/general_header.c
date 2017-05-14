@@ -895,7 +895,7 @@ static status_t set_cache_control(general_header gh, const char* s, error e)
     size_t i;
 
     /* Now look for type1 request-directives */
-    for (i = 0; i < sizeof(type1) / sizeof(type1[0]); i++) {
+    for (i = 0; i < sizeof type1 / sizeof *type1; i++) {
         if (strstr(s, type1[i].directive) == s) {
             /* NOTE: There MAY slip in a bug here, in case
              * a new directive starts with the same name
@@ -909,7 +909,7 @@ static status_t set_cache_control(general_header gh, const char* s, error e)
     }
 
     /* Not a type1 directive, try type2 */
-    for (i = 0; i < sizeof(type2) / sizeof(type2[0]); i++) {
+    for (i = 0; i < sizeof type2 / sizeof *type2; i++) {
         if (strstr(s, type2[i].directive) == s) {
             /* NOTE: Same 'bug' as above */
             char *eq = strchr(s, '=');

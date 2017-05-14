@@ -141,7 +141,7 @@ configfile configfile_read(const char *path)
         goto err;
 
     p->used = 0;
-    while (fgets(line, (int)sizeof(line), f)) {
+    while (fgets(line, (int)sizeof line, f)) {
         int i = get_name_and_value(line, name, value);
         if (i == -1)
             goto err;
@@ -326,7 +326,7 @@ int main(void)
     if ((cf = configfile_read(filename)) == NULL)
         return 77;
 
-    if (!configfile_get_string(cf, "logrotate", string, sizeof(string)))
+    if (!configfile_get_string(cf, "logrotate", string, sizeof string))
         return 77;
 
     if (!configfile_get_int(cf, "logrotate", &nint))
@@ -335,7 +335,7 @@ int main(void)
     if (!configfile_get_long(cf, "logrotate", &nlong))
         return 77;
 
-    if (!configfile_get_string(cf, "quotedstring", string, sizeof(string)))
+    if (!configfile_get_string(cf, "quotedstring", string, sizeof string))
         return 77;
 
     if (strcmp(string, quotedstring)) {

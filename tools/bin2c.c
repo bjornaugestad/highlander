@@ -341,7 +341,7 @@ void create_implementations(const char* filename, FILE *f)
     fprintf(f, "\t\treturn HTTP_500_INTERNAL_SERVER_ERROR;\n");
     fprintf(f, "\n");
 
-    fprintf(f, "\tresponse_set_content_buffer(response, (void*)x%s, sizeof(x%s));\n",
+    fprintf(f, "\tresponse_set_content_buffer(response, (void*)x%s, sizeof x%s);\n",
         name, name);
     fprintf(f,"\treturn 0;\n");
     fprintf(f, "}\n\n");

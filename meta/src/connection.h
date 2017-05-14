@@ -6,7 +6,7 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
 
-#include <netinet/in.h> /* for struct sockaddr_in */
+struct sockaddr_in;
 
 #include <meta_membuf.h>
 #include <meta_socket.h>

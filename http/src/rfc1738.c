@@ -214,7 +214,7 @@ int main(void)
 
     size_t i, nelem;
 
-    nelem = sizeof(tests) / sizeof(tests[0]);
+    nelem = sizeof tests / sizeof *tests;
     for (i = 0; i < nelem; i++) {
         buf1[0] = '\0';
         buf2[0] = '\0';
@@ -249,10 +249,10 @@ int main(void)
     if (rfc1738_decode(buf1, sizeof buf1, "%", 1))
         assert(0 && "Oops, accepted illegal input");
 
-    if (rfc1738_decode(buf1, sizeof(buf1), "%5", 2))
+    if (rfc1738_decode(buf1, sizeof buf1, "%5", 2))
         assert(0 && "Oops, accepted illegal input");
 
-    if (rfc1738_decode(buf1, sizeof(buf1), "%5X", 3))
+    if (rfc1738_decode(buf1, sizeof buf1, "%5X", 3))
         assert(0 && "Oops, accepted illegal input");
 
     /* buffer too small */

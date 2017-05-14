@@ -520,8 +520,8 @@ int main(void)
 
     size_t i, nelem = 100;
 
-    memset(longstring, 'A', sizeof(longstring));
-    longstring[sizeof(longstring) - 1] = '\0';
+    memset(longstring, 'A', sizeof longstring);
+    longstring[sizeof longstring - 1] = '\0';
 
 
     for (i = 0; i < nelem; i++) {

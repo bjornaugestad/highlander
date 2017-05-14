@@ -81,21 +81,21 @@ static http_status m_http_status11[] = {
 
 status_t send_status_code(connection conn, int status_code, http_version version)
 {
-    size_t i, cb, cCodes;
+    size_t i, cb, n;
     http_status* pstatus;
 
     assert(conn != NULL);
 
     if (version == VERSION_10) {
         pstatus = m_http_status10;
-        cCodes = sizeof(m_http_status10)/sizeof(m_http_status10[0]);
+        n = sizeof m_http_status10 / sizeof *m_http_status10;
     }
     else {
         pstatus = m_http_status11;
-        cCodes = sizeof(m_http_status11)/sizeof(m_http_status11[0]);
+        n = sizeof m_http_status11 / sizeof *m_http_status11;
     }
 
-    for (i = 0; i < cCodes; i++) {
+    for (i = 0; i < n; i++) {
         if (pstatus[i].code == status_code) {
             cb = strlen(pstatus[i].text);
             return connection_write(conn, pstatus[i].text, cb);

@@ -42,7 +42,7 @@ static int sock_set_reuseaddr(meta_socket this)
     assert(this->fd >= 0);
 
     optval = 1;
-    optlen = (socklen_t)sizeof(optval);
+    optlen = (socklen_t)sizeof optval;
     if (setsockopt(this->fd, SOL_SOCKET, SO_REUSEADDR, &optval, optlen) == -1)
         return 0;
 
@@ -314,7 +314,7 @@ meta_socket create_client_socket(const char *host, int port)
         return NULL;
 
     /* Connect to the server. */
-    if (connect(this->fd, (struct sockaddr *) &sa, sizeof(sa)) == -1) {
+    if (connect(this->fd, (struct sockaddr *) &sa, sizeof sa) == -1) {
         sock_close(this);
         return NULL;
     }
