@@ -19,85 +19,90 @@
 #include <meta_atomic.h>
 
 /*
- * The queue contains this struct. It is basically a linked list, where
- * each node contains pointers to functions plus arguments to the
- * functions.
+ * The work queue contains 0..max_queue_size instances of this struct.
+ * It is basically a single-linked list, where each node contains pointers
+ * to functions plus arguments to the functions.
+ *
+ * initfn and cleanupfn accept two args, their own arg plus
+ * the workarg.
  */
-struct threadpool_work {
+struct work {
     void *(*workfn)(void*);
     void *workarg;
 
     status_t (*initfn)(void*, void*);
     void *initarg;
 
-    void (*cleanup)(void*, void*);
+    void (*cleanupfn)(void*, void*);
     void *cleanup_arg;
-    struct threadpool_work* next;
+
+    struct work* next;
 };
 
-/*
- * Implementation of the threadpool ADT.
- */
 struct threadpool_tag {
     size_t nthreads;
-    size_t max_queue_size;
-    bool block_when_full;
+    pthread_t *threads;
 
+    size_t max_queue_size;
     size_t cur_queue_size;
-    struct threadpool_work* queue_head;
-    struct threadpool_work* queue_tail;
-    pthread_t* threads;
+    struct work *queue_head;
+    struct work *queue_tail;
+
     pthread_mutex_t queue_lock;
     pthread_cond_t queue_not_empty;
     pthread_cond_t queue_not_full;
     pthread_cond_t queue_empty;
-    int queue_closed;
-    int shutdown;
 
-    /* counters used to track and analyze the behaviour of the threadpool.
-     * We count how many times we blocked due to full queue,
-     * how many work request that's been added to the queue, how many
-     * that's in the queue right now, and more...  */
-    atomic_ulong sum_work_added; /* Successfully added to queue */
-    atomic_ulong sum_blocked; /* How many times we blocked */
-    atomic_ulong sum_discarded; /* discarded due to queue full and no-block */
+    bool queue_closed;
+    bool shutting_down;
+    bool block_when_full;
+
+    // counters used to track and analyze the behaviour of the threadpool.
+    // We count how many times we blocked due to full queue, how many work
+    // request that's been added to the queue, how many that's in the queue
+    // right now, and more... 
+    atomic_ulong sum_work_added; // Successfully added to queue
+    atomic_ulong sum_blocked;    // How many times we blocked
+    atomic_ulong sum_discarded;  // discarded due to queue full and no-block
 };
 
-
-static int queue_empty(threadpool tp)
+static inline bool queue_empty(threadpool tp)
 {
     return tp->cur_queue_size == 0;
 }
 
-static int queue_full(threadpool tp)
+static inline bool queue_full(threadpool tp)
 {
     return tp->cur_queue_size == tp->max_queue_size;
 }
 
+// We have multiple instances of this function, running as POSIX threads.
+// They all wait for work to arrive in the work queue, or for the
+// shutting_down flag to be true.
 static void *threadpool_exec_thread(void *arg)
 {
-    struct threadpool_work* wp;
+    struct work* wp;
     threadpool pool = arg;
 
     for (;;) {
-        /* Get the lock so that we can do a cond_wait later */
+        // Get the lock so that we can do a cond_wait later
         pthread_mutex_lock(&pool->queue_lock);
 
-        /* Wait until there is something to do in the queue */
-        while (queue_empty(pool) && !pool->shutdown) {
+        // Wait for entries in the queue 
+        while (queue_empty(pool) && !pool->shutting_down)
             pthread_cond_wait(&pool->queue_not_empty, &pool->queue_lock);
-        }
 
-        if (pool->shutdown) {
-            /* We're shutting down, just unlock and exit the loop */
+        if (pool->shutting_down) {
+            // We're shutting down, just unlock and exit the loop
             pthread_mutex_unlock(&pool->queue_lock);
             return NULL;
         }
 
-        /* Remove one item from the queue */
+        // Remove one item from the queue
         wp = pool->queue_head;
         pool->cur_queue_size--;
 
+        // Link or clear the queue node pointers, as needed
         if (queue_empty(pool))
             pool->queue_head = pool->queue_tail = NULL;
         else
@@ -105,33 +110,33 @@ static void *threadpool_exec_thread(void *arg)
 
         if (pool->block_when_full
         && pool->cur_queue_size == pool->max_queue_size - 1) {
-            /* Tell producer(s) that there now is room in the queue */
+            // Tell producer(s) that there now is room in the queue
             pthread_cond_signal(&pool->queue_not_full);
         }
 
         if (queue_empty(pool))
             pthread_cond_signal(&pool->queue_empty);
 
-        /* Unlock the queue so that new entries can be added */
+        // Unlock the queue so that new entries can be added
         pthread_mutex_unlock(&pool->queue_lock);
 
-        /* Perform initialization, action and cleanup */
-        if (wp->initfn != NULL)
+        // Call initfn, if present
+        if (wp->initfn != 0)
             wp->initfn(wp->initarg, wp->workarg);
 
-        /* Do the actual work. We cannot handle or use the
-         * return value, as we are a thread _pool_ and each
-         * thread will (over time) serve many different requests.
-         */
+        // Do the actual work. We cannot handle or use the
+        // return value, as we are a thread _pool_ and each
+        // thread will (over time) serve many different requests.
         wp->workfn(wp->workarg);
 
-        if (wp->cleanup != NULL)
-            wp->cleanup(wp->cleanup_arg, wp->workarg);
+        // Call cleanup function, if present
+        if (wp->cleanupfn != 0)
+            wp->cleanupfn(wp->cleanup_arg, wp->workarg);
 
         free(wp);
     }
 
-    /* This function runs until pool->shutdown is true, but the HP-UX
+    /* This function runs until pool->shutting_down is true, but the HP-UX
      * compiler isn't smart enough to detect this. The line below is
      * there just to avoid a warning.
      */
@@ -166,8 +171,8 @@ threadpool threadpool_new(
     p->cur_queue_size = 0;
     p->queue_head = NULL;
     p->queue_tail = NULL;
-    p->queue_closed = 0;
-    p->shutdown = 0;
+    p->queue_closed = false;
+    p->shutting_down = false;
 
     if ((err = pthread_mutex_init(&p->queue_lock, NULL))
     ||	(err = pthread_cond_init(&p->queue_not_empty, NULL))
@@ -197,19 +202,12 @@ threadpool threadpool_new(
     return p;
 }
 
-status_t threadpool_add_work(
-    threadpool pool,
-
-    status_t (*initfn)(void*, void*),
-    void *initarg,
-
-    void *(*workfn)(void*),
-    void *workarg,
-
-    void (*cleanup)(void*, void*),
-    void *cleanup_arg)
+status_t threadpool_add_work(threadpool pool,
+    status_t (*initfn)(void *initarg, void *workarg), void *initarg,
+    void *(*workfn)(void*), void *workarg,
+    void (*cleanupfn)(void *cleanuparg, void *workarg), void *cleanup_arg)
 {
-    struct threadpool_work* wp;
+    struct work* wp;
     int err;
 
     assert(NULL != pool);
@@ -221,7 +219,7 @@ status_t threadpool_add_work(
     /* Check for available space and what to do if full */
     if (queue_full(pool) ) {
         if (!pool->block_when_full) {
-            /* Cannot continue as the queue is full and we cannot block */
+            // Can't continue as the queue is full and we cannot block
             pthread_mutex_unlock(&pool->queue_lock);
             atomic_ulong_inc(&pool->sum_discarded);
             return fail(ENOSPC);
@@ -231,23 +229,23 @@ status_t threadpool_add_work(
         }
     }
 
-    /* Wait until there is available space in the queue */
-    while (queue_full(pool) && !pool->shutdown && !pool->queue_closed) {
+    // Wait for available space in the queue
+    while (queue_full(pool) && !pool->shutting_down && !pool->queue_closed) {
         if ((err = pthread_cond_wait(&pool->queue_not_full, &pool->queue_lock)))
             return fail(err);
     }
 
-    /*
-     * We cannot add more work to a closed queue. The same
-     * goes for an application which is shutting down. This isn't
-     * really an error, as it will happen in a threaded app.
-     */
-    if (pool->shutdown || pool->queue_closed) {
+    // We cannot add more work to a closed queue. The same
+    // goes for an application which is shutting down. This isn't
+    // really an error, as it will happen in a threaded app.
+    if (pool->shutting_down || pool->queue_closed) {
         pthread_mutex_unlock(&pool->queue_lock);
         return fail(EINVAL);
     }
 
-    /* Now add a new entry to the queue */
+    // Now add a new entry to the queue
+    // Note 20170514: malloc()? really? Why not use something
+    // preallocated to reduce the risk of runtime errors?
     if ((wp = malloc(sizeof *wp)) == NULL) {
         pthread_mutex_unlock(&pool->queue_lock);
         return failure;
@@ -257,13 +255,12 @@ status_t threadpool_add_work(
     wp->initarg = initarg;
     wp->workfn = workfn;
     wp->workarg = workarg;
-    wp->cleanup = cleanup;
+    wp->cleanupfn = cleanupfn;
     wp->cleanup_arg = cleanup_arg;
     wp->next = NULL;
 
     if (queue_empty(pool)) {
         pool->queue_tail = pool->queue_head = wp;
-        /* 20031231 - Changed from signal to broadcast */
         pthread_cond_broadcast(&pool->queue_not_empty);
     }
     else {
@@ -282,46 +279,45 @@ status_t threadpool_destroy(threadpool pool, bool finish)
     size_t i;
     int err;
 
+    // mimic free(NULL) semantics
     if (pool == NULL)
         return success;
 
     if ((err = pthread_mutex_lock(&pool->queue_lock)))
         return fail(err);
 
-    if (pool->queue_closed || pool->shutdown) {
-        /* The queue is already closed */
+    if (pool->queue_closed || pool->shutting_down) {
         pthread_mutex_unlock(&pool->queue_lock);
-        return fail(EINVAL);
+        return fail(EINVAL); // The queue is already closed
     }
 
-    pool->queue_closed = 1;
+    pool->queue_closed = true;
     if (finish) {
         while (!queue_empty(pool)) {
             err = pthread_cond_wait(&pool->queue_empty, &pool->queue_lock);
             if (err) {
-                /* Unable to condwait for the other threads to finish */
+                // Unable to condwait for the other threads to finish
                 pthread_mutex_unlock(&pool->queue_lock);
                 return fail(err);
             }
         }
     }
 
-    pool->shutdown = 1;
+    pool->shutting_down = true;
     if ((err = pthread_mutex_unlock(&pool->queue_lock)))
         return fail(err);
 
-    /* Wake up any sleeping worker threads so that they
-     * check the shutdown flag */
+    // Wake up any sleeping worker threads so that they
+    // check the shutting_down flag
     if ((err = pthread_cond_broadcast(&pool->queue_not_empty)))
         return fail(err);
 
-    /* This is done to wake up any producers waiting for queue space.
-     * Note that threadpool_add_work will fail as it tests for
-     * the shutdown flag. */
+    // This is done to wake up any producers waiting for queue space. Note that
+    // threadpool_add_work() will fail as it tests for the shutting_down flag.
     if ((err = pthread_cond_broadcast(&pool->queue_not_full)))
         return fail(err);
 
-    /* Now wait for each thread to finish */
+    // Now wait for each thread to finish
     for (i = 0; i < pool->nthreads; i++) {
         // Don't join NULL threads.
         if (pool->threads[i] == 0)
@@ -333,11 +329,13 @@ status_t threadpool_destroy(threadpool pool, bool finish)
 
     free(pool->threads);
 
-    /* Free the queue. The queue should be empty since all the worker
-     * threads remove entries from here, still we free it. Never know
-     * if a thread crashed. */
+    // Free the queue. The queue should be empty since all the worker
+    // threads remove entries from here, still we free it. Never know
+    // if a thread crashed.
+    // NOTE 20170514: Should we call the cleanup function? Probably not
+    // since we haven't called the initfn.
     while (pool->queue_head != NULL) {
-        struct threadpool_work* wp = pool->queue_head;
+        struct work* wp = pool->queue_head;
         pool->queue_head = pool->queue_head->next;
         free(wp);
     }

@@ -32,7 +32,7 @@
 
 /* Each server need a lot of stuff... */
 struct http_server_tag {
-    tcp_server socket_engine;
+    tcp_server tcpsrv;
 
     /* Should requests defer reading of posted content or not? */
     int defered_read;
@@ -96,274 +96,274 @@ struct http_server_tag {
     int tracelevel;
 };
 
-static void set_server_defaults(http_server s)
+static void set_server_defaults(http_server this)
 {
     /* Set some defaults */
-    s->timeout_read = 5000;
-    s->timeout_write = 500;
-    s->timeout_accept = 5000;
-    s->max_pages = 100;
-    s->npages = 0;
-    s->host = NULL;
-    s->port = 80;
-    s->worker_threads = 8;
-    s->queue_size = 100;
-    s->block_when_full = 0;
-    s->default_handler = NULL;
-    s->retries_read = 0;
-    s->retries_write = 3;
+    this->timeout_read = 5000;
+    this->timeout_write = 500;
+    this->timeout_accept = 5000;
+    this->max_pages = 100;
+    this->npages = 0;
+    this->host = NULL;
+    this->port = 80;
+    this->worker_threads = 8;
+    this->queue_size = 100;
+    this->block_when_full = 0;
+    this->default_handler = NULL;
+    this->retries_read = 0;
+    this->retries_write = 3;
 
-    s->logfile = NULL;
-    s->logrotate = 0;
-    s->logfile_entries = 0;
-    s->logfile_name[0] = '\0';
-    s->logging = 0;
-    s->can_read_files = 0;
-    strcpy(s->documentroot, "./");
+    this->logfile = NULL;
+    this->logrotate = 0;
+    this->logfile_entries = 0;
+    this->logfile_name[0] = '\0';
+    this->logging = 0;
+    this->can_read_files = 0;
+    strcpy(this->documentroot, "./");
 
-    pthread_mutex_init(&s->logfile_lock, NULL);
+    pthread_mutex_init(&this->logfile_lock, NULL);
 
     /* Default post limit */
-    s->post_limit = 102400; /* 100 KB */
-    s->defered_read = 0;
+    this->post_limit = 102400; /* 100 KB */
+    this->defered_read = 0;
 }
 
 http_server http_server_new(void)
 {
-    http_server s;
+    http_server this;
 
-    if ((s = calloc(1, sizeof *s)) == NULL)
+    if ((this = calloc(1, sizeof *this)) == NULL)
         return NULL;
 
-    if ((s->socket_engine = tcp_server_new()) == NULL) {
-        free(s);
+    if ((this->tcpsrv = tcp_server_new()) == NULL) {
+        free(this);
         return NULL;
     }
 
-    set_server_defaults(s);
-    return s;
+    set_server_defaults(this);
+    return this;
 }
 
-void http_server_set_post_limit(http_server s, size_t cb)
+void http_server_set_post_limit(http_server this, size_t cb)
 {
-    assert(s != NULL);
-    s->post_limit = cb;
+    assert(this != NULL);
+    this->post_limit = cb;
 }
 
-size_t http_server_get_post_limit(http_server s)
+size_t http_server_get_post_limit(http_server this)
 {
-    assert(s != NULL);
-    return s->post_limit;
+    assert(this != NULL);
+    return this->post_limit;
 }
 
-void http_server_set_defered_read(http_server s, int flag)
+void http_server_set_defered_read(http_server this, int flag)
 {
-    assert(s != NULL);
-    s->defered_read = flag;
+    assert(this != NULL);
+    this->defered_read = flag;
 }
 
-int http_server_get_defered_read(http_server s)
+int http_server_get_defered_read(http_server this)
 {
-    assert(s != NULL);
-    return s->defered_read;
+    assert(this != NULL);
+    return this->defered_read;
 }
 
-status_t http_server_set_documentroot(http_server s, const char* docroot)
+status_t http_server_set_documentroot(http_server this, const char* docroot)
 {
     size_t len;
 
-    assert(s != NULL);
+    assert(this != NULL);
     assert(docroot != NULL);
 
     len = strlen(docroot) + 1;
-    if (len > sizeof s->documentroot)
+    if (len > sizeof this->documentroot)
         return fail(ENOSPC);
 
-    memcpy(s->documentroot, docroot, len);
+    memcpy(this->documentroot, docroot, len);
     return success;
 }
 
-const char* http_server_get_documentroot(http_server s)
+const char* http_server_get_documentroot(http_server this)
 {
-    assert(s != NULL);
-    return s->documentroot;
+    assert(this != NULL);
+    return this->documentroot;
 }
 
-void http_server_trace(http_server s, int level)
+void http_server_trace(http_server this, int level)
 {
-    assert(s != NULL);
-    s->tracelevel = level;
+    assert(this != NULL);
+    this->tracelevel = level;
 }
 
-void http_server_set_can_read_files(http_server s, int val)
+void http_server_set_can_read_files(http_server this, int val)
 {
-    assert(s != NULL);
-    s->can_read_files = val;
+    assert(this != NULL);
+    this->can_read_files = val;
 }
 
-int http_server_can_read_files(http_server s)
+int http_server_can_read_files(http_server this)
 {
-    assert(s != NULL);
-    return s->can_read_files;
+    assert(this != NULL);
+    return this->can_read_files;
 }
 
-void http_server_set_logrotate(http_server s, int logrotate)
+void http_server_set_logrotate(http_server this, int logrotate)
 {
-    assert(s != NULL);
+    assert(this != NULL);
     assert(logrotate >= 0);
 
-    pthread_mutex_lock(&s->logfile_lock);
-    s->logrotate = logrotate;
-    pthread_mutex_unlock(&s->logfile_lock);
+    pthread_mutex_lock(&this->logfile_lock);
+    this->logrotate = logrotate;
+    pthread_mutex_unlock(&this->logfile_lock);
 }
 
-static void http_server_free_page_structs(http_server s)
+static void http_server_free_page_structs(http_server this)
 {
     size_t i;
 
-    for (i = 0; i < s->npages; i++)
-        dynamic_free(s->pages[i]);
+    for (i = 0; i < this->npages; i++)
+        dynamic_free(this->pages[i]);
 
-    free(s->pages);
+    free(this->pages);
 }
 
-static void http_server_free_request_pool(http_server srv)
+static void http_server_free_request_pool(http_server this)
 {
-    assert(srv != NULL);
+    assert(this != NULL);
 
-    pool_free(srv->requests, (dtor)request_free);
-    srv->requests = NULL;
+    pool_free(this->requests, (dtor)request_free);
+    this->requests = NULL;
 }
 
-static void http_server_free_response_pool(http_server srv)
+static void http_server_free_response_pool(http_server this)
 {
-    assert(srv != NULL);
+    assert(this != NULL);
 
-    pool_free(srv->responses, (dtor)response_free);
-    srv->responses = NULL;
+    pool_free(this->responses, (dtor)response_free);
+    this->responses = NULL;
 }
 
-void http_server_free(http_server s)
+void http_server_free(http_server this)
 {
-    if (s != NULL) {
-        pthread_mutex_destroy(&s->logfile_lock);
-        tcp_server_free(s->socket_engine);
-        http_server_free_request_pool(s);
-        http_server_free_response_pool(s);
-        http_server_free_page_structs(s);
+    if (this != NULL) {
+        pthread_mutex_destroy(&this->logfile_lock);
+        tcp_server_free(this->tcpsrv);
+        http_server_free_request_pool(this);
+        http_server_free_response_pool(this);
+        http_server_free_page_structs(this);
 
-        attribute_free(s->default_attributes);
-        free(s->host);
+        attribute_free(this->default_attributes);
+        free(this->host);
 
-        if (s->logfile != NULL)
-            fclose(s->logfile);
+        if (this->logfile != NULL)
+            fclose(this->logfile);
 
-        free(s);
+        free(this);
     }
 }
 
-static status_t http_server_alloc_page_structs(http_server s)
+static status_t http_server_alloc_page_structs(http_server this)
 {
-    if ((s->pages = calloc(s->max_pages, sizeof *s->pages)) == NULL)
+    if ((this->pages = calloc(this->max_pages, sizeof *this->pages)) == NULL)
         return failure;
 
     return success;
 }
 
-void http_server_set_default_page_handler(http_server s, PAGE_FUNCTION pf)
+void http_server_set_default_page_handler(http_server this, PAGE_FUNCTION pf)
 {
-    assert(s != NULL);
-    s->default_handler = pf;
+    assert(this != NULL);
+    this->default_handler = pf;
 }
 
-static status_t http_server_alloc_request_pool(http_server srv)
+static status_t http_server_alloc_request_pool(http_server this)
 {
     size_t i;
     http_request r;
 
-    assert(srv != NULL);
-    assert(srv->requests == NULL);
+    assert(this != NULL);
+    assert(this->requests == NULL);
 
-    srv->requests = pool_new(srv->worker_threads);
-    if (NULL == srv->requests)
+    this->requests = pool_new(this->worker_threads);
+    if (NULL == this->requests)
         return failure;
 
     /* Allocate each request object */
-    for (i = 0; i < srv->worker_threads; i++) {
+    for (i = 0; i < this->worker_threads; i++) {
         if ((r = request_new()) == NULL) {
             /* Free any prev. allocated */
-            pool_free(srv->requests, (dtor)request_free);
-            srv->requests = NULL;
+            pool_free(this->requests, (dtor)request_free);
+            this->requests = NULL;
             return failure;
         }
 
-        pool_add(srv->requests, r);
+        pool_add(this->requests, r);
     }
 
     return success;
 }
 
-static status_t http_server_alloc_response_pool(http_server srv)
+static status_t http_server_alloc_response_pool(http_server this)
 {
     size_t i;
     http_response r;
 
-    assert(srv != NULL);
-    assert(srv->responses == NULL);
+    assert(this != NULL);
+    assert(this->responses == NULL);
 
     /* Allocate main pointer */
-    if ((srv->responses = pool_new(srv->worker_threads)) == NULL)
+    if ((this->responses = pool_new(this->worker_threads)) == NULL)
         return failure;
 
     /* Allocate each response object */
-    for (i = 0; i < srv->worker_threads; i++) {
+    for (i = 0; i < this->worker_threads; i++) {
         if ((r = response_new()) == NULL) {
             /* Free any prev. allocated */
-            pool_free(srv->responses, (dtor)response_free);
-            srv->responses = NULL;
+            pool_free(this->responses, (dtor)response_free);
+            this->responses = NULL;
             return failure;
         }
 
-        pool_add(srv->responses, r);
+        pool_add(this->responses, r);
     }
 
     return success;
 }
 
-status_t http_server_alloc(http_server s)
+status_t http_server_alloc(http_server this)
 {
-    if (!http_server_alloc_page_structs(s))
+    if (!http_server_alloc_page_structs(this))
         return failure;
 
-    if (!http_server_alloc_request_pool(s)) {
-        http_server_free_page_structs(s);
+    if (!http_server_alloc_request_pool(this)) {
+        http_server_free_page_structs(this);
         return failure;
     }
 
-    if (!http_server_alloc_response_pool(s)) {
-        http_server_free_request_pool(s);
-        http_server_free_page_structs(s);
+    if (!http_server_alloc_response_pool(this)) {
+        http_server_free_request_pool(this);
+        http_server_free_page_structs(this);
         return failure;
     }
 
     return success;
 }
 
-static status_t configure_tcp_server(http_server srv)
+static status_t configure_tcp_server(http_server this)
 {
     tcp_server se;
 
-    se = srv->socket_engine;
-    if (!tcp_server_set_hostname(se, srv->host))
+    se = this->tcpsrv;
+    if (!tcp_server_set_hostname(se, this->host))
         return failure;
 
-    tcp_server_set_port(se, srv->port);
-    tcp_server_set_timeout(se, srv->timeout_read, srv->timeout_write, srv->timeout_accept);
-    tcp_server_set_retries(se, srv->retries_read, srv->retries_write);
-    tcp_server_set_queue_size(se, srv->queue_size);
-    tcp_server_set_block_when_full(se, srv->block_when_full);
-    tcp_server_set_worker_threads(se, srv->worker_threads);
-    tcp_server_set_service_function(se, serviceConnection, srv);
+    tcp_server_set_port(se, this->port);
+    tcp_server_set_timeout(se, this->timeout_read, this->timeout_write, this->timeout_accept);
+    tcp_server_set_retries(se, this->retries_read, this->retries_write);
+    tcp_server_set_queue_size(se, this->queue_size);
+    tcp_server_set_block_when_full(se, this->block_when_full);
+    tcp_server_set_worker_threads(se, this->worker_threads);
+    tcp_server_set_service_function(se, serviceConnection, this);
 
     return success;
 }
@@ -375,48 +375,48 @@ static status_t configure_tcp_server(http_server srv)
  * http_server_get_root_resources() right before
  * the call to http_server_go().
  */
-status_t http_server_start(http_server s)
+status_t http_server_start(http_server this)
 {
-    if (!tcp_server_init(s->socket_engine))
+    if (!tcp_server_init(this->tcpsrv))
         return failure;
         
-    if (!tcp_server_start(s->socket_engine))
+    if (!tcp_server_start(this->tcpsrv))
         return failure;
 
     return success;
 }
 
 status_t http_server_add_page(
-    http_server srv,
+    http_server this,
     const char* uri,
     PAGE_FUNCTION func,
     page_attribute attr)
 {
     dynamic_page dp;
 
-    assert(srv != NULL);
+    assert(this != NULL);
     assert(uri != NULL);
     assert(func != NULL);
-    assert(srv->npages < srv->max_pages);
+    assert(this->npages < this->max_pages);
 
     if ((dp = dynamic_new(uri, func, attr)) == NULL)
         return failure;
 
-    srv->pages[srv->npages++] = dp;
+    this->pages[this->npages++] = dp;
     return success;
 }
 
-dynamic_page http_server_lookup(http_server srv, http_request request)
+dynamic_page http_server_lookup(http_server this, http_request request)
 {
     size_t i;
     const char* uri = request_get_uri(request);
 
-    assert(srv != NULL);
+    assert(this != NULL);
     assert(request != NULL);
     assert(uri != NULL);
 
-    for (i = 0; i < srv->npages; i++) {
-        dynamic_page p = srv->pages[i];
+    for (i = 0; i < this->npages; i++) {
+        dynamic_page p = this->pages[i];
         if (0 == strcmp(uri, dynamic_get_uri(p))) {
             return p;
         }
@@ -425,270 +425,270 @@ dynamic_page http_server_lookup(http_server srv, http_request request)
     return NULL;
 }
 
-void http_server_set_timeout_read(http_server srv, int n)
+void http_server_set_timeout_read(http_server this, int n)
 {
-    assert(srv != NULL);
+    assert(this != NULL);
 
-    srv->timeout_read = n;
+    this->timeout_read = n;
 }
 
-void http_server_set_timeout_write(http_server srv, int n)
+void http_server_set_timeout_write(http_server this, int n)
 {
-    assert(srv != NULL);
+    assert(this != NULL);
 
-    srv->timeout_write = n;
+    this->timeout_write = n;
 }
 
-void http_server_set_timeout_accept(http_server srv, int n)
+void http_server_set_timeout_accept(http_server this, int n)
 {
-    assert(srv != NULL);
+    assert(this != NULL);
 
-    srv->timeout_accept = n;
+    this->timeout_accept = n;
 }
 
-int http_server_get_timeout_read(http_server srv)
+int http_server_get_timeout_read(http_server this)
 {
-    assert(srv != NULL);
+    assert(this != NULL);
 
-    return srv->timeout_read;
+    return this->timeout_read;
 }
 
-void http_server_set_retries_read(http_server s, int seconds)
+void http_server_set_retries_read(http_server this, int seconds)
 {
-    assert(s != NULL);
+    assert(this != NULL);
 
-    s->retries_read = seconds;
+    this->retries_read = seconds;
 }
 
-void http_server_set_retries_write(http_server s, int seconds)
+void http_server_set_retries_write(http_server this, int seconds)
 {
-    assert(s != NULL);
+    assert(this != NULL);
 
-    s->retries_write = seconds;
+    this->retries_write = seconds;
 }
 
-int http_server_get_timeout_accept(http_server srv)
+int http_server_get_timeout_accept(http_server this)
 {
-    assert(srv != NULL);
+    assert(this != NULL);
 
-    return srv->timeout_accept;
+    return this->timeout_accept;
 }
 
-int http_server_get_timeout_write(http_server srv)
+int http_server_get_timeout_write(http_server this)
 {
-    assert(srv != NULL);
+    assert(this != NULL);
 
-    return srv->timeout_write;
+    return this->timeout_write;
 }
 
-void http_server_set_max_pages(http_server srv, size_t n)
+void http_server_set_max_pages(http_server this, size_t n)
 {
-    assert(srv != NULL);
+    assert(this != NULL);
 
-    srv->max_pages = n;
+    this->max_pages = n;
 }
 
-size_t http_server_get_max_pages(http_server srv)
+size_t http_server_get_max_pages(http_server this)
 {
-    assert(srv != NULL);
+    assert(this != NULL);
 
-    return srv->max_pages;
+    return this->max_pages;
 }
 
-void http_server_set_port(http_server srv, int n)
+void http_server_set_port(http_server this, int n)
 {
-    assert(srv != NULL);
+    assert(this != NULL);
 
-    srv->port = n;
+    this->port = n;
 }
 
-int http_server_get_port(http_server srv)
+int http_server_get_port(http_server this)
 {
-    assert(srv != NULL);
+    assert(this != NULL);
 
-    return srv->port;
+    return this->port;
 }
 
 /* These control the thread pool */
-void http_server_set_worker_threads(http_server srv, size_t n)
+void http_server_set_worker_threads(http_server this, size_t n)
 {
-    assert(srv != NULL);
+    assert(this != NULL);
 
-    srv->worker_threads = n;
+    this->worker_threads = n;
 }
 
-size_t http_server_get_worker_threads(http_server srv)
+size_t http_server_get_worker_threads(http_server this)
 {
-    assert(srv != NULL);
+    assert(this != NULL);
 
-    return srv->worker_threads;
+    return this->worker_threads;
 }
 
-void http_server_set_queue_size(http_server srv, size_t n)
+void http_server_set_queue_size(http_server this, size_t n)
 {
-    assert(srv != NULL);
+    assert(this != NULL);
 
-    srv->queue_size = n;
+    this->queue_size = n;
 }
 
-size_t http_server_get_queue_size(http_server srv)
+size_t http_server_get_queue_size(http_server this)
 {
-    assert(srv != NULL);
+    assert(this != NULL);
 
-    return srv->queue_size;
+    return this->queue_size;
 }
 
 /* To wait when the queue is full or not */
-void http_server_set_block_when_full(http_server srv, int n)
+void http_server_set_block_when_full(http_server this, int n)
 {
-    assert(srv != NULL);
+    assert(this != NULL);
 
-    srv->block_when_full = n;
+    this->block_when_full = n;
 }
 
-int http_server_get_block_when_full(http_server srv)
+int http_server_get_block_when_full(http_server this)
 {
-    assert(srv != NULL);
+    assert(this != NULL);
 
-    return srv->block_when_full;
-}
-
-
-int http_server_shutting_down(http_server srv)
-{
-    assert(srv != NULL);
-
-    return srv->shutting_down;
+    return this->block_when_full;
 }
 
 
-http_request http_server_get_request(http_server srv)
+int http_server_shutting_down(http_server this)
+{
+    assert(this != NULL);
+
+    return this->shutting_down;
+}
+
+
+http_request http_server_get_request(http_server this)
 {
     http_request r;
 
-    assert(srv != NULL);
+    assert(this != NULL);
 
-    assert(srv != NULL);
-    assert(srv->requests != NULL);
+    assert(this != NULL);
+    assert(this->requests != NULL);
 
-    if (!pool_get(srv->requests, (void **)&r))
+    if (!pool_get(this->requests, (void **)&r))
         r = NULL;
 
     assert(r != NULL);
     return r;
 }
 
-http_response http_server_get_response(http_server srv)
+http_response http_server_get_response(http_server this)
 {
     http_response r;
 
-    assert(srv != NULL);
-    assert(srv->requests != NULL);
+    assert(this != NULL);
+    assert(this->requests != NULL);
 
-    if (!pool_get(srv->responses, (void **)&r))
+    if (!pool_get(this->responses, (void **)&r))
         r = NULL;
 
     assert(r != NULL);
     return r;
 }
 
-void http_server_recycle_request(http_server srv, http_request request)
+void http_server_recycle_request(http_server this, http_request request)
 {
-    assert(srv != NULL);
+    assert(this != NULL);
     assert(request != NULL);
 
     request_recycle(request);
-    pool_recycle(srv->requests, request);
+    pool_recycle(this->requests, request);
 }
 
-void http_server_recycle_response(http_server srv, http_response response)
+void http_server_recycle_response(http_server this, http_response response)
 {
-    assert(srv != NULL);
+    assert(this != NULL);
     assert(response != NULL);
 
     response_recycle(response);
-    pool_recycle(srv->responses, response);
+    pool_recycle(this->responses, response);
 }
 
-status_t http_server_set_default_page_attributes(http_server srv, page_attribute a)
+status_t http_server_set_default_page_attributes(http_server this, page_attribute a)
 {
-    assert(srv != NULL);
+    assert(this != NULL);
     assert(a != NULL);
 
     /* Free old attributes, if any */
-    if (NULL != srv->default_attributes)
-        attribute_free(srv->default_attributes);
+    if (NULL != this->default_attributes)
+        attribute_free(this->default_attributes);
 
     /* Copy new ones */
-    srv->default_attributes = attribute_dup(a);
-    if (NULL == srv->default_attributes)
+    this->default_attributes = attribute_dup(a);
+    if (NULL == this->default_attributes)
         return failure;
 
     return success;
 }
 
-page_attribute http_server_get_default_attributes(http_server srv)
+page_attribute http_server_get_default_attributes(http_server this)
 {
-    assert(srv != NULL);
+    assert(this != NULL);
 
-    return srv->default_attributes;
+    return this->default_attributes;
 }
 
-status_t http_server_set_host(http_server srv, const char* host)
+status_t http_server_set_host(http_server this, const char* host)
 {
     size_t n;
 
-    assert(srv != NULL);
+    assert(this != NULL);
     assert(host != NULL);
 
     /* Free old version, if any */
-    free(srv->host);
+    free(this->host);
 
     n = strlen(host) + 1;
-    srv->host = malloc(n);
-    if (NULL == srv->host)
+    this->host = malloc(n);
+    if (NULL == this->host)
         return failure;
 
-    memcpy(srv->host, host, n);
+    memcpy(this->host, host, n);
     return success;
 }
 
-status_t http_server_set_logfile(http_server srv, const char *name)
+status_t http_server_set_logfile(http_server this, const char *name)
 {
     size_t n;
 
-    assert(srv != NULL);
+    assert(this != NULL);
     assert(name != NULL);
-    assert(srv->logfile == NULL); /* Do not call twice */
+    assert(this->logfile == NULL); /* Do not call twice */
 
     n = strlen(name) + 1;
-    if (n > sizeof srv->logfile_name)
+    if (n > sizeof this->logfile_name)
         return fail(ENOSPC);
 
-    memcpy(srv->logfile_name, name, n);
-    srv->logging = 1;
+    memcpy(this->logfile_name, name, n);
+    this->logging = 1;
     return success;
 }
 
 /* Just a small helper, assumes that the logfile_lock is locked so
  * that we don't get MT conflicts.
  */
-static status_t rotate_if_needed(http_server s)
+static status_t rotate_if_needed(http_server this)
 {
     char newname[LOGFILE_MAX + 102];
     char datebuf[100];
     time_t now;
     struct tm tm_now;
 
-    assert(s != NULL);
-    assert(s->logfile != NULL);
+    assert(this != NULL);
+    assert(this->logfile != NULL);
 
     /* Is rotating disabled? */
-    if (s->logrotate == 0)
+    if (this->logrotate == 0)
         return success;
 
     /* Do we need to rotate? */
-    if (s->logfile_entries < s->logrotate)
+    if (this->logfile_entries < this->logrotate)
         return success;
 
     if ((now = time(NULL)) == (time_t)-1
@@ -698,10 +698,10 @@ static status_t rotate_if_needed(http_server s)
         return failure;
     }
 
-    strcpy(newname, s->logfile_name);
+    strcpy(newname, this->logfile_name);
     strcat(newname, datebuf);
 
-    if (fclose(s->logfile)) {
+    if (fclose(this->logfile)) {
         warning("Could not close logfile");
         return failure;
     }
@@ -709,7 +709,7 @@ static status_t rotate_if_needed(http_server s)
     /* Now we move away the old file by renaming it and
      * then we reopen the logfile.
      */
-    if (rename(s->logfile_name, newname)) {
+    if (rename(this->logfile_name, newname)) {
         char err[1024];
 
         if (strerror_r(errno, err, sizeof err))
@@ -720,18 +720,18 @@ static status_t rotate_if_needed(http_server s)
     }
 
     /* Open the logfile. */
-    if ((s->logfile = fopen(s->logfile_name, "a")) == NULL) {
-        warning("Could not open logfile %s", s->logfile_name);
+    if ((this->logfile = fopen(this->logfile_name, "a")) == NULL) {
+        warning("Could not open logfile %s", this->logfile_name);
         return failure;
     }
 
-    s->logfile_entries = 0;
+    this->logfile_entries = 0;
     return success;
 }
 
 
 void http_server_add_logentry(
-    http_server srv,
+    http_server this,
     connection conn,
     http_request request,
     int status_code,
@@ -759,32 +759,32 @@ void http_server_add_logentry(
      */
     char ip[200];
 
-    assert(srv != NULL);
+    assert(this != NULL);
     assert(status_code != 0);
 
     /* Has logging been enabled? */
-    if (!srv->logging)
+    if (!this->logging)
         return;
 
-    if (pthread_mutex_lock(&srv->logfile_lock))
+    if (pthread_mutex_lock(&this->logfile_lock))
         return;
 
     /* Open logfile if it is closed */
-    if (srv->logfile == NULL) {
-        if ((srv->logfile = fopen(srv->logfile_name, "w")) == NULL) {
+    if (this->logfile == NULL) {
+        if ((this->logfile = fopen(this->logfile_name, "w")) == NULL) {
             /* Hmm, unable to open logfile. Disable logging */
-            srv->logging = 0;
-            warning("Unable to open logfile %s", srv->logfile_name);
-            pthread_mutex_unlock(&srv->logfile_lock);
+            this->logging = 0;
+            warning("Unable to open logfile %s", this->logfile_name);
+            pthread_mutex_unlock(&this->logfile_lock);
             return;
         }
     }
 
-    if (!rotate_if_needed(srv)) {
+    if (!rotate_if_needed(this)) {
         /* Hmm, unable to rotate logfile. Disable logging */
-        srv->logging = 0;
-        warning("Unable to rotate logfile %s", srv->logfile_name);
-        pthread_mutex_unlock(&srv->logfile_lock);
+        this->logging = 0;
+        warning("Unable to rotate logfile %s", this->logfile_name);
+        pthread_mutex_unlock(&this->logfile_lock);
         return;
     }
 
@@ -810,13 +810,13 @@ void http_server_add_logentry(
     || localtime_r(&now, &tm_now) == NULL
     || !strftime(datebuf, sizeof datebuf, format, &tm_now)) {
         warning("Could not get time");
-        pthread_mutex_unlock(&srv->logfile_lock);
+        pthread_mutex_unlock(&this->logfile_lock);
         return;
     }
 
     inet_ntop(AF_INET, &connection_get_addr(conn)->sin_addr, ip, sizeof ip),
 
-    cc = fprintf(srv->logfile, "%s - - [%s] \"%s %s\" %d %lu\n",
+    cc = fprintf(this->logfile, "%s - - [%s] \"%s %s\" %d %lu\n",
         ip,
         datebuf,
         method,
@@ -825,50 +825,50 @@ void http_server_add_logentry(
         (unsigned long)bytes_sent);
 
     if (cc <= 0) {
-        srv->logging = 0;
-        fclose(srv->logfile);
-        warning("Unable to log to logfile %s. Disabling logging", srv->logfile_name);
+        this->logging = 0;
+        fclose(this->logfile);
+        warning("Unable to log to logfile %s. Disabling logging", this->logfile_name);
     }
     else {
-        fflush(srv->logfile);
-        srv->logfile_entries++;
+        fflush(this->logfile);
+        this->logfile_entries++;
     }
 
-    pthread_mutex_unlock(&srv->logfile_lock);
+    pthread_mutex_unlock(&this->logfile_lock);
 }
 
-status_t http_server_shutdown(http_server srv)
+status_t http_server_shutdown(http_server this)
 {
-    assert(srv != NULL);
-    srv->shutting_down = 1;
-    tcp_server_shutdown(srv->socket_engine);
+    assert(this != NULL);
+    this->shutting_down = 1;
+    tcp_server_shutdown(this->tcpsrv);
     return success;
 }
 
-status_t http_server_get_root_resources(http_server s)
+status_t http_server_get_root_resources(http_server this)
 {
-    assert(s != NULL);
+    assert(this != NULL);
 
-    if (!configure_tcp_server(s))
+    if (!configure_tcp_server(this))
         return failure;
 
-    if (!tcp_server_get_root_resources(s->socket_engine))
+    if (!tcp_server_get_root_resources(this->tcpsrv))
         return failure;
 
     return success;
 }
 
-status_t http_server_free_root_resources(http_server s)
+status_t http_server_free_root_resources(http_server this)
 {
     /* NOTE: 2005-11-27: Check out why we don't close the socket here. */
-    (void)s;
+    (void)this;
     return success;
 }
 
-bool http_server_has_default_page_handler(http_server s)
+bool http_server_has_default_page_handler(http_server this)
 {
-    assert(s != NULL);
-    return s->default_handler != NULL;
+    assert(this != NULL);
+    return this->default_handler != NULL;
 }
 
 /* Here we create a dummy dynamic_page and use the function
@@ -877,7 +877,7 @@ bool http_server_has_default_page_handler(http_server s)
  */
 status_t http_server_run_default_page_handler(
     connection conn,
-    http_server s,
+    http_server this,
     http_request request,
     http_response response,
     error e)
@@ -887,26 +887,26 @@ status_t http_server_run_default_page_handler(
     status_t rc;
 
     uri = request_get_uri(request);
-    if ((p = dynamic_new(uri, s->default_handler, NULL)) == NULL)
+    if ((p = dynamic_new(uri, this->default_handler, NULL)) == NULL)
         return set_os_error(e, ENOMEM);
 
-    rc = handle_dynamic(conn, s, p, request, response, e);
+    rc = handle_dynamic(conn, this, p, request, response, e);
     dynamic_free(p);
     return rc;
 }
 
-status_t http_server_start_via_process(process p, http_server s)
+status_t http_server_start_via_process(process p, http_server this)
 {
     return process_add_object_to_start(
         p,
-        s,
+        this,
         (status_t(*)(void*))http_server_get_root_resources,
         (status_t(*)(void*))http_server_free_root_resources,
         (status_t(*)(void*))http_server_start,
         (status_t(*)(void*))http_server_shutdown);
 }
 
-status_t http_server_configure(http_server s, process p, const char* filename)
+status_t http_server_configure(http_server this, process p, const char* filename)
 {
     int port = -1;
     int workers = -1;
@@ -927,7 +927,7 @@ status_t http_server_configure(http_server s, process p, const char* filename)
 
     configfile cf;
 
-    assert(s != NULL);
+    assert(this != NULL);
     assert(filename != NULL);
 
     if ((cf = configfile_read(filename)) == NULL)
@@ -991,42 +991,42 @@ status_t http_server_configure(http_server s, process p, const char* filename)
     configfile_free(cf);
 
     if (port != -1)
-        http_server_set_port(s, port);
+        http_server_set_port(this, port);
 
     if (retries_read != -1)
-        http_server_set_retries_read(s, retries_read);
+        http_server_set_retries_read(this, retries_read);
 
     if (retries_write != -1)
-        http_server_set_retries_write(s, retries_write);
+        http_server_set_retries_write(this, retries_write);
 
     if (logrotate != -1)
-        http_server_set_logrotate(s, logrotate);
+        http_server_set_logrotate(this, logrotate);
 
     if (timeout_read != -1)
-        http_server_set_timeout_read(s, timeout_read);
+        http_server_set_timeout_read(this, timeout_read);
 
     if (timeout_write != -1)
-        http_server_set_timeout_write(s, timeout_write);
+        http_server_set_timeout_write(this, timeout_write);
 
     if (timeout_accept != -1)
-        http_server_set_timeout_accept(s, timeout_accept);
+        http_server_set_timeout_accept(this, timeout_accept);
 
     if (block_when_full != -1)
-        http_server_set_block_when_full(s, block_when_full);
+        http_server_set_block_when_full(this, block_when_full);
 
     if (queuesize != -1)
-        http_server_set_queue_size(s, (size_t)queuesize);
+        http_server_set_queue_size(this, (size_t)queuesize);
 
     if (workers != -1)
-        http_server_set_worker_threads(s, (size_t)workers);
+        http_server_set_worker_threads(this, (size_t)workers);
 
-    if (strlen(hostname) > 0 && !http_server_set_host(s, hostname))
+    if (strlen(hostname) > 0 && !http_server_set_host(this, hostname))
         return failure;
 
-    if (strlen(logfile) > 0 && !http_server_set_logfile(s, logfile))
+    if (strlen(logfile) > 0 && !http_server_set_logfile(this, logfile))
         return failure;
 
-    if (strlen(docroot) > 0 && !http_server_set_documentroot(s, docroot))
+    if (strlen(docroot) > 0 && !http_server_set_documentroot(this, docroot))
         return failure;
 
     /* Now for process stuff */
@@ -1050,46 +1050,46 @@ readerr:
     return failure;
 }
 
-unsigned long http_server_sum_blocked(http_server s)
+unsigned long http_server_sum_blocked(http_server this)
 {
-    assert(s != NULL);
-    return tcp_server_sum_blocked(s->socket_engine);
+    assert(this != NULL);
+    return tcp_server_sum_blocked(this->tcpsrv);
 }
 
-unsigned long http_server_sum_discarded(http_server s)
+unsigned long http_server_sum_discarded(http_server this)
 {
-    assert(s != NULL);
-    return tcp_server_sum_discarded(s->socket_engine);
+    assert(this != NULL);
+    return tcp_server_sum_discarded(this->tcpsrv);
 }
 
-unsigned long http_server_sum_added(http_server s)
+unsigned long http_server_sum_added(http_server this)
 {
-    assert(s != NULL);
-    return tcp_server_sum_added(s->socket_engine);
+    assert(this != NULL);
+    return tcp_server_sum_added(this->tcpsrv);
 }
 
 unsigned long http_server_sum_poll_intr(http_server p)
 {
     assert(p != NULL);
-    return tcp_server_sum_poll_intr(p->socket_engine);
+    return tcp_server_sum_poll_intr(p->tcpsrv);
 }
 
 unsigned long http_server_sum_poll_again(http_server p)
 {
     assert(p != NULL);
-    return tcp_server_sum_poll_again(p->socket_engine);
+    return tcp_server_sum_poll_again(p->tcpsrv);
 }
 
 unsigned long http_server_sum_accept_failed(http_server p)
 {
     assert(p != NULL);
-    return tcp_server_sum_accept_failed(p->socket_engine);
+    return tcp_server_sum_accept_failed(p->tcpsrv);
 }
 
 unsigned long http_server_sum_denied_clients(http_server p)
 {
     assert(p != NULL);
-    return tcp_server_sum_denied_clients(p->socket_engine);
+    return tcp_server_sum_denied_clients(p->tcpsrv);
 }
 
 #ifdef CHECK_HTTP_SERVER
@@ -1110,24 +1110,24 @@ static int pageserver(http_request req, http_response response)
  * the response time never exceeds some sane limit. */
 static void * serverthread(void *arg)
 {
-    http_server srv = arg;
+    http_server this = arg;
 
-    if (!http_server_alloc(srv))
+    if (!http_server_alloc(this))
         die("Could not allocate resources.\n");
 
-    http_server_set_port(srv, 2000);
+    http_server_set_port(this, 2000);
 
-    http_server_set_default_page_handler(srv, pageserver);
+    http_server_set_default_page_handler(this, pageserver);
 
-    if (!http_server_get_root_resources(srv))
+    if (!http_server_get_root_resources(this))
         die("Could not get root resources\n");
 
-    if (!http_server_start(srv))
+    if (!http_server_start(this))
         die("Could not start server:%s\n", strerror(errno));
 
-    sleep(srv->timeout_accept / 1000 + 1);
+    sleep(this->timeout_accept / 1000 + 1);
 
-    http_server_free(srv);
+    http_server_free(this);
 }
 
 static void make_request(void)
@@ -1169,13 +1169,13 @@ static void make_request(void)
 
 static void check_response_time(void)
 {
-    http_server srv = http_server_new();
+    http_server this = http_server_new();
     pthread_t t;
     int err;
     clock_t start, stop;
     double duration, max_duration = 0.004;
 
-    if ((err = pthread_create(&t, NULL, serverthread, srv)))
+    if ((err = pthread_create(&t, NULL, serverthread, this)))
         die("Could not start server thread\n");
 
     // Give server time to bind..
@@ -1194,7 +1194,7 @@ static void check_response_time(void)
     }
 
     sleep(1);
-    if (!http_server_shutdown(srv))
+    if (!http_server_shutdown(this))
         die("Could not shutdown server.\n");
 
 

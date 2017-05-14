@@ -74,7 +74,8 @@ libmeta_a_CFLAGS=\
 	-I$(top_srcdir)/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\
 	-O3 -Wall -Wno-long-long  -ftree-vectorize -Wno-inline\
-    -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
+    -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast\
+	-fomit-frame-pointer -msse4.2
 
 libmetad_a_CFLAGS=\
 	-D_GNU_SOURCE -std=gnu99 -pthread\

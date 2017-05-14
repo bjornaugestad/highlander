@@ -182,105 +182,105 @@ tcp_server tcp_server_new(void)
     return p;
 }
 
-void tcp_server_free(tcp_server srv)
+void tcp_server_free(tcp_server this)
 {
-    if (srv != NULL) {
+    if (this != NULL) {
         /* Terminate the session */
-        if (srv->queue != NULL) {
-            if (!threadpool_destroy(srv->queue, 1))
+        if (this->queue != NULL) {
+            if (!threadpool_destroy(this->queue, 1))
                 warning("Unable to destroy thread pool\n");
 
-            srv->queue = NULL;
+            this->queue = NULL;
         }
 
-        pool_free(srv->connections, (dtor)connection_free);
-        pool_free(srv->read_buffers, (dtor)membuf_free);
-        pool_free(srv->write_buffers, (dtor)membuf_free);
+        pool_free(this->connections, (dtor)connection_free);
+        pool_free(this->read_buffers, (dtor)membuf_free);
+        pool_free(this->write_buffers, (dtor)membuf_free);
 
-        cstring_free(srv->host);
+        cstring_free(this->host);
 
         /* Free the regex struct */
-        if (srv->pattern_compiled) {
-            regfree(&srv->allowed_clients);
-            srv->pattern_compiled = false;
+        if (this->pattern_compiled) {
+            regfree(&this->allowed_clients);
+            this->pattern_compiled = false;
         }
 
-        atomic_ulong_destroy(&srv->sum_poll_intr);
-        atomic_ulong_destroy(&srv->sum_poll_again);
-        atomic_ulong_destroy(&srv->sum_accept_failed);
-        atomic_ulong_destroy(&srv->sum_denied_clients);
-        free(srv);
+        atomic_ulong_destroy(&this->sum_poll_intr);
+        atomic_ulong_destroy(&this->sum_poll_again);
+        atomic_ulong_destroy(&this->sum_accept_failed);
+        atomic_ulong_destroy(&this->sum_denied_clients);
+        free(this);
     }
 }
 
-status_t tcp_server_init(tcp_server srv)
+status_t tcp_server_init(tcp_server this)
 {
     size_t i, count;
 
-    assert(srv != NULL);
+    assert(this != NULL);
 
     /* Don't overwrite existing buffers */
-    assert(srv->queue == NULL);
-    assert(srv->connections == NULL);
-    assert(srv->read_buffers == NULL);
-    assert(srv->write_buffers == NULL);
+    assert(this->queue == NULL);
+    assert(this->connections == NULL);
+    assert(this->read_buffers == NULL);
+    assert(this->write_buffers == NULL);
 
-    if ((srv->queue = threadpool_new(srv->nthreads, srv->queue_size, srv->block_when_full)) == NULL)
+    if ((this->queue = threadpool_new(this->nthreads, this->queue_size, this->block_when_full)) == NULL)
         goto err;
 
     /* Every running worker thread use one connection.
      * Every queue entry use one connection.
      * One extra is needed for the current connection */
-    count = srv->queue_size + srv->nthreads + 1;
-    if ((srv->connections = pool_new(count)) == NULL)
+    count = this->queue_size + this->nthreads + 1;
+    if ((this->connections = pool_new(count)) == NULL)
         goto err;
 
     for (i = 0; i < count; i++) {
         connection c = connection_new(
-            srv->timeout_reads,
-            srv->timeout_writes,
-            srv->retries_reads,
-            srv->retries_writes,
-            srv->service_arg);
+            this->timeout_reads,
+            this->timeout_writes,
+            this->retries_reads,
+            this->retries_writes,
+            this->service_arg);
 
         if (c == NULL)
             goto err;
 
-        pool_add(srv->connections, c);
+        pool_add(this->connections, c);
     }
 
     /* Only worker threads can use read/write buffers */
-    count = srv->nthreads;
-    if ((srv->read_buffers = pool_new(count)) == NULL
-    || (srv->write_buffers = pool_new(count)) == NULL)
+    count = this->nthreads;
+    if ((this->read_buffers = pool_new(count)) == NULL
+    || (this->write_buffers = pool_new(count)) == NULL)
         goto err;
 
     for (i = 0; i < count; i++) {
         membuf rb, wb;
 
-        if ((rb = membuf_new(srv->readbuf_size)) == NULL
-        ||	(wb = membuf_new(srv->writebuf_size)) == NULL)
+        if ((rb = membuf_new(this->readbuf_size)) == NULL
+        ||	(wb = membuf_new(this->writebuf_size)) == NULL)
             goto err;
 
-        pool_add(srv->read_buffers, rb);
-        pool_add(srv->write_buffers, wb);
+        pool_add(this->read_buffers, rb);
+        pool_add(this->write_buffers, wb);
     }
 
     return success;
 
 err:
     /* Free all memory allocated by this function and then return failure */
-    if (!threadpool_destroy(srv->queue, 0))
+    if (!threadpool_destroy(this->queue, 0))
         warning("Unable to destroy thread pool\n");
 
-    pool_free(srv->connections, (dtor)connection_free);
-    pool_free(srv->read_buffers, NULL);
-    pool_free(srv->write_buffers, NULL);
+    pool_free(this->connections, (dtor)connection_free);
+    pool_free(this->read_buffers, NULL);
+    pool_free(this->write_buffers, NULL);
 
-    srv->queue = NULL;
-    srv->connections = NULL;
-    srv->read_buffers = NULL;
-    srv->write_buffers = NULL;
+    this->queue = NULL;
+    this->connections = NULL;
+    this->read_buffers = NULL;
+    this->write_buffers = NULL;
     return failure;
 }
 
@@ -306,39 +306,39 @@ void tcp_server_set_writebuf_size(tcp_server s, size_t size)
     s->writebuf_size = size;
 }
 
-status_t tcp_server_allow_clients(tcp_server srv, const char *filter)
+status_t tcp_server_allow_clients(tcp_server this, const char *filter)
 {
     int err, flags = REG_NOSUB;
 
-    assert(srv != NULL);
+    assert(this != NULL);
     assert(filter != NULL);
     assert(strlen(filter) > 0);
 
-    tcp_server_clear_client_filter(srv);
+    tcp_server_clear_client_filter(this);
 
-    if ((err = regcomp(&srv->allowed_clients, filter, flags)) != 0)
+    if ((err = regcomp(&this->allowed_clients, filter, flags)) != 0)
         return fail(err);
 
-    srv->pattern_compiled = true;
+    this->pattern_compiled = true;
     return success;
 }
 
-void tcp_server_clear_client_filter(tcp_server srv)
+void tcp_server_clear_client_filter(tcp_server this)
 {
-    assert(srv != NULL);
+    assert(this != NULL);
 
-    if (srv->pattern_compiled) {
-        regfree(&srv->allowed_clients);
-        srv->pattern_compiled = false;
+    if (this->pattern_compiled) {
+        regfree(&this->allowed_clients);
+        this->pattern_compiled = false;
     }
 }
 
 static void
-tcp_server_recycle_connection(void *vse, void *vconn)
+tcp_server_recycle_connection(void *vsrv, void *vconn)
 {
     membuf rb, wb;
 
-    tcp_server srv = vse;
+    tcp_server srv = vsrv;
     connection conn = vconn;
 
     assert(srv != NULL);
@@ -361,14 +361,14 @@ tcp_server_recycle_connection(void *vse, void *vconn)
     pool_recycle(srv->connections, conn);
 }
 
-static status_t assign_rw_buffers(void *vse, void *vconn)
+static status_t assign_rw_buffers(void *vsrv, void *vconn)
 {
     membuf rb, wb;
 
     tcp_server srv;
     connection conn;
 
-    srv = vse;
+    srv = vsrv;
     conn = vconn;
     assert(srv != NULL);
     assert(srv->read_buffers != NULL);
@@ -395,7 +395,7 @@ static status_t tcp_server_get_connection(tcp_server srv, connection *pconn)
     return pool_get(srv->connections, (void **)pconn);
 }
 
-static status_t accept_new_connections(tcp_server srv, meta_socket sock)
+static status_t accept_new_connections(tcp_server this, meta_socket sock)
 {
     status_t rc;
     meta_socket newsock;
@@ -403,15 +403,15 @@ static status_t accept_new_connections(tcp_server srv, meta_socket sock)
     struct sockaddr_in addr;
     connection conn;
 
-    assert(NULL != srv);
+    assert(NULL != this);
     assert(sock != NULL);
 
     /* Make the socket non-blocking so that accept() won't block */
     if (!sock_set_nonblock(sock))
         return failure;
 
-    while (!srv->shutting_down) {
-        if (!wait_for_data(sock, srv->timeout_accepts)) {
+    while (!this->shutting_down) {
+        if (!wait_for_data(sock, this->timeout_accepts)) {
             if (errno == EINTR) {
                 /* Someone interrupted us, why?
                  * NOTE: This happens when the load is very high
@@ -426,12 +426,12 @@ static status_t accept_new_connections(tcp_server srv, meta_socket sock)
                  * and portability between SVR4 and BSD-based kernels.
                  * Interesting chapters are 12.5 and 10.x
                  */
-                atomic_ulong_inc(&srv->sum_poll_intr);
+                atomic_ulong_inc(&this->sum_poll_intr);
                 continue;
             }
 
             if (errno == EAGAIN)  {
-                atomic_ulong_inc(&srv->sum_poll_again);
+                atomic_ulong_inc(&this->sum_poll_again);
                 continue;
             }
 
@@ -486,7 +486,7 @@ static status_t accept_new_connections(tcp_server srv, meta_socket sock)
                 case EHOSTUNREACH:
                 case EOPNOTSUPP:
                 case ENETUNREACH:
-                    atomic_ulong_inc(&srv->sum_accept_failed);
+                    atomic_ulong_inc(&this->sum_accept_failed);
                     continue;
 
                 default:
@@ -500,9 +500,9 @@ static status_t accept_new_connections(tcp_server srv, meta_socket sock)
         }
 
         /* Check if the client is permitted to connect or not. */
-        if (!client_can_connect(srv, &addr)) {
+        if (!client_can_connect(this, &addr)) {
             sock_close(newsock);
-            atomic_ulong_inc(&srv->sum_denied_clients);
+            atomic_ulong_inc(&this->sum_denied_clients);
             continue;
         }
 
@@ -510,7 +510,7 @@ static status_t accept_new_connections(tcp_server srv, meta_socket sock)
           * unique to this connection. tcp_server_get_connection()
           * never returns NULL as enough connection resources has
           * been allocated already. */
-         if (!tcp_server_get_connection(srv, &conn)) {
+         if (!tcp_server_get_connection(this, &conn)) {
             sock_close(newsock);
             return failure;
          }
@@ -518,9 +518,10 @@ static status_t accept_new_connections(tcp_server srv, meta_socket sock)
         /* Start a thread to handle the connection with this client. */
         connection_set_params(conn, newsock, &addr);
 
-        rc = threadpool_add_work(srv->queue, assign_rw_buffers,
-            srv, srv->service_func, conn,
-            tcp_server_recycle_connection, srv);
+        rc = threadpool_add_work(this->queue, 
+            assign_rw_buffers, this, 
+            this->service_func, conn,
+            tcp_server_recycle_connection, this);
 
         if (!rc) {
             /* Could not add work to the queue */
@@ -535,115 +536,114 @@ static status_t accept_new_connections(tcp_server srv, meta_socket sock)
              *	b) What do we do with the data(if any) that the client tries to
              *	send us? Can we just 'dump' a 503 on the socket and then close it?
              */
-
             if (!connection_close(conn))
                 warning("Could not flush and close connection");
 
-            tcp_server_recycle_connection(srv, conn);
+            tcp_server_recycle_connection(this, conn);
         }
     }
 
     return success; /* Shutdown was requested */
 }
 
-status_t tcp_server_get_root_resources(tcp_server srv)
+status_t tcp_server_get_root_resources(tcp_server this)
 {
     const char *hostname = NULL;
 
-    if (srv->host != NULL)
-        hostname = c_str(srv->host);
+    if (this->host != NULL)
+        hostname = c_str(this->host);
 
-    srv->sock = create_server_socket(hostname, srv->port);
-    if (srv->sock == NULL)
+    this->sock = create_server_socket(hostname, this->port);
+    if (this->sock == NULL)
         return failure;
 
     return success;
 }
 
-status_t tcp_server_start(tcp_server srv)
+status_t tcp_server_start(tcp_server this)
 {
     status_t rc;
 
-    assert(NULL != srv);
+    assert(NULL != this);
 
-    if (!accept_new_connections(srv, srv->sock)) {
-        sock_close(srv->sock);
+    if (!accept_new_connections(this, this->sock)) {
+        sock_close(this->sock);
         rc = failure;
     }
-    else if (!sock_close(srv->sock))
+    else if (!sock_close(this->sock))
         rc = failure;
     else
         rc = success;
 
-    srv->sock = NULL;
+    this->sock = NULL;
     return rc;
 }
 
-void tcp_server_set_port(tcp_server srv, int port)
+void tcp_server_set_port(tcp_server this, int port)
 {
-    assert(NULL != srv);
-    srv->port = port;
+    assert(NULL != this);
+    this->port = port;
 }
 
-void tcp_server_set_queue_size(tcp_server srv, size_t size)
+void tcp_server_set_queue_size(tcp_server this, size_t size)
 {
-    assert(NULL != srv);
-    srv->queue_size = size;
+    assert(NULL != this);
+    this->queue_size = size;
 }
 
-void tcp_server_set_block_when_full(tcp_server srv, int block_when_full)
+void tcp_server_set_block_when_full(tcp_server this, int block_when_full)
 {
-    assert(NULL != srv);
-    srv->block_when_full = block_when_full;
+    assert(NULL != this);
+    this->block_when_full = block_when_full;
 }
 
-void tcp_server_set_worker_threads(tcp_server srv, size_t count)
+void tcp_server_set_worker_threads(tcp_server this, size_t count)
 {
-    assert(NULL != srv);
-    srv->nthreads = count;
+    assert(NULL != this);
+    this->nthreads = count;
 }
 
-void tcp_server_set_timeout(tcp_server srv, int reads, int writes, int accepts)
+void tcp_server_set_timeout(tcp_server this, int reads, int writes, int accepts)
 {
-    assert(NULL != srv);
+    assert(NULL != this);
 
-    srv->timeout_writes = writes;
-    srv->timeout_reads = reads;
-    srv->timeout_accepts = accepts;
+    this->timeout_writes = writes;
+    this->timeout_reads = reads;
+    this->timeout_accepts = accepts;
 }
 
-void tcp_server_set_retries(tcp_server srv, int reads, int writes)
+void tcp_server_set_retries(tcp_server this, int reads, int writes)
 {
-    assert(NULL != srv);
-    srv->retries_writes = writes;
-    srv->retries_reads = reads;
+    assert(NULL != this);
+    this->retries_writes = writes;
+    this->retries_reads = reads;
 }
 
 void tcp_server_set_service_function(
-    tcp_server srv,
+    tcp_server this,
     void *(*func)(void*),
     void *arg)
 {
-    assert(NULL != srv);
+    assert(NULL != this);
     assert(NULL != func);
 
-    srv->service_func = func;
-    srv->service_arg = arg;
+    this->service_func = func;
+    this->service_arg = arg;
 }
 
-status_t tcp_server_set_hostname(tcp_server srv, const char *host)
+status_t tcp_server_set_hostname(tcp_server this, const char *host)
 {
-    assert(srv != NULL);
+    assert(this != NULL);
 
-    if (srv->host != NULL)
-        cstring_free(srv->host);
+    if (this->host != NULL)
+        cstring_free(this->host);
 
     if (host == NULL) {
-        srv->host = NULL;
+        this->host = NULL;
         return success;
     }
 
-    if ((srv->host = cstring_dup(host)) == NULL)
+    if ((this->host = cstring_dup(host)) == NULL)
         return failure;
 
     return success;
@@ -667,59 +667,59 @@ status_t tcp_server_free_root_resources(tcp_server s)
     return success;
 }
 
-int tcp_server_shutting_down(tcp_server srv)
+int tcp_server_shutting_down(tcp_server this)
 {
-    assert(srv != NULL);
-    return srv->shutting_down;
+    assert(this != NULL);
+    return this->shutting_down;
 }
 
-int tcp_server_shutdown(tcp_server srv)
+int tcp_server_shutdown(tcp_server this)
 {
-    assert(srv != NULL);
-    srv->shutting_down = 1;
+    assert(this != NULL);
+    this->shutting_down = 1;
     return 1;
 }
 
-unsigned long tcp_server_sum_blocked(tcp_server p)
+unsigned long tcp_server_sum_blocked(tcp_server this)
 {
-    assert(p != NULL);
-    return threadpool_sum_blocked(p->queue);
+    assert(this != NULL);
+    return threadpool_sum_blocked(this->queue);
 }
 
-unsigned long tcp_server_sum_discarded(tcp_server p)
+unsigned long tcp_server_sum_discarded(tcp_server this)
 {
-    assert(p != NULL);
-    return threadpool_sum_discarded(p->queue);
+    assert(this != NULL);
+    return threadpool_sum_discarded(this->queue);
 }
 
-unsigned long tcp_server_sum_added(tcp_server p)
+unsigned long tcp_server_sum_added(tcp_server this)
 {
-    assert(p != NULL);
-    return threadpool_sum_added(p->queue);
+    assert(this != NULL);
+    return threadpool_sum_added(this->queue);
 }
 
-unsigned long tcp_server_sum_poll_intr(tcp_server p)
+unsigned long tcp_server_sum_poll_intr(tcp_server this)
 {
-    assert(p != NULL);
-    return atomic_ulong_get(&p->sum_poll_intr);
+    assert(this != NULL);
+    return atomic_ulong_get(&this->sum_poll_intr);
 }
 
-unsigned long tcp_server_sum_poll_again(tcp_server p)
+unsigned long tcp_server_sum_poll_again(tcp_server this)
 {
-    assert(p != NULL);
-    return atomic_ulong_get(&p->sum_poll_again);
+    assert(this != NULL);
+    return atomic_ulong_get(&this->sum_poll_again);
 }
 
-unsigned long tcp_server_sum_accept_failed(tcp_server p)
+unsigned long tcp_server_sum_accept_failed(tcp_server this)
 {
-    assert(p != NULL);
-    return atomic_ulong_get(&p->sum_accept_failed);
+    assert(this != NULL);
+    return atomic_ulong_get(&this->sum_accept_failed);
 }
 
-unsigned long tcp_server_sum_denied_clients(tcp_server p)
+unsigned long tcp_server_sum_denied_clients(tcp_server this)
 {
-    assert(p != NULL);
-    return atomic_ulong_get(&p->sum_denied_clients);
+    assert(this != NULL);
+    return atomic_ulong_get(&this->sum_denied_clients);
 }
 
 #ifdef CHECK_TCP_SERVER
