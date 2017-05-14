@@ -69,15 +69,15 @@ libmetad_a_SOURCES=$(libmeta_a_SOURCES)
 # _SVID_SOURCE will do the same thing.
 
 libmeta_a_CFLAGS=\
-	-D_GNU_SOURCE -std=gnu99 -D_REENTRANT -pthread\
+	-D_GNU_SOURCE -std=gnu99 -DNDEBUG -pthread\
 	-I$(srcdir)\
 	-I$(top_srcdir)/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\
-	-O2 -Wall -Wno-long-long  -ftree-vectorize -Wno-inline\
+	-O3 -Wall -Wno-long-long  -ftree-vectorize -Wno-inline\
     -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
 
 libmetad_a_CFLAGS=\
-	-D_GNU_SOURCE -std=gnu99 -D_REENTRANT -pthread\
+	-D_GNU_SOURCE -std=gnu99 -pthread\
 	-I$(srcdir)\
 	-I$(top_srcdir)/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\

@@ -25,7 +25,7 @@ threadpool threadpool_new(
 
 status_t threadpool_add_work(
     threadpool tp,
-    void (*initfn)(void*, void*),
+    status_t (*initfn)(void*, void*),
     void *initialize_arg,
 
     void *(*workfn)(void*),

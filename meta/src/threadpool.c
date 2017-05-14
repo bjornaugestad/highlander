@@ -27,7 +27,7 @@ struct threadpool_work {
     void *(*workfn)(void*);
     void *workarg;
 
-    void (*initfn)(void*, void*);
+    status_t (*initfn)(void*, void*);
     void *initarg;
 
     void (*cleanup)(void*, void*);
@@ -200,7 +200,7 @@ threadpool threadpool_new(
 status_t threadpool_add_work(
     threadpool pool,
 
-    void (*initfn)(void*, void*),
+    status_t (*initfn)(void*, void*),
     void *initarg,
 
     void *(*workfn)(void*),

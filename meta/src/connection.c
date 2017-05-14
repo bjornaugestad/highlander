@@ -133,6 +133,10 @@ add_to_writebuf(connection conn, const void *buf, size_t count)
 
     nwritten = membuf_write(conn->writebuf, buf, count);
     assert(count == nwritten);
+
+#ifdef NDEBUG
+    (void)nwritten;
+#endif
 }
 
 static inline size_t

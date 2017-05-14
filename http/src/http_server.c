@@ -571,7 +571,9 @@ http_request http_server_get_request(http_server srv)
     assert(srv != NULL);
     assert(srv->requests != NULL);
 
-    r = pool_get(srv->requests);
+    if (!pool_get(srv->requests, (void **)&r))
+        r = NULL;
+
     assert(r != NULL);
     return r;
 }
@@ -583,7 +585,9 @@ http_response http_server_get_response(http_server srv)
     assert(srv != NULL);
     assert(srv->requests != NULL);
 
-    r = pool_get(srv->responses);
+    if (!pool_get(srv->responses, (void **)&r))
+        r = NULL;
+
     assert(r != NULL);
     return r;
 }

@@ -92,7 +92,7 @@ void pool_add(pool this, void *resource)
     pthread_mutex_unlock(&this->mutex);
 }
 
-void *pool_get(pool this)
+status_t pool_get(pool this, void **ppres)
 {
     size_t i;
     void *resource = NULL;
@@ -101,7 +101,8 @@ void *pool_get(pool this)
     assert(NULL != this);
 
     error = pthread_mutex_lock(&this->mutex);
-    assert(!error);
+    if (error)
+        return fail(error);
 
     /* Find a free resource */
     for (i = 0; i < this->nelem; i++) {
@@ -117,17 +118,20 @@ void *pool_get(pool this)
     }
 
     error = pthread_mutex_unlock(&this->mutex);
-    assert(!error);
+    if (error)
+        return fail(error);
 
-    /* It is not legal to return NULL, we must always
-     * have enough resources. */
-    assert(i != this->nelem);
-    assert(NULL != resource);
+    if (i == this->nelem)
+        return fail(ENOSPC);
 
-    return resource;
+    if (resource == NULL)
+        return fail(EINVAL);
+
+    *ppres = resource;
+    return success;
 }
 
-void pool_recycle(pool this, void *resource)
+status_t pool_recycle(pool this, void *resource)
 {
     size_t i;
     int error = 0;
@@ -136,7 +140,8 @@ void pool_recycle(pool this, void *resource)
     assert(NULL != resource);
 
     error = pthread_mutex_lock(&this->mutex);
-    assert(!error);
+    if (error)
+        return fail(error);
 
     for (i = 0; i < this->nelem; i++) {
         if (this->pdata[i] == NULL) {
@@ -145,12 +150,16 @@ void pool_recycle(pool this, void *resource)
         }
     }
 
-    /* If the resource wasnt' released, someone released more objects
-     * than they got. This is something we discourage by asserting. :-) */
-    assert(i < this->nelem);
-
     error = pthread_mutex_unlock(&this->mutex);
-    assert(!error);
+    if (error)
+        return fail(error);
+
+    /* If the resource wasnt' released, someone released more objects
+     * than they got. */
+    if (i == this->nelem)
+        return fail(ENOENT);
+
+    return success;
 }
 
 #ifdef CHECK_POOL
@@ -170,7 +179,7 @@ static void *tfn(void *arg)
     void *dummy;
 
     for (i = 0; i < niter; i++) {
-        if ((dummy = pool_get(pool)) == NULL) {
+        if (!pool_get(pool, (void **)&dummy)) {
             fprintf(stderr, "Unable to get resource\n");
             exit(77);
         }

@@ -65,14 +65,22 @@ void die_perror(const char *fmt, ...)
  */
 #ifdef NDEBUG
 #define debug(...)
+
 #else
 #define debug(...) debugimpl(__VA_ARGS__)
-void debugimpl(const char *fmt, ...);
+#endif
 
+// We always provide these, in case one compiles with debug info
+// and links with the release version. It's not the library that's an
+// issue, but the calling code. We can't control the callers anyway,
+// but give them a chance to strip away debug info as long as they
+// use the debug() macro. We can't control the callers anyway,
+// but give them a chance to strip away debug info as long as they
+// use the debug() macro.
+void debugimpl(const char *fmt, ...);
 void meta_enable_debug_output(void);
 void meta_disable_debug_output(void);
 
-#endif
 
 /*
  * We want a distinct type to indicate success or failure,

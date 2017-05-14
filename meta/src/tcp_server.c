@@ -62,12 +62,10 @@ struct tcp_server_tag {
     size_t queue_size;
     int block_when_full;
 
-    /* Pool of connection objects. Allocated and initiated in
-     * tcp_server_init(), freed in tcp_server_free().
-     * Accessed by tcp_server_get_connection() and
-     * tcp_server_recycle_connection(). Size equals
-     * the # of queue entries + # of worker threads + 1 as
-     * each entry consumes one connection.
+    /* Pool of connection objects. Allocated and initiated in tcp_server_init(),
+     * freed in tcp_server_free().  Accessed by tcp_server_get_connection() and
+     * tcp_server_recycle_connection(). Size equals the # of queue entries 
+     * + # of worker threads + 1 as each entry consumes one connection.
      * The +1 is in case the queue is full.
      */
     pool connections;
@@ -363,7 +361,7 @@ tcp_server_recycle_connection(void *vse, void *vconn)
     pool_recycle(srv->connections, conn);
 }
 
-static void assign_rw_buffers(void *vse, void *vconn)
+static status_t assign_rw_buffers(void *vse, void *vconn)
 {
     membuf rb, wb;
 
@@ -377,24 +375,24 @@ static void assign_rw_buffers(void *vse, void *vconn)
     assert(srv->write_buffers != NULL);
     assert(conn != NULL);
 
-    rb = pool_get(srv->read_buffers);
-    wb = pool_get(srv->write_buffers);
+    if (!pool_get(srv->read_buffers, (void **)&rb))
+        return failure;
+
+    if (!pool_get(srv->write_buffers, (void **)&wb))
+        return failure;
 
     connection_assign_read_buffer(conn, rb);
     connection_assign_write_buffer(conn, wb);
+    return success;
 }
 
-static connection tcp_server_get_connection(tcp_server srv)
+static status_t tcp_server_get_connection(tcp_server srv, connection *pconn)
 {
-    connection conn;
+    assert(srv != NULL);
+    assert(srv->connections != NULL);
+    assert(pconn != NULL);
 
-    assert(NULL != srv);
-    assert(NULL != srv->connections);
-
-    conn = pool_get(srv->connections);
-    assert(NULL != conn);
-
-    return conn;
+    return pool_get(srv->connections, (void **)pconn);
 }
 
 static status_t accept_new_connections(tcp_server srv, meta_socket sock)
@@ -512,35 +510,30 @@ static status_t accept_new_connections(tcp_server srv, meta_socket sock)
           * unique to this connection. tcp_server_get_connection()
           * never returns NULL as enough connection resources has
           * been allocated already. */
-         conn = tcp_server_get_connection(srv);
+         if (!tcp_server_get_connection(srv, &conn)) {
+            sock_close(newsock);
+            return failure;
+         }
 
         /* Start a thread to handle the connection with this client. */
         connection_set_params(conn, newsock, &addr);
 
-        rc = threadpool_add_work(
-            srv->queue,
-            assign_rw_buffers,
-            srv,
-            srv->service_func,
-            conn,
-            tcp_server_recycle_connection,
-            srv);
+        rc = threadpool_add_work(srv->queue, assign_rw_buffers,
+            srv, srv->service_func, conn,
+            tcp_server_recycle_connection, srv);
 
         if (!rc) {
             /* Could not add work to the queue */
             /*
-             *	NOTE: The proper HTTP response is:
-             *	503 Service Unavailable
-             *	but tcp_server does not know about HTTP.
-             *	What do we do, add a callback error handler
-             *	or something else? It is, according to
-             *	rfc2616, $10.5.4, OK just to ignore the request,
-             *	but hardly the most userfriendly way of doing it...
-             *	Anyway, if we choose to handle this,
+             *	NOTE: The proper HTTP response is "503 Service Unavailable"
+             *	but tcp_server does not know about HTTP. What do we do, add a
+             *	callback error handler or something else? It is, according to
+             *	rfc2616, $10.5.4, OK just to ignore the request, but hardly the
+             *	most userfriendly way of doing it.  Anyway, if we choose to
+             *	handle this,
              *	a) will that create even more overload?
-             *	b) What do we do with the data(if any) that
-             *	the client tries to send us? Can we just
-             *	'dump' a 503 on the socket and then close it?
+             *	b) What do we do with the data(if any) that the client tries to
+             *	send us? Can we just 'dump' a 503 on the socket and then close it?
              */
 
             if (!connection_close(conn))
