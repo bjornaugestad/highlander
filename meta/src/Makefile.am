@@ -25,7 +25,6 @@ include_HEADERS=\
 	meta_filecache.h\
 	meta_stringmap.h\
 	meta_map.h\
-	meta_tsb.h\
 	connection.h\
 	meta_pair.h\
 	meta_error.h\
@@ -46,7 +45,6 @@ libmeta_a_SOURCES=\
 	meta_process.c\
 	meta_socket.c\
 	meta_error.c\
-	meta_tsb.c\
 	tcp_server.c\
 	connection.c\
 	cstring.c\
@@ -176,9 +174,6 @@ pair_check_CFLAGS=-DCHECK_PAIR $(AM_CFLAGS)
 
 fifo_check_SOURCES=meta_fifo.c meta_wlock.c meta_common.c
 fifo_check_CFLAGS=-DCHECK_FIFO $(AM_CFLAGS)
-
-#tsb_check_SOURCES=meta_tsb.c  meta_common.c
-#tsb_check_CFLAGS=-DCHECK_TSB $(AM_CFLAGS)
 
 wlock_check_SOURCES=meta_wlock.c meta_common.c
 wlock_check_CFLAGS=-DCHECK_WLOCK -O0 -ggdb -D_GNU_SOURCE -std=gnu99 -D_REENTRANT $(AM_CFLAGS)
