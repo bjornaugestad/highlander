@@ -170,7 +170,7 @@ status_t fifo_write_signal(fifo p, void *data)
         return failure;
 
     if (!fifo_add(p, data)) {
-        (void)fifo_unlock(p);
+        fifo_unlock(p);
         return failure;
     }
 
@@ -257,7 +257,8 @@ static void *reader(void *arg)
             free(s);
         }
 
-        fifo_unlock(f);
+        if (!fifo_unlock(f))
+            break;
     }
 
     fprintf(stderr, "Exiting %s...\n", __func__);

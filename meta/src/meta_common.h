@@ -36,6 +36,7 @@ extern int meta_verbose_level;
 extern int meta_indent_level;
 
 void verbose(int level, const char *fmt, ...)
+    __attribute__((nonnull))
     __attribute__((format(printf,2,3)));
 
 /* Write a warning to the syslog */
@@ -43,16 +44,16 @@ void warning(const char *fmt, ...);
 void meta_vsyslog(int class, const char *fmt, va_list ap);
 
 void warning(const char *fmt, ...)
-    __attribute__((nonnull(1)))
+    __attribute__((nonnull))
     __attribute__((format(printf,1,2)));
 
 void die(const char *fmt, ...)
-    __attribute__((nonnull(1)))
+    __attribute__((nonnull))
     __attribute__((format(printf,1,2)))
     __attribute__ ((noreturn)) ;
 
 void die_perror(const char *fmt, ...)
-    __attribute__((nonnull(1)))
+    __attribute__((nonnull))
     __attribute__((format(printf,1,2)))
     __attribute__ ((noreturn));
 
