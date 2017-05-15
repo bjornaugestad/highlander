@@ -4,32 +4,30 @@
  */
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <assert.h>
 
-#include <meta_common.h>
 #include <meta_membuf.h>
 
 membuf membuf_new(size_t size)
 {
-    membuf this;
+    membuf new;
 
     assert(size > 0);
 
-    if ((this = malloc(sizeof *this)) == NULL
-    || (this->data = malloc(size)) == NULL) {
-        free(this);
-        return NULL;
+    if ((new = malloc(sizeof *new)) != NULL
+    && (new->data = malloc(size)) != NULL) {
+        new->size = size;
+        new->nwritten = new->nread = 0;
+        return new;
     }
 
-    this->size = size;
-    this->nwritten = this->nread = 0;
-
-    return this;
+    free(new);
+    return NULL;
 }
 
 #ifdef CHECK_MEMBUF
+
+#include <string.h>
 
 int main(void)
 {
@@ -66,10 +64,8 @@ int main(void)
         membuf_free(mb);
     }
 
-    /* Now loop with odd sizes to see if we miss a byte or two.
-     * Size stuff so that we write less than we read, and that
-     * size%writes != 0.
-     */
+    // Now loop with odd sizes to see if we miss a byte or two. Size stuff so
+    // that we write less than we read, and that size % writes != 0.
     mb = membuf_new(23);
     cb = membuf_write(mb, writebuf, 7);
     assert(cb == 7);

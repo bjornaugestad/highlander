@@ -165,10 +165,8 @@ static inline void membuf_set(membuf mb, int c)
     memset(mb->data, c, mb->size);
 }
 
-/*
- * Returns the total size of the buffer, which is the same
- * as the size parameter to the membuf_new() function.
- */
+// Returns the total size of the buffer, which is the same
+// as the size parameter to the membuf_new() function.
 __attribute__((warn_unused_result))
 __attribute__((nonnull(1)))
 static inline size_t membuf_size(membuf mb)
@@ -210,10 +208,9 @@ membuf_read(membuf this, void *dest, size_t count)
     return count;
 }
 
-// Appends count bytes to the buffer. Returns the number of bytes
-// actually added to the buffer. If the returned value is less
-// than the count parameter, it means that the buffer was too small to
-// store the data.
+// Appends count bytes to the buffer. Returns the number of bytes actually added
+// to the buffer. If the returned value is less than the count parameter, it
+// means that the buffer was too small to store the data.
 __attribute__((warn_unused_result))
 __attribute__((nonnull(1, 2)))
 static inline size_t
@@ -224,12 +221,6 @@ membuf_write(membuf this, const void *src, size_t count)
     assert(this != NULL);
     assert(src != NULL);
 
-    // Don't bother to write empty buffers
-    if (count == 0)
-        return 0;
-
-    // Decide how much we can write and reset the
-    // buffer if needed (and possible).
     navail = membuf_canwrite(this);
     if (count > navail)
         count = navail;
