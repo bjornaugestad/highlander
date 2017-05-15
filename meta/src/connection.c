@@ -61,7 +61,7 @@ struct connection_tag {
     int timeout_reads, timeout_writes;
     int retries_reads, retries_writes;
     int persistent;
-    meta_socket sock;
+    tcpsocket sock;
     void *arg2;
 
     /* Client we're connected with */
@@ -476,7 +476,7 @@ void connection_free(connection conn)
     }
 }
 
-void connection_set_params(connection conn, meta_socket sock, struct sockaddr_in* paddr)
+void connection_set_params(connection conn, tcpsocket sock, struct sockaddr_in* paddr)
 {
     assert(conn != NULL);
 

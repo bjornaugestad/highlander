@@ -50,7 +50,7 @@ struct tcp_server_tag {
 
     // The file descriptor we accept connections from.
     // SSLTODO: We may use a meta_ssl object here later.
-    meta_socket sock;
+    tcpsocket sock;
 
     /* The work queue */
     threadpool queue;
@@ -376,10 +376,10 @@ static status_t tcp_server_get_connection(tcp_server srv, connection *pconn)
     return pool_get(srv->connections, (void **)pconn);
 }
 
-static status_t accept_new_connections(tcp_server this, meta_socket sock)
+static status_t accept_new_connections(tcp_server this, tcpsocket sock)
 {
     status_t rc;
-    meta_socket newsock;
+    tcpsocket newsock;
     socklen_t addrsize;
     struct sockaddr_in addr;
     connection conn;
