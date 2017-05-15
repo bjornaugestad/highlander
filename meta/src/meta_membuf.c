@@ -17,10 +17,8 @@ membuf membuf_new(size_t size)
 
     assert(size > 0);
 
-    if ((this = malloc(sizeof *this)) == NULL)
-        return NULL;
-
-    if ((this->data = malloc(size)) == NULL) {
+    if ((this = malloc(sizeof *this)) == NULL
+    || (this->data = malloc(size)) == NULL) {
         free(this);
         return NULL;
     }

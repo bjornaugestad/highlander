@@ -73,7 +73,7 @@ libmeta_a_CFLAGS=\
 	-I$(srcdir)\
 	-I$(top_srcdir)/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\
-	-O3 -Wall -Wno-long-long  -ftree-vectorize -Wno-inline\
+	-O3 -Wall -Wno-long-long  -ftree-vectorize\
     -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast\
 	-fomit-frame-pointer -msse4.2
 
