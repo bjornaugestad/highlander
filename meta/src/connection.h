@@ -9,7 +9,7 @@
 struct sockaddr_in;
 
 #include <meta_membuf.h>
-#include <tcpsocket.h>
+#include <gensocket.h>
 #include <meta_common.h>
 
 #ifdef __cplusplus
@@ -84,7 +84,7 @@ void connection_set_persistent(connection conn, int val)
 int	connection_is_persistent(connection conn)
     __attribute__((nonnull(1)));
 
-void connection_set_params(connection conn, tcpsocket sock,
+void connection_set_params(connection conn, sock sock,
     struct sockaddr_in* paddr)
     __attribute__((nonnull(1, 2, 3)));
 

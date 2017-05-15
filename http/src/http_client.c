@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <tcpsocket.h>
+#include <gensocket.h>
 
 #include <highlander.h>
 
