@@ -76,7 +76,6 @@ static struct {
     if (!response_add(page, "<ul id='menulist'>\n"))
         return failure;
 
-
     for (i = 0; i < nelem; i++) {
         const char* sel = "plain";
         if (items[i].pageid == pageid)

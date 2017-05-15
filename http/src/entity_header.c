@@ -41,7 +41,7 @@ struct entity_header_tag {
     time_t last_modified;
 };
 
-static int entity_header_flag_is_set(entity_header eh, flagtype flag)
+static inline int entity_header_flag_is_set(entity_header eh, flagtype flag)
 {
     assert(eh != NULL);
     assert(flag > 0);
@@ -49,7 +49,7 @@ static int entity_header_flag_is_set(entity_header eh, flagtype flag)
     return eh->flags & flag ? 1 : 0;
 }
 
-static void entity_header_set_flag(entity_header eh, flagtype flag)
+static inline void entity_header_set_flag(entity_header eh, flagtype flag)
 {
     assert(eh != NULL);
     assert(flag > 0);
@@ -57,7 +57,7 @@ static void entity_header_set_flag(entity_header eh, flagtype flag)
     eh->flags |= flag;
 }
 
-static void entity_header_clear_flags(entity_header eh)
+static inline void entity_header_clear_flags(entity_header eh)
 {
     assert(eh != NULL);
     eh->flags = 0;
@@ -184,7 +184,6 @@ status_t entity_header_set_content_type(entity_header eh, const char* value)
     entity_header_set_flag(eh, ENTITY_HEADER_CONTENT_TYPE_SET);
     return success;
 }
-
 
 status_t entity_header_set_content_md5(entity_header eh, const char* value)
 {

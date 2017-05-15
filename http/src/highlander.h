@@ -439,7 +439,6 @@ status_t request_set_mime_version(http_request request, int major, int minor, er
     __attribute__((nonnull(1)))
     __attribute__((warn_unused_result));
 
-
 status_t request_set_accept_ranges(http_request r, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
@@ -722,8 +721,10 @@ status_t response_set_content_type(http_response response, const char* value)
 
 void response_set_expires(http_response response, time_t value);
     __attribute__((nonnull(1)))
+
 void response_set_last_modified(http_response response, time_t value);
     __attribute__((nonnull(1)))
+
 status_t response_add(http_response response, const char* src)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
@@ -887,10 +888,8 @@ unsigned long http_server_sum_poll_again(http_server p)     __attribute__((nonnu
 unsigned long http_server_sum_accept_failed(http_server p)  __attribute__((nonnull(1)));
 unsigned long http_server_sum_denied_clients(http_server p) __attribute__((nonnull(1)));
 
-
 #ifdef __cplusplus
 }
 #endif
-
 
 #endif

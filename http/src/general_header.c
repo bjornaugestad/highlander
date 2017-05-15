@@ -172,7 +172,8 @@ struct general_header_tag {
     cstring warning;			/* v1.1 §14.46 */
 };
 
-static bool general_header_flag_is_set(general_header gh, flagtype flag)
+static inline bool 
+general_header_flag_is_set(general_header gh, flagtype flag)
 {
     assert(gh != NULL);
     assert(flag > 0);
@@ -180,7 +181,8 @@ static bool general_header_flag_is_set(general_header gh, flagtype flag)
     return gh->flags & flag ? true : false;
 }
 
-static void general_header_set_flag(general_header gh, flagtype flag)
+static inline void 
+general_header_set_flag(general_header gh, flagtype flag)
 {
     assert(gh != NULL);
     assert(flag > 0);
@@ -188,7 +190,8 @@ static void general_header_set_flag(general_header gh, flagtype flag)
     gh->flags |= flag;
 }
 
-static void general_header_clear_flags(general_header gh)
+static inline void 
+general_header_clear_flags(general_header gh)
 {
     assert(gh != NULL);
     gh->flags = 0;
@@ -938,7 +941,7 @@ static status_t set_cache_control(general_header gh, const char* s, error e)
     return success;
 }
 
-static status_t parse_transfer_encoding(general_header gh, const char* value, error e)
+static inline status_t parse_transfer_encoding(general_header gh, const char* value, error e)
 {
     if (!general_header_set_transfer_encoding(gh, value))
         return set_os_error(e, errno);
@@ -946,7 +949,7 @@ static status_t parse_transfer_encoding(general_header gh, const char* value, er
     return success;
 }
 
-static status_t parse_pragma(general_header gh, const char* value, error e)
+static inline status_t parse_pragma(general_header gh, const char* value, error e)
 {
     UNUSED(e);
 
@@ -967,7 +970,7 @@ static status_t parse_pragma(general_header gh, const char* value, error e)
  * A response may even contain more than one warning. Do we care? We're neither
  * a client nor a proxy ATM, so just store the value.
  */
-static status_t parse_warning(general_header gh, const char* value, error e)
+static inline status_t parse_warning(general_header gh, const char* value, error e)
 {
     assert(gh != NULL);
     assert(value != NULL);
@@ -978,7 +981,8 @@ static status_t parse_warning(general_header gh, const char* value, error e)
     return success;
 }
 
-static status_t parse_cache_control(general_header gh, const char* value, error e)
+static status_t
+parse_cache_control(general_header gh, const char* value, error e)
 {
     char* s;
 
@@ -1016,7 +1020,8 @@ static status_t parse_cache_control(general_header gh, const char* value, error 
     return set_cache_control(gh, value, e);
 }
 
-static status_t parse_date(general_header gh, const char* value, error e)
+static inline status_t
+parse_date(general_header gh, const char* value, error e)
 {
     time_t d;
     assert(gh != NULL);
@@ -1037,7 +1042,7 @@ static status_t parse_date(general_header gh, const char* value, error e)
  * Update 20070918: Being strict is not the best solution. From now on
  * we accept "keep-alive" and any other value is interpreted as "close".
  */
-static status_t parse_connection(general_header gh, const char* value, error e)
+static inline status_t parse_connection(general_header gh, const char* value, error e)
 {
     assert(gh != NULL);
     assert(value != NULL);
@@ -1051,7 +1056,7 @@ static status_t parse_connection(general_header gh, const char* value, error e)
     return success;
 }
 
-static status_t parse_trailer(general_header gh, const char* value, error e)
+static inline status_t parse_trailer(general_header gh, const char* value, error e)
 {
     assert(gh != NULL);
     assert(value != NULL);
@@ -1062,7 +1067,7 @@ static status_t parse_trailer(general_header gh, const char* value, error e)
     return success;
 }
 
-static status_t parse_upgrade(general_header gh, const char* value, error e)
+static inline status_t parse_upgrade(general_header gh, const char* value, error e)
 {
     assert(gh != NULL);
     assert(value != NULL);
@@ -1081,7 +1086,7 @@ static status_t parse_upgrade(general_header gh, const char* value, error e)
     return success;
 }
 
-static status_t parse_via(general_header gh, const char* value, error e)
+static inline status_t parse_via(general_header gh, const char* value, error e)
 {
     assert(gh != NULL);
     assert(value != NULL);
