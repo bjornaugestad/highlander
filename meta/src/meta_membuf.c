@@ -13,22 +13,22 @@
 
 membuf membuf_new(size_t size)
 {
-    membuf p;
+    membuf this;
 
     assert(size > 0);
 
-    if ((p = malloc(sizeof *p)) == NULL)
+    if ((this = malloc(sizeof *this)) == NULL)
         return NULL;
 
-    if ((p->data = calloc(1, size)) == NULL) {
-        free(p);
+    if ((this->data = malloc(size)) == NULL) {
+        free(this);
         return NULL;
     }
 
-    p->size = size;
-    p->written = p->read = 0;
+    this->size = size;
+    this->nwritten = this->nread = 0;
 
-    return p;
+    return this;
 }
 
 void membuf_free(membuf this)
@@ -39,59 +39,27 @@ void membuf_free(membuf this)
     }
 }
 
-void membuf_dump(membuf this, void *filep)
-{
-    size_t i;
-    FILE *f = filep;
-
-    fprintf(f, "written: %zu read: %zu\n", this->written, this->read);
-    fprintf(f, "Contents:\n");
-    for (i = 0; i < this->size; i++) {
-        if (this->data[i] != '\0')
-            fprintf(f, "data[%zu] == %c\n", i, this->data[i]);
-    }
-}
-
-
 size_t membuf_write(membuf this, const void *src, size_t count)
 {
-    size_t n;
+    size_t navail;
 
     assert(this != NULL);
     assert(src != NULL);
 
-    /* Don't bother to write empty buffers */
+    // Don't bother to write empty buffers
     if (count == 0)
         return 0;
 
-    /*
-     * Decide how much we can write and reset the
-     * buffer if needed (and possible).
-     */
-    if (count > this->size - this->written) {
-        /*
-         * Has all written bytes also been read?
-         * If so, reset the buffer.
-         */
-        if (this->written == this->read)
-            this->written = this->read = 0;
+    // Decide how much we can write and reset the
+    // buffer if needed (and possible).
+    navail = membuf_canwrite(this);
+    if (count > navail)
+        count = navail;
 
-        /* Is there space available after reset ? */
-        if (count <= this->size - this->written)
-            n = count;
-        else
-            n = this->size - this->written;
-    }
-    else
-        n = count;
+    memcpy(&this->data[this->nwritten], src, count);
+    this->nwritten += count;
 
-    /* Check that we didn't screw up above */
-    assert(n <= membuf_canwrite(this));
-
-    memcpy(&this->data[this->written], src, n);
-    this->written += n;
-
-    return n;
+    return count;
 }
 
 size_t membuf_read(membuf this, void *dest, size_t count)
@@ -101,7 +69,7 @@ size_t membuf_read(membuf this, void *dest, size_t count)
     assert(this != NULL);
     assert(dest != NULL);
     assert(count != 0);
-    assert(this->written >= this->read);
+    assert(this->nwritten >= this->nread);
 
     navail = membuf_canread(this);
     if (navail < count)
@@ -110,14 +78,14 @@ size_t membuf_read(membuf this, void *dest, size_t count)
     if (count == 0)
         return 0;
 
-    memcpy(dest, &this->data[this->read], count);
-    this->read += count;
+    memcpy(dest, &this->data[this->nread], count);
+    this->nread += count;
 
-    assert(this->read <= this->written);
+    assert(this->nread <= this->nwritten);
 
-    /* Reset offset counters if all bytes written also have been read */
-    if (this->written == this->read)
-        this->written = this->read = 0;
+    // Reset offset counters if all bytes written also have been read
+    if (this->nwritten == this->nread)
+        this->nwritten = this->nread = 0;
 
     return count;
 }
