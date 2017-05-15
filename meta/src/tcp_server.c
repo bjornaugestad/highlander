@@ -48,8 +48,8 @@ struct tcp_server_tag {
     void *(*service_func)(void *arg);
     void *service_arg;
 
-    // The file descriptor we accept connections from.
-    // SSLTODO: We may use a meta_ssl object here later.
+    // The socket we accept connections from.
+    int socktype;
     socket_t sock;
 
     /* The work queue */
@@ -136,7 +136,7 @@ static bool client_can_connect(tcp_server srv, struct sockaddr_in* addr)
 // SSLTODO: and run many servers from within the same process. 
 // SSLTODO:
 // SSLTODO: Each socket(active connection) will have its own SSL object.
-tcp_server tcp_server_new(void)
+tcp_server tcp_server_new(int socktype)
 {
     tcp_server new;
 
@@ -152,6 +152,7 @@ tcp_server tcp_server_new(void)
         new->queue_size = 100;
         new->nthreads = 10;
         new->port = 2000;
+        new->socktype = socktype;
         new->sock = NULL;
         new->pattern_compiled = false;
         new->host = NULL;
@@ -534,7 +535,7 @@ status_t tcp_server_get_root_resources(tcp_server this)
     if (this->host != NULL)
         hostname = c_str(this->host);
 
-    this->sock = socket_create_server_socket(SOCKTYPE_TCP, hostname, this->port);
+    this->sock = socket_create_server_socket(this->socktype, hostname, this->port);
     if (this->sock == NULL)
         return failure;
 

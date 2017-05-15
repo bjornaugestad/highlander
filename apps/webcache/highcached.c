@@ -77,8 +77,8 @@ int main(int argc, char *argv[])
 
     create_cache();
 
-    g_server = http_server_new();
-    g_adminserver = http_server_new();
+    g_server = http_server_new(SOCKTYPE_TCP);
+    g_adminserver = http_server_new(SOCKTYPE_TCP);
     p = process_new("webcached");
 
     configure_admin_server(g_adminserver, g_configfile);

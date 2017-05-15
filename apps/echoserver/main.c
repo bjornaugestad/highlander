@@ -5,7 +5,8 @@
 #include <connection.h>
 #include <meta_process.h>
 
-static int m_use_ssl;
+// Default type is TCP. We may enable SSL instead.
+static int m_servertype = SOCKTYPE_TCP;
 
 static void* fn(void* arg)
 {
@@ -29,7 +30,7 @@ static void parse_command_line(int argc, char *argv[])
     while ((c = getopt(argc, argv, options)) != -1) {
         switch (c) {
             case 's':
-                m_use_ssl = 1;
+                m_servertype = SOCKTYPE_SSL;
                 break;
 
             case '?':
@@ -48,7 +49,7 @@ int main(int argc, char *argv[])
     parse_command_line(argc, argv);
     
     p = process_new("echoserver");
-    srv = tcp_server_new();
+    srv = tcp_server_new(m_servertype);
 
     tcp_server_init(srv);
     tcp_server_set_service_function(srv, fn, NULL);

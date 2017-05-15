@@ -18,7 +18,7 @@ extern "C" {
 typedef struct tcp_server_tag* tcp_server;
 
 /* Creation and destruction */
-tcp_server tcp_server_new(void) 
+tcp_server tcp_server_new(int socktype) 
     __attribute__((malloc));
 
 status_t tcp_server_init(tcp_server srv)

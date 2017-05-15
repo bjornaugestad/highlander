@@ -17,7 +17,7 @@ int page_handler(http_request req, http_response page)
 
 int main(void)
 {
-    http_server s = http_server_new();
+    http_server s = http_server_new(SOCKTYPE_TCP);
     http_server_set_port(s, 2000);
     if (!http_server_alloc(s))
         die("Could not allocate resources\n");

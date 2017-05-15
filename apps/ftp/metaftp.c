@@ -441,7 +441,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    g_server = http_server_new();
+    g_server = http_server_new(SOCKTYPE_TCP);
     p = process_new("metaftp");
 
     if (!http_server_configure(g_server, p, g_configfile)) {

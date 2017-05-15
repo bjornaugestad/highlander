@@ -118,7 +118,7 @@ void http_client_set_retries_write(http_client s, int count)
     __attribute__((nonnull(1)));
 
 
-http_server http_server_new(void);
+http_server http_server_new(int socktype);
 void http_server_free(http_server s);
 
 status_t http_server_configure(http_server s, process p, const char* filename)

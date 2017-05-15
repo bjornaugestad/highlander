@@ -128,14 +128,14 @@ static void set_server_defaults(http_server this)
     this->defered_read = 0;
 }
 
-http_server http_server_new(void)
+http_server http_server_new(int socktype)
 {
     http_server this;
 
     if ((this = calloc(1, sizeof *this)) == NULL)
         return NULL;
 
-    if ((this->tcpsrv = tcp_server_new()) == NULL) {
+    if ((this->tcpsrv = tcp_server_new(socktype)) == NULL) {
         free(this);
         return NULL;
     }
