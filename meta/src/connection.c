@@ -87,51 +87,48 @@ struct connection_tag {
 };
 
 /* Local helpers */
-static inline status_t fill_read_buffer(connection conn)
+static inline status_t fill_read_buffer(connection this)
 {
     ssize_t nread;
 
-    assert(conn != NULL);
-    assert(membuf_canread(conn->readbuf) == 0);
+    assert(this != NULL);
+    assert(membuf_canread(this->readbuf) == 0);
 
     /* Clear the read buffer */
-    membuf_reset(conn->readbuf);
+    membuf_reset(this->readbuf);
 
-    nread = socket_read(
-        conn->sock,
-        membuf_data(conn->readbuf),
-        membuf_size(conn->readbuf),
-        conn->timeout_reads,
-        conn->retries_reads);
+    nread = socket_read(this->sock, membuf_data(this->readbuf),
+        membuf_size(this->readbuf), this->timeout_reads,
+        this->retries_reads);
 
     /* NOTE: errors may indicate bad clients */
     if (nread == 0) {
         errno = EAGAIN;
     }
     else if (nread > 0) {
-        conn->incoming_bytes += nread;
-        membuf_set_written(conn->readbuf, nread);
+        this->incoming_bytes += nread;
+        membuf_set_written(this->readbuf, nread);
     }
 
     return nread > 0 ? success : failure;
 }
 
-static inline void reset_counters(connection conn)
+static inline void reset_counters(connection this)
 {
-    assert(conn != NULL);
-    conn->incoming_bytes = conn->outgoing_bytes = 0;
-    conn->conn_established = conn->request_started = time(NULL);
+    assert(this != NULL);
+    this->incoming_bytes = this->outgoing_bytes = 0;
+    this->conn_established = this->request_started = time(NULL);
 }
 
 static inline void
-add_to_writebuf(connection conn, const void *buf, size_t count)
+add_to_writebuf(connection this, const void *buf, size_t count)
 {
     size_t nwritten;
 
     /* There must be space in the write buffer */
-    assert(membuf_canwrite(conn->writebuf) >= count);
+    assert(membuf_canwrite(this->writebuf) >= count);
 
-    nwritten = membuf_write(conn->writebuf, buf, count);
+    nwritten = membuf_write(this->writebuf, buf, count);
     assert(count == nwritten);
 
 #ifdef NDEBUG
@@ -140,35 +137,35 @@ add_to_writebuf(connection conn, const void *buf, size_t count)
 }
 
 static inline size_t
-copy_from_readbuf(connection conn, void *buf, size_t count)
+copy_from_readbuf(connection this, void *buf, size_t count)
 {
-    return membuf_read(conn->readbuf, buf, count);
+    return membuf_read(this->readbuf, buf, count);
 }
 
 static inline bool
-readbuf_contains_atleast(connection conn, size_t count)
+readbuf_contains_atleast(connection this, size_t count)
 {
-    size_t n = membuf_canread(conn->readbuf);
+    size_t n = membuf_canread(this->readbuf);
     return n >= count;
 }
 
 static inline bool
-readbuf_contains_data(connection conn)
+readbuf_contains_data(connection this)
 {
-    size_t count = membuf_canread(conn->readbuf);
+    size_t count = membuf_canread(this->readbuf);
     return count != 0;
 }
 
 static inline bool
-readbuf_empty(connection conn)
+readbuf_empty(connection this)
 {
-    return readbuf_contains_data(conn) == 0;
+    return readbuf_contains_data(this) == 0;
 }
 
 static inline bool
-writebuf_has_room_for(connection conn, size_t count)
+writebuf_has_room_for(connection this, size_t count)
 {
-    size_t n = membuf_canwrite(conn->writebuf);
+    size_t n = membuf_canwrite(this->writebuf);
     return n >= count;
 }
 
@@ -179,7 +176,7 @@ connection connection_new(
     int retries_writes,
     void *arg2)
 {
-    connection p;
+    connection new;
 
     assert(timeout_reads >= 0);
     assert(timeout_writes >= 0);
@@ -187,106 +184,106 @@ connection connection_new(
     assert(retries_writes >= 0);
 
     /* Allocate memory needed */
-    if ((p = calloc(1, sizeof *p)) == NULL)
+    if ((new = calloc(1, sizeof *new)) == NULL)
         return NULL;
 
-    p->readbuf = NULL;
-    p->writebuf = NULL;
-    p->persistent = 0;
-    p->timeout_reads = timeout_reads;
-    p->timeout_writes = timeout_writes;
-    p->retries_reads = retries_reads;
-    p->retries_writes = retries_writes;
-    p->arg2 = arg2;
-    p->sock = NULL;
-    reset_counters(p);
+    new->readbuf = NULL;
+    new->writebuf = NULL;
+    new->persistent = 0;
+    new->timeout_reads = timeout_reads;
+    new->timeout_writes = timeout_writes;
+    new->retries_reads = retries_reads;
+    new->retries_writes = retries_writes;
+    new->arg2 = arg2;
+    new->sock = NULL;
+    reset_counters(new);
 
-    return p;
+    return new;
 }
 
-status_t connection_connect(connection c, const char *host, int port)
+status_t connection_connect(connection this, const char *host, int port)
 {
-    assert(c != NULL);
+    assert(this != NULL);
 
-    if ((c->sock = socket_create_client_socket(SOCKTYPE_TCP, host, port)) == NULL)
+    if ((this->sock = socket_create_client_socket(SOCKTYPE_TCP, host, port)) == NULL)
         return failure;
 
     return success;
 }
 
-membuf connection_reclaim_read_buffer(connection conn)
+membuf connection_reclaim_read_buffer(connection this)
 {
     membuf mb;
 
-    assert(conn != NULL);
+    assert(this != NULL);
 
-    mb = conn->readbuf;
-    conn->readbuf = NULL;
+    mb = this->readbuf;
+    this->readbuf = NULL;
     return mb;
 }
 
-membuf connection_reclaim_write_buffer(connection conn)
+membuf connection_reclaim_write_buffer(connection this)
 {
     membuf mb;
-    assert(conn != NULL);
+    assert(this != NULL);
 
-    mb = conn->writebuf;
-    conn->writebuf = NULL;
+    mb = this->writebuf;
+    this->writebuf = NULL;
     return mb;
 }
 
-void connection_assign_read_buffer(connection conn, membuf buf)
+void connection_assign_read_buffer(connection this, membuf buf)
 {
-    assert(conn != NULL);
+    assert(this != NULL);
     assert(buf != NULL);
-    assert(conn->readbuf == NULL); /* Don't assign without reclaiming the old one first */
+    assert(this->readbuf == NULL); /* Don't assign without reclaiming the old one first */
 
-    conn->readbuf = buf;
+    this->readbuf = buf;
 }
 
-void connection_assign_write_buffer(connection conn, membuf buf)
+void connection_assign_write_buffer(connection this, membuf buf)
 {
-    assert(conn != NULL);
+    assert(this != NULL);
     assert(buf != NULL);
-    assert(conn->writebuf == NULL); /* Don't assign without reclaiming the old one first */
+    assert(this->writebuf == NULL); /* Don't assign without reclaiming the old one first */
 
-    conn->writebuf = buf;
+    this->writebuf = buf;
 }
 
 
-status_t connection_flush(connection conn)
+status_t connection_flush(connection this)
 {
     status_t status = success;
     size_t count;
 
-    assert(conn != NULL);
+    assert(this != NULL);
 
-    count = membuf_canread(conn->writebuf);
+    count = membuf_canread(this->writebuf);
     if (count > 0) {
         status = socket_write(
-            conn->sock,
-            membuf_data(conn->writebuf),
+            this->sock,
+            membuf_data(this->writebuf),
             count,
-            conn->timeout_writes,
-            conn->retries_writes);
+            this->timeout_writes,
+            this->retries_writes);
 
         if (status) {
-            conn->outgoing_bytes += count;
-            membuf_reset(conn->writebuf);
+            this->outgoing_bytes += count;
+            membuf_reset(this->writebuf);
         }
     }
 
     return status;
 }
 
-status_t connection_close(connection conn)
+status_t connection_close(connection this)
 {
     status_t flush_success, close_success;
 
-    assert(conn != NULL);
+    assert(this != NULL);
 
-    flush_success = connection_flush(conn);
-    close_success = socket_close(conn->sock);
+    flush_success = connection_flush(this);
+    close_success = socket_close(this->sock);
 
     if (!flush_success)
         return failure;
@@ -297,19 +294,19 @@ status_t connection_close(connection conn)
     return success;
 }
 
-status_t connection_getc(connection conn, int *pc)
+status_t connection_getc(connection this, int *pc)
 {
     char c;
 
-    assert(conn != NULL);
+    assert(this != NULL);
     assert(pc != NULL);
 
     /* Fill buffer if empty */
-    if (readbuf_empty(conn) && !fill_read_buffer(conn))
+    if (readbuf_empty(this) && !fill_read_buffer(this))
         return failure;
 
     /* Get one character from buffer */
-    if (membuf_read(conn->readbuf, &c, 1) != 1)
+    if (membuf_read(this->readbuf, &c, 1) != 1)
         return failure;
 
     *pc = c;
@@ -317,14 +314,10 @@ status_t connection_getc(connection conn, int *pc)
 }
 
 static inline status_t
-write_to_socket(connection conn, const char *buf, size_t count)
+write_to_socket(connection this, const char *buf, size_t count)
 {
-    return socket_write(
-        conn->sock,
-        buf,
-        count,
-        conn->timeout_writes,
-        conn->retries_writes);
+    return socket_write(this->sock, buf, count,
+        this->timeout_writes, this->retries_writes);
 }
 
 /*
@@ -333,23 +326,23 @@ write_to_socket(connection conn, const char *buf, size_t count)
  * incoming data. If the buffer still has no room for the incoming
  * data, we write the data directly to the socket.
  */
-status_t connection_write(connection conn, const void *buf, size_t count)
+status_t connection_write(connection this, const void *buf, size_t count)
 {
-    assert(conn != NULL);
+    assert(this != NULL);
     assert(buf != NULL);
 
-    if (!writebuf_has_room_for(conn, count) && !connection_flush(conn))
+    if (!writebuf_has_room_for(this, count) && !connection_flush(this))
         return failure;
 
-    if (writebuf_has_room_for(conn, count)) {
-        add_to_writebuf(conn, buf, count);
+    if (writebuf_has_room_for(this, count)) {
+        add_to_writebuf(this, buf, count);
         return success;
     }
 
-    if (!write_to_socket(conn, buf, count))
+    if (!write_to_socket(this, buf, count))
         return failure;
 
-    conn->outgoing_bytes += count;
+    this->outgoing_bytes += count;
     return success;
 }
 
@@ -372,22 +365,22 @@ status_t connection_write(connection conn, const void *buf, size_t count)
  * We can either report an IP to the tcp_server or the tcp_server
  * can scan its connections for bad guys.
  */
-static ssize_t read_from_socket(connection p, void *buf, size_t count)
+static ssize_t read_from_socket(connection this, void *buf, size_t count)
 {
     ssize_t nread;
 
-    assert(p != NULL);
+    assert(this != NULL);
     assert(buf != NULL);
-    assert(readbuf_empty(p));
+    assert(readbuf_empty(this));
 
-    nread = socket_read(p->sock, buf, count, p->timeout_reads, p->retries_reads);
+    nread = socket_read(this->sock, buf, count, this->timeout_reads, this->retries_reads);
     if (nread > 0)
-        p->incoming_bytes += nread;
+        this->incoming_bytes += nread;
 
     return nread;
 }
 
-ssize_t connection_read(connection conn, void *buf, size_t count)
+ssize_t connection_read(connection this, void *buf, size_t count)
 {
     size_t ncopied;
     ssize_t nread;
@@ -395,12 +388,12 @@ ssize_t connection_read(connection conn, void *buf, size_t count)
     /* We need a char buffer to be able to compute offsets */
     char *cbuf = buf;
 
-    assert(conn != NULL);
+    assert(this != NULL);
     assert(buf != NULL);
 
     /* First copy data from the read buffer.
      * Were all bytes copied from buf? If so, return. */
-    ncopied = copy_from_readbuf(conn, buf, count);
+    ncopied = copy_from_readbuf(this, buf, count);
     if (ncopied == count)
         return ncopied;
 
@@ -410,8 +403,8 @@ ssize_t connection_read(connection conn, void *buf, size_t count)
     /* If the buffer can't hold the number of bytes we're
      * trying to read, there's no point in filling it. Therefore
      * we read directly from the socket if buffer is too small. */
-    if (membuf_size(conn->readbuf) < count) {
-        if ((nread = read_from_socket(conn, cbuf, count)) == -1)
+    if (membuf_size(this->readbuf) < count) {
+        if ((nread = read_from_socket(this, cbuf, count)) == -1)
             return -1;
 
         /* Return read count */
@@ -420,115 +413,115 @@ ssize_t connection_read(connection conn, void *buf, size_t count)
 
     /* If we end up here, we must first fill the read buffer
      * and then read from it. */
-    if (!fill_read_buffer(conn))
+    if (!fill_read_buffer(this))
         return -1;
 
     /* Now read as much as possible from the buffer, and 
      * return count, or possible short count, to our caller. */
-    nread = copy_from_readbuf(conn, cbuf, count);
+    nread = copy_from_readbuf(this, cbuf, count);
     return ncopied + nread;
 }
 
-void *connection_arg2(connection conn)
+void *connection_arg2(connection this)
 {
-    assert(conn != NULL);
-    return conn->arg2;
+    assert(this != NULL);
+    return this->arg2;
 }
 
-void connection_discard(connection conn)
+void connection_discard(connection this)
 {
-    assert(conn != NULL);
+    assert(this != NULL);
 
     /* Close the socket, ignoring any messages */
-    socket_close(conn->sock);
-    reset_counters(conn);
+    socket_close(this->sock);
+    reset_counters(this);
 }
 
-status_t connection_ungetc(connection conn, int c)
+status_t connection_ungetc(connection this, int c)
 {
     (void)c;
-    assert(conn != NULL);
-    return membuf_unget(conn->readbuf);
+    assert(this != NULL);
+    return membuf_unget(this->readbuf);
 }
 
-void connection_set_persistent(connection conn, int val)
+void connection_set_persistent(connection this, int val)
 {
-    assert(conn != NULL);
-    conn->persistent = val;
+    assert(this != NULL);
+    this->persistent = val;
 }
 
-int connection_is_persistent(connection conn)
+int connection_is_persistent(connection this)
 {
-    assert(conn != NULL);
-    return conn->persistent;
+    assert(this != NULL);
+    return this->persistent;
 }
 
-struct sockaddr_in* connection_get_addr(connection conn)
+struct sockaddr_in* connection_get_addr(connection this)
 {
-    assert(conn != NULL);
-    return &conn->addr;
+    assert(this != NULL);
+    return &this->addr;
 }
 
-void connection_free(connection conn)
+void connection_free(connection this)
 {
-    if (conn != NULL) {
-        free(conn);
+    if (this != NULL) {
+        free(this);
     }
 }
 
-void connection_set_params(connection conn, socket_t _sock, struct sockaddr_in* paddr)
+void connection_set_params(connection this, socket_t _sock, struct sockaddr_in* paddr)
 {
-    assert(conn != NULL);
+    assert(this != NULL);
 
-    conn->sock = _sock;
-    conn->addr = *paddr;
+    this->sock = _sock;
+    this->addr = *paddr;
 
-    reset_counters(conn);
+    reset_counters(this);
 }
 
-void connection_recycle(connection conn)
+void connection_recycle(connection this)
 {
-    assert(conn != NULL);
+    assert(this != NULL);
 
-    conn->persistent = 0;
-    conn->sock = NULL; // Maybe free it too?
+    this->persistent = 0;
+    this->sock = NULL; // Maybe free it too?
 
-    reset_counters(conn);
+    reset_counters(this);
 }
 
-int data_on_socket(connection conn)
+int data_on_socket(connection this)
 {
-    assert(conn != NULL);
+    assert(this != NULL);
 
-    return socket_wait_for_data(conn->sock, conn->timeout_reads) == success;
+    return socket_wait_for_data(this->sock, this->timeout_reads) == success;
 }
 
-status_t connection_putc(connection conn, int ch)
+status_t connection_putc(connection this, int ch)
 {
     char c = (char)ch;
-    assert(conn != NULL);
+    assert(this != NULL);
 
-    return connection_write(conn, &c, 1);
+    return connection_write(this, &c, 1);
 }
 
-status_t connection_puts(connection conn, const char *s)
+status_t connection_puts(connection this, const char *s)
 {
-    assert(conn != NULL);
+    assert(this != NULL);
     assert(s != NULL);
-    return connection_write(conn, s, strlen(s));
+    return connection_write(this, s, strlen(s));
 }
 
-status_t connection_gets(connection conn, char *dest, size_t destsize)
+status_t connection_gets(connection this, char *dest, size_t destsize)
 {
     status_t status = success;
     int c;
     size_t i = 0;
 
-    assert(conn != NULL);
+    assert(this != NULL);
     assert(dest != NULL);
     assert(destsize > 0);
 
-    while (i < destsize && (status = connection_getc(conn, &c))) {
+    while (i < destsize && (status = connection_getc(this, &c))) {
         *dest++ = c;
         i++;
 
@@ -543,7 +536,7 @@ status_t connection_gets(connection conn, char *dest, size_t destsize)
 }
 
 status_t connection_write_big_buffer(
-    connection conn,
+    connection this,
     const void *buf,
     size_t count,
     int timeout,
@@ -551,13 +544,13 @@ status_t connection_write_big_buffer(
 {
     status_t rc;
 
-    assert(conn != NULL);
+    assert(this != NULL);
     assert(buf != NULL);
     assert(timeout >= 0);
     assert(nretries >= 0);
 
-    if ((rc = connection_flush(conn))) {
-        rc = socket_write(conn->sock, buf, count, timeout, nretries);
+    if ((rc = connection_flush(this))) {
+        rc = socket_write(this->sock, buf, count, timeout, nretries);
     }
 
     return rc;

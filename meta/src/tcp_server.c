@@ -138,39 +138,39 @@ static bool client_can_connect(tcp_server srv, struct sockaddr_in* addr)
 // SSLTODO: Each socket(active connection) will have its own SSL object.
 tcp_server tcp_server_new(void)
 {
-    tcp_server p;
+    tcp_server new;
 
-    if ((p = calloc(1, sizeof *p)) != NULL) {
+    if ((new = calloc(1, sizeof *new)) != NULL) {
         /* Some defaults */
-        p->timeout_reads = 5000;
-        p->timeout_writes = 1000;
-        p->timeout_accepts = 800;
-        p->retries_reads = 0;
-        p->retries_writes = 10;
-        p->block_when_full = 0;
+        new->timeout_reads = 5000;
+        new->timeout_writes = 1000;
+        new->timeout_accepts = 800;
+        new->retries_reads = 0;
+        new->retries_writes = 10;
+        new->block_when_full = 0;
 
-        p->queue_size = 100;
-        p->nthreads = 10;
-        p->port = 2000;
-        p->sock = NULL;
-        p->pattern_compiled = false;
-        p->host = NULL;
+        new->queue_size = 100;
+        new->nthreads = 10;
+        new->port = 2000;
+        new->sock = NULL;
+        new->pattern_compiled = false;
+        new->host = NULL;
 
-        p->queue = NULL;
-        p->connections = NULL;
-        p->readbuf_size =  (1024 * 4);
-        p->writebuf_size = (1024 *64);
-        p->read_buffers = NULL;
-        p->write_buffers = NULL;
-        p->shutting_down = 0;
+        new->queue = NULL;
+        new->connections = NULL;
+        new->readbuf_size =  (1024 * 4);
+        new->writebuf_size = (1024 *64);
+        new->read_buffers = NULL;
+        new->write_buffers = NULL;
+        new->shutting_down = 0;
 
-        atomic_ulong_init(&p->sum_poll_intr);
-        atomic_ulong_init(&p->sum_poll_again);
-        atomic_ulong_init(&p->sum_accept_failed);
-        atomic_ulong_init(&p->sum_denied_clients);
+        atomic_ulong_init(&new->sum_poll_intr);
+        atomic_ulong_init(&new->sum_poll_again);
+        atomic_ulong_init(&new->sum_accept_failed);
+        atomic_ulong_init(&new->sum_denied_clients);
     }
 
-    return p;
+    return new;
 }
 
 void tcp_server_free(tcp_server this)
@@ -376,7 +376,7 @@ static status_t tcp_server_get_connection(tcp_server srv, connection *pconn)
     return pool_get(srv->connections, (void **)pconn);
 }
 
-static status_t accept_new_connections(tcp_server this, socket_t _sock)
+static status_t accept_new_connections(tcp_server this, socket_t sock)
 {
     status_t rc;
     socket_t newsock;
@@ -385,14 +385,14 @@ static status_t accept_new_connections(tcp_server this, socket_t _sock)
     connection conn;
 
     assert(this != NULL);
-    assert(_sock != NULL);
+    assert(sock != NULL);
 
     /* Make the socket non-blocking so that accept() won't block */
-    if (!socket_set_nonblock(_sock))
+    if (!socket_set_nonblock(sock))
         return failure;
 
     while (!this->shutting_down) {
-        if (!socket_wait_for_data(_sock, this->timeout_accepts)) {
+        if (!socket_wait_for_data(sock, this->timeout_accepts)) {
             if (errno == EINTR) {
                 /* Someone interrupted us, why?
                  * NOTE: This happens when the load is very high
@@ -438,7 +438,7 @@ static status_t accept_new_connections(tcp_server this, socket_t _sock)
          * Linux does not as it doesn't have that struct member.
          */
         addrsize = sizeof addr;
-        newsock = socket_accept(_sock, (struct sockaddr*)&addr, &addrsize);
+        newsock = socket_accept(sock, (struct sockaddr*)&addr, &addrsize);
         if (newsock == NULL) {
             switch (errno) {
                 /* NOTE: EPROTO is not defined for freebsd, and Stevens
