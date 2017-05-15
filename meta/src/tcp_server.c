@@ -50,7 +50,7 @@ struct tcp_server_tag {
 
     // The file descriptor we accept connections from.
     // SSLTODO: We may use a meta_ssl object here later.
-    sock sock;
+    socket_t sock;
 
     /* The work queue */
     threadpool queue;
@@ -376,10 +376,10 @@ static status_t tcp_server_get_connection(tcp_server srv, connection *pconn)
     return pool_get(srv->connections, (void **)pconn);
 }
 
-static status_t accept_new_connections(tcp_server this, sock _sock)
+static status_t accept_new_connections(tcp_server this, socket_t _sock)
 {
     status_t rc;
-    sock newsock;
+    socket_t newsock;
     socklen_t addrsize;
     struct sockaddr_in addr;
     connection conn;
@@ -388,11 +388,11 @@ static status_t accept_new_connections(tcp_server this, sock _sock)
     assert(_sock != NULL);
 
     /* Make the socket non-blocking so that accept() won't block */
-    if (!sock_set_nonblock(_sock))
+    if (!socket_set_nonblock(_sock))
         return failure;
 
     while (!this->shutting_down) {
-        if (!sock_wait_for_data(_sock, this->timeout_accepts)) {
+        if (!socket_wait_for_data(_sock, this->timeout_accepts)) {
             if (errno == EINTR) {
                 /* Someone interrupted us, why?
                  * NOTE: This happens when the load is very high
@@ -438,7 +438,7 @@ static status_t accept_new_connections(tcp_server this, sock _sock)
          * Linux does not as it doesn't have that struct member.
          */
         addrsize = sizeof addr;
-        newsock = sock_accept(_sock, (struct sockaddr*)&addr, &addrsize);
+        newsock = socket_accept(_sock, (struct sockaddr*)&addr, &addrsize);
         if (newsock == NULL) {
             switch (errno) {
                 /* NOTE: EPROTO is not defined for freebsd, and Stevens
@@ -475,14 +475,14 @@ static status_t accept_new_connections(tcp_server this, sock _sock)
             }
         }
 
-        if (!sock_set_nonblock(newsock)) {
-            sock_close(newsock);
+        if (!socket_set_nonblock(newsock)) {
+            socket_close(newsock);
             return failure;
         }
 
         /* Check if the client is permitted to connect or not. */
         if (!client_can_connect(this, &addr)) {
-            sock_close(newsock);
+            socket_close(newsock);
             atomic_ulong_inc(&this->sum_denied_clients);
             continue;
         }
@@ -492,7 +492,7 @@ static status_t accept_new_connections(tcp_server this, sock _sock)
           * never returns NULL as enough connection resources has
           * been allocated already. */
          if (!tcp_server_get_connection(this, &conn)) {
-            sock_close(newsock);
+            socket_close(newsock);
             return failure;
          }
 
@@ -534,7 +534,7 @@ status_t tcp_server_get_root_resources(tcp_server this)
     if (this->host != NULL)
         hostname = c_str(this->host);
 
-    this->sock = sock_create_server_socket(SOCKTYPE_TCP, hostname, this->port);
+    this->sock = socket_create_server_socket(SOCKTYPE_TCP, hostname, this->port);
     if (this->sock == NULL)
         return failure;
 
@@ -549,10 +549,10 @@ status_t tcp_server_start(tcp_server this)
     assert(this != NULL);
 
     if (!accept_new_connections(this, this->sock)) {
-        sock_close(this->sock);
+        socket_close(this->sock);
         rc = failure;
     }
-    else if (!sock_close(this->sock))
+    else if (!socket_close(this->sock))
         rc = failure;
     else
         rc = success;

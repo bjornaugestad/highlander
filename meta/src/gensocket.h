@@ -22,23 +22,23 @@ extern "C" {
 #define SOCKTYPE_TCP    1
 #define SOCKTYPE_SSL    2
 
-typedef struct gensocket_tag *sock;
+typedef struct gensocket_tag *socket_t;
 
-sock sock_create_server_socket(int type, const char *host, int port);
-sock sock_create_client_socket(int type, const char *host, int port);
-sock sock_socket(int type);
-sock sock_accept(sock p, struct sockaddr *addr, socklen_t *addrsize);
+socket_t socket_create_server_socket(int type, const char *host, int port);
+socket_t socket_create_client_socket(int type, const char *host, int port);
+socket_t socket_socket(int type);
+socket_t socket_accept(socket_t p, struct sockaddr *addr, socklen_t *addrsize);
 
-status_t sock_bind(sock p, const char *hostname, int port);
-status_t sock_listen(sock p, int backlog);
-status_t sock_close(sock p);
+status_t socket_bind(socket_t p, const char *hostname, int port);
+status_t socket_listen(socket_t p, int backlog);
+status_t socket_close(socket_t p);
 
-status_t sock_wait_for_data(sock p, int timeout);
-status_t sock_wait_for_writability(sock p, int timeout);
-status_t sock_write(sock p, const char *s, size_t count, int timeout, int retries);
-status_t sock_set_nonblock(sock p);
-status_t sock_clear_nonblock(sock p);
-ssize_t  sock_read(sock p, char *buf, size_t count, int timeout, int retries);
+status_t socket_wait_for_data(socket_t p, int timeout);
+status_t socket_wait_for_writability(socket_t p, int timeout);
+status_t socket_write(socket_t p, const char *s, size_t count, int timeout, int retries);
+status_t socket_set_nonblock(socket_t p);
+status_t socket_clear_nonblock(socket_t p);
+ssize_t  socket_read(socket_t p, char *buf, size_t count, int timeout, int retries);
 
 #ifdef __cplusplus
 }

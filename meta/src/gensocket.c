@@ -23,9 +23,9 @@ struct gensocket_tag {
     ssize_t  (*read)(void *instance, char *buf, size_t count, int timeout, int retries);
 };
 
-static sock create_instance(int type)
+static socket_t create_instance(int type)
 {
-    sock p;
+    socket_t p;
 
     assert(type == SOCKTYPE_TCP || type ==SOCKTYPE_SSL);
 
@@ -63,9 +63,9 @@ static sock create_instance(int type)
 
 
 // A ctor function
-sock sock_create_server_socket(int type, const char *host, int port)
+socket_t socket_create_server_socket(int type, const char *host, int port)
 {
-    sock this;
+    socket_t this;
 
     this = create_instance(type);
     if (this == NULL)
@@ -85,9 +85,9 @@ sock sock_create_server_socket(int type, const char *host, int port)
 }
 
 // A ctor function
-sock sock_create_client_socket(int type, const char *host, int port)
+socket_t socket_create_client_socket(int type, const char *host, int port)
 {
-    sock this;
+    socket_t this;
 
     this = create_instance(type);
     if (this == NULL)
@@ -107,9 +107,9 @@ sock sock_create_client_socket(int type, const char *host, int port)
 }
 
 // A ctor function
-sock sock_socket(int type)
+socket_t socket_socket(int type)
 {
-    sock this;
+    socket_t this;
 
     this = create_instance(type);
     if (this == NULL)
@@ -129,9 +129,9 @@ sock sock_socket(int type)
 }
 
 // Accept is special and is also a ctor like function.
-sock sock_accept(sock p, struct sockaddr *addr, socklen_t *addrsize)
+socket_t socket_accept(socket_t p, struct sockaddr *addr, socklen_t *addrsize)
 {
-    sock new;
+    socket_t new;
 
     new = create_instance(p->type);
     if (new == NULL)
@@ -150,7 +150,7 @@ sock sock_accept(sock p, struct sockaddr *addr, socklen_t *addrsize)
     return new;
 }
 
-status_t sock_bind(sock p, const char *hostname, int port)
+status_t socket_bind(socket_t p, const char *hostname, int port)
 {
     assert(p != NULL);
     assert(p->instance != NULL);
@@ -160,7 +160,7 @@ status_t sock_bind(sock p, const char *hostname, int port)
     return p->bind(p->instance, hostname, port);
 }
 
-status_t sock_listen(sock p, int backlog)
+status_t socket_listen(socket_t p, int backlog)
 {
     assert(p != NULL);
     assert(p->instance != NULL);
@@ -169,7 +169,7 @@ status_t sock_listen(sock p, int backlog)
     return p->listen(p->instance, backlog);
 }
 
-status_t sock_close(sock p)
+status_t socket_close(socket_t p)
 {
     assert(p != NULL);
     assert(p->instance != NULL);
@@ -178,7 +178,7 @@ status_t sock_close(sock p)
 }
 
 
-status_t sock_wait_for_data(sock p, int timeout)
+status_t socket_wait_for_data(socket_t p, int timeout)
 {
     assert(p != NULL);
     assert(p->instance != NULL);
@@ -186,7 +186,7 @@ status_t sock_wait_for_data(sock p, int timeout)
     return p->wait_for_data(p->instance, timeout);
 }
 
-status_t sock_wait_for_writability(sock p, int timeout)
+status_t socket_wait_for_writability(socket_t p, int timeout)
 {
     assert(p != NULL);
     assert(p->instance != NULL);
@@ -194,7 +194,7 @@ status_t sock_wait_for_writability(sock p, int timeout)
     return p->wait_for_writability(p->instance, timeout);
 }
 
-status_t sock_write(sock p, const char *s, size_t count, int timeout, int retries)
+status_t socket_write(socket_t p, const char *s, size_t count, int timeout, int retries)
 {
     assert(p != NULL);
     assert(p->instance != NULL);
@@ -202,7 +202,7 @@ status_t sock_write(sock p, const char *s, size_t count, int timeout, int retrie
     return p->write(p->instance, s, count, timeout, retries);
 }
 
-status_t sock_set_nonblock(sock p)
+status_t socket_set_nonblock(socket_t p)
 {
     assert(p != NULL);
     assert(p->instance != NULL);
@@ -210,7 +210,7 @@ status_t sock_set_nonblock(sock p)
     return p->set_nonblock(p->instance);
 }
 
-status_t sock_clear_nonblock(sock p)
+status_t socket_clear_nonblock(socket_t p)
 {
     assert(p != NULL);
     assert(p->instance != NULL);
@@ -218,7 +218,7 @@ status_t sock_clear_nonblock(sock p)
     return p->clear_nonblock(p->instance);
 }
 
-ssize_t sock_read(sock p, char *buf, size_t count, int timeout, int retries)
+ssize_t socket_read(socket_t p, char *buf, size_t count, int timeout, int retries)
 {
     assert(p != NULL);
     assert(p->instance != NULL);
