@@ -991,6 +991,8 @@ status_t response_send_file(http_response p, const char *path, const char* ctype
  * Note that we manually call connection_flush(). This is done so that
  * we won't run out of retry attempts when sending big files.
  * (yes, I know sendfile() exists. See git log)
+ *
+ * BTW, maybe we want to mmap the file instead of reading it?
  */
 static status_t send_entire_file(connection conn, const char *path, size_t *pcb)
 {

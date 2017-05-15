@@ -24,6 +24,7 @@
 
 #include <meta_socket.h>
 
+// SSLTODO: Extend / change struct to contain all SSL-relevant info for the socket. SSL may be relevant, but not SSL_CTX. Stuff unique to a socket, goes here.
 struct meta_socket_tag {
     int fd;
 };
@@ -33,6 +34,7 @@ struct meta_socket_tag {
  * Sets the socket options we want on the main socket
  * Suitable for server sockets only.
  */
+// SSLTODO: Use an SSL way of setting SO_REUSEADDR
 static int sock_set_reuseaddr(meta_socket this)
 {
     int optval;
@@ -57,6 +59,7 @@ static int sock_set_reuseaddr(meta_socket this)
  * error occured. It set errno to EAGAIN if a timeout occured, and
  * it maps POLLHUP and POLLERR to EPIPE, and POLLNVAL to EINVAL.
  */
+// SSLTODO: Polling must change, I guess
 static status_t sock_poll_for(meta_socket this, int timeout, short poll_for)
 {
     struct pollfd pfd;
@@ -130,6 +133,7 @@ status_t sock_write(meta_socket this, const char *buf, size_t count, int timeout
             continue;
         }
 
+        // SSLTODO: Use SSL_write(), I guess
         if ((nwritten = write(this->fd, buf, count)) == -1)
             return failure;
 
@@ -271,6 +275,14 @@ status_t sock_listen(meta_socket this, int backlog)
     return success;
 }
 
+// SSLTODO: We need to initialize the _server_, that'll create an SSL_CTX
+// SSLTODO: object. We use that object to create a BIO object. Then we accept
+// SSLTODO: connections to the BIO, and create an SSL object using 
+// SSLTODO: SSL_new(), SSL_set_accept_state(), SSL_set_bio(). When all
+// SSLTODO: that shit's done, we can call SSL_accept(), and do
+// SSLTODO: post connection checks on the server side too. (highly optional)
+// SSLTODO: 
+// SSLTODO: The example programs are good. Go with them
 meta_socket create_server_socket(const char *host, int port)
 {
     meta_socket this;
@@ -287,6 +299,11 @@ meta_socket create_server_socket(const char *host, int port)
     return NULL;
 }
 
+// SSLTODO: The SSL connect procedure is more complicated than the normal connect procedure.
+// SSLTODO: The sample code in client3.c illustrates this. One first connects a BIO, then 
+// SSLTODO: create an SSL object, initializes it with the BIO, then connects the SSL object
+// SSLTODO: itself. The client3.c code uses a post connection check which validates the
+// SSLTODO: server's certificate. This code is not for the meek. ;)
 meta_socket create_client_socket(const char *host, int port)
 {
     struct hostent *phost;
@@ -323,6 +340,7 @@ meta_socket create_client_socket(const char *host, int port)
     return this;
 }
 
+// SSLTODO: Read the doc and figure out how to toggle non-block
 status_t sock_set_nonblock(meta_socket this)
 {
     int flags;
@@ -375,6 +393,7 @@ status_t sock_close(meta_socket this)
      * We still need to close the socket locally, therefore
      * the return code from shutdown is ignored.
      */
+    // SSLTODO: Use SSL_shutdown
     shutdown(fd, SHUT_RDWR);
 
     if (close(fd))
@@ -392,15 +411,18 @@ meta_socket sock_accept(meta_socket this, struct sockaddr *addr, socklen_t *addr
     assert(addr != NULL);
     assert(addrsize != NULL);
 
+    // SSLTODO: Use SSL_accept()?
     fd = accept(this->fd, addr, addrsize);
     if (fd == -1)
         return NULL;
 
     if ((new = malloc(sizeof *new)) == NULL) {
+        // SSLTODO: Use SSL_shutdown()?
         close(fd);
         return NULL;
     }
 
+    // SSLTODO: We need more init stuff here, I guess.
     new->fd = fd;
     return new;
 }

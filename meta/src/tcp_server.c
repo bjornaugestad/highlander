@@ -35,24 +35,21 @@ struct tcp_server_tag {
     /* Port to listen to */
     int port;
 
-    /* timeout in seconds */
-    int timeout_reads;
-    int timeout_writes;
-    int timeout_accepts;
+    // timeout in seconds 
+    int timeout_reads, timeout_writes, timeout_accepts;
 
-    /* How many times should we try to read/write
-     * before we disconnect? */
-    int retries_reads;
-    int retries_writes;
+    // How many times should we try to read/write before we disconnect?
+    int retries_reads, retries_writes;
 
-    /* The size of the connections read/write buffers */
+    // The size of the connections read/write buffers 
     size_t readbuf_size, writebuf_size;
 
-    /* Function to call when a new connection is accepted */
+    // Function to call when a new connection is accepted
     void *(*service_func)(void *arg);
     void *service_arg;
 
-    /* The file descriptor we accept connections from.	*/
+    // The file descriptor we accept connections from.
+    // SSLTODO: We may use a meta_ssl object here later.
     meta_socket sock;
 
     /* The work queue */
@@ -62,34 +59,25 @@ struct tcp_server_tag {
     size_t queue_size;
     int block_when_full;
 
-    /* Pool of connection objects. Allocated and initiated in tcp_server_init(),
-     * freed in tcp_server_free().  Accessed by tcp_server_get_connection() and
-     * tcp_server_recycle_connection(). Size equals the # of queue entries 
-     * + # of worker threads + 1 as each entry consumes one connection.
-     * The +1 is in case the queue is full.
-     */
+    // Pool of connection objects. Allocated and initiated in tcp_server_init(),
+    // freed in tcp_server_free().  Accessed by tcp_server_get_connection() and
+    // tcp_server_recycle_connection(). Size equals the # of queue entries 
+    // + # of worker threads + 1 as each entry consumes one connection.
+    // The +1 is in case the queue is full.
     pool connections;
 
-    /* We now have security :-) . The caller can specify
-     * which client that should be able to connect.
-     * We precompile a regexp pattern and store it here
-     * for fast verification of access. */
+    // The caller can specify which client that should be able to connect.
+    // We precompile a regexp pattern and store it here for fast verification.
     regex_t allowed_clients;
     bool pattern_compiled;
 
-    /* The pool of read/write buffers */
+    // The pool of read/write buffers. The pools contain instances of membufs,
+    //
     pool read_buffers;
     pool write_buffers;
 
-    /* Our shutdown flag */
+    // Our shutdown flag
     int shutting_down;
-
-    /* We want to support UNIX Domain Protocol type sockets (AF_UNIX).
-     * This member is by default set to 0, which means AF_INET. If it's
-     * set to 1, then hostname is pathname used in sun_path/bind().
-     * Use the tcp_server_set_unix_socket() function to enable unix sockets.
-     */
-    int unix_socket;
 
     /* Our performance counters */
     atomic_ulong sum_poll_intr; /* # of times poll() returned EINTR */
@@ -143,7 +131,11 @@ static bool client_can_connect(tcp_server srv, struct sockaddr_in* addr)
     return true;
 }
 
-
+// SSLTODO: We need a per-server SSL_CTX, I guess. Remember that one
+// SSLTODO: UNIX process can contain many active tcp_server objects
+// SSLTODO: and run many servers from within the same process. 
+// SSLTODO:
+// SSLTODO: Each socket(active connection) will have its own SSL object.
 tcp_server tcp_server_new(void)
 {
     tcp_server p;
@@ -171,7 +163,6 @@ tcp_server tcp_server_new(void)
         p->read_buffers = NULL;
         p->write_buffers = NULL;
         p->shutting_down = 0;
-        p->unix_socket = 0;
 
         atomic_ulong_init(&p->sum_poll_intr);
         atomic_ulong_init(&p->sum_poll_again);
@@ -225,28 +216,24 @@ status_t tcp_server_init(tcp_server this)
     assert(this->read_buffers == NULL);
     assert(this->write_buffers == NULL);
 
-    if ((this->queue = threadpool_new(this->nthreads, this->queue_size, this->block_when_full)) == NULL)
+    this->queue = threadpool_new(this->nthreads, this->queue_size, this->block_when_full);
+    if (this->queue == NULL)
         goto err;
 
-    /* Every running worker thread use one connection.
-     * Every queue entry use one connection.
-     * One extra is needed for the current connection */
+    // Every running worker thread use one connection. Every queue entry use
+    // one connection.  One extra is needed for the current connection.
     count = this->queue_size + this->nthreads + 1;
     if ((this->connections = pool_new(count)) == NULL)
         goto err;
 
     for (i = 0; i < count; i++) {
-        connection c = connection_new(
-            this->timeout_reads,
-            this->timeout_writes,
-            this->retries_reads,
-            this->retries_writes,
-            this->service_arg);
+        connection conn = connection_new(this->timeout_reads, this->timeout_writes,
+            this->retries_reads, this->retries_writes, this->service_arg);
 
-        if (c == NULL)
+        if (conn == NULL)
             goto err;
 
-        pool_add(this->connections, c);
+        pool_add(this->connections, conn);
     }
 
     /* Only worker threads can use read/write buffers */
@@ -269,7 +256,7 @@ status_t tcp_server_init(tcp_server this)
     return success;
 
 err:
-    /* Free all memory allocated by this function and then return failure */
+    // Free all memory allocated by this function and then return failure.
     if (!threadpool_destroy(this->queue, 0))
         warning("Unable to destroy thread pool\n");
 
@@ -282,12 +269,6 @@ err:
     this->read_buffers = NULL;
     this->write_buffers = NULL;
     return failure;
-}
-
-void tcp_server_set_unix_socket(tcp_server s)
-{
-    assert(s != NULL);
-    s->unix_socket = 1;
 }
 
 void tcp_server_set_readbuf_size(tcp_server s, size_t size)
@@ -560,6 +541,7 @@ status_t tcp_server_get_root_resources(tcp_server this)
     return success;
 }
 
+// SSLTODO: tagonly
 status_t tcp_server_start(tcp_server this)
 {
     status_t rc;
