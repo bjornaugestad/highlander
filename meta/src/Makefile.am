@@ -16,7 +16,7 @@ include_HEADERS=\
 	meta_list.h\
 	meta_fifo.h\
 	tcpsocket.h\
-	meta_ssl.h\
+	sslsocket.h\
 	meta_membuf.h\
 	meta_stack.h\
 	meta_bitset.h\
@@ -45,7 +45,7 @@ libmeta_a_SOURCES=\
 	meta_bitset.c\
 	meta_process.c\
 	tcpsocket.c\
-	meta_ssl.c\
+	sslsocket.c\
 	meta_error.c\
 	tcp_server.c\
 	connection.c\

@@ -22,10 +22,10 @@
 #endif
 
 
-#include <meta_ssl.h>
+#include <sslsocket.h>
 
 // SSLTODO: Extend / change struct to contain all SSL-relevant info for the socket. SSL may be relevant, but not SSL_CTX. Stuff unique to a socket, goes here.
-struct meta_ssl_tag {
+struct sslsocket_tag {
     int fd;
 };
 
@@ -35,7 +35,7 @@ struct meta_ssl_tag {
  * Suitable for server sockets only.
  */
 // SSLTODO: Use an SSL way of setting SO_REUSEADDR
-static int ssl_set_reuseaddr(meta_ssl this)
+static int ssl_set_reuseaddr(sslsocket this)
 {
     int optval;
     socklen_t optlen;
@@ -60,7 +60,7 @@ static int ssl_set_reuseaddr(meta_ssl this)
  * it maps POLLHUP and POLLERR to EPIPE, and POLLNVAL to EINVAL.
  */
 // SSLTODO: Polling must change, I guess
-static status_t ssl_poll_for(meta_ssl this, int timeout, short poll_for)
+static status_t ssl_poll_for(sslsocket this, int timeout, short poll_for)
 {
     struct pollfd pfd;
     int rc;
@@ -100,21 +100,21 @@ static status_t ssl_poll_for(meta_ssl this, int timeout, short poll_for)
     return status;
 }
 
-status_t ssl_wait_for_writability(meta_ssl this, int timeout)
+status_t ssl_wait_for_writability(sslsocket this, int timeout)
 {
     assert(this != NULL);
 
     return ssl_poll_for(this, timeout, POLLOUT);
 }
 
-status_t ssl_wait_for_data(meta_ssl this, int timeout)
+status_t ssl_wait_for_data(sslsocket this, int timeout)
 {
     assert(this != NULL);
 
     return ssl_poll_for(this, timeout, POLLIN);
 }
 
-status_t ssl_write(meta_ssl this, const char *buf, size_t count, int timeout, int nretries)
+status_t ssl_write(sslsocket this, const char *buf, size_t count, int timeout, int nretries)
 {
     ssize_t nwritten = 0;
 
@@ -169,7 +169,7 @@ status_t ssl_write(meta_ssl this, const char *buf, size_t count, int timeout, in
  * the data is fragmented, then the protocol handler must handle
  * those cases. 
  */
-ssize_t ssl_read(meta_ssl this, char *dest, size_t count, int timeout, int nretries)
+ssize_t ssl_read(sslsocket this, char *dest, size_t count, int timeout, int nretries)
 {
     ssize_t nread;
 
@@ -206,7 +206,7 @@ ssize_t ssl_read(meta_ssl this, char *dest, size_t count, int timeout, int nretr
  * created a socket with a specific protocol family,
  * and here we bind it to the PF specified in the services...
  */
-static status_t ssl_bind_inet(meta_ssl this, const char *hostname, int port)
+static status_t ssl_bind_inet(sslsocket this, const char *hostname, int port)
 {
     struct hostent* host = NULL;
     struct sockaddr_in my_addr;
@@ -241,16 +241,16 @@ static status_t ssl_bind_inet(meta_ssl this, const char *hostname, int port)
     return success;
 }
 
-status_t ssl_bind(meta_ssl this, const char *hostname, int port)
+status_t ssl_bind(sslsocket this, const char *hostname, int port)
 {
     assert(this != NULL);
 
     return ssl_bind_inet(this, hostname, port);
 }
 
-meta_ssl ssl_socket(void)
+sslsocket ssl_socket(void)
 {
-    meta_ssl this;
+    sslsocket this;
     int af = AF_INET;
 
     if ((this = malloc(sizeof *this)) == NULL)
@@ -264,7 +264,7 @@ meta_ssl ssl_socket(void)
     return this;
 }
 
-status_t ssl_listen(meta_ssl this, int backlog)
+status_t ssl_listen(sslsocket this, int backlog)
 {
     assert(this != NULL);
     assert(this->fd >= 0);
@@ -283,9 +283,9 @@ status_t ssl_listen(meta_ssl this, int backlog)
 // SSLTODO: post connection checks on the server side too. (highly optional)
 // SSLTODO: 
 // SSLTODO: The example programs are good. Go with them
-meta_ssl ssl_create_server_socket(const char *host, int port)
+sslsocket ssl_create_server_socket(const char *host, int port)
 {
-    meta_ssl this;
+    sslsocket this;
 
     if ((this = ssl_socket()) == NULL)
         return NULL;
@@ -304,11 +304,11 @@ meta_ssl ssl_create_server_socket(const char *host, int port)
 // SSLTODO: create an SSL object, initializes it with the BIO, then connects the SSL object
 // SSLTODO: itself. The client3.c code uses a post connection check which validates the
 // SSLTODO: server's certificate. This code is not for the meek. ;)
-meta_ssl ssl_create_client_socket(const char *host, int port)
+sslsocket ssl_create_client_socket(const char *host, int port)
 {
     struct hostent *phost;
     struct sockaddr_in sa;
-    meta_ssl this;
+    sslsocket this;
 
     assert(host != NULL);
 
@@ -341,7 +341,7 @@ meta_ssl ssl_create_client_socket(const char *host, int port)
 }
 
 // SSLTODO: Read the doc and figure out how to toggle non-block
-status_t ssl_set_nonblock(meta_ssl this)
+status_t ssl_set_nonblock(sslsocket this)
 {
     int flags;
 
@@ -359,7 +359,7 @@ status_t ssl_set_nonblock(meta_ssl this)
     return success;
 }
 
-status_t ssl_clear_nonblock(meta_ssl this)
+status_t ssl_clear_nonblock(sslsocket this)
 {
     int flags;
 
@@ -377,7 +377,7 @@ status_t ssl_clear_nonblock(meta_ssl this)
     return success;
 }
 
-status_t ssl_close(meta_ssl this)
+status_t ssl_close(sslsocket this)
 {
     int fd;
 
@@ -402,9 +402,9 @@ status_t ssl_close(meta_ssl this)
     return success;
 }
 
-meta_ssl ssl_accept(meta_ssl this, struct sockaddr *addr, socklen_t *addrsize)
+sslsocket ssl_accept(sslsocket this, struct sockaddr *addr, socklen_t *addrsize)
 {
-    meta_ssl new;
+    sslsocket new;
     int fd;
 
     assert(this != NULL);
