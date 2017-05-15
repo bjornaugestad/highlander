@@ -63,19 +63,16 @@ struct membuf_tag {
 membuf membuf_new(size_t size) __attribute__((malloc));
 
 // Frees a membuf buffer.
-void membuf_free(membuf m);
+__attribute__((nonnull(1)))
+static inline void membuf_free(membuf this)
+{
+    if (this != NULL) {
+        free(this->data);
+        free(this);
+    }
+}
 
-// Appends count bytes to the buffer. Returns the number of bytes
-// actually added to the buffer. If the returned value is less
-// than the count parameter, it means that the buffer was too small to
-// store the data.
-size_t membuf_write(membuf mb, const void *src, size_t count)
-    __attribute__((nonnull(1, 2)));
 
-// Read up to count bytes from the buffer and place them in dest.
-// Returns the number of bytes read, or 0 if no data was available to read.
-size_t membuf_read(membuf, void *dest, size_t count)
-    __attribute__((nonnull(1, 2)));
 
 // Return the number of bytes available for reading from the membuf buffer.
 static inline size_t membuf_canread(membuf mb)
@@ -166,6 +163,67 @@ static inline size_t membuf_size(membuf mb)
 {
     assert(mb != NULL);
     return mb->size;
+}
+
+// Read up to count bytes from the buffer and place them in dest.
+// Returns the number of bytes read, or 0 if no data was available to read.
+__attribute__((warn_unused_result,nonnull(1, 2)))
+static inline size_t 
+membuf_read(membuf this, void *dest, size_t count)
+{
+    size_t navail;
+
+    assert(this != NULL);
+    assert(dest != NULL);
+    assert(count != 0);
+    assert(this->nwritten >= this->nread);
+
+    navail = membuf_canread(this);
+    if (navail < count)
+        count = navail;
+
+    if (count == 0)
+        return 0;
+
+    memcpy(dest, &this->data[this->nread], count);
+    this->nread += count;
+
+    assert(this->nread <= this->nwritten);
+
+    // Reset offset counters if all bytes written also have been read
+    if (this->nwritten == this->nread)
+        this->nwritten = this->nread = 0;
+
+    return count;
+}
+
+// Appends count bytes to the buffer. Returns the number of bytes
+// actually added to the buffer. If the returned value is less
+// than the count parameter, it means that the buffer was too small to
+// store the data.
+__attribute__((nonnull(1, 2)))
+static inline size_t
+membuf_write(membuf this, const void *src, size_t count)
+{
+    size_t navail;
+
+    assert(this != NULL);
+    assert(src != NULL);
+
+    // Don't bother to write empty buffers
+    if (count == 0)
+        return 0;
+
+    // Decide how much we can write and reset the
+    // buffer if needed (and possible).
+    navail = membuf_canwrite(this);
+    if (count > navail)
+        count = navail;
+
+    memcpy(&this->data[this->nwritten], src, count);
+    this->nwritten += count;
+
+    return count;
 }
 
 #ifdef __cplusplus

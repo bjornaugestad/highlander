@@ -31,65 +31,6 @@ membuf membuf_new(size_t size)
     return this;
 }
 
-void membuf_free(membuf this)
-{
-    if (this != NULL) {
-        free(this->data);
-        free(this);
-    }
-}
-
-size_t membuf_write(membuf this, const void *src, size_t count)
-{
-    size_t navail;
-
-    assert(this != NULL);
-    assert(src != NULL);
-
-    // Don't bother to write empty buffers
-    if (count == 0)
-        return 0;
-
-    // Decide how much we can write and reset the
-    // buffer if needed (and possible).
-    navail = membuf_canwrite(this);
-    if (count > navail)
-        count = navail;
-
-    memcpy(&this->data[this->nwritten], src, count);
-    this->nwritten += count;
-
-    return count;
-}
-
-size_t membuf_read(membuf this, void *dest, size_t count)
-{
-    size_t navail;
-
-    assert(this != NULL);
-    assert(dest != NULL);
-    assert(count != 0);
-    assert(this->nwritten >= this->nread);
-
-    navail = membuf_canread(this);
-    if (navail < count)
-        count = navail;
-
-    if (count == 0)
-        return 0;
-
-    memcpy(dest, &this->data[this->nread], count);
-    this->nread += count;
-
-    assert(this->nread <= this->nwritten);
-
-    // Reset offset counters if all bytes written also have been read
-    if (this->nwritten == this->nread)
-        this->nwritten = this->nread = 0;
-
-    return count;
-}
-
 #ifdef CHECK_MEMBUF
 
 int main(void)
