@@ -32,7 +32,7 @@ struct foo {
 int process_string(void *arg, void *node)
 {
     FILE* f = arg;
-    const char* p = node;
+    const char *p = node;
     fprintf(f, "%s\n", p);
     return 1;
 }

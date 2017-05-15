@@ -121,7 +121,7 @@ void http_client_set_retries_write(http_client s, int count)
 http_server http_server_new(int socktype);
 void http_server_free(http_server s);
 
-status_t http_server_configure(http_server s, process p, const char* filename)
+status_t http_server_configure(http_server s, process p, const char *filename)
     __attribute__((nonnull(1, 3)))
     __attribute__((warn_unused_result));
 
@@ -157,7 +157,7 @@ status_t http_server_shutdown(http_server s)
     __attribute__((nonnull(1)))
     __attribute__((warn_unused_result));
 
-status_t http_server_add_page(http_server s, const char* uri, PAGE_FUNCTION pf, page_attribute attr)
+status_t http_server_add_page(http_server s, const char *uri, PAGE_FUNCTION pf, page_attribute attr)
     __attribute__((nonnull(1, 2, 3)))
     __attribute__((warn_unused_result));
 
@@ -170,7 +170,7 @@ void http_server_set_defered_read(http_server s, int flag)
 int http_server_get_defered_read(http_server s)
     __attribute__((nonnull(1)));
 
-status_t http_server_set_documentroot(http_server s, const char* docroot)
+status_t http_server_set_documentroot(http_server s, const char *docroot)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
@@ -190,7 +190,7 @@ void http_server_set_default_page_handler(http_server s, PAGE_FUNCTION pf)
 status_t http_server_set_default_page_attributes(http_server s, page_attribute a)
     __attribute__((nonnull(1)));
 
-status_t http_server_set_host(http_server s, const char* name)
+status_t http_server_set_host(http_server s, const char *name)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
@@ -289,7 +289,7 @@ int	request_get_parameter_count(http_request request)
     __attribute__((nonnull(1)));
 const char* request_get_parameter_name (http_request request, size_t i)
     __attribute__((nonnull(1)));
-const char* request_get_parameter_value(http_request request, const char* name)
+const char* request_get_parameter_value(http_request request, const char *name)
     __attribute__((nonnull(1, 2)));
 
 /* Forms */
@@ -311,7 +311,7 @@ status_t request_get_field_value(http_request request, size_t i, char *s, size_t
     __attribute__((warn_unused_result));
 
 status_t request_get_field_value_by_name(http_request request,
-    const char* name, char *value, size_t cb)
+    const char *name, char *value, size_t cb)
     __attribute__((nonnull(1, 2, 3)))
     __attribute__((warn_unused_result));
 
@@ -323,13 +323,13 @@ size_t request_get_cookie_count(http_request request)
 cookie request_get_cookie(http_request request, size_t i)
     __attribute__((nonnull(1)));
 
-int request_content_type_is(http_request request, const char* val)
+int request_content_type_is(http_request request, const char *val)
     __attribute__((nonnull(1, 2)));
 
-bool request_accepts_media_type(http_request request, const char* val)
+bool request_accepts_media_type(http_request request, const char *val)
     __attribute__((nonnull(1, 2)));
 
-bool request_accepts_language(http_request request, const char* lang)
+bool request_accepts_language(http_request request, const char *lang)
     __attribute__((nonnull(1, 2)));
 
 const char* request_get_content_type(http_request request)
@@ -347,23 +347,23 @@ time_t request_get_if_modified_since(http_request r)
 /* Cookies */
 cookie cookie_new(void);
 
-status_t cookie_set_name(cookie c, const char* s)
+status_t cookie_set_name(cookie c, const char *s)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t cookie_set_value(cookie c, const char* s)
+status_t cookie_set_value(cookie c, const char *s)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t cookie_set_comment(cookie c, const char* s)
+status_t cookie_set_comment(cookie c, const char *s)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t cookie_set_domain(cookie c, const char* s)
+status_t cookie_set_domain(cookie c, const char *s)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t cookie_set_path(cookie c, const char* s)
+status_t cookie_set_path(cookie c, const char *s)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
@@ -590,38 +590,38 @@ status_t response_set_cookie(http_response response, cookie c)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t response_set_cache_control(http_response response, const char* value)
+status_t response_set_cache_control(http_response response, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t response_set_connection(http_response response, const char* value)
+status_t response_set_connection(http_response response, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
 void response_set_date(http_response response, time_t value)
     __attribute__((nonnull(1)));
 
-status_t response_set_pragma(http_response response, const char* value)
+status_t response_set_pragma(http_response response, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t response_set_trailer(http_response response, const char* value)
+status_t response_set_trailer(http_response response, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t response_set_transfer_encoding(http_response response, const char* value)
+status_t response_set_transfer_encoding(http_response response, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t response_set_upgrade(http_response response, const char* value)
+status_t response_set_upgrade(http_response response, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t response_set_via(http_response response, const char* value)
+status_t response_set_via(http_response response, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t response_set_warning(http_response response, const char* value)
+status_t response_set_warning(http_response response, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
@@ -661,61 +661,61 @@ void response_set_accept_ranges(http_response response, int value)
 void response_set_age(http_response response, unsigned long value)
     __attribute__((nonnull(1)));
 
-status_t response_set_etag(http_response response, const char* value)
+status_t response_set_etag(http_response response, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t response_set_location(http_response response, const char* value)
+status_t response_set_location(http_response response, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t response_set_proxy_authenticate(http_response response, const char* value)
+status_t response_set_proxy_authenticate(http_response response, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
 void response_set_retry_after(http_response response, time_t value)
     __attribute__((nonnull(1)));
 
-status_t response_set_server(http_response response, const char* value)
+status_t response_set_server(http_response response, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t response_set_vary(http_response response, const char* value)
+status_t response_set_vary(http_response response, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t response_set_www_authenticate(http_response response, const char* value)
+status_t response_set_www_authenticate(http_response response, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
 
-status_t response_set_allow(http_response response, const char* value)
+status_t response_set_allow(http_response response, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t response_set_content_encoding(http_response response, const char* value)
+status_t response_set_content_encoding(http_response response, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t response_set_content_language(http_response response, const char* value, error e)
+status_t response_set_content_language(http_response response, const char *value, error e)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
 void response_set_content_length(http_response response, size_t value);
 
-status_t response_set_content_location(http_response response, const char* value)
+status_t response_set_content_location(http_response response, const char *value)
     __attribute__((nonnull(1)))
     __attribute__((warn_unused_result));
 
-status_t response_set_content_md5(http_response response, const char* value)
+status_t response_set_content_md5(http_response response, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t response_set_content_range(http_response response, const char* value)
+status_t response_set_content_range(http_response response, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t response_set_content_type(http_response response, const char* value)
+status_t response_set_content_type(http_response response, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
@@ -725,7 +725,7 @@ void response_set_expires(http_response response, time_t value);
 void response_set_last_modified(http_response response, time_t value);
     __attribute__((nonnull(1)))
 
-status_t response_add(http_response response, const char* src)
+status_t response_add(http_response response, const char *src)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
@@ -733,11 +733,11 @@ status_t response_add_char(http_response response, int c)
     __attribute__((nonnull(1)))
     __attribute__((warn_unused_result));
 
-status_t response_add_end(http_response response, const char* start, const char* end)
+status_t response_add_end(http_response response, const char *start, const char *end)
     __attribute__((nonnull(1, 2, 3)))
     __attribute__((warn_unused_result));
 
-status_t response_printf(http_response response, const char* format, ...)
+status_t response_printf(http_response response, const char *format, ...)
     __attribute__ ((format(printf, 2, 3)))
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
@@ -752,12 +752,12 @@ void response_set_allocated_content_buffer(http_response response, void* src, si
 /* Add embedded, client side javascript, this is highly experimental
  * so beware and enjoy the bugs */
 /* messagebox() adds code to display text in a message box */
-status_t response_js_messagebox(http_response response, const char* text)
+status_t response_js_messagebox(http_response response, const char *text)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
 
-status_t response_send_file(http_response response, const char *path, const char* type, error e)
+status_t response_send_file(http_response response, const char *path, const char *type, error e)
     __attribute__((nonnull(1, 2, 3)))
     __attribute__((warn_unused_result));
 
@@ -784,51 +784,51 @@ status_t response_hr(http_response response)
     __attribute__((nonnull(1)))
     __attribute__((warn_unused_result));
 
-status_t response_href(http_response response, const char* ref, const char* text)
+status_t response_href(http_response response, const char *ref, const char *text)
     __attribute__((nonnull(1, 2, 3)))
     __attribute__((warn_unused_result));
 
-status_t response_p(http_response response, const char* s)
+status_t response_p(http_response response, const char *s)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t response_h1(http_response response, const char* s)
+status_t response_h1(http_response response, const char *s)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t response_h2(http_response response, const char* s)
+status_t response_h2(http_response response, const char *s)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t response_h3(http_response response, const char* s)
+status_t response_h3(http_response response, const char *s)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t response_h4(http_response response, const char* s)
+status_t response_h4(http_response response, const char *s)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t response_h5(http_response response, const char* s)
+status_t response_h5(http_response response, const char *s)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t response_h6(http_response response, const char* s)
+status_t response_h6(http_response response, const char *s)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t response_h7(http_response response, const char* s)
+status_t response_h7(http_response response, const char *s)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t response_h8(http_response response, const char* s)
+status_t response_h8(http_response response, const char *s)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t response_h9(http_response response, const char* s)
+status_t response_h9(http_response response, const char *s)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t response_td(http_response response, const char* text)
+status_t response_td(http_response response, const char *text)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
@@ -839,23 +839,23 @@ page_attribute attribute_new(void)
 
 void attribute_free(page_attribute a);
 
-status_t attribute_set_media_type(page_attribute a, const char* value)
+status_t attribute_set_media_type(page_attribute a, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t attribute_set_language(page_attribute a, const char* value)
+status_t attribute_set_language(page_attribute a, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t attribute_set_charset(page_attribute a, const char* value)
+status_t attribute_set_charset(page_attribute a, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t attribute_set_authorization(page_attribute a, const char* value)
+status_t attribute_set_authorization(page_attribute a, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t attribute_set_encoding(page_attribute a, const char* value)
+status_t attribute_set_encoding(page_attribute a, const char *value)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 

@@ -3,7 +3,7 @@
 
 int page_handler(http_request req, http_response page)
 {
-    const char* html =
+    const char *html =
         "<html><head><title>Hello, world</title></head>"
         "<body>Hello, world</body></html>";
 

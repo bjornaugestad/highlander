@@ -40,7 +40,7 @@ struct dirinfo {
 static int g_daemonize = 0;
 static http_server g_server = NULL;
 
-static status_t concat_paths(char* dest, size_t cb, const char* p1, const char* p2)
+static status_t concat_paths(char* dest, size_t cb, const char *p1, const char *p2)
 {
     size_t cbp1 = strlen(p1);
     if (cbp1 + strlen(p2) + 2 > cb)
@@ -325,7 +325,7 @@ status_t show_directory(http_response page, const path_t abspath, const char *ur
 static status_t makepath(path_t abspath, const char *relpath)
 {
     size_t cb;
-    const char* docdir = http_server_get_documentroot(g_server);
+    const char *docdir = http_server_get_documentroot(g_server);
 
     if (relpath == NULL || strlen(relpath) == 0 || *relpath != '/')
         return fail(EINVAL);
@@ -351,7 +351,7 @@ static status_t makepath(path_t abspath, const char *relpath)
  */
 static int handle_requests(const http_request req, http_response page)
 {
-    const char* s;
+    const char *s;
     path_t uri, abspath;
     struct stat st;
     int rc = HTTP_200_OK;
@@ -401,10 +401,10 @@ static int handle_requests(const http_request req, http_response page)
 
 #ifdef NDEBUG
 /* Release version */
-static const char* g_configfile = "/etc/metaftp.conf";
+static const char *g_configfile = "/etc/metaftp.conf";
 #else
 /* Debug version */
-static const char* g_configfile = "./metaftp.conf";
+static const char *g_configfile = "./metaftp.conf";
 #endif
 
 static void show_usage(FILE *out)

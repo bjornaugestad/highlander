@@ -13,7 +13,7 @@
 #include "internals.h"
 
 /* Ungrouped handlers */
-static status_t parse_connection(connection conn, const char* value, error e)
+static status_t parse_connection(connection conn, const char *value, error e)
 {
     assert(value != NULL);
     UNUSED(e);
@@ -33,8 +33,8 @@ static status_t parse_connection(connection conn, const char* value, error e)
  * This is v1, so I keep it simple. It may be a little slow, though...
  */
 static const struct connection_mapper {
-    const char* name;
-    status_t (*handler)(connection req, const char* value, error e);
+    const char *name;
+    status_t (*handler)(connection req, const char *value, error e);
 } connection_map[] = {
     { "connection",			parse_connection },
 };
@@ -46,8 +46,8 @@ static const struct connection_mapper {
  */
 status_t parse_request_headerfield(
     connection conn,
-    const char* name,
-    const char* value,
+    const char *name,
+    const char *value,
     http_request req,
     error e)
 {
@@ -82,8 +82,8 @@ status_t parse_request_headerfield(
 }
 
 status_t parse_response_headerfield(
-    const char* name,
-    const char* value,
+    const char *name,
+    const char *value,
     http_response req,
     error e)
 {
@@ -111,8 +111,8 @@ status_t parse_response_headerfield(
 /* Helper function to have the algorithm one place only */
 int parse_multivalued_fields(
     void *dest,
-    const char* value,
-    int(*set_func)(void* dest, const char* value, error e),
+    const char *value,
+    int(*set_func)(void* dest, const char *value, error e),
     error e)
 {
     const int sep = ',';

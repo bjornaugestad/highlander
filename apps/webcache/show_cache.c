@@ -49,7 +49,7 @@ int show_cache(http_request req, http_response page)
 {
     char msgbuf[100] = { '\0' };
 
-    const char* action;
+    const char *action;
     if (!add_page_start(page, PAGE_CACHE)
     || !response_href(page, "/cache?a=reload", "reload cache")
     || !response_br(page))

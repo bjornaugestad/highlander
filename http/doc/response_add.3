@@ -11,7 +11,7 @@
 .Fd #include <highlander.h>
 .Fo "int response_add"
 .Fa "http_response response"
-.Fa "const char* src"
+.Fa "const char *src"
 .Fc
 .Fo "int response_add_char"
 .Fa "http_response response"
@@ -19,8 +19,8 @@
 .Fc
 .Fo "int response_add_end"
 .Fa "http_response response"
-.Fa "const char* start"
-.Fa "const char* end"
+.Fa "const char *start"
+.Fa "const char *end"
 .Fc
 .Sh DESCRIPTION
 .Nm response_add()
@@ -45,7 +45,7 @@ All functions return 1 if the data was added, or 0 if an error occured.
 int my_handler(http_request req, http_response page)
 {
    const char *end, *start;
-   static const char* head =
+   static const char *head =
       "<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.0 Transitional//EN'>"
       "<html>"
       "<head>"

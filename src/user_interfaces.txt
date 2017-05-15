@@ -161,8 +161,8 @@ int main(...)
 	html_template_set_menu_style(t, MENU_STYLE_HTML);
 
 	/* Add the header and footer part of the template */
-	static const char* header = "...";
-	static const char* footer = "...";
+	static const char *header = "...";
+	static const char *footer = "...";
 	html_template_set_header(t, header);
 	html_template_set_footer(t, footer);
 
@@ -199,7 +199,7 @@ int some_page_handler(http_request request, http_response response)
 		html_printf(ti, "foo, bar, %s\n", "Hello...);
 	}
 	else if (bar) {
-		const char* bar = "blablabla";
+		const char *bar = "blablabla";
 		html_set_content_buffer(ti, bar, strlen(bar));
 	}
 	else if (baz) {

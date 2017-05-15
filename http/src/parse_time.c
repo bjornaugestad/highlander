@@ -17,13 +17,13 @@
  * the changes from rfc1123 (just the 4-digit year requirement).
  * Returns -1 on error.
  */
-time_t parse_rfc822_date(const char* s)
+time_t parse_rfc822_date(const char *s)
 {
-    static const char* wkday[] = {
+    static const char *wkday[] = {
         "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
     };
 
-    static const char* month[] = {
+    static const char *month[] = {
         "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
     };
 

@@ -193,7 +193,7 @@ int main(void)
     /* Copy some bytes from the response, just to see that we got something */
     {
         size_t n = 10, cb = response_get_content_length(resp);
-        const char* s = response_get_entity(resp);
+        const char *s = response_get_entity(resp);
 
         while (n-- && cb--)
             putchar(*s++);

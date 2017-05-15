@@ -41,7 +41,7 @@ void html_section_free(html_section p)
     }
 }
 
-int html_section_set_name(html_section s, const char* v)
+int html_section_set_name(html_section s, const char *v)
 {
     assert(s != NULL);
     assert(v != NULL);
@@ -55,7 +55,7 @@ int html_section_set_name(html_section s, const char* v)
     return s->name != NULL;
 }
 
-int html_section_set_code(html_section s, const char* v)
+int html_section_set_code(html_section s, const char *v)
 {
     assert(s != NULL);
     assert(v != NULL);

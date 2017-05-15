@@ -25,14 +25,14 @@ extern "C"
  */
 
 /* Changed to work on memory buffers instead of just strings */
-size_t rfc1738_encode(char* dest, size_t cbdest, const char* src, size_t cbsrc);
-size_t rfc1738_decode(char* dest, size_t cbdest, const char* src, size_t cbsrc);
+size_t rfc1738_encode(char* dest, size_t cbdest, const char *src, size_t cbsrc);
+size_t rfc1738_decode(char* dest, size_t cbdest, const char *src, size_t cbsrc);
 
 /* Works for zero terminated strings, the result will be zero terminated too .
  * Returns length of dest string, excluding null character.
  */
-size_t rfc1738_encode_string(char* dest, size_t cbdest, const char* src);
-size_t rfc1738_decode_string(char* dest, size_t cbdest, const char* src);
+size_t rfc1738_encode_string(char* dest, size_t cbdest, const char *src);
+size_t rfc1738_decode_string(char* dest, size_t cbdest, const char *src);
 
 #ifdef __cplusplus
 }

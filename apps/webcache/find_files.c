@@ -15,7 +15,7 @@ extern filecache g_filecache;
 /* Call popen() to get mime type, then niceify it a little and
  * return the mime type in buf.
  */
-static void popen_mime_type(const char* filename, char *buf, size_t cb)
+static void popen_mime_type(const char *filename, char *buf, size_t cb)
 {
 #if 0
     FILE *f;
@@ -37,15 +37,15 @@ static void popen_mime_type(const char* filename, char *buf, size_t cb)
     buf[offset] = '\0';
 #else
     (void)cb;
-    const char* s = get_mime_type(filename);
+    const char *s = get_mime_type(filename);
     strcpy(buf, s);
 #endif
 }
 
 
-static const char* create_known_as(const char* rootdir, const char* file)
+static const char *create_known_as(const char *rootdir, const char *file)
 {
-    const char* s;
+    const char *s;
 
     if (strstr(file, rootdir) != file) {
         fprintf(stderr, "The file %s does not belong to our tree, %s\n", file, rootdir);
@@ -61,7 +61,7 @@ static const char* create_known_as(const char* rootdir, const char* file)
 }
 
 /* Returns a list of all new files. Remember to free the list */
-list find_new_files(const char* directories, cstring* patterns, size_t npatterns)
+list find_new_files(const char *directories, cstring* patterns, size_t npatterns)
 {
     list lst = NULL;
     list_iterator i;
@@ -91,7 +91,7 @@ err:
 }
 
 /* Returns a list of all modified files. Remember to free the list */
-list find_modified_files(const char* directories, cstring* patterns, size_t npatterns)
+list find_modified_files(const char *directories, cstring* patterns, size_t npatterns)
 {
     list lst = NULL;
     list_iterator i;
@@ -136,7 +136,7 @@ err:
  * on disk, is deleted. Get all files on disk, then walk
  * the cache and see if the file is on disk.
  */
-list find_deleted_files(const char* directories, cstring* patterns, size_t npatterns)
+list find_deleted_files(const char *directories, cstring* patterns, size_t npatterns)
 {
     list diskfiles = NULL;
     list_iterator li;
@@ -169,7 +169,7 @@ list find_deleted_files(const char* directories, cstring* patterns, size_t npatt
     verbose(3, "%s(): Converting fileinfo to a stringmap\n", __func__);
     for (li = list_first(diskfiles); !list_end(li); li = list_next(li)) {
         fileinfo fi = list_get(li);
-        const char* s = fileinfo_alias(fi);
+        const char *s = fileinfo_alias(fi);
         if (!stringmap_add(sm, s, &id))
             goto err;
     }
@@ -200,7 +200,7 @@ err:
 }
 
 
-status_t walk_all_directories(const char* directories, cstring* patterns, size_t npatterns, list lst, int get_mimetype)
+status_t walk_all_directories(const char *directories, cstring* patterns, size_t npatterns, list lst, int get_mimetype)
 {
     cstring *pstr;
     size_t i, nelem;
@@ -212,7 +212,7 @@ status_t walk_all_directories(const char* directories, cstring* patterns, size_t
 
     /* Now walk the tree(s) */
     for (i = 0; i < nelem; i++) {
-        const char* rootdir = c_str(pstr[i]);
+        const char *rootdir = c_str(pstr[i]);
         if (!find_files(rootdir, rootdir, patterns, npatterns, lst, get_mimetype)) {
             rc = failure;
             break;
@@ -265,8 +265,8 @@ static void get_basename(const char *name, const char *suffix, char *dest, size_
  * We return 0 if errors, 1 if not.
  */
 static int handle_one_file(
-    const char* rootdir,
-    const char* path,
+    const char *rootdir,
+    const char *path,
     cstring* patterns,
     size_t npatterns,
     list lst,
@@ -352,8 +352,8 @@ err:
  * lst is where we append our data.
  */
 status_t find_files(
-    const char* rootdir,
-    const char* dirname,
+    const char *rootdir,
+    const char *dirname,
     cstring* patterns,
     size_t npatterns,
     list lst,

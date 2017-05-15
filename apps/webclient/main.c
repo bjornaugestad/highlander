@@ -22,14 +22,14 @@ int g_print_header = 0;
 
 const char*g_hostname = NULL;
 int g_port = 0;
-const char *g_uri = "/";
+const char* g_uri = "/";
 //
 // timeout is in ms.
 int timeout_reads = 400, timeout_writes = 50;
 int nretries_read = 8, nretries_write = 4;
 
 
-static void die_error(const char* context, error e)
+static void die_error(const char *context, error e)
 {
     fprintf(stderr, "%s:", context);
     if (has_error_message(e))
@@ -115,7 +115,7 @@ void parse_commandline(int argc, char *argv[])
 static void print_response_contents(http_response response)
 {
     size_t cb = response_get_content_length(response);
-    const char* s = response_get_entity(response);
+    const char *s = response_get_entity(response);
 
     while (cb--)
         putchar(*s++);

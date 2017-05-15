@@ -6,20 +6,20 @@
 
 #include <httpcache.h>
 
-status_t show_file_list(http_response page, const char* desc, list lst)
+status_t show_file_list(http_response page, const char *desc, list lst)
 {
     list_iterator i;
     char buf[100];
     struct tm t;
 
-    const char* table_start =
+    const char *table_start =
         "<table columns='2' border='1' borderwidth='2'>\n"
         "<th>File name</th>\n"
         "<th>Alias/URI</th>\n"
         "<th>Size</th>\n"
         "<th>Last modified</th>\n";
 
-    const char* table_end =
+    const char *table_end =
         "</table>\n";
 
     if (!response_p(page, desc))
@@ -58,10 +58,10 @@ static status_t add_menubar(http_response page, int pageid)
 {
 static struct {
     int pageid;
-    const char* id;
-    const char* href;
-    const char* text;
-    const char* title;
+    const char *id;
+    const char *href;
+    const char *text;
+    const char *title;
 } items[] = {
     { PAGE_CACHE,	"id",  "/cache", "cache", "Show cache info" },
     { PAGE_DISK,	"id",  "/disk", "disk", "Show disk info" },
@@ -70,14 +70,14 @@ static struct {
 };
 
     size_t i, nelem = sizeof items / sizeof *items;
-    const char* formatstring =
+    const char *formatstring =
         "<li id='%s' class='%s'>\n\t<a href='%s' title='%s'>%s</a>\n</li>\n";
 
     if (!response_add(page, "<ul id='menulist'>\n"))
         return failure;
 
     for (i = 0; i < nelem; i++) {
-        const char* sel = "plain";
+        const char *sel = "plain";
         if (items[i].pageid == pageid)
             sel = "selected";
 
@@ -97,7 +97,7 @@ static struct {
      * and place it on the line below.
      */
 
-    const char* about = "<ul id='aboutline'><li><a href='/about' title='About the Highlander Web Cache'>about</a></li></ul>";
+    const char *about = "<ul id='aboutline'><li><a href='/about' title='About the Highlander Web Cache'>about</a></li></ul>";
     if (!response_add(page, about))
         return failure;
 
@@ -110,7 +110,7 @@ static struct {
  */
 status_t add_page_start(http_response page, int pageid)
 {
-    const char* html =
+    const char *html =
         "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Strict//EN\">\n"
         "<html>\n"
         "<head>\n"
@@ -136,9 +136,9 @@ status_t add_page_start(http_response page, int pageid)
 /* All pages have a common end so call this function for all page handlers.
  * It will add "</body></html>" so don't add html to the page after calling
  * this function. */
-status_t add_page_end(http_response page, const char* msg)
+status_t add_page_end(http_response page, const char *msg)
 {
-    const char* html =
+    const char *html =
     "\n<hr>\n"
 #ifdef PACKAGE_VERSION
     "The Highlander Web Cache, version " PACKAGE_VERSION ".\n"

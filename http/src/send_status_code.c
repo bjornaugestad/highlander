@@ -13,7 +13,7 @@
 
 typedef struct http_status_struct {
     int code;
-    const char* text;
+    const char *text;
  } http_status;
 
 static http_status m_http_status10[] = {

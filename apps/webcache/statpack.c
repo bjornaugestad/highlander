@@ -203,7 +203,7 @@ int statpack_stop(void)
 int show_stats(http_request req, http_response page)
 {
     char buf[1024];
-    const char* wip = "Work in progress";
+    const char *wip = "Work in progress";
 
     /* We copy the sampler to avoid blocking operations */
     sampler dup = sampler_dup(m_sampler);

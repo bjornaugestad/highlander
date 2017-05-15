@@ -48,7 +48,7 @@ char* g_current_file = NULL;
 char* g_headerfile = NULL;
 char* g_outputfile = NULL;
 char* g_mainfile = NULL;
-const char *g_content_type = NULL;
+const char* g_content_type = NULL;
 
 static int m_skip_line_numbers = 0;
 static int prototype_mode = 0;
@@ -57,11 +57,11 @@ static int m_automake = 0;
 static int lineno = 1;
 
 /* local helper functions */
-static void print_line_directive(FILE *f, const char* file, int line);
+static void print_line_directive(FILE *f, const char *file, int line);
 static void show_help(void);
 static void process_file(char* name);
 static void create_header(char* filename, int argc, char *argv[], int opt_ind);
-static void write_html_buffer(FILE* fout, const char* html);
+static void write_html_buffer(FILE* fout, const char *html);
 static void create_mainfile(int argc, char *argv[], const char *filename);
 static void create_autoxx_files(int argc, char *argv[]);
 
@@ -180,7 +180,7 @@ static void show_help(void)
 }
 
 // Create a legal C name, but do NOT add more than one consecutive underscore.
-static const char* legal_name(const char* base)
+static const char *legal_name(const char *base)
 {
     char *s;
     static char name[1024];
@@ -216,7 +216,7 @@ static const char* legal_name(const char* base)
 /* call this function with full path.
  * It creates *the* function name we want to use.
  */
-static const char* function_name(char* file)
+static const char *function_name(char* file)
 {
     static char name[10240];
 
@@ -237,7 +237,7 @@ static const char* function_name(char* file)
  */
 static void print_standard_stuff(FILE* f)
 {
-    static const char* headers =
+    static const char *headers =
         "#include <assert.h>\n"
         "#include <stdio.h>\n"
         "#include <stdlib.h>\n"
@@ -256,7 +256,7 @@ static void print_standard_stuff(FILE* f)
 
 static void print_fn(FILE*f, char* name)
 {
-    const char* fn = function_name(name);
+    const char *fn = function_name(name);
 
     p(f, "int %s(http_request request, http_response response)\n", fn);
     p(f, "{\n");
@@ -271,16 +271,16 @@ static void print_fn(FILE*f, char* name)
     }
 }
 
-static void write_html_buffer(FILE* f, const char* str)
+static void write_html_buffer(FILE* f, const char *str)
 {
     int printed = 0;
     const char *s;
     char last = '\0';
-    const char* wrappers = "> ";
+    const char *wrappers = "> ";
 
     s = str;
     p(f, "\t{\n");
-    p(f, "\t\tconst char* html = \n");
+    p(f, "\t\tconst char *html = \n");
     p(f, "\t\t\"");
     while (*s) {
         if (isspace(*s) && m_strip_blanks && printed == 0) {
@@ -320,7 +320,7 @@ static void write_html_buffer(FILE* f, const char* str)
     p(f, "\t}\n");
 }
 
-static const char* remove_ext(char* name)
+static const char *remove_ext(char* name)
 {
     static char buf[10000];
     char *s;
@@ -483,7 +483,7 @@ static void process_file(char* name)
     fclose(fout);
 }
 
-static void print_line_directive(FILE *f, const char* file, int line)
+static void print_line_directive(FILE *f, const char *file, int line)
 {
     if (!m_skip_line_numbers)
         p(f, "#line %d \"%s\"\n", line, file);

@@ -64,29 +64,29 @@ page_attribute attribute_dup(page_attribute a)
     return p;
 }
 
-status_t attribute_set_media_type(page_attribute a, const char* value)
+status_t attribute_set_media_type(page_attribute a, const char *value)
 {
     return cstring_set(a->media_type, value);
 }
 
-status_t attribute_set_language(page_attribute a, const char* value)
+status_t attribute_set_language(page_attribute a, const char *value)
 {
     return cstring_set(a->language, value);
 }
 
-status_t attribute_set_charset(page_attribute a, const char* value)
+status_t attribute_set_charset(page_attribute a, const char *value)
 {
     return cstring_set(a->charset, value);
 }
 
-status_t attribute_set_authorization(page_attribute a, const char* value)
+status_t attribute_set_authorization(page_attribute a, const char *value)
 {
     UNUSED(a);
     UNUSED(value);
     return success;
 }
 
-status_t attribute_set_encoding(page_attribute a, const char* value)
+status_t attribute_set_encoding(page_attribute a, const char *value)
 {
     return cstring_set(a->encoding, value);
 }
@@ -118,10 +118,10 @@ int main(void)
 {
     page_attribute a, b;
     size_t i, niter = 10000;
-    const char* media_type = "text/html";
-    const char* language = "en_uk";
-    const char* charset = "iso8859-1";
-    const char* encoding = "gzip";
+    const char *media_type = "text/html";
+    const char *language = "en_uk";
+    const char *charset = "iso8859-1";
+    const char *encoding = "gzip";
 
     for (i = 0; i < niter; i++) {
         if ((a = attribute_new()) == NULL)

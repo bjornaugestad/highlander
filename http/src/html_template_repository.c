@@ -48,7 +48,7 @@ static int init_repos(void)
     return 1;
 }
 
-html_buffer html_template_repository_use(const char* template)
+html_buffer html_template_repository_use(const char *template)
 {
     html_template t;
     html_buffer b;
@@ -66,7 +66,7 @@ html_buffer html_template_repository_use(const char* template)
     return b;
 }
 
-int html_template_repository_add(const char* name, html_template t)
+int html_template_repository_add(const char *name, html_template t)
 {
     if (!init_repos())
         return 0;

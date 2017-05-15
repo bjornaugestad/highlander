@@ -74,7 +74,7 @@ void html_template_free(html_template t)
     }
 }
 
-int html_template_set_layout(html_template t, const char* s)
+int html_template_set_layout(html_template t, const char *s)
 {
     assert(t != NULL);
     assert(s != NULL);
@@ -123,8 +123,8 @@ int html_template_add_user_section(html_template t)
 status_t html_template_send(
     html_template t,
     http_response response,
-    const char* headcode,
-    const char* usercode)
+    const char *headcode,
+    const char *usercode)
 {
     html_section sect;
     size_t i = 0;

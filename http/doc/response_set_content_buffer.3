@@ -51,7 +51,7 @@ Both functions always return 1.
 #include <stdlib.h>
 #include <string.h>
 #include <highlander.h>
-static const char* static_content = 
+static const char *static_content = 
     "<html><head><title>My static content</title></head>"
     "<body>This is static content</body></html>";
 int my_static_handler(http_request req, http_response page)
@@ -63,7 +63,7 @@ int my_static_handler(http_request req, http_response page)
 int my_dynamic_handler(http_request req, http_response page)
 {
     char *s;
-    const char* head = 
+    const char *head = 
         "<html><head><title>My static content</title></head>";
     
     if( (s = malloc(1000)) == NULL)
@@ -75,7 +75,7 @@ int my_dynamic_handler(http_request req, http_response page)
 }
 int index_handler(http_request req, http_response page)
 {
-    static const char* html = 
+    static const char *html = 
     "<html><head><title>Highlander example program</title></head>"
     "<body>"
     "<p>Example program for response_set_content_buffer()"

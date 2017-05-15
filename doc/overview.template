@@ -9,7 +9,7 @@
 .Fd #include <tcp_server.h>
 .Fo "int tcp_server_allow_clients"
 .Fa "tcp_server srv"
-.Fa "const char* filter"
+.Fa "const char *filter"
 .Fc
 .Fo "void tcp_server_clear_client_filter"
 .Fa "tcp_server srv"
@@ -35,7 +35,7 @@
 .Fc
 .Fo "int tcp_server_set_hostname"
 .Fa "tcp_server srv"
-.Fa "const char* host"
+.Fa "const char *host"
 .Fc
 .Fo "void tcp_server_set_port"
 .Fa "tcp_server srv"

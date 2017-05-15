@@ -18,7 +18,7 @@ extern filecache g_filecache;
 
 int show_disk(http_request req, http_response page)
 {
-    const char* action;
+    const char *action;
     int rc = 0;
 
     if (!add_page_start(page, PAGE_DISK))
@@ -75,10 +75,10 @@ static int show_deleted_files(http_request req, http_response page)
      */
     list filist = NULL;
     list_iterator li;
-    const char* msg = NULL;
+    const char *msg = NULL;
 
-    const char* desc = "These files have been deleted since the server started";
-    const char* no_files = "No files have been deleted since the cache was loaded";
+    const char *desc = "These files have been deleted since the server started";
+    const char *no_files = "No files have been deleted since the cache was loaded";
 
     (void)req;
     if ((deleted = find_deleted_files(g_dirs, g_patterns, g_npatterns)) == NULL)
@@ -89,7 +89,7 @@ static int show_deleted_files(http_request req, http_response page)
 
     for (li = list_first(deleted); !list_end(li); li = list_next(li)) {
         fileinfo fi;
-        const char* s = list_get(li);
+        const char *s = list_get(li);
         assert(s != NULL);
 
         if ( (fi = filecache_fileinfo(g_filecache, s)) == NULL)
@@ -122,12 +122,12 @@ static int show_new_files(http_request req, http_response page)
 {
     int rc = HTTP_500_INTERNAL_SERVER_ERROR; /* Default return in case of errors */
 
-    const char* msg = NULL;
-    const char* desc =
+    const char *msg = NULL;
+    const char *desc =
         "Below is a list all the files on disk that match the files pattern"
         " from the configuration file and aren't already in the cache";
 
-    const char* no_files = "No files have been added on disk since the cache was loaded";
+    const char *no_files = "No files have been added on disk since the cache was loaded";
 
     list files = NULL;
 
@@ -155,13 +155,13 @@ static int show_modified_files(http_request req, http_response page)
 {
     int rc = HTTP_500_INTERNAL_SERVER_ERROR; /* Default return in case of errors */
 
-    const char* msg = NULL;
-    const char* desc =
+    const char *msg = NULL;
+    const char *desc =
         "Below is a list all the files on disk that match the files pattern"
         " from the configuration file and have been modified on disk"
         " since the server started.";
 
-    const char* no_files =
+    const char *no_files =
         "No files in cache have been modified on disk after the cache was loaded";
 
     list files = NULL;

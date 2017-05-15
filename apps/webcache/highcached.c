@@ -44,7 +44,7 @@ static http_server g_adminserver = NULL;
 
 static void show_usage(FILE *out);
 static void create_cache(void);
-static void configure_admin_server(http_server s, const char* filename);
+static void configure_admin_server(http_server s, const char *filename);
 
 int main(int argc, char *argv[])
 {
@@ -204,7 +204,7 @@ static void create_cache(void)
     sublist_free(lst);
 }
 
-static void configure_admin_server(http_server s, const char* configfilename)
+static void configure_admin_server(http_server s, const char *configfilename)
 {
     int port;
     char host[1024];
@@ -245,7 +245,7 @@ static void configure_admin_server(http_server s, const char* configfilename)
 
 int handle_main(http_request req, http_response page)
 {
-    const char* html =
+    const char *html =
     "<p>Welcome to the Highlander web cache Administation server."
     "Here you can view statistics about the performance of the web cache,"
     " view changes on disk since the files in the cache was loaded."

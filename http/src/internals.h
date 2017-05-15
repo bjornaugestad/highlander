@@ -89,18 +89,18 @@ void http_server_add_logentry(http_server srv, connection conn, http_request req
 bool http_server_has_default_page_handler(http_server s);
 
 status_t http_server_run_default_page_handler(connection conn, http_server s, http_request request, http_response response, error e);
-status_t http_send_field(connection conn, const char* name, cstring value);
-status_t http_send_date(connection conn, const char* name, time_t value);
-status_t http_send_ulong(connection conn, const char* name, unsigned long value);
-status_t http_send_string(connection conn, const char* s);
+status_t http_send_field(connection conn, const char *name, cstring value);
+status_t http_send_date(connection conn, const char *name, time_t value);
+status_t http_send_ulong(connection conn, const char *name, unsigned long value);
+status_t http_send_string(connection conn, const char *s);
 
 status_t read_line(connection conn, char* buf, size_t cchMax, error e);
 /*
  * A field name, in HTTP, is everything to the left of : in
  * header fields like "name: value". We copy the name part here.
  */
-status_t get_field_name(const char* buf, char* name, size_t cchNameMax);
-status_t get_field_value(const char* buf, char* value, size_t cchValueMax);
+status_t get_field_name(const char *buf, char* name, size_t cchNameMax);
+status_t get_field_value(const char *buf, char* value, size_t cchValueMax);
 
 
 dynamic_page dynamic_new(const char *uri, PAGE_FUNCTION f, page_attribute a);
@@ -156,7 +156,7 @@ void general_header_set_proxy_revalidate(general_header gh);
 
 void general_header_set_date(general_header gh, time_t value);
 status_t general_header_set_connection(general_header gh, const char *value);
-status_t general_header_set_pragma(general_header gh, const char* value);
+status_t general_header_set_pragma(general_header gh, const char *value);
 status_t general_header_set_trailer(general_header gh, const char *value);
 status_t general_header_set_transfer_encoding(general_header gh, const char *value);
 status_t general_header_set_upgrade(general_header gh, const char *value);
@@ -221,7 +221,7 @@ status_t entity_header_set_content_type(entity_header eh, const char *value);
 void entity_header_set_expires(entity_header eh, time_t value);
 void entity_header_set_last_modified(entity_header eh, time_t value);
 
-bool entity_header_content_type_is(entity_header eh, const char* val);
+bool entity_header_content_type_is(entity_header eh, const char *val);
 
 const char* entity_header_get_allow(entity_header eh);
 const char* entity_header_get_content_encoding(entity_header eh);
@@ -254,46 +254,46 @@ status_t parse_request_headerfield(
     error e);
 
 status_t parse_response_headerfield(
-    const char* name,
-    const char* value,
+    const char *name,
+    const char *value,
     http_response req,
     error e);
 
 int parse_multivalued_fields(
     void *dest,
-    const char* value,
-    int(*set_func)(void *dest, const char* value, error e),
+    const char *value,
+    int(*set_func)(void *dest, const char *value, error e),
     error e);
 
 /* Return an index in the entity header array,
  * or -1 if the field was not found. */
-int find_entity_header(const char* name);
-status_t parse_entity_header(int idx, entity_header gh, const char* value, error e);
+int find_entity_header(const char *name);
+status_t parse_entity_header(int idx, entity_header gh, const char *value, error e);
 
 /*
  * The general header fields are shared between http requests and http
  * responses. The fields are described in RFC 2616, section 4.5.
  * This function itself returns -1 if the field was NOT a general header field
  */
-int find_general_header(const char* name);
-status_t parse_general_header(int idx, general_header gh, const char* value, error e);
+int find_general_header(const char *name);
+status_t parse_general_header(int idx, general_header gh, const char *value, error e);
 
-int find_request_header(const char* name);
-status_t parse_request_header(int idx, http_request req, const char* value, error e);
+int find_request_header(const char *name);
+status_t parse_request_header(int idx, http_request req, const char *value, error e);
 
-int find_response_header(const char* name);
+int find_response_header(const char *name);
 status_t parse_response_header(int idx, http_response req,
-    const char* value, error e)
+    const char *value, error e)
     __attribute__((warn_unused_result));
 
 /* Function prototypes for handler functions */
-status_t parse_cookie(http_request r, const char* s, error e)
+status_t parse_cookie(http_request r, const char *s, error e)
     __attribute__((warn_unused_result));
 
-status_t parse_new_cookie(http_request r, const char* s, error e)
+status_t parse_new_cookie(http_request r, const char *s, error e)
     __attribute__((warn_unused_result));
 
-status_t parse_old_cookie(http_request r, const char* s, error e)
+status_t parse_old_cookie(http_request r, const char *s, error e)
     __attribute__((warn_unused_result));
 
 status_t cookie_dump(cookie c,  void *file);

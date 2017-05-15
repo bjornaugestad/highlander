@@ -21,7 +21,7 @@
 /* Local helper functions */
 static int check_attributes(http_request request, page_attribute a)
 {
-    const char* page_val;
+    const char *page_val;
 
     assert(request != NULL);
     assert(a != NULL);
@@ -75,7 +75,7 @@ static status_t send_disk_file(
     char filename[CCH_URI_MAX + DOCUMENTROOT_MAX + 2];
     struct stat st;
     page_attribute a;
-    const char* content_type;
+    const char *content_type;
 
     assert(srv != NULL);
     assert(conn != NULL);

@@ -16,7 +16,7 @@ struct html_buffer_tag {
     cstring buffer;
 };
 
-status_t html_printf(html_buffer b, size_t cb, const char* fmt, ...)
+status_t html_printf(html_buffer b, size_t cb, const char *fmt, ...)
 {
     char *buf;
     va_list ap;
@@ -38,7 +38,7 @@ status_t html_printf(html_buffer b, size_t cb, const char* fmt, ...)
     return rc;
 }
 
-status_t html_add(html_buffer b, const char* s)
+status_t html_add(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -67,9 +67,9 @@ void html_buffer_free(html_buffer b)
     }
 }
 
-status_t html_anchor(html_buffer b, const char* url, const char* text)
+status_t html_anchor(html_buffer b, const char *url, const char *text)
 {
-    const char* template = "<a href=\"%s\">%s</a>";
+    const char *template = "<a href=\"%s\">%s</a>";
 
     assert(b != NULL);
     assert(url != NULL);
@@ -93,14 +93,14 @@ status_t html_address_end(html_buffer b)
     return cstring_concat(b->buffer, "</address>");
 }
 
-status_t html_address(html_buffer b, const char* s)
+status_t html_address(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
     return cstring_concat3(b->buffer, "<address>", s, "</address>");
 }
 
-status_t html_base(html_buffer b, const char* url)
+status_t html_base(html_buffer b, const char *url)
 {
     assert(b != NULL);
     assert(url != NULL);
@@ -110,7 +110,7 @@ status_t html_base(html_buffer b, const char* url)
     return 0;
 }
 
-status_t html_big(html_buffer b, const char* s)
+status_t html_big(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -118,7 +118,7 @@ status_t html_big(html_buffer b, const char* s)
     return cstring_concat3(b->buffer, "<big>", s, "</big>");
 }
 
-status_t html_blockquote_start(html_buffer b, const char* url)
+status_t html_blockquote_start(html_buffer b, const char *url)
 {
     assert(b != NULL);
     assert(url != NULL);
@@ -145,7 +145,7 @@ status_t html_body_end(html_buffer b)
     return cstring_concat(b->buffer, "</body>");
 }
 
-status_t html_bold(html_buffer b, const char* s)
+status_t html_bold(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -161,11 +161,11 @@ status_t html_br(html_buffer b)
 
 status_t html_button(
     html_buffer b,
-    const char* name,
-    const char* type,
-    const char* value,
-    const char* onfocus,
-    const char* onblur)
+    const char *name,
+    const char *type,
+    const char *value,
+    const char *onfocus,
+    const char *onblur)
 {
     assert(b != NULL);
 
@@ -199,7 +199,7 @@ status_t html_table_end(html_buffer b)
     return cstring_concat(b->buffer, "</table>");
 }
 
-status_t html_th(html_buffer b, const char* s)
+status_t html_th(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -207,7 +207,7 @@ status_t html_th(html_buffer b, const char* s)
     return cstring_concat3(b->buffer, "<th>", s, "</th>");
 }
 
-status_t html_td(html_buffer b, const char* s)
+status_t html_td(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -229,7 +229,7 @@ status_t html_tr_end(html_buffer b)
     return cstring_concat(b->buffer, "</tr>");
 }
 
-status_t html_strong(html_buffer b, const char* s)
+status_t html_strong(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -237,7 +237,7 @@ status_t html_strong(html_buffer b, const char* s)
     return cstring_concat3(b->buffer, "<strong>", s, "</strong>");
 }
 
-status_t html_italic(html_buffer b, const char* s)
+status_t html_italic(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -245,7 +245,7 @@ status_t html_italic(html_buffer b, const char* s)
     return cstring_concat3(b->buffer, "<italic>", s, "</italic>");
 }
 
-status_t html_slant(html_buffer b, const char* s)
+status_t html_slant(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -253,7 +253,7 @@ status_t html_slant(html_buffer b, const char* s)
     return cstring_concat3(b->buffer, "<slant>", s, "</slant>");
 }
 
-status_t html_em(html_buffer b, const char* s)
+status_t html_em(html_buffer b, const char *s)
 {
     assert(s != NULL);
     assert(b != NULL);
@@ -261,7 +261,7 @@ status_t html_em(html_buffer b, const char* s)
     return cstring_concat3(b->buffer, "<em>", s, "</em>");
 }
 
-status_t html_dfn(html_buffer b, const char* s)
+status_t html_dfn(html_buffer b, const char *s)
 {
     assert(s != NULL);
     assert(b != NULL);
@@ -269,7 +269,7 @@ status_t html_dfn(html_buffer b, const char* s)
     return cstring_concat3(b->buffer, "<dfn>", s, "</dfn>");
 }
 
-status_t html_code(html_buffer b, const char* s)
+status_t html_code(html_buffer b, const char *s)
 {
     assert(s != NULL);
     assert(b != NULL);
@@ -277,7 +277,7 @@ status_t html_code(html_buffer b, const char* s)
     return cstring_concat3(b->buffer, "<code>", s, "</code>");
 }
 
-status_t html_samp(html_buffer b, const char* s)
+status_t html_samp(html_buffer b, const char *s)
 {
     assert(s != NULL);
     assert(b != NULL);
@@ -285,7 +285,7 @@ status_t html_samp(html_buffer b, const char* s)
     return cstring_concat3(b->buffer, "<samp>", s, "</samp>");
 }
 
-status_t html_kbd(html_buffer b, const char* s)
+status_t html_kbd(html_buffer b, const char *s)
 {
     assert(s != NULL);
     assert(b != NULL);
@@ -293,7 +293,7 @@ status_t html_kbd(html_buffer b, const char* s)
     return cstring_concat3(b->buffer, "<kbd>", s, "</kbd>");
 }
 
-status_t html_var(html_buffer b, const char* s)
+status_t html_var(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -301,7 +301,7 @@ status_t html_var(html_buffer b, const char* s)
     return cstring_concat3(b->buffer, "<var>", s, "</var>");
 }
 
-status_t html_cite(html_buffer b, const char* s)
+status_t html_cite(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -309,7 +309,7 @@ status_t html_cite(html_buffer b, const char* s)
     return cstring_concat3(b->buffer, "<cite>", s, "</cite>");
 }
 
-status_t html_abbr(html_buffer b, const char* s)
+status_t html_abbr(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -317,7 +317,7 @@ status_t html_abbr(html_buffer b, const char* s)
     return cstring_concat3(b->buffer, "<abbr>", s, "</abbr>");
 }
 
-status_t html_acronym(html_buffer b, const char* s)
+status_t html_acronym(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -325,7 +325,7 @@ status_t html_acronym(html_buffer b, const char* s)
     return cstring_concat3(b->buffer, "<acronym>", s, "</acronym>");
 }
 
-status_t html_small(html_buffer b, const char* s)
+status_t html_small(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -347,7 +347,7 @@ status_t html_dl_end(html_buffer b)
     return cstring_concat(b->buffer, "</dl>");
 }
 
-status_t html_dt(html_buffer b, const char* s)
+status_t html_dt(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -355,7 +355,7 @@ status_t html_dt(html_buffer b, const char* s)
     return cstring_concat3(b->buffer, "<dt>", s, "</dt>");
 }
 
-status_t html_dd(html_buffer b, const char* s)
+status_t html_dd(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -390,7 +390,7 @@ status_t html_ul_end(html_buffer b)
     return cstring_concat(b->buffer, "</ul>");
 }
 
-status_t html_li(html_buffer b, const char* s)
+status_t html_li(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -399,7 +399,7 @@ status_t html_li(html_buffer b, const char* s)
 }
 
 
-status_t html_del(html_buffer b, const char* s)
+status_t html_del(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -407,7 +407,7 @@ status_t html_del(html_buffer b, const char* s)
     return cstring_concat3(b->buffer, "<del>", s, "</del>");
 }
 
-status_t html_ins(html_buffer b, const char* s)
+status_t html_ins(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -415,7 +415,7 @@ status_t html_ins(html_buffer b, const char* s)
     return cstring_concat3(b->buffer, "<ins>", s, "</ins>");
 }
 
-status_t html_p(html_buffer b, const char* s)
+status_t html_p(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -435,7 +435,7 @@ status_t html_p_end(html_buffer b)
     return cstring_concat(b->buffer, "</p>");
 }
 
-status_t html_h1(html_buffer b, const char* s)
+status_t html_h1(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -443,7 +443,7 @@ status_t html_h1(html_buffer b, const char* s)
     return cstring_concat3(b->buffer, "<h1>", s, "</h1>");
 }
 
-status_t html_h2(html_buffer b, const char* s)
+status_t html_h2(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -451,7 +451,7 @@ status_t html_h2(html_buffer b, const char* s)
     return cstring_concat3(b->buffer, "<h2>", s, "</h2>");
 }
 
-status_t html_h3(html_buffer b, const char* s)
+status_t html_h3(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -459,7 +459,7 @@ status_t html_h3(html_buffer b, const char* s)
     return cstring_concat3(b->buffer, "<h3>", s, "</h3>");
 }
 
-status_t html_h4(html_buffer b, const char* s)
+status_t html_h4(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -467,7 +467,7 @@ status_t html_h4(html_buffer b, const char* s)
     return cstring_concat3(b->buffer, "<h4>", s, "</h4>");
 }
 
-status_t html_h5(html_buffer b, const char* s)
+status_t html_h5(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -475,7 +475,7 @@ status_t html_h5(html_buffer b, const char* s)
     return cstring_concat3(b->buffer, "<h5>", s, "</h5>");
 }
 
-status_t html_h6(html_buffer b, const char* s)
+status_t html_h6(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -497,7 +497,7 @@ status_t html_head_end(html_buffer b)
     return cstring_concat(b->buffer, "</head>");
 }
 
-status_t html_title(html_buffer b, const char* s)
+status_t html_title(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -526,8 +526,8 @@ status_t html_html_end(html_buffer b)
 
 status_t html_img(
     html_buffer b,
-    const char* url,
-    const char* alt,
+    const char *url,
+    const char *alt,
     size_t height,
     size_t width)
 {
@@ -557,9 +557,9 @@ status_t html_img(
     return cstring_concat(b->buffer, ">");
 }
 
-status_t html_label(html_buffer b, const char* _for, const char* text)
+status_t html_label(html_buffer b, const char* _for, const char *text)
 {
-    const char* template = "<label for='%s'>%s</label>";
+    const char *template = "<label for='%s'>%s</label>";
 
     assert(b != NULL);
     assert(_for != NULL);
@@ -570,7 +570,7 @@ status_t html_label(html_buffer b, const char* _for, const char* text)
     return cstring_printf(b->buffer, template, _for, text);
 }
 
-status_t html_meta(html_buffer b, const char* s)
+status_t html_meta(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -580,7 +580,7 @@ status_t html_meta(html_buffer b, const char* s)
     return 0;
 }
 
-status_t html_q(html_buffer b, const char* s)
+status_t html_q(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -588,7 +588,7 @@ status_t html_q(html_buffer b, const char* s)
     return cstring_concat3(b->buffer, "<q>", s, "</q>");
 }
 
-status_t html_sub(html_buffer b, const char* s)
+status_t html_sub(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -596,7 +596,7 @@ status_t html_sub(html_buffer b, const char* s)
     return cstring_concat3(b->buffer, "<sub>", s, "</sub>");
 }
 
-status_t html_sup(html_buffer b, const char* s)
+status_t html_sup(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);
@@ -619,8 +619,8 @@ status_t html_select_end(html_buffer b)
 status_t html_option(
     html_buffer b,
     int selected,
-    const char* value,
-    const char* text)
+    const char *value,
+    const char *text)
 {
     assert(b != NULL);
     assert(text != NULL);
@@ -642,7 +642,7 @@ status_t html_option(
     return cstring_concat3(b->buffer, ">", text, "</option>");
 }
 
-status_t html_optgroup_start(html_buffer b, const char* label)
+status_t html_optgroup_start(html_buffer b, const char *label)
 {
     assert(b != NULL);
 
@@ -658,7 +658,7 @@ status_t html_optgroup_end(html_buffer b)
     return cstring_concat(b->buffer, "</optgroup>");
 }
 
-status_t html_style_start(html_buffer b, const char* type)
+status_t html_style_start(html_buffer b, const char *type)
 {
     assert(b != NULL);
     assert(type != NULL);
@@ -673,7 +673,7 @@ status_t html_style_end(html_buffer b)
     return cstring_concat(b->buffer, "</style>");
 }
 
-status_t html_tt(html_buffer b, const char* s)
+status_t html_tt(html_buffer b, const char *s)
 {
     assert(b != NULL);
     assert(s != NULL);

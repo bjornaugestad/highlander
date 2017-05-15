@@ -2,13 +2,13 @@
 
 #include <httpcache.h>
 
-extern const char* g_configfile;
+extern const char *g_configfile;
 
 int show_configuration(http_request req, http_response page)
 {
     FILE* f = NULL;
 
-    const char* nofile =
+    const char *nofile =
         " I was unable to open the configuration file. Maybe I was configured"
         " to change either user or root directory at startup? If so,"
         " the file is most likely"

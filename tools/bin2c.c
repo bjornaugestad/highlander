@@ -28,19 +28,19 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-void process(const char* filename, FILE *source, FILE *header);
-void create_arrays(const char* filename, FILE *source);
-void create_implementations(const char* filename, FILE *source);
-void create_declarations(const char* filename, FILE *f);
-void create_calls(const char* filename);
+void process(const char *filename, FILE *source, FILE *header);
+void create_arrays(const char *filename, FILE *source);
+void create_implementations(const char *filename, FILE *source);
+void create_declarations(const char *filename, FILE *f);
+void create_calls(const char *filename);
 void show_usage(void);
-const char *base(const char *s);
+const char* base(const char *s);
 void start_source(FILE *f, const char *headerfile);
 void start_header(FILE *f, const char *filename);
 void end_source(FILE *f);
 void end_header(FILE *f);
 
-const char *g_content_type = NULL;
+const char* g_content_type = NULL;
 int g_verbose = 0;
 int g_veryverbose = 0;
 int g_store_as_text = 0;
@@ -187,9 +187,9 @@ int main(int ac, char** av)
     return 0;
 }
 
-void create_bin_arrays(const char* filename, FILE *f);
-void create_text_arrays(const char* filename, FILE *f);
-void create_arrays(const char* filename, FILE *f)
+void create_bin_arrays(const char *filename, FILE *f);
+void create_text_arrays(const char *filename, FILE *f);
+void create_arrays(const char *filename, FILE *f)
 {
     if (g_store_as_text)
         create_text_arrays(filename, f);
@@ -204,7 +204,7 @@ static void remove_trailing_newline(char *sz)
             sz[n] = '\0';
 }
 
-void create_text_arrays(const char* filename, FILE *f)
+void create_text_arrays(const char *filename, FILE *f)
 {
     char *s, sz[20480];
     FILE *fin;
@@ -233,7 +233,7 @@ void create_text_arrays(const char* filename, FILE *f)
     fprintf(f, "\n;\n");
 }
 
-void create_bin_arrays(const char* filename, FILE *f)
+void create_bin_arrays(const char *filename, FILE *f)
 {
     int fd, printed;
     size_t cb;
@@ -292,14 +292,14 @@ static const char *usage2 =
 }
 
 
-const char *base(const char *s)
+const char* base(const char *s)
 {
     static char bf[2048];
     size_t i;
 
     if (g_basename_only) {
         /* Copy only the filename to the buffer bf. */
-        const char* end = s + strlen(s);
+        const char *end = s + strlen(s);
         while (end > s && *end != '/')
             end--;
 
@@ -322,7 +322,7 @@ const char *base(const char *s)
     return bf;
 }
 
-void create_implementations(const char* filename, FILE *f)
+void create_implementations(const char *filename, FILE *f)
 {
     const char *name = base(filename);
 
@@ -396,7 +396,7 @@ void end_header(FILE *f)
     fprintf(f, "\n#endif\n");
 }
 
-void create_declarations(const char* filename, FILE *f)
+void create_declarations(const char *filename, FILE *f)
 {
     const char *name = base(filename);
 
@@ -408,7 +408,7 @@ void create_declarations(const char* filename, FILE *f)
         name);
 }
 
-void create_calls(const char* filename)
+void create_calls(const char *filename)
 {
     printf("\thttp_server_add_page(s, \"/%s\", show_%s, NULL);\n",
         filename, base(filename));

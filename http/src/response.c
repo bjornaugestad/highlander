@@ -268,7 +268,7 @@ static status_t send_retry_after(connection conn, http_response p)
 static status_t send_accept_ranges(connection conn, http_response p)
 {
     size_t cch;
-    const char* s;
+    const char *s;
 
     if (p->accept_ranges == 1)
         s = "Accept-Ranges: bytes\r\n";
@@ -329,7 +329,7 @@ static status_t response_send_header_fields(http_response p, connection conn)
 }
 
 /* return 1 if string needs to be quoted, 0 if not */
-static bool need_quote(const char* s)
+static bool need_quote(const char *s)
 {
     while (*s != '\0') {
         if (!isalnum(*s) && *s != '_')
@@ -347,7 +347,7 @@ static bool need_quote(const char* s)
  * since rfc2109 is VERY silent on this issue. We go for \' since most
  * browsers/servers are written in C and C programmers tend to escape stuff.
  */
-static status_t strcat_quoted(cstring dest, const char* s)
+static status_t strcat_quoted(cstring dest, const char *s)
 {
     assert(s != NULL);
     assert(dest != NULL);
@@ -376,7 +376,7 @@ static status_t strcat_quoted(cstring dest, const char* s)
  */
 static status_t create_cookie_string(cookie c, cstring str)
 {
-    const char* s;
+    const char *s;
     int v;
 
     if ((s = cookie_get_name(c)) == NULL)
@@ -505,7 +505,7 @@ static status_t response_send_header(http_response response,
     return success;
 }
 
-status_t response_add(const http_response p, const char* value)
+status_t response_add(const http_response p, const char *value)
 {
     assert(p != NULL);
     assert(value != NULL);
@@ -519,7 +519,7 @@ status_t response_add_char(http_response p, int c)
     return cstring_charcat(p->entity, c);
 }
 
-status_t response_add_end(http_response response, const char* start, const char* end)
+status_t response_add_end(http_response response, const char *start, const char *end)
 {
     return cstring_pcat(response->entity, start, end);
 }
@@ -545,7 +545,7 @@ void response_free(http_response p)
     }
 }
 
-status_t response_printf(http_response page, const char* fmt, ...)
+status_t response_printf(http_response page, const char *fmt, ...)
 {
     status_t status;
     va_list ap;
@@ -564,13 +564,13 @@ status_t response_printf(http_response page, const char* fmt, ...)
 status_t response_set_cookie(http_response response, cookie new_cookie)
 {
     list_iterator i;
-    const char* nameNew;
+    const char *nameNew;
 
     nameNew = cookie_get_name(new_cookie);
 
     /* Lookup cookie to check for duplicates */
     for (i = list_first(response->cookies); !list_end(i); i = list_next(i)) {
-        const char* nameOld;
+        const char *nameOld;
         cookie c;
 
         c = list_get(i);
@@ -586,7 +586,7 @@ status_t response_set_cookie(http_response response, cookie new_cookie)
     return success;
 }
 
-status_t http_send_date(connection conn, const char* name, time_t value)
+status_t http_send_date(connection conn, const char *name, time_t value)
 {
     char date[100];
     size_t cb;
@@ -604,7 +604,7 @@ status_t http_send_date(connection conn, const char* name, time_t value)
     return failure;
 }
 
-status_t http_send_string(connection conn, const char* s)
+status_t http_send_string(connection conn, const char *s)
 {
     assert(s != NULL);
 
@@ -612,7 +612,7 @@ status_t http_send_string(connection conn, const char* s)
     return connection_write(conn, s, cb);
 }
 
-status_t http_send_ulong(connection conn, const char* name, unsigned long value)
+status_t http_send_ulong(connection conn, const char *name, unsigned long value)
 {
     char val[1000];
     size_t cb = snprintf(val, sizeof val, "%s%lu", name, value);
@@ -622,7 +622,7 @@ status_t http_send_ulong(connection conn, const char* name, unsigned long value)
     return connection_write(conn, val, cb);
 }
 
-status_t http_send_field(connection conn, const char* name, cstring value)
+status_t http_send_field(connection conn, const char *name, cstring value)
 {
     size_t cb;
 
@@ -660,7 +660,7 @@ size_t response_get_content_length(http_response p)
 }
 
 
-status_t response_set_connection(http_response response, const char* value)
+status_t response_set_connection(http_response response, const char *value)
 {
     assert(response != NULL);
 
@@ -673,19 +673,19 @@ void response_set_date(http_response response, time_t value)
     general_header_set_date(response->general_header, value);
 }
 
-status_t response_set_pragma(http_response response, const char* value)
+status_t response_set_pragma(http_response response, const char *value)
 {
     assert(response != NULL);
     return general_header_set_pragma(response->general_header, value);
 }
 
-status_t response_set_trailer(http_response response, const char* value)
+status_t response_set_trailer(http_response response, const char *value)
 {
     assert(response != NULL);
     return general_header_set_trailer(response->general_header, value);
 }
 
-status_t response_set_transfer_encoding(http_response response, const char* value)
+status_t response_set_transfer_encoding(http_response response, const char *value)
 {
     assert(response != NULL);
     return general_header_set_transfer_encoding(response->general_header, value);
@@ -745,19 +745,19 @@ void response_set_cachecontrol_s_maxage(http_response response, int value)
     general_header_set_s_maxage(response->general_header, value);
 }
 
-status_t response_set_upgrade(http_response response, const char* value)
+status_t response_set_upgrade(http_response response, const char *value)
 {
     assert(response != NULL);
     return general_header_set_upgrade(response->general_header, value);
 }
 
-status_t response_set_via(http_response response, const char* value)
+status_t response_set_via(http_response response, const char *value)
 {
     assert(response != NULL);
     return general_header_set_via(response->general_header, value);
 }
 
-status_t response_set_warning(http_response response, const char* value)
+status_t response_set_warning(http_response response, const char *value)
 {
     assert(response != NULL);
     return general_header_set_warning(response->general_header, value);
@@ -772,7 +772,7 @@ void response_set_accept_ranges(http_response response, int value)
     response_set_flag(response, ACCEPT_RANGES);
 }
 
-status_t response_set_etag(http_response response, const char* value)
+status_t response_set_etag(http_response response, const char *value)
 {
     assert(response != NULL);
     assert(value != NULL);
@@ -784,7 +784,7 @@ status_t response_set_etag(http_response response, const char* value)
     return success;
 }
 
-status_t response_set_location(http_response response, const char* value)
+status_t response_set_location(http_response response, const char *value)
 {
     assert(response != NULL);
     assert(value != NULL);
@@ -796,7 +796,7 @@ status_t response_set_location(http_response response, const char* value)
     return success;
 }
 
-status_t response_set_proxy_authenticate(http_response response, const char* value)
+status_t response_set_proxy_authenticate(http_response response, const char *value)
 {
     assert(response != NULL);
     assert(value != NULL);
@@ -817,7 +817,7 @@ void response_set_retry_after(http_response response, time_t value)
     response_set_flag(response, RETRY_AFTER);
 }
 
-status_t response_set_server(http_response response, const char* value)
+status_t response_set_server(http_response response, const char *value)
 {
     assert(response != NULL);
     assert(value != NULL);
@@ -829,7 +829,7 @@ status_t response_set_server(http_response response, const char* value)
     return success;
 }
 
-status_t response_set_vary(http_response response, const char* value)
+status_t response_set_vary(http_response response, const char *value)
 {
     assert(response != NULL);
     assert(value != NULL);
@@ -841,7 +841,7 @@ status_t response_set_vary(http_response response, const char* value)
     return success;
 }
 
-status_t response_set_www_authenticate(http_response response, const char* value)
+status_t response_set_www_authenticate(http_response response, const char *value)
 {
     assert(response != NULL);
     assert(value != NULL);
@@ -853,19 +853,19 @@ status_t response_set_www_authenticate(http_response response, const char* value
     return success;
 }
 
-status_t response_set_allow(http_response response, const char* value)
+status_t response_set_allow(http_response response, const char *value)
 {
     assert(response != NULL);
     return entity_header_set_allow(response->entity_header, value);
 }
 
-status_t response_set_content_encoding(http_response response, const char* value)
+status_t response_set_content_encoding(http_response response, const char *value)
 {
     assert(response != NULL);
     return entity_header_set_content_encoding(response->entity_header, value);
 }
 
-status_t response_set_content_language(http_response response, const char* value, error e)
+status_t response_set_content_language(http_response response, const char *value, error e)
 {
     assert(response != NULL);
     return entity_header_set_content_language(response->entity_header, value, e);
@@ -877,25 +877,25 @@ void response_set_content_length(http_response response, size_t value)
     entity_header_set_content_length(response->entity_header, value);
 }
 
-status_t response_set_content_location(http_response response, const char* value)
+status_t response_set_content_location(http_response response, const char *value)
 {
     assert(response != NULL);
     return entity_header_set_content_location(response->entity_header, value);
 }
 
-status_t response_set_content_md5(http_response response, const char* value)
+status_t response_set_content_md5(http_response response, const char *value)
 {
     assert(response != NULL);
     return entity_header_set_content_md5(response->entity_header, value);
 }
 
-status_t response_set_content_range(http_response response, const char* value)
+status_t response_set_content_range(http_response response, const char *value)
 {
     assert(response != NULL);
     return entity_header_set_content_range(response->entity_header, value);
 }
 
-status_t response_set_content_type(http_response response, const char* value)
+status_t response_set_content_type(http_response response, const char *value)
 {
     assert(response != NULL);
     return entity_header_set_content_type(response->entity_header, value);
@@ -964,7 +964,7 @@ void response_set_allocated_content_buffer(
 }
 
 
-status_t response_send_file(http_response p, const char *path, const char* ctype, error e)
+status_t response_send_file(http_response p, const char *path, const char *ctype, error e)
 {
     struct stat st;
     assert(p != NULL);
@@ -1051,7 +1051,7 @@ response_send_entity(http_response r, connection conn, size_t *pcb)
             return failure;
     }
     else {
-        const char* entity = response_get_entity(r);
+        const char *entity = response_get_entity(r);
         *pcb = response_get_content_length(r);
         if (!connection_write(conn, entity, *pcb))
             return failure;
@@ -1123,7 +1123,7 @@ const char* response_get_connection(http_response response)
     return general_header_get_connection(response->general_header);
 }
 
-status_t response_td(http_response page, const char* text)
+status_t response_td(http_response page, const char *text)
 {
     return cstring_concat3(page->entity, "<td>", text, "</td>\n");
 }
@@ -1140,9 +1140,9 @@ status_t response_hr(http_response response)
     return cstring_concat(response->entity, "<hr>");
 }
 
-status_t response_href(http_response response, const char* ref, const char* text)
+status_t response_href(http_response response, const char *ref, const char *text)
 {
-    const char* fmt = "<a href=\"%s\">%s</a>";
+    const char *fmt = "<a href=\"%s\">%s</a>";
 
     assert(response != NULL);
     assert(ref != NULL);
@@ -1151,7 +1151,7 @@ status_t response_href(http_response response, const char* ref, const char* text
     return cstring_printf(response->entity, fmt, ref, text);
 }
 
-status_t response_p (http_response response, const char* s)
+status_t response_p (http_response response, const char *s)
 {
     assert(response != NULL);
     assert(s != NULL);
@@ -1159,7 +1159,7 @@ status_t response_p (http_response response, const char* s)
     return cstring_concat3(response->entity, "<p>", s, "</p>\n");
 }
 
-status_t response_h1(http_response response, const char* s)
+status_t response_h1(http_response response, const char *s)
 {
     assert(response != NULL);
     assert(s != NULL);
@@ -1167,7 +1167,7 @@ status_t response_h1(http_response response, const char* s)
     return cstring_concat3(response->entity, "<h1>", s, "</h1>\n");
 }
 
-status_t response_h2(http_response response, const char* s)
+status_t response_h2(http_response response, const char *s)
 {
     assert(response != NULL);
     assert(s != NULL);
@@ -1175,7 +1175,7 @@ status_t response_h2(http_response response, const char* s)
     return cstring_concat3(response->entity, "<h2>", s, "</h2>\n");
 }
 
-status_t response_h3(http_response response, const char* s)
+status_t response_h3(http_response response, const char *s)
 {
     assert(response != NULL);
     assert(s != NULL);
@@ -1183,7 +1183,7 @@ status_t response_h3(http_response response, const char* s)
     return cstring_concat3(response->entity, "<h3>", s, "</h3>\n");
 }
 
-status_t response_h4(http_response response, const char* s)
+status_t response_h4(http_response response, const char *s)
 {
     assert(response != NULL);
     assert(s != NULL);
@@ -1191,7 +1191,7 @@ status_t response_h4(http_response response, const char* s)
     return cstring_concat3(response->entity, "<h4>", s, "</h4>\n");
 }
 
-status_t response_h5(http_response response, const char* s)
+status_t response_h5(http_response response, const char *s)
 {
     assert(response != NULL);
     assert(s != NULL);
@@ -1199,7 +1199,7 @@ status_t response_h5(http_response response, const char* s)
     return cstring_concat3(response->entity, "<h5>", s, "</h5>\n");
 }
 
-status_t response_h6(http_response response, const char* s)
+status_t response_h6(http_response response, const char *s)
 {
     assert(response != NULL);
     assert(s != NULL);
@@ -1207,7 +1207,7 @@ status_t response_h6(http_response response, const char* s)
     return cstring_concat3(response->entity, "<h6>", s, "</h6>\n");
 }
 
-status_t response_h7(http_response response, const char* s)
+status_t response_h7(http_response response, const char *s)
 {
     assert(response != NULL);
     assert(s != NULL);
@@ -1215,7 +1215,7 @@ status_t response_h7(http_response response, const char* s)
     return cstring_concat3(response->entity, "<h7>", s, "</h7>\n");
 }
 
-status_t response_h8(http_response response, const char* s)
+status_t response_h8(http_response response, const char *s)
 {
     assert(response != NULL);
     assert(s != NULL);
@@ -1223,7 +1223,7 @@ status_t response_h8(http_response response, const char* s)
     return cstring_concat3(response->entity, "<h8>", s, "</h8>\n");
 }
 
-status_t response_h9(http_response response, const char* s)
+status_t response_h9(http_response response, const char *s)
 {
     assert(response != NULL);
     assert(s != NULL);
@@ -1233,10 +1233,10 @@ status_t response_h9(http_response response, const char* s)
     return cstring_concat3(response->entity, "<h9>", s, "</h9>\n");
 }
 
-status_t response_js_messagebox(http_response response, const char* text)
+status_t response_js_messagebox(http_response response, const char *text)
 {
-    const char* start = "<script language=\"javascript\">\nalert(\"";
-    const char* end = "\");\n</script>\n";
+    const char *start = "<script language=\"javascript\">\nalert(\"";
+    const char *end = "\");\n</script>\n";
 
     assert(response != NULL);
     assert(text != NULL);
@@ -1245,7 +1245,7 @@ status_t response_js_messagebox(http_response response, const char* text)
 }
 
 /* response field functions */
-static status_t parse_age(http_response r, const char* value, error e)
+static status_t parse_age(http_response r, const char *value, error e)
 {
     unsigned long v;
     assert(r != NULL);
@@ -1258,7 +1258,7 @@ static status_t parse_age(http_response r, const char* value, error e)
     return success;
 }
 
-static status_t parse_etag(http_response r, const char* value, error e)
+static status_t parse_etag(http_response r, const char *value, error e)
 {
     assert(r != NULL);
     assert(value != NULL);
@@ -1269,7 +1269,7 @@ static status_t parse_etag(http_response r, const char* value, error e)
     return success;
 }
 
-static status_t parse_location(http_response r, const char* value, error e)
+static status_t parse_location(http_response r, const char *value, error e)
 {
     assert(r != NULL);
     assert(value != NULL);
@@ -1280,7 +1280,7 @@ static status_t parse_location(http_response r, const char* value, error e)
     return success;
 }
 
-static status_t parse_www_authenticate(http_response r, const char* value, error e)
+static status_t parse_www_authenticate(http_response r, const char *value, error e)
 {
     assert(r != NULL);
     assert(value != NULL);
@@ -1291,7 +1291,7 @@ static status_t parse_www_authenticate(http_response r, const char* value, error
     return success;
 }
 
-static status_t parse_server(http_response r, const char* value, error e)
+static status_t parse_server(http_response r, const char *value, error e)
 {
     assert(r != NULL);
     assert(value != NULL);
@@ -1307,7 +1307,7 @@ static status_t parse_server(http_response r, const char* value, error e)
  * The only range unit defined by HTTP 1.1 is "bytes", and we MAY ignore
  * all others.
  */
-static status_t parse_accept_ranges(http_response r, const char* value, error e)
+static status_t parse_accept_ranges(http_response r, const char *value, error e)
 {
     assert(r != NULL);
     assert(value != NULL);
@@ -1324,7 +1324,7 @@ static status_t parse_accept_ranges(http_response r, const char* value, error e)
     return success;
 }
 
-static status_t parse_proxy_authenticate(http_response r, const char* value, error e)
+static status_t parse_proxy_authenticate(http_response r, const char *value, error e)
 {
     assert(r != NULL);
     assert(value != NULL);
@@ -1339,7 +1339,7 @@ static status_t parse_proxy_authenticate(http_response r, const char* value, err
  * The value can be either a rfc822 date or an integer value representing delta(seconds).
  * TODO: We need a way to separate between delta and absolute time.
  */
-static status_t parse_retry_after(http_response r, const char* value, error e)
+static status_t parse_retry_after(http_response r, const char *value, error e)
 {
     time_t t;
     long delta;
@@ -1357,7 +1357,7 @@ static status_t parse_retry_after(http_response r, const char* value, error e)
     return success;
 }
 
-static status_t parse_vary(http_response r, const char* value, error e)
+static status_t parse_vary(http_response r, const char *value, error e)
 {
     assert(r != NULL);
     assert(value != NULL);
@@ -1369,8 +1369,8 @@ static status_t parse_vary(http_response r, const char* value, error e)
 }
 
 static const struct {
-    const char* name;
-    status_t (*handler)(http_response req, const char* value, error e);
+    const char *name;
+    status_t (*handler)(http_response req, const char *value, error e);
 } response_header_fields[] = {
     { "accept-ranges",      parse_accept_ranges },
     { "age",                parse_age },
@@ -1383,7 +1383,7 @@ static const struct {
     { "www-authenticate",   parse_www_authenticate }
 };
 
-int find_response_header(const char* name)
+int find_response_header(const char *name)
 {
     int i, n = sizeof response_header_fields / sizeof *response_header_fields;
     for (i = 0; i < n; i++) {
@@ -1394,7 +1394,7 @@ int find_response_header(const char* name)
     return -1;
 }
 
-status_t parse_response_header(int idx, http_response req, const char* value, error e)
+status_t parse_response_header(int idx, http_response req, const char *value, error e)
 {
     assert(idx >= 0);
     assert((size_t)idx < sizeof response_header_fields / sizeof *response_header_fields);
@@ -1613,7 +1613,7 @@ void response_dump(http_response r, void *file)
     FILE *f = file;
 
     /* Now our own fields */
-    const char* version = "Unknown";
+    const char *version = "Unknown";
     switch (r->version) {
         case VERSION_09:
             version = "HTTP 0.9";

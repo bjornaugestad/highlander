@@ -61,7 +61,7 @@ static int hexchar2int(int c)
  * integer which represents a decoded character. Note that hexchar2int
  * will implicitly detect end of string ('\0').
  */
-static int decode(const char* src)
+static int decode(const char *src)
 {
     int c1, c2;
 
@@ -79,7 +79,7 @@ static int decode(const char* src)
     return (c1 << 4) + c2;
 }
 
-size_t rfc1738_encode(char* dest, size_t destsize, const char* src, size_t srclen)
+size_t rfc1738_encode(char* dest, size_t destsize, const char *src, size_t srclen)
 {
     size_t size = 0;
 
@@ -127,7 +127,7 @@ size_t rfc1738_encode(char* dest, size_t destsize, const char* src, size_t srcle
     return size;
 }
 
-size_t rfc1738_decode(char* dest, size_t destsize, const char* src, size_t srclen)
+size_t rfc1738_decode(char* dest, size_t destsize, const char *src, size_t srclen)
 {
     int c;
     size_t size = 0;
@@ -163,7 +163,7 @@ size_t rfc1738_decode(char* dest, size_t destsize, const char* src, size_t srcle
     return size;
 }
 
-size_t rfc1738_encode_string(char* dest, size_t destsize, const char* src)
+size_t rfc1738_encode_string(char* dest, size_t destsize, const char *src)
 {
     size_t size;
 
@@ -177,7 +177,7 @@ size_t rfc1738_encode_string(char* dest, size_t destsize, const char* src)
     }
 }
 
-size_t rfc1738_decode_string(char* dest, size_t destsize, const char* src)
+size_t rfc1738_decode_string(char* dest, size_t destsize, const char *src)
 {
     size_t size;
 

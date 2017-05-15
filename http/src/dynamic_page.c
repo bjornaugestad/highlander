@@ -17,7 +17,7 @@ struct dynamic_page_tag {
     PAGE_FUNCTION handler;
 };
 
-dynamic_page dynamic_new(const char* uri, PAGE_FUNCTION handler, page_attribute a)
+dynamic_page dynamic_new(const char *uri, PAGE_FUNCTION handler, page_attribute a)
 {
     dynamic_page p;
 
@@ -57,7 +57,7 @@ const char* dynamic_get_uri(dynamic_page p)
     return c_str(p->uri);
 }
 
-status_t dynamic_set_uri(dynamic_page p, const char* value)
+status_t dynamic_set_uri(dynamic_page p, const char *value)
 {
     assert(p != NULL);
     assert(value != NULL);

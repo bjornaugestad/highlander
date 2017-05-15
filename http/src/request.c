@@ -748,7 +748,7 @@ size_t request_get_field_count(http_request request)
 }
 
 /* Return a pointer to the start of field n, where & is field separator */
-static const char* get_field_start(const char *content, size_t cb, size_t idx)
+static const char *get_field_start(const char *content, size_t cb, size_t idx)
 {
     const char *start, *stop;
 
@@ -947,8 +947,8 @@ size_t request_get_content_length(http_request request)
 /* Helper function to have the algorithm one place only */
 static status_t req_parse_multivalued_fields(
     http_request req,
-    const char* value,
-    status_t(*set_func)(http_request req, const char* value, error e),
+    const char *value,
+    status_t(*set_func)(http_request req, const char *value, error e),
     error e)
 {
     const int sep = ',';
@@ -979,7 +979,7 @@ static status_t req_parse_multivalued_fields(
     return set_func(req, value, e);
 }
 /* http request handlers */
-static status_t parse_authorization(http_request req, const char* value, error e)
+static status_t parse_authorization(http_request req, const char *value, error e)
 {
     assert(req != NULL);
     assert(value != NULL);
@@ -990,7 +990,7 @@ static status_t parse_authorization(http_request req, const char* value, error e
     return success;
 }
 
-static status_t parse_expect(http_request req, const char* value, error e)
+static status_t parse_expect(http_request req, const char *value, error e)
 {
     assert(req != NULL);
     assert(value != NULL);
@@ -1001,7 +1001,7 @@ static status_t parse_expect(http_request req, const char* value, error e)
     return success;
 }
 
-static status_t parse_if_match(http_request req, const char* value, error e)
+static status_t parse_if_match(http_request req, const char *value, error e)
 {
     assert(req != NULL);
     assert(value != NULL);
@@ -1012,7 +1012,7 @@ static status_t parse_if_match(http_request req, const char* value, error e)
     return success;
 }
 
-static status_t parse_if_modified_since(http_request req, const char* value, error e)
+static status_t parse_if_modified_since(http_request req, const char *value, error e)
 {
     time_t d;
 
@@ -1027,7 +1027,7 @@ static status_t parse_if_modified_since(http_request req, const char* value, err
     return success;
 }
 
-static status_t parse_if_none_match(http_request req, const char* value, error e)
+static status_t parse_if_none_match(http_request req, const char *value, error e)
 {
     assert(req != NULL);
     assert(value != NULL);
@@ -1038,7 +1038,7 @@ static status_t parse_if_none_match(http_request req, const char* value, error e
     return success;
 }
 
-static status_t parse_if_range(http_request req, const char* value, error e)
+static status_t parse_if_range(http_request req, const char *value, error e)
 {
     assert(req != NULL);
     assert(value != NULL);
@@ -1049,7 +1049,7 @@ static status_t parse_if_range(http_request req, const char* value, error e)
     return success;
 }
 
-static status_t parse_max_forwards(http_request req, const char* value, error e)
+static status_t parse_max_forwards(http_request req, const char *value, error e)
 {
     unsigned long v;
 
@@ -1063,7 +1063,7 @@ static status_t parse_max_forwards(http_request req, const char* value, error e)
     return success;
 }
 
-static status_t parse_proxy_authorization(http_request req, const char* value, error e)
+static status_t parse_proxy_authorization(http_request req, const char *value, error e)
 {
     assert(req != NULL);
     assert(value != NULL);
@@ -1074,7 +1074,7 @@ static status_t parse_proxy_authorization(http_request req, const char* value, e
     return success;
 }
 
-static status_t parse_if_unmodified_since(http_request req, const char* value, error e)
+static status_t parse_if_unmodified_since(http_request req, const char *value, error e)
 {
     time_t d;
 
@@ -1088,7 +1088,7 @@ static status_t parse_if_unmodified_since(http_request req, const char* value, e
     return request_set_if_unmodified_since(req, d);
 }
 
-static status_t parse_range(http_request req, const char* value, error e)
+static status_t parse_range(http_request req, const char *value, error e)
 {
     assert(req != NULL);
     assert(value != NULL);
@@ -1099,7 +1099,7 @@ static status_t parse_range(http_request req, const char* value, error e)
     return success;
 }
 
-static status_t parse_referer(http_request req, const char* value, error e)
+static status_t parse_referer(http_request req, const char *value, error e)
 {
     assert(req != NULL);
     assert(value != NULL);
@@ -1110,14 +1110,14 @@ static status_t parse_referer(http_request req, const char* value, error e)
     return success;
 }
 
-static status_t parse_te(http_request req, const char* value, error e)
+static status_t parse_te(http_request req, const char *value, error e)
 {
     assert(req != NULL);
     assert(value != NULL);
     return req_parse_multivalued_fields(req, value, request_set_te, e);
 }
 
-static status_t parse_mime_version(http_request r, const char* value, error e)
+static status_t parse_mime_version(http_request r, const char *value, error e)
 {
     /* See rfc 2045 for syntax (MIME-Version=x.y) */
     int major, minor;
@@ -1147,7 +1147,7 @@ static status_t parse_mime_version(http_request r, const char* value, error e)
     return request_set_mime_version(r, major, minor, e);
 }
 
-static status_t parse_from(http_request req, const char* value, error e)
+static status_t parse_from(http_request req, const char *value, error e)
 {
     if (!request_set_from(req, value))
         return set_os_error(e, errno);
@@ -1155,7 +1155,7 @@ static status_t parse_from(http_request req, const char* value, error e)
     return success;
 }
 
-static status_t parse_host(http_request req, const char* value, error e)
+static status_t parse_host(http_request req, const char *value, error e)
 {
     if (!request_set_host(req, value))
         return set_os_error(e, errno);
@@ -1163,7 +1163,7 @@ static status_t parse_host(http_request req, const char* value, error e)
     return success;
 }
 
-static status_t parse_user_agent(http_request req, const char* value, error e)
+static status_t parse_user_agent(http_request req, const char *value, error e)
 {
     if (!request_set_user_agent(req, value))
         return set_os_error(e, errno);
@@ -1171,22 +1171,22 @@ static status_t parse_user_agent(http_request req, const char* value, error e)
     return success;
 }
 
-static status_t parse_accept(http_request req, const char* value, error e)
+static status_t parse_accept(http_request req, const char *value, error e)
 {
     return req_parse_multivalued_fields(req, value, request_set_accept, e);
 }
 
-static status_t parse_accept_charset(http_request req, const char* value, error e)
+static status_t parse_accept_charset(http_request req, const char *value, error e)
 {
     return req_parse_multivalued_fields(req, value, request_set_accept_charset, e);
 }
 
-static status_t parse_accept_encoding(http_request req, const char* value, error e)
+static status_t parse_accept_encoding(http_request req, const char *value, error e)
 {
     return req_parse_multivalued_fields(req, value, request_set_accept_encoding, e);
 }
 
-static status_t parse_accept_language(http_request req, const char* value, error e)
+static status_t parse_accept_language(http_request req, const char *value, error e)
 {
     return req_parse_multivalued_fields(req, value, request_set_accept_language, e);
 }
@@ -1537,7 +1537,7 @@ static status_t read_posted_content(
     return success;
 }
 
-status_t get_field_name(const char* src, char* dest, size_t destsize)
+status_t get_field_name(const char *src, char* dest, size_t destsize)
 {
     char *s;
     size_t span;
@@ -1557,7 +1557,7 @@ status_t get_field_name(const char* src, char* dest, size_t destsize)
 /*
  * See get_field_name() for more info.
  */
-status_t get_field_value(const char* src, char* dest, size_t destsize)
+status_t get_field_value(const char *src, char* dest, size_t destsize)
 {
     /* Locate separator as in name: value */
     const char *s = strchr(src, ':');
@@ -1586,7 +1586,7 @@ status_t get_field_value(const char* src, char* dest, size_t destsize)
 static status_t parse_one_field(
     connection conn,
     http_request request,
-    const char* buf,
+    const char *buf,
     error e)
 {
     char name[CCH_FIELDNAME_MAX + 1];
@@ -1624,10 +1624,10 @@ read_request_header_fields(connection conn, http_request request, error e)
     }
 }
 
-static http_method get_method(const char* str)
+static http_method get_method(const char *str)
 {
     static const struct {
-        const char* str;
+        const char *str;
         const enum http_method id;
     } methods[] = {
         { "GET", METHOD_GET, },
@@ -1648,10 +1648,10 @@ static http_method get_method(const char* str)
     return method;
 }
 
-static http_version get_version(const char* s)
+static http_version get_version(const char *s)
 {
     static struct {
-        const char* str;
+        const char *str;
         const enum http_version id;
     } versions[] = {
         { "HTTP/1.0", VERSION_10, },
@@ -1673,7 +1673,7 @@ static http_version get_version(const char* s)
 
 
 static status_t
-parse_request_method(const char* line, http_request request, error e)
+parse_request_method(const char *line, http_request request, error e)
 {
     char strMethod[CCH_METHOD_MAX + 1];
     http_method method;
@@ -1696,7 +1696,7 @@ static inline int more_uri_params_available(const char *s)
     return strchr(s, '=') != NULL;
 }
 
-static status_t get_uri_param_name(const char* src, char dest[], size_t destsize, error e)
+static status_t get_uri_param_name(const char *src, char dest[], size_t destsize, error e)
 {
 
     /* '=' is required */
@@ -1710,7 +1710,7 @@ static status_t get_uri_param_name(const char* src, char dest[], size_t destsize
 }
 
 /* Locate '=' and skip it, then copy value */
-static status_t get_uri_param_value(const char* src, char dest[], size_t destsize, error e)
+static status_t get_uri_param_value(const char *src, char dest[], size_t destsize, error e)
 {
     char *p;
 
@@ -1739,7 +1739,7 @@ static char* locate_next_uri_param(char *s)
 }
 
 static inline status_t
-decode_uri_param_value(char* decoded, const char* value, size_t cb, error e)
+decode_uri_param_value(char* decoded, const char *value, size_t cb, error e)
 {
     int rc = rfc1738_decode(decoded, cb, value, strlen(value));
     if (rc == 0) {
@@ -1794,7 +1794,7 @@ static status_t set_uri_params(http_request request, char* s, error e)
     return success;
 }
 
-static inline int uri_has_params(const char* uri)
+static inline int uri_has_params(const char *uri)
 {
     return strchr(uri, '?') != NULL;
 }
@@ -1824,7 +1824,7 @@ static status_t set_uri_and_params(http_request request, char* uri, error e)
 }
 
 static status_t
-parse_request_uri(const char* line, http_request request, error e)
+parse_request_uri(const char *line, http_request request, error e)
 {
     char uri[CCH_URI_MAX + 1];
 
@@ -1847,7 +1847,7 @@ parse_request_uri(const char* line, http_request request, error e)
 }
 
 static status_t
-parse_request_version(const char* line, http_request request, error e)
+parse_request_version(const char *line, http_request request, error e)
 {
     int iword;
     char strVersion[CCH_VERSION_MAX + 1];
@@ -1885,7 +1885,7 @@ parse_request_version(const char* line, http_request request, error e)
  * We support 0.9, 1.0 and 1.1 and GET, HEAD and POST
  */
 static status_t
-parse_request_line(const char* line, http_request request, error e)
+parse_request_line(const char *line, http_request request, error e)
 {
     if (parse_request_method(line, request, e)
     && parse_request_uri(line, request, e)
@@ -1896,8 +1896,8 @@ parse_request_line(const char* line, http_request request, error e)
 }
 
 static const struct {
-    const char* name;
-    status_t (*handler)(http_request req, const char* value, error e);
+    const char *name;
+    status_t (*handler)(http_request req, const char *value, error e);
 } request_header_fields[] = {
     { "user-agent",			parse_user_agent },
     { "cookie",				parse_cookie },
@@ -1930,7 +1930,7 @@ static const struct {
 
 /* Return an index in the request header array, or -1 if
  * the field was not found. */
-int find_request_header(const char* name)
+int find_request_header(const char *name)
 {
     int i, n = sizeof request_header_fields / sizeof *request_header_fields;
     for (i = 0; i < n; i++) {
@@ -1941,7 +1941,7 @@ int find_request_header(const char* name)
     return -1;
 }
 
-status_t parse_request_header(int idx, http_request req, const char* value, error e)
+status_t parse_request_header(int idx, http_request req, const char *value, error e)
 {
     assert(idx >= 0);
     assert((size_t)idx < sizeof request_header_fields / sizeof *request_header_fields);

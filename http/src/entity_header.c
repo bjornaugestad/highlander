@@ -113,7 +113,7 @@ void entity_header_recycle(entity_header p)
     cstring_recycle(p->content_language);
 }
 
-status_t entity_header_set_allow(entity_header eh, const char* value)
+status_t entity_header_set_allow(entity_header eh, const char *value)
 {
     assert(eh != NULL);
     assert(value != NULL);
@@ -141,7 +141,7 @@ void entity_header_set_last_modified(entity_header eh, time_t value)
     entity_header_set_flag(eh, ENTITY_HEADER_LAST_MODIFIED_SET);
 }
 
-status_t entity_header_set_content_language(entity_header eh, const char* value, error e)
+status_t entity_header_set_content_language(entity_header eh, const char *value, error e)
 {
     assert(eh != NULL);
     assert(value != NULL);
@@ -161,7 +161,7 @@ void entity_header_set_content_length(entity_header eh, const size_t value)
     entity_header_set_flag(eh, ENTITY_HEADER_CONTENT_LENGTH_SET);
 }
 
-status_t entity_header_set_content_encoding(entity_header eh, const char* value)
+status_t entity_header_set_content_encoding(entity_header eh, const char *value)
 {
     assert(eh != NULL);
     assert(value != NULL);
@@ -173,7 +173,7 @@ status_t entity_header_set_content_encoding(entity_header eh, const char* value)
     return success;
 }
 
-status_t entity_header_set_content_type(entity_header eh, const char* value)
+status_t entity_header_set_content_type(entity_header eh, const char *value)
 {
     assert(eh != NULL);
     assert(value != NULL);
@@ -185,7 +185,7 @@ status_t entity_header_set_content_type(entity_header eh, const char* value)
     return success;
 }
 
-status_t entity_header_set_content_md5(entity_header eh, const char* value)
+status_t entity_header_set_content_md5(entity_header eh, const char *value)
 {
     assert(eh != NULL);
     assert(value != NULL);
@@ -197,7 +197,7 @@ status_t entity_header_set_content_md5(entity_header eh, const char* value)
     return success;
 }
 
-status_t entity_header_set_content_location(entity_header eh, const char* value)
+status_t entity_header_set_content_location(entity_header eh, const char *value)
 {
     assert(eh != NULL);
     assert(value != NULL);
@@ -209,7 +209,7 @@ status_t entity_header_set_content_location(entity_header eh, const char* value)
     return success;
 }
 
-status_t entity_header_set_content_range(entity_header eh, const char* value)
+status_t entity_header_set_content_range(entity_header eh, const char *value)
 {
     assert(eh != NULL);
     assert(value != NULL);
@@ -221,7 +221,7 @@ status_t entity_header_set_content_range(entity_header eh, const char* value)
     return success;
 }
 
-bool entity_header_content_type_is(entity_header eh, const char* val)
+bool entity_header_content_type_is(entity_header eh, const char *val)
 {
     return !cstring_compare(eh->content_type, val);
 }
@@ -446,7 +446,7 @@ status_t entity_header_send_fields(entity_header eh, connection c)
 /* Parsing functions */
 /* Entity header handlers */
 
-static status_t parse_content_encoding(entity_header eh, const char* value, error e)
+static status_t parse_content_encoding(entity_header eh, const char *value, error e)
 {
     assert(eh != NULL);
     assert(value != NULL);
@@ -467,7 +467,7 @@ static status_t parse_content_encoding(entity_header eh, const char* value, erro
     return success;
 }
 
-static status_t parse_content_length(entity_header eh, const char* value, error e)
+static status_t parse_content_length(entity_header eh, const char *value, error e)
 {
     size_t len;
     /*
@@ -492,7 +492,7 @@ static status_t parse_content_length(entity_header eh, const char* value, error 
     return success;
 }
 
-static status_t parse_content_md5(entity_header eh, const char* value, error e)
+static status_t parse_content_md5(entity_header eh, const char *value, error e)
 {
     assert(eh != NULL);
     assert(value != NULL);
@@ -506,8 +506,8 @@ static status_t parse_content_md5(entity_header eh, const char* value, error e)
 /* Helper function to have the algorithm one place only */
 static status_t eh_parse_multivalued_fields(
     void *dest,
-    const char* value,
-    status_t(*set_func)(entity_header dest, const char* value, error e),
+    const char *value,
+    status_t(*set_func)(entity_header dest, const char *value, error e),
     error e)
 {
     const int sep = ',';
@@ -541,7 +541,7 @@ static status_t eh_parse_multivalued_fields(
  * Notes: The language tags are defined in RFC1766, and there are
  * too many to check. Anything goes, IOW.
  */
-static status_t parse_content_language(entity_header eh, const char* value, error e)
+static status_t parse_content_language(entity_header eh, const char *value, error e)
 {
     assert(eh != NULL);
     assert(value != NULL);
@@ -553,7 +553,7 @@ static status_t parse_content_language(entity_header eh, const char* value, erro
     return eh_parse_multivalued_fields(eh, value, entity_header_set_content_language, e);
 }
 
-static status_t parse_allow(entity_header eh, const char* value, error e)
+static status_t parse_allow(entity_header eh, const char *value, error e)
 {
     assert(eh != NULL);
     assert(value != NULL);
@@ -564,7 +564,7 @@ static status_t parse_allow(entity_header eh, const char* value, error e)
     return success;
 }
 
-static status_t parse_content_location(entity_header eh, const char* value, error e)
+static status_t parse_content_location(entity_header eh, const char *value, error e)
 {
     assert(eh != NULL);
     assert(value != NULL);
@@ -575,7 +575,7 @@ static status_t parse_content_location(entity_header eh, const char* value, erro
     return success;
 }
 
-static status_t parse_content_range(entity_header eh, const char* value, error e)
+static status_t parse_content_range(entity_header eh, const char *value, error e)
 {
     assert(eh != NULL);
     assert(value != NULL);
@@ -586,7 +586,7 @@ static status_t parse_content_range(entity_header eh, const char* value, error e
     return success;
 }
 
-static status_t parse_content_type(entity_header eh, const char* value, error e)
+static status_t parse_content_type(entity_header eh, const char *value, error e)
 {
     if (!entity_header_set_content_type(eh, value))
         return set_os_error(e, errno);
@@ -594,7 +594,7 @@ static status_t parse_content_type(entity_header eh, const char* value, error e)
     return success;
 }
 
-static status_t parse_expires(entity_header eh, const char* value, error e)
+static status_t parse_expires(entity_header eh, const char *value, error e)
 {
     time_t t;
 
@@ -608,7 +608,7 @@ static status_t parse_expires(entity_header eh, const char* value, error e)
     return success;
 }
 
-static status_t parse_last_modified(entity_header eh, const char* value, error e)
+static status_t parse_last_modified(entity_header eh, const char *value, error e)
 {
     time_t t;
 
@@ -623,8 +623,8 @@ static status_t parse_last_modified(entity_header eh, const char* value, error e
 }
 
 static const struct {
-    const char* name;
-    status_t (*handler)(entity_header eh, const char* value, error e);
+    const char *name;
+    status_t (*handler)(entity_header eh, const char *value, error e);
 } entity_header_fields[] = {
     { "allow",				parse_allow },
     { "content-encoding",	parse_content_encoding },
@@ -638,7 +638,7 @@ static const struct {
     { "last-modified",		parse_last_modified },
 };
 
-status_t parse_entity_header(int idx, entity_header gh, const char* value, error e)
+status_t parse_entity_header(int idx, entity_header gh, const char *value, error e)
 {
     assert(idx >= 0);
     assert((size_t)idx < sizeof entity_header_fields / sizeof *entity_header_fields);
@@ -646,7 +646,7 @@ status_t parse_entity_header(int idx, entity_header gh, const char* value, error
     return entity_header_fields[idx].handler(gh, value, e);
 }
 
-int find_entity_header(const char* name)
+int find_entity_header(const char *name)
 {
     int i, n = sizeof entity_header_fields / sizeof *entity_header_fields;
 

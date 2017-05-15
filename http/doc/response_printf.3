@@ -10,7 +10,7 @@
 .Fo "int response_printf"
 .Fa "http_response response"
 .Fa "size_t size"
-.Fa "const char* format"
+.Fa "const char *format"
 .Fa "..."
 .Fc
 .Sh DESCRIPTION
@@ -32,7 +32,7 @@ appends data instead of overwriting existing data.
 int my_handler(http_request req, http_response page)
 {
    int i, niter = 100;
-   static const char* head =
+   static const char *head =
       "<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.0 Transitional//EN'>"
       "<html>"
       "<head>"

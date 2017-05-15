@@ -168,7 +168,7 @@ int http_server_get_defered_read(http_server this)
     return this->defered_read;
 }
 
-status_t http_server_set_documentroot(http_server this, const char* docroot)
+status_t http_server_set_documentroot(http_server this, const char *docroot)
 {
     size_t len;
 
@@ -388,7 +388,7 @@ status_t http_server_start(http_server this)
 
 status_t http_server_add_page(
     http_server this,
-    const char* uri,
+    const char *uri,
     PAGE_FUNCTION func,
     page_attribute attr)
 {
@@ -409,7 +409,7 @@ status_t http_server_add_page(
 dynamic_page http_server_lookup(http_server this, http_request request)
 {
     size_t i;
-    const char* uri = request_get_uri(request);
+    const char *uri = request_get_uri(request);
 
     assert(this != NULL);
     assert(request != NULL);
@@ -634,7 +634,7 @@ page_attribute http_server_get_default_attributes(http_server this)
     return this->default_attributes;
 }
 
-status_t http_server_set_host(http_server this, const char* host)
+status_t http_server_set_host(http_server this, const char *host)
 {
     size_t n;
 
@@ -745,7 +745,7 @@ void http_server_add_logentry(
      * which equals "%d/%b%Y:%H:%M:%S %z";
      * I guess that the %z doesn't port very well :-(
      */
-    static const char* format = "%d/%b/%Y:%H:%M:%S %z";
+    static const char *format = "%d/%b/%Y:%H:%M:%S %z";
     const char *method;
     time_t now;
     struct tm tm_now;
@@ -883,7 +883,7 @@ status_t http_server_run_default_page_handler(
     error e)
 {
     dynamic_page p;
-    const char* uri;
+    const char *uri;
     status_t rc;
 
     uri = request_get_uri(request);
@@ -906,7 +906,7 @@ status_t http_server_start_via_process(process p, http_server this)
         (status_t(*)(void*))http_server_shutdown);
 }
 
-status_t http_server_configure(http_server this, process p, const char* filename)
+status_t http_server_configure(http_server this, process p, const char *filename)
 {
     int port = -1;
     int workers = -1;

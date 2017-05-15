@@ -3,7 +3,7 @@
 
 int show_about(http_request req, http_response page)
 {
-    const char* html =
+    const char *html =
         "<p>So what's a web cache good for anyway? The objective"
         " for this web cache is to offload high traffic web sites"
         " by moving static data to a separate web server and"
