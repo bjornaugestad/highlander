@@ -35,7 +35,7 @@ struct sslsocket_tag {
  * Suitable for server sockets only.
  */
 // SSLTODO: Use an SSL way of setting SO_REUSEADDR
-static int ssl_set_reuseaddr(sslsocket this)
+static int sslsocket_set_reuseaddr(sslsocket this)
 {
     int optval;
     socklen_t optlen;
@@ -60,7 +60,7 @@ static int ssl_set_reuseaddr(sslsocket this)
  * it maps POLLHUP and POLLERR to EPIPE, and POLLNVAL to EINVAL.
  */
 // SSLTODO: Polling must change, I guess
-static status_t ssl_poll_for(sslsocket this, int timeout, short poll_for)
+static status_t sslsocket_poll_for(sslsocket this, int timeout, short poll_for)
 {
     struct pollfd pfd;
     int rc;
@@ -100,21 +100,21 @@ static status_t ssl_poll_for(sslsocket this, int timeout, short poll_for)
     return status;
 }
 
-status_t ssl_wait_for_writability(sslsocket this, int timeout)
+status_t sslsocket_wait_for_writability(sslsocket this, int timeout)
 {
     assert(this != NULL);
 
-    return ssl_poll_for(this, timeout, POLLOUT);
+    return sslsocket_poll_for(this, timeout, POLLOUT);
 }
 
-status_t ssl_wait_for_data(sslsocket this, int timeout)
+status_t sslsocket_wait_for_data(sslsocket this, int timeout)
 {
     assert(this != NULL);
 
-    return ssl_poll_for(this, timeout, POLLIN);
+    return sslsocket_poll_for(this, timeout, POLLIN);
 }
 
-status_t ssl_write(sslsocket this, const char *buf, size_t count, int timeout, int nretries)
+status_t sslsocket_write(sslsocket this, const char *buf, size_t count, int timeout, int nretries)
 {
     ssize_t nwritten = 0;
 
@@ -125,7 +125,7 @@ status_t ssl_write(sslsocket this, const char *buf, size_t count, int timeout, i
     assert(nretries >= 0);
 
     do {
-        if (!ssl_wait_for_writability(this, timeout)) {
+        if (!sslsocket_wait_for_writability(this, timeout)) {
             if (errno != EAGAIN)
                 return failure;
 
@@ -169,7 +169,7 @@ status_t ssl_write(sslsocket this, const char *buf, size_t count, int timeout, i
  * the data is fragmented, then the protocol handler must handle
  * those cases. 
  */
-ssize_t ssl_read(sslsocket this, char *dest, size_t count, int timeout, int nretries)
+ssize_t sslsocket_read(sslsocket this, char *dest, size_t count, int timeout, int nretries)
 {
     ssize_t nread;
 
@@ -180,7 +180,7 @@ ssize_t ssl_read(sslsocket this, char *dest, size_t count, int timeout, int nret
     assert(dest != NULL);
 
     do {
-        if (!ssl_wait_for_data(this, timeout)) {
+        if (!sslsocket_wait_for_data(this, timeout)) {
             if (errno == EAGAIN)
                 continue; // Try again.
 
@@ -206,7 +206,7 @@ ssize_t ssl_read(sslsocket this, char *dest, size_t count, int timeout, int nret
  * created a socket with a specific protocol family,
  * and here we bind it to the PF specified in the services...
  */
-static status_t ssl_bind_inet(sslsocket this, const char *hostname, int port)
+static status_t sslsocket_bind_inet(sslsocket this, const char *hostname, int port)
 {
     struct hostent* host = NULL;
     struct sockaddr_in my_addr;
@@ -241,14 +241,14 @@ static status_t ssl_bind_inet(sslsocket this, const char *hostname, int port)
     return success;
 }
 
-status_t ssl_bind(sslsocket this, const char *hostname, int port)
+status_t sslsocket_bind(sslsocket this, const char *hostname, int port)
 {
     assert(this != NULL);
 
-    return ssl_bind_inet(this, hostname, port);
+    return sslsocket_bind_inet(this, hostname, port);
 }
 
-sslsocket ssl_socket(void)
+sslsocket sslsocket_socket(void)
 {
     sslsocket this;
     int af = AF_INET;
@@ -264,7 +264,7 @@ sslsocket ssl_socket(void)
     return this;
 }
 
-status_t ssl_listen(sslsocket this, int backlog)
+status_t sslsocket_listen(sslsocket this, int backlog)
 {
     assert(this != NULL);
     assert(this->fd >= 0);
@@ -283,19 +283,19 @@ status_t ssl_listen(sslsocket this, int backlog)
 // SSLTODO: post connection checks on the server side too. (highly optional)
 // SSLTODO: 
 // SSLTODO: The example programs are good. Go with them
-sslsocket ssl_create_server_socket(const char *host, int port)
+sslsocket sslsocket_create_server_socket(const char *host, int port)
 {
     sslsocket this;
 
-    if ((this = ssl_socket()) == NULL)
+    if ((this = sslsocket_socket()) == NULL)
         return NULL;
 
-    if (ssl_set_reuseaddr(this)
-    && ssl_bind(this, host, port)
-    && ssl_listen(this, 100))
+    if (sslsocket_set_reuseaddr(this)
+    && sslsocket_bind(this, host, port)
+    && sslsocket_listen(this, 100))
         return this;
 
-    ssl_close(this);
+    sslsocket_close(this);
     return NULL;
 }
 
@@ -304,7 +304,7 @@ sslsocket ssl_create_server_socket(const char *host, int port)
 // SSLTODO: create an SSL object, initializes it with the BIO, then connects the SSL object
 // SSLTODO: itself. The client3.c code uses a post connection check which validates the
 // SSLTODO: server's certificate. This code is not for the meek. ;)
-sslsocket ssl_create_client_socket(const char *host, int port)
+sslsocket sslsocket_create_client_socket(const char *host, int port)
 {
     struct hostent *phost;
     struct sockaddr_in sa;
@@ -323,17 +323,17 @@ sslsocket ssl_create_client_socket(const char *host, int port)
     sa.sin_port = htons(port);
 
     /* Open a socket to the server */
-    if ((this = ssl_socket()) == NULL)
+    if ((this = sslsocket_socket()) == NULL)
         return NULL;
 
     /* Connect to the server. */
     if (connect(this->fd, (struct sockaddr *) &sa, sizeof sa) == -1) {
-        ssl_close(this);
+        sslsocket_close(this);
         return NULL;
     }
 
-    if (!ssl_set_nonblock(this)) {
-        ssl_close(this);
+    if (!sslsocket_set_nonblock(this)) {
+        sslsocket_close(this);
         return NULL;
     }
 
@@ -341,7 +341,7 @@ sslsocket ssl_create_client_socket(const char *host, int port)
 }
 
 // SSLTODO: Read the doc and figure out how to toggle non-block
-status_t ssl_set_nonblock(sslsocket this)
+status_t sslsocket_set_nonblock(sslsocket this)
 {
     int flags;
 
@@ -359,7 +359,7 @@ status_t ssl_set_nonblock(sslsocket this)
     return success;
 }
 
-status_t ssl_clear_nonblock(sslsocket this)
+status_t sslsocket_clear_nonblock(sslsocket this)
 {
     int flags;
 
@@ -377,7 +377,7 @@ status_t ssl_clear_nonblock(sslsocket this)
     return success;
 }
 
-status_t ssl_close(sslsocket this)
+status_t sslsocket_close(sslsocket this)
 {
     int fd;
 
@@ -402,7 +402,7 @@ status_t ssl_close(sslsocket this)
     return success;
 }
 
-sslsocket ssl_accept(sslsocket this, struct sockaddr *addr, socklen_t *addrsize)
+sslsocket sslsocket_accept(sslsocket this, struct sockaddr *addr, socklen_t *addrsize)
 {
     sslsocket new;
     int fd;

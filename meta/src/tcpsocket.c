@@ -35,7 +35,7 @@ struct tcpsocket_tag {
  * Suitable for server sockets only.
  */
 // SSLTODO: Use an SSL way of setting SO_REUSEADDR
-static int tcpsock_set_reuseaddr(tcpsocket this)
+static int tcpsocket_set_reuseaddr(tcpsocket this)
 {
     int optval;
     socklen_t optlen;
@@ -60,7 +60,7 @@ static int tcpsock_set_reuseaddr(tcpsocket this)
  * it maps POLLHUP and POLLERR to EPIPE, and POLLNVAL to EINVAL.
  */
 // SSLTODO: Polling must change, I guess
-static status_t tcpsock_poll_for(tcpsocket this, int timeout, short poll_for)
+static status_t tcpsocket_poll_for(tcpsocket this, int timeout, short poll_for)
 {
     struct pollfd pfd;
     int rc;
@@ -100,21 +100,21 @@ static status_t tcpsock_poll_for(tcpsocket this, int timeout, short poll_for)
     return status;
 }
 
-status_t tcpsock_wait_for_writability(tcpsocket this, int timeout)
+status_t tcpsocket_wait_for_writability(tcpsocket this, int timeout)
 {
     assert(this != NULL);
 
-    return tcpsock_poll_for(this, timeout, POLLOUT);
+    return tcpsocket_poll_for(this, timeout, POLLOUT);
 }
 
-status_t tcpsock_wait_for_data(tcpsocket this, int timeout)
+status_t tcpsocket_wait_for_data(tcpsocket this, int timeout)
 {
     assert(this != NULL);
 
-    return tcpsock_poll_for(this, timeout, POLLIN);
+    return tcpsocket_poll_for(this, timeout, POLLIN);
 }
 
-status_t tcpsock_write(tcpsocket this, const char *buf, size_t count, int timeout, int nretries)
+status_t tcpsocket_write(tcpsocket this, const char *buf, size_t count, int timeout, int nretries)
 {
     ssize_t nwritten = 0;
 
@@ -125,7 +125,7 @@ status_t tcpsock_write(tcpsocket this, const char *buf, size_t count, int timeou
     assert(nretries >= 0);
 
     do {
-        if (!tcpsock_wait_for_writability(this, timeout)) {
+        if (!tcpsocket_wait_for_writability(this, timeout)) {
             if (errno != EAGAIN)
                 return failure;
 
@@ -169,7 +169,7 @@ status_t tcpsock_write(tcpsocket this, const char *buf, size_t count, int timeou
  * the data is fragmented, then the protocol handler must handle
  * those cases. 
  */
-ssize_t tcpsock_read(tcpsocket this, char *dest, size_t count, int timeout, int nretries)
+ssize_t tcpsocket_read(tcpsocket this, char *dest, size_t count, int timeout, int nretries)
 {
     ssize_t nread;
 
@@ -180,7 +180,7 @@ ssize_t tcpsock_read(tcpsocket this, char *dest, size_t count, int timeout, int 
     assert(dest != NULL);
 
     do {
-        if (!tcpsock_wait_for_data(this, timeout)) {
+        if (!tcpsocket_wait_for_data(this, timeout)) {
             if (errno == EAGAIN)
                 continue; // Try again.
 
@@ -206,7 +206,7 @@ ssize_t tcpsock_read(tcpsocket this, char *dest, size_t count, int timeout, int 
  * created a socket with a specific protocol family,
  * and here we bind it to the PF specified in the services...
  */
-static status_t tcpsock_bind_inet(tcpsocket this, const char *hostname, int port)
+static status_t tcpsocket_bind_inet(tcpsocket this, const char *hostname, int port)
 {
     struct hostent* host = NULL;
     struct sockaddr_in my_addr;
@@ -241,14 +241,14 @@ static status_t tcpsock_bind_inet(tcpsocket this, const char *hostname, int port
     return success;
 }
 
-status_t tcpsock_bind(tcpsocket this, const char *hostname, int port)
+status_t tcpsocket_bind(tcpsocket this, const char *hostname, int port)
 {
     assert(this != NULL);
 
-    return tcpsock_bind_inet(this, hostname, port);
+    return tcpsocket_bind_inet(this, hostname, port);
 }
 
-tcpsocket tcpsock_socket(void)
+tcpsocket tcpsocket_socket(void)
 {
     tcpsocket this;
     int af = AF_INET;
@@ -264,7 +264,7 @@ tcpsocket tcpsock_socket(void)
     return this;
 }
 
-status_t tcpsock_listen(tcpsocket this, int backlog)
+status_t tcpsocket_listen(tcpsocket this, int backlog)
 {
     assert(this != NULL);
     assert(this->fd >= 0);
@@ -283,19 +283,19 @@ status_t tcpsock_listen(tcpsocket this, int backlog)
 // SSLTODO: post connection checks on the server side too. (highly optional)
 // SSLTODO: 
 // SSLTODO: The example programs are good. Go with them
-tcpsocket tcpsock_create_server_socket(const char *host, int port)
+tcpsocket tcpsocket_create_server_socket(const char *host, int port)
 {
     tcpsocket this;
 
-    if ((this = tcpsock_socket()) == NULL)
+    if ((this = tcpsocket_socket()) == NULL)
         return NULL;
 
-    if (tcpsock_set_reuseaddr(this)
-    && tcpsock_bind(this, host, port)
-    && tcpsock_listen(this, 100))
+    if (tcpsocket_set_reuseaddr(this)
+    && tcpsocket_bind(this, host, port)
+    && tcpsocket_listen(this, 100))
         return this;
 
-    tcpsock_close(this);
+    tcpsocket_close(this);
     return NULL;
 }
 
@@ -304,7 +304,7 @@ tcpsocket tcpsock_create_server_socket(const char *host, int port)
 // SSLTODO: create an SSL object, initializes it with the BIO, then connects the SSL object
 // SSLTODO: itself. The client3.c code uses a post connection check which validates the
 // SSLTODO: server's certificate. This code is not for the meek. ;)
-tcpsocket tcpsock_create_client_socket(const char *host, int port)
+tcpsocket tcpsocket_create_client_socket(const char *host, int port)
 {
     struct hostent *phost;
     struct sockaddr_in sa;
@@ -323,17 +323,17 @@ tcpsocket tcpsock_create_client_socket(const char *host, int port)
     sa.sin_port = htons(port);
 
     /* Open a socket to the server */
-    if ((this = tcpsock_socket()) == NULL)
+    if ((this = tcpsocket_socket()) == NULL)
         return NULL;
 
     /* Connect to the server. */
     if (connect(this->fd, (struct sockaddr *) &sa, sizeof sa) == -1) {
-        tcpsock_close(this);
+        tcpsocket_close(this);
         return NULL;
     }
 
-    if (!tcpsock_set_nonblock(this)) {
-        tcpsock_close(this);
+    if (!tcpsocket_set_nonblock(this)) {
+        tcpsocket_close(this);
         return NULL;
     }
 
@@ -341,7 +341,7 @@ tcpsocket tcpsock_create_client_socket(const char *host, int port)
 }
 
 // SSLTODO: Read the doc and figure out how to toggle non-block
-status_t tcpsock_set_nonblock(tcpsocket this)
+status_t tcpsocket_set_nonblock(tcpsocket this)
 {
     int flags;
 
@@ -359,7 +359,7 @@ status_t tcpsock_set_nonblock(tcpsocket this)
     return success;
 }
 
-status_t tcpsock_clear_nonblock(tcpsocket this)
+status_t tcpsocket_clear_nonblock(tcpsocket this)
 {
     int flags;
 
@@ -377,7 +377,7 @@ status_t tcpsock_clear_nonblock(tcpsocket this)
     return success;
 }
 
-status_t tcpsock_close(tcpsocket this)
+status_t tcpsocket_close(tcpsocket this)
 {
     int fd;
 
@@ -402,7 +402,7 @@ status_t tcpsock_close(tcpsocket this)
     return success;
 }
 
-tcpsocket tcpsock_accept(tcpsocket this, struct sockaddr *addr, socklen_t *addrsize)
+tcpsocket tcpsocket_accept(tcpsocket this, struct sockaddr *addr, socklen_t *addrsize)
 {
     tcpsocket new;
     int fd;
