@@ -43,7 +43,7 @@ static void popen_mime_type(const char *filename, char *buf, size_t cb)
 }
 
 
-static const char *create_known_as(const char *rootdir, const char *file)
+static const char* create_known_as(const char *rootdir, const char *file)
 {
     const char *s;
 

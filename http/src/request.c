@@ -748,7 +748,7 @@ size_t request_get_field_count(http_request request)
 }
 
 /* Return a pointer to the start of field n, where & is field separator */
-static const char *get_field_start(const char *content, size_t cb, size_t idx)
+static const char* get_field_start(const char *content, size_t cb, size_t idx)
 {
     const char *start, *stop;
 
@@ -953,7 +953,7 @@ static status_t req_parse_multivalued_fields(
 {
     const int sep = ',';
     char buf[100];
-    char* s;
+    char *s;
 
     assert(req != NULL);
     assert(value != NULL);
@@ -1537,7 +1537,7 @@ static status_t read_posted_content(
     return success;
 }
 
-status_t get_field_name(const char *src, char* dest, size_t destsize)
+status_t get_field_name(const char *src, char *dest, size_t destsize)
 {
     char *s;
     size_t span;
@@ -1557,7 +1557,7 @@ status_t get_field_name(const char *src, char* dest, size_t destsize)
 /*
  * See get_field_name() for more info.
  */
-status_t get_field_value(const char *src, char* dest, size_t destsize)
+status_t get_field_value(const char *src, char *dest, size_t destsize)
 {
     /* Locate separator as in name: value */
     const char *s = strchr(src, ':');
@@ -1726,7 +1726,7 @@ static status_t get_uri_param_value(const char *src, char dest[], size_t destsiz
 
 
 /* Returns NULL if ;, which separates the args, isn't found */
-static char* locate_next_uri_param(char *s)
+static char *locate_next_uri_param(char *s)
 {
     /* Locate next argument */
     char *p = strchr(s, '&');
@@ -1739,7 +1739,7 @@ static char* locate_next_uri_param(char *s)
 }
 
 static inline status_t
-decode_uri_param_value(char* decoded, const char *value, size_t cb, error e)
+decode_uri_param_value(char *decoded, const char *value, size_t cb, error e)
 {
     int rc = rfc1738_decode(decoded, cb, value, strlen(value));
     if (rc == 0) {
@@ -1781,7 +1781,7 @@ static status_t set_one_uri_param(http_request request, char *s, error e)
  * Will modify contents of s
  * Input is everything after the ? as in "/foo.html?bar=asdad;b2=x"
  */
-static status_t set_uri_params(http_request request, char* s, error e)
+static status_t set_uri_params(http_request request, char *s, error e)
 {
     while (more_uri_params_available(s)) {
         if (!set_one_uri_param(request, s, e))
@@ -1799,7 +1799,7 @@ static inline int uri_has_params(const char *uri)
     return strchr(uri, '?') != NULL;
 }
 
-static status_t set_uri_and_params(http_request request, char* uri, error e)
+static status_t set_uri_and_params(http_request request, char *uri, error e)
 {
     char *s;
 

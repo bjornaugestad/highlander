@@ -171,7 +171,7 @@ int cookie_get_max_age(cookie c)
     return c->max_age;
 }
 
-/* TODO: Replace cstring with char* and drop the error.
+/* TODO: Replace cstring with char *and drop the error.
  * Reason? Well, it may be possible to flood the incoming data
  * in some way, so we reduce the use of resizeable strings.
  * With fixed buffer sizes, we can always return HTTP_BAD_REQUEST

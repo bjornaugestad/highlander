@@ -13,7 +13,7 @@
 /* Local helper
  * Returns 1 on success, 0 on illegal input.
  */
-static int encode(int c, char* dest)
+static int encode(int c, char *dest)
 {
     int high, low;
 
@@ -79,7 +79,7 @@ static int decode(const char *src)
     return (c1 << 4) + c2;
 }
 
-size_t rfc1738_encode(char* dest, size_t destsize, const char *src, size_t srclen)
+size_t rfc1738_encode(char *dest, size_t destsize, const char *src, size_t srclen)
 {
     size_t size = 0;
 
@@ -127,7 +127,7 @@ size_t rfc1738_encode(char* dest, size_t destsize, const char *src, size_t srcle
     return size;
 }
 
-size_t rfc1738_decode(char* dest, size_t destsize, const char *src, size_t srclen)
+size_t rfc1738_decode(char *dest, size_t destsize, const char *src, size_t srclen)
 {
     int c;
     size_t size = 0;
@@ -163,7 +163,7 @@ size_t rfc1738_decode(char* dest, size_t destsize, const char *src, size_t srcle
     return size;
 }
 
-size_t rfc1738_encode_string(char* dest, size_t destsize, const char *src)
+size_t rfc1738_encode_string(char *dest, size_t destsize, const char *src)
 {
     size_t size;
 
@@ -177,7 +177,7 @@ size_t rfc1738_encode_string(char* dest, size_t destsize, const char *src)
     }
 }
 
-size_t rfc1738_decode_string(char* dest, size_t destsize, const char *src)
+size_t rfc1738_decode_string(char *dest, size_t destsize, const char *src)
 {
     size_t size;
 

@@ -512,7 +512,7 @@ static status_t eh_parse_multivalued_fields(
 {
     const int sep = ',';
     char buf[100];
-    char* s;
+    char *s;
 
     assert(dest != NULL);
     assert(value != NULL);

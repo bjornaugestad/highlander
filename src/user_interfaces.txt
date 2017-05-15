@@ -203,7 +203,7 @@ int some_page_handler(http_request request, http_response response)
 		html_set_content_buffer(ti, bar, strlen(bar));
 	}
 	else if (baz) {
-		char* s = malloc(1000);
+		char *s = malloc(1000);
 		sprintf(s, "foo,bar,baz");
 		html_set_allocated_content_buffer(ti, s);
 	}

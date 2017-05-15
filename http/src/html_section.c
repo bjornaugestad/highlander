@@ -14,8 +14,8 @@
 
 /* A section is stored using this structure */
 struct html_section_tag {
-    char* name;
-    char* code;
+    char *name;
+    char *code;
 };
 
 html_section html_section_new(void)

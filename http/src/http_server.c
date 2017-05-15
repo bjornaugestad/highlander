@@ -66,7 +66,7 @@ struct http_server_tag {
     int retries_read;
     int retries_write;
 
-    char* host;
+    char *host;
     int port;
     size_t worker_threads;	/* Number of threads available */
     size_t queue_size;	/* Max entries in the queue */
@@ -1094,7 +1094,7 @@ unsigned long http_server_sum_denied_clients(http_server p)
 
 #ifdef CHECK_HTTP_SERVER
 
-static const char *html = "<html><head><title>hello</title></head><body>world</body></html>";
+static const char* html = "<html><head><title>hello</title></head><body>world</body></html>";
 static int pageserver(http_request req, http_response response)
 {
     (void)req;

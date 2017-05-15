@@ -34,7 +34,7 @@ void* echoserverfn(void* arg)
 {
     int c;
     connection conn = arg;
-    char* s = connection_arg2(conn);
+    char *s = connection_arg2(conn);
     printf("%s\\n", s);
     while(connection_getc(conn, &c)) {
         connection_putc(conn, c);

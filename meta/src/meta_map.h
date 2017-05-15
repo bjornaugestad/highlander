@@ -80,7 +80,7 @@ int map_foreach(map m, void *args, int(*f)(void *args, char *key, void *data))
 
 map_iterator map_first(map m)            __attribute__((nonnull(1)));
 map_iterator map_next(map_iterator mi)   __attribute__((warn_unused_result));
-char*        map_key(map_iterator mi)    __attribute__((warn_unused_result));
+char *       map_key(map_iterator mi)    __attribute__((warn_unused_result));
 void*        map_value(map_iterator mi)  __attribute__((warn_unused_result));
 
 /*

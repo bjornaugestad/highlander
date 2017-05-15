@@ -19,15 +19,15 @@ cstring \- A string ADT
 
 .BI "status_t cstring_charcat(cstring " dest " , int " c ");
 
-.BI "status_t cstring_concat(cstring " dest " , const char* " src ");
+.BI "status_t cstring_concat(cstring " dest " , const char *" src ");
 
-.BI "status_t cstring_concat2(cstring " dest " , const char* " src1 " , const char* " src2 ");
+.BI "status_t cstring_concat2(cstring " dest " , const char *" src1 " , const char *" src2 ");
 
-.BI "status_t cstring_concat3(cstring " dest " , const char* " src1 " , const char* " src2 " , const char* " src3 ");
+.BI "status_t cstring_concat3(cstring " dest " , const char *" src1 " , const char *" src2 " , const char *" src3 ");
 
-.BI "status_t cstring_set(cstring " dest " , const char* " " src ");
+.BI "status_t cstring_set(cstring " dest " , const char *" " src ");
 
-.BI "status_t cstring_nset(cstring " dest " , const char* " src ", size_t " n ");
+.BI "status_t cstring_nset(cstring " dest " , const char *" src ", size_t " n ");
 
 .BI "status_t cstring_extend(cstring " s ", size_t " size ");
 
@@ -37,9 +37,9 @@ cstring \- A string ADT
 
 .BI "status_t cstring_pcat(cstring " dest " , const char * " start " , const char * " end ");
 
-.BI "status_t cstring_printf(cstring " dest ", size_t " needs_max " , const char* " fmt ", " ... ");
+.BI "status_t cstring_printf(cstring " dest ", size_t " needs_max " , const char *" fmt ", " ... ");
 
-.BI "status_t cstring_vprintf(cstring " dest ", size_t " needs_max " , const char* " fmt ", va_list " ap ");
+.BI "status_t cstring_vprintf(cstring " dest ", size_t " needs_max " , const char *" fmt ", va_list " ap ");
 
 .BI "void cstring_reverse(cstring " s ");
 

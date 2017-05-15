@@ -94,13 +94,13 @@ status_t http_send_date(connection conn, const char *name, time_t value);
 status_t http_send_ulong(connection conn, const char *name, unsigned long value);
 status_t http_send_string(connection conn, const char *s);
 
-status_t read_line(connection conn, char* buf, size_t cchMax, error e);
+status_t read_line(connection conn, char *buf, size_t cchMax, error e);
 /*
  * A field name, in HTTP, is everything to the left of : in
  * header fields like "name: value". We copy the name part here.
  */
-status_t get_field_name(const char *buf, char* name, size_t cchNameMax);
-status_t get_field_value(const char *buf, char* value, size_t cchValueMax);
+status_t get_field_name(const char *buf, char *name, size_t cchNameMax);
+status_t get_field_value(const char *buf, char *value, size_t cchValueMax);
 
 
 dynamic_page dynamic_new(const char *uri, PAGE_FUNCTION f, page_attribute a);

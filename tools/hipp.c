@@ -44,10 +44,10 @@
 #include <fcntl.h>
 
 /* Line number in current file */
-char* g_current_file = NULL;
-char* g_headerfile = NULL;
-char* g_outputfile = NULL;
-char* g_mainfile = NULL;
+char *g_current_file = NULL;
+char *g_headerfile = NULL;
+char *g_outputfile = NULL;
+char *g_mainfile = NULL;
 const char* g_content_type = NULL;
 
 static int m_skip_line_numbers = 0;
@@ -59,8 +59,8 @@ static int lineno = 1;
 /* local helper functions */
 static void print_line_directive(FILE *f, const char *file, int line);
 static void show_help(void);
-static void process_file(char* name);
-static void create_header(char* filename, int argc, char *argv[], int opt_ind);
+static void process_file(char *name);
+static void create_header(char *filename, int argc, char *argv[], int opt_ind);
 static void write_html_buffer(FILE* fout, const char *html);
 static void create_mainfile(int argc, char *argv[], const char *filename);
 static void create_autoxx_files(int argc, char *argv[]);
@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 {
     int i, c;
     extern int optind;
-    extern char* optarg;
+    extern char *optarg;
 
     while ( (c = getopt(argc, argv, "Am:t:o:i:Eshp")) != EOF) {
         switch (c) {
@@ -180,7 +180,7 @@ static void show_help(void)
 }
 
 // Create a legal C name, but do NOT add more than one consecutive underscore.
-static const char *legal_name(const char *base)
+static const char* legal_name(const char *base)
 {
     char *s;
     static char name[1024];
@@ -216,7 +216,7 @@ static const char *legal_name(const char *base)
 /* call this function with full path.
  * It creates *the* function name we want to use.
  */
-static const char *function_name(char* file)
+static const char* function_name(char *file)
 {
     static char name[10240];
 
@@ -254,7 +254,7 @@ static void print_standard_stuff(FILE* f)
 
 }
 
-static void print_fn(FILE*f, char* name)
+static void print_fn(FILE*f, char *name)
 {
     const char *fn = function_name(name);
 
@@ -320,7 +320,7 @@ static void write_html_buffer(FILE* f, const char *str)
     p(f, "\t}\n");
 }
 
-static const char *remove_ext(char* name)
+static const char* remove_ext(char *name)
 {
     static char buf[10000];
     char *s;
@@ -361,7 +361,7 @@ static void append(char *s, char c)
 
 char buf[1024 * 1024];
 
-static void process_file(char* name)
+static void process_file(char *name)
 {
     FILE *fin, *fout;
     char fname[10240];
@@ -489,7 +489,7 @@ static void print_line_directive(FILE *f, const char *file, int line)
         p(f, "#line %d \"%s\"\n", line, file);
 }
 
-static void create_header(char* filename, int argc, char *argv[], int opt_ind)
+static void create_header(char *filename, int argc, char *argv[], int opt_ind)
 {
     int i;
     FILE* f;

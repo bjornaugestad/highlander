@@ -557,7 +557,7 @@ status_t html_img(
     return cstring_concat(b->buffer, ">");
 }
 
-status_t html_label(html_buffer b, const char* _for, const char *text)
+status_t html_label(html_buffer b, const char *_for, const char *text)
 {
     const char *template = "<label for='%s'>%s</label>";
 

@@ -15,16 +15,16 @@
 
 /* A section is stored using this structure */
 typedef struct section_tag {
-    char* name;
+    char *name;
     int width;
     int height;
-    char* code;
+    char *code;
 }* section;
 
 struct html_template_tag {
     int width;
     int height;
-    char* layout;
+    char *layout;
     list sections;
     html_menu menu;
     pthread_mutex_t menulock;

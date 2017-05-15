@@ -266,7 +266,7 @@ void create_bin_arrays(const char *filename, FILE *f)
 
 void show_usage(void)
 {
-static const char *usage1 =
+static const char* usage1 =
 "USAGE: bin2c [-bvVT] -c sourcefile -h headerfile -t content_type binary_file...\n"
 "Creates C source files suitable for Highlander from other files.\n"
 "bin2c is a tool used to embed e.g. images in C source.\n"
@@ -278,7 +278,7 @@ static const char *usage1 =
 "\t-b Basename. Use only the basename of the binary file for function name, strip directory path\n"
 ;
 
-static const char *usage2 =
+static const char* usage2 =
 "\t-c source file. Store generated code in this file.\n"
 "\t-h header file. Declares the generated functions.\n"
 "\t-a Access function. Creates an access function which returns a pointer\n"
@@ -327,7 +327,7 @@ void create_implementations(const char *filename, FILE *f)
     const char *name = base(filename);
 
     if (g_create_access_function && g_store_as_text) {
-        fprintf(f, "const unsigned char* get_x%s(void)\n", name);
+        fprintf(f, "const unsigned char *get_x%s(void)\n", name);
         fprintf(f, "{\n");
         fprintf(f, "\treturn x%s;\n", name);
         fprintf(f, "}\n");
@@ -401,7 +401,7 @@ void create_declarations(const char *filename, FILE *f)
     const char *name = base(filename);
 
     if (g_create_access_function && g_store_as_text) {
-        fprintf(f, "const unsigned char* get_x%s(void);\n", name);
+        fprintf(f, "const unsigned char *get_x%s(void);\n", name);
     }
 
     fprintf(f, "int show_%s(http_request request, http_response response);\n",

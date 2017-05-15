@@ -984,7 +984,7 @@ static inline status_t parse_warning(general_header gh, const char *value, error
 static status_t
 parse_cache_control(general_header gh, const char *value, error e)
 {
-    char* s;
+    char *s;
 
     /* From rfc2616: Legal cache-control directives in a request
     cache-request-directive =

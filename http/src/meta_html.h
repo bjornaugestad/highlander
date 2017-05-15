@@ -139,7 +139,7 @@ status_t html_html_end(html_buffer b);
 
 status_t html_img(html_buffer b, const char *url, const char *alt, size_t height, size_t width);
 
-status_t html_label(html_buffer b, const char* _for, const char *text);
+status_t html_label(html_buffer b, const char *_for, const char *text);
 status_t html_meta(html_buffer b, const char *s);
 status_t html_q(html_buffer b, const char *s);
 status_t html_samp(html_buffer b, const char *s);
