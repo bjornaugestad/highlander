@@ -54,17 +54,18 @@ status_t map_set(map m, const char *key, void *value)
  * Returns true if key exists in map, false if not.
  */
 bool map_exists(map m, const char *key)
-    __attribute__((nonnull(1, 2)));
+    __attribute__((warn_unused_result))
+    __attribute__((nonnull));
 
 void *map_get(map m, const char *key)
-    __attribute__((nonnull(1, 2)));
+    __attribute__((warn_unused_result))
+    __attribute__((nonnull));
 
 /*
  * Deletes an entry from the map. Any data will also be deleted.
  * Returns 0 on success, ENOENT if no entry exists.
  */
-int map_delete(map m, const char *key)
-    __attribute__((nonnull(1, 2)));
+// Not implemented??? int map_delete(map m, const char *key) __attribute__((nonnull));
 
 /*
  * Executes function f once for each member in the map. Function f should
@@ -76,9 +77,9 @@ int map_delete(map m, const char *key)
  * map_foreach returns 0 if the iteration was aborted and 1 if it wasn't.
  */
 int map_foreach(map m, void *args, int(*f)(void *args, char *key, void *data))
-    __attribute__((nonnull(1)));
+    __attribute__((nonnull(1), warn_unused_result));
 
-map_iterator map_first(map m)            __attribute__((nonnull(1)));
+map_iterator map_first(map m)            __attribute__((nonnull, warn_unused_result));
 map_iterator map_next(map_iterator mi)   __attribute__((warn_unused_result));
 char *       map_key(map_iterator mi)    __attribute__((warn_unused_result));
 void*        map_value(map_iterator mi)  __attribute__((warn_unused_result));

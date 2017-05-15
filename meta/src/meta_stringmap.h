@@ -27,23 +27,30 @@
 
 typedef struct stringmap_tag* stringmap;
 
-stringmap stringmap_new(size_t nelem);
+stringmap stringmap_new(size_t nelem)
+    __attribute__((malloc))
+    __attribute__((warn_unused_result));
+
 void stringmap_free(stringmap sm);
 
 /* Adds a new item to the stringmap */
-status_t stringmap_add(stringmap sm, const char *s, unsigned long* pid);
+status_t stringmap_add(stringmap sm, const char *s, unsigned long* pid)
+    __attribute__((warn_unused_result));
 
 /* Returns 1 if the string exists, else 0 */
-bool stringmap_exists(stringmap sm, const char *s);
+bool stringmap_exists(stringmap sm, const char *s)
+    __attribute__((warn_unused_result));
 
 /*
  * Remove all entries from the stringmap, the stringmap itself is reusable.
  * Good to have if you want to refresh the cache.
  */
-status_t stringmap_invalidate(stringmap sm);
+status_t stringmap_invalidate(stringmap sm)
+    __attribute__((warn_unused_result));
 
 /* Get id for a given string. Returns 1 if the string exists, else 0 */
-status_t stringmap_get_id(stringmap sm, const char *s, unsigned long* pid);
+status_t stringmap_get_id(stringmap sm, const char *s, unsigned long* pid)
+    __attribute__((warn_unused_result));
 
 /*
  * Walk the stringmap, calling the callback function once for
@@ -52,7 +59,8 @@ status_t stringmap_get_id(stringmap sm, const char *s, unsigned long* pid);
  * The callback function will be called with the mapped value s and the user
  * proviced argument arg, which can be NULL.
  */
-int stringmap_foreach(stringmap sm, int(*fn)(const char*s, void *arg), void *arg);
+int stringmap_foreach(stringmap sm, int(*fn)(const char*s, void *arg), void *arg)
+    __attribute__((warn_unused_result));
 
 /*
  * Return a stringmap containing elements present in sm1 only.
@@ -62,13 +70,15 @@ int stringmap_foreach(stringmap sm, int(*fn)(const char*s, void *arg), void *arg
  * Remember to free it after use.
  */
 stringmap stringmap_subset(stringmap sm1, stringmap sm2)
+    __attribute__((warn_unused_result))
     __attribute__((malloc))
-    __attribute__((nonnull(1, 2)));
+    __attribute__((nonnull));
 
 /* Convert a stringmap to a list. Strings will be copied  */
 list stringmap_tolist(stringmap sm)
+    __attribute__((warn_unused_result))
     __attribute__((malloc))
-    __attribute__((nonnull(1)));
+    __attribute__((nonnull));
 
 
 #endif

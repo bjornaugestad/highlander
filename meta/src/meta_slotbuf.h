@@ -31,32 +31,35 @@ extern "C" {
 typedef struct slotbuf_tag *slotbuf;
 
 slotbuf slotbuf_new(size_t size, int can_overwrite, dtor fn)
+    __attribute__((warn_unused_result))
     __attribute__((malloc));
 
 void slotbuf_free(slotbuf p);
 
 status_t slotbuf_set(slotbuf p, size_t i, void *value)
-    __attribute__((nonnull(1, 3)))
+    __attribute__((nonnull))
     __attribute__((warn_unused_result));
 
 void *slotbuf_get(slotbuf p, size_t i)
-    __attribute__((nonnull(1)))
+    __attribute__((nonnull))
     __attribute__((warn_unused_result));
 
 void *slotbuf_peek(slotbuf p, size_t i)
-    __attribute__((nonnull(1)));
+    __attribute__((nonnull));
 
 bool slotbuf_has_data(slotbuf p, size_t i)
-    __attribute__((nonnull(1)));
+    __attribute__((warn_unused_result))
+    __attribute__((nonnull));
 
 size_t slotbuf_nelem(slotbuf p)
-    __attribute__((nonnull(1)));
+    __attribute__((warn_unused_result))
+    __attribute__((nonnull));
 
 void slotbuf_lock(slotbuf p)
-    __attribute__((nonnull(1)));
+    __attribute__((nonnull));
 
 void slotbuf_unlock(slotbuf p)
-    __attribute__((nonnull(1)));
+    __attribute__((nonnull));
 
 #ifdef __cplusplus
 }

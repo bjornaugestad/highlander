@@ -22,15 +22,15 @@ pool pool_new(size_t nelem)
 
 void pool_free(pool p, dtor cleanup);
 
-void  pool_add(pool p, void *resource)
-    __attribute__((nonnull(1, 2)));
+void pool_add(pool p, void *resource)
+    __attribute__((nonnull));
 
 status_t pool_get(pool p, void **ppres)
     __attribute__((warn_unused_result))
-    __attribute__((nonnull(1)));
+    __attribute__((nonnull));
 
 status_t pool_recycle(pool p, void *resource)
-    __attribute__((nonnull(1, 2)));
+    __attribute__((nonnull));
 
 #ifdef __cplusplus
 }

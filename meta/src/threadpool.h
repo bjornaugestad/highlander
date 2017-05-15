@@ -42,15 +42,15 @@ status_t threadpool_destroy(threadpool tp, bool finish)
 
 unsigned long threadpool_sum_blocked(threadpool p)
     __attribute__((warn_unused_result))
-    __attribute__((nonnull(1)));
+    __attribute__((nonnull));
 
 unsigned long threadpool_sum_discarded(threadpool p)
     __attribute__((warn_unused_result))
-    __attribute__((nonnull(1)));
+    __attribute__((nonnull));
 
 unsigned long threadpool_sum_added(threadpool p)
     __attribute__((warn_unused_result))
-    __attribute__((nonnull(1)));
+    __attribute__((nonnull));
 
 #ifdef __cplusplus
 }

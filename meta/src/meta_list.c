@@ -794,7 +794,10 @@ int main(void)
     if ((a = list_new()) == NULL)
         return77("Could not allocate memory");
 
-    list_add(a, strdup("foo"));
+    b = list_add(a, strdup("foo"));
+    if (b == NULL)
+        return77("Wrong retval");
+
     if (list_size(a) != 1)
         return77("List has incorrect size. Expected 1, got %zu.", list_size(a));
 
@@ -834,8 +837,8 @@ int main(void)
 
     // Now test adding with one item in the list.
     a = list_new();
-    list_add(a, strdup("foo"));
-    if (!list_insert_after(list_first(a), strdup("bar")))
+    b = list_add(a, strdup("foo"));
+    if (!b || !list_insert_after(list_first(a), strdup("bar")))
         return 1;
 
     s = list_get_item(a, 1);

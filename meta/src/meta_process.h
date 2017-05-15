@@ -21,15 +21,15 @@ process process_new(const char *appname)
 void process_free(process p);
 
 int process_shutting_down(process p)
-    __attribute__((nonnull(1)));
+    __attribute__((nonnull));
 
 status_t process_set_rootdir(process p, const char *path)
     __attribute__((warn_unused_result))
-    __attribute__((nonnull(1, 2)));
+    __attribute__((nonnull));
 
 status_t process_set_username(process p, const char *username)
     __attribute__((warn_unused_result))
-    __attribute__((nonnull(1, 2)));
+    __attribute__((nonnull));
 
 
 status_t process_add_object_to_start(
@@ -45,14 +45,14 @@ status_t process_add_object_to_start(
 
 status_t process_start(process p, int fork_and_close)
     __attribute__((warn_unused_result))
-    __attribute__((nonnull(1)));
+    __attribute__((nonnull));
 
 status_t process_wait_for_shutdown(process p)
     __attribute__((warn_unused_result))
-    __attribute__((nonnull(1)));
+    __attribute__((nonnull));
 
 int process_get_exitcode(process p, void *object)
-    __attribute__((nonnull(1, 2)));
+    __attribute__((nonnull));
 
 
 #ifdef __cplusplus

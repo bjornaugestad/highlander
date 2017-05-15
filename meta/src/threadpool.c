@@ -136,10 +136,9 @@ static void *threadpool_exec_thread(void *arg)
         free(wp);
     }
 
-    /* This function runs until pool->shutting_down is true, but the HP-UX
-     * compiler isn't smart enough to detect this. The line below is
-     * there just to avoid a warning.
-     */
+    // This function runs until pool->shutting_down is true, but the HP-UX
+    // compiler isn't smart enough to detect this. The line below is
+    // there just to avoid a warning.
     return NULL;
 }
 
