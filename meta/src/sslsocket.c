@@ -40,12 +40,12 @@ struct sslsocket_tag {
 static int verify_callback(int ok, X509_STORE_CTX *store)
 {
     char data[256];
- 
+
     if (!ok) {
         X509 *cert = X509_STORE_CTX_get_current_cert(store);
         int  depth = X509_STORE_CTX_get_error_depth(store);
         int  err = X509_STORE_CTX_get_error(store);
- 
+
         fprintf(stderr, "-Error with certificate at depth: %i\n", depth);
         X509_NAME_oneline(X509_get_issuer_name(cert), data, 256);
         fprintf(stderr, "  issuer   = %s\n", data);
@@ -53,7 +53,7 @@ static int verify_callback(int ok, X509_STORE_CTX *store)
         fprintf(stderr, "  subject  = %s\n", data);
         fprintf(stderr, "  err %i:%s\n", err, X509_verify_cert_error_string(err));
     }
- 
+
     return ok;
 }
 
@@ -118,7 +118,7 @@ static status_t setup_server_ctx(sslsocket this)
 
     assert(this != NULL);
     assert(this->ctx == NULL);
- 
+
     fputs("X1\n", stderr);
     this->ctx = SSL_CTX_new(TLSv1_server_method());
     if (this->ctx == NULL)
@@ -380,11 +380,11 @@ status_t sslsocket_listen(sslsocket this, int backlog)
 
 // SSLTODO: We need to initialize the _server_, that'll create an SSL_CTX
 // SSLTODO: object. We use that object to create a BIO object. Then we accept
-// SSLTODO: connections to the BIO, and create an SSL object using 
+// SSLTODO: connections to the BIO, and create an SSL object using
 // SSLTODO: SSL_new(), SSL_set_accept_state(), SSL_set_bio(). When all
 // SSLTODO: that shit's done, we can call SSL_accept(), and do
 // SSLTODO: post connection checks on the server side too. (highly optional)
-// SSLTODO: 
+// SSLTODO:
 // SSLTODO: The example programs are good. Go with them
 sslsocket sslsocket_create_server_socket(const char *host, int port)
 {
@@ -408,7 +408,7 @@ sslsocket sslsocket_create_server_socket(const char *host, int port)
 }
 
 // SSLTODO: The SSL connect procedure is more complicated than the normal connect procedure.
-// SSLTODO: The sample code in client3.c illustrates this. One first connects a BIO, then 
+// SSLTODO: The sample code in client3.c illustrates this. One first connects a BIO, then
 // SSLTODO: create an SSL object, initializes it with the BIO, then connects the SSL object
 // SSLTODO: itself. The client3.c code uses a post connection check which validates the
 // SSLTODO: server's certificate. This code is not for the meek. ;)

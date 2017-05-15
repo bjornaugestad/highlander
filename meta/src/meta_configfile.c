@@ -154,12 +154,12 @@ configfile configfile_read(const char *path)
     return p;
 
 err:
-    if (f) 
+    if (f)
         fclose(f);
 
     if (p)
         configfile_free(p);
-    
+
     return NULL;
 }
 

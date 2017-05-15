@@ -173,7 +173,7 @@ int http_server_get_defered_read(http_server s)
 status_t http_server_set_documentroot(http_server s, const char* docroot)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
-    
+
 void http_server_set_post_limit(http_server s, size_t cb)
     __attribute__((nonnull(1)));
 
@@ -748,7 +748,7 @@ void response_set_allocated_content_buffer(http_response response, void* src, si
     __attribute__((nonnull(1, 2)));
 
 
-/* Add embedded, client side javascript, this is highly experimental 
+/* Add embedded, client side javascript, this is highly experimental
  * so beware and enjoy the bugs */
 /* messagebox() adds code to display text in a message box */
 status_t response_js_messagebox(http_response response, const char* text)

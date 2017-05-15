@@ -23,7 +23,7 @@
  * UNIX supports multiple file system types, each type can have different path
  * length limits (man pathconf(3)), and file systems can be mounted and
  * unmounted while we are running. If we want to be 100% politically correct,
- * we should call pathconf() , malloc() and free() every time we work with 
+ * we should call pathconf() , malloc() and free() every time we work with
  * a path, but that would make our application awfully slow.  Instead, we
  * allocate our paths on the stack as a char array and ALWAYS test for lengths
  * and overflow.
@@ -80,7 +80,7 @@ static int add_entry(list lst, const path_t abspath, const char *filename)
     struct dirinfo *pdi;
     struct stat st;
 
-    /* We stat() the file to get info about it 
+    /* We stat() the file to get info about it
      * and path2file is a temp variable used to store
      * the absolute path to the file. We do not want to
      * malloc()/free() this all the time, instead we
@@ -139,7 +139,7 @@ static int add_entry(list lst, const path_t abspath, const char *filename)
 /*
  * Store all entries in a list so that we can sort and filter later.  debuff
  * (Directory entry buffer) is used by readdir_r to store data. It must be
- * large enough to hold the struct dirent plus the longest path allowed. 
+ * large enough to hold the struct dirent plus the longest path allowed.
  * The path varies with the file system, as different file systems have
  * different limits. We must therefore call it every time as we don't know if
  * other file systems gets mounted while we are running.
@@ -164,7 +164,7 @@ list read_directory(const path_t abspath)
     else {
         while (readdir_r(d, (struct dirent*)debuff, &de) == 0 && de != NULL) {
             if (strcmp(de->d_name, ".") == 0
-            || strcmp(de->d_name, "..") == 0) 
+            || strcmp(de->d_name, "..") == 0)
                 ; /* Skip these */
             else if (!add_entry(lst, abspath, de->d_name)) {
                 err = 1;
@@ -214,13 +214,13 @@ status_t add_html_header(http_response page, const char *uri)
 
     if (page == NULL || uri == NULL || strlen(uri) == 0)
         return 0;
-    
+
     return response_printf(page, header, uri);
 }
 
 static status_t add_html_footer(http_response page)
 {
-    static const char *footer = 
+    static const char *footer =
         "</table>\n"
         "<hr>\n"
         "<address>"
@@ -261,7 +261,7 @@ static status_t show_directory_as_html(http_response page, list lst, const char 
 
         /* Create _link, which is uri + name */
         cb = snprintf(_link, sizeof _link, "%s%s%s",
-            uri, 
+            uri,
             strcmp(uri, "/") == 0 ? "" : "/",
             p->name);
 
@@ -282,7 +282,7 @@ static status_t show_directory_as_html(http_response page, list lst, const char 
         if (!response_printf(page, "<a href='%s'>%s</a></td>\n", encoded_link, p->name)
         || !response_printf(page, "<td align='right'>%lu</td>", p->st.st_size))
             return failure;
-            
+
 
         if (gmtime_r(&p->st.st_mtime, &t) != NULL) {
             char sz[1024];
@@ -333,20 +333,20 @@ static status_t makepath(path_t abspath, const char *relpath)
     cb = strlen(docdir) + strlen(relpath) + 2;
     if (cb >= FTP_PATH_MAX)
         return fail(ENOSPC);
-    else 
+    else
         return concat_paths(abspath, FTP_PATH_MAX, docdir, relpath);
 }
 
 
 /*
- * This is our callback function, called from highlander whenever 
+ * This is our callback function, called from highlander whenever
  * the http_server gets a request for a page. This process has NO
  * pages, so the default page handler, this function, is called instead.
- * 
+ *
  * This function accepts any URI and tries to map that URI to a file
  * or directory relative to the root directory of the process. If
- * the URI refers to a directory, the contents of that directory is 
- * listed. If the URI refers to a file, the file will be sent to the 
+ * the URI refers to a directory, the contents of that directory is
+ * listed. If the URI refers to a file, the file will be sent to the
  * client.
  */
 static int handle_requests(const http_request req, http_response page)
@@ -393,9 +393,9 @@ static int handle_requests(const http_request req, http_response page)
     else if (!response_send_file(page, abspath, get_mime_type(abspath), NULL)) {
         rc = HTTP_500_INTERNAL_SERVER_ERROR;
     }
-    else  
+    else
         rc = HTTP_200_OK;
-    
+
     return rc;
 }
 
@@ -480,4 +480,3 @@ int main(int argc, char *argv[])
     http_server_free(g_server);
     exit(0);
 }
-

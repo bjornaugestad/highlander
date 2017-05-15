@@ -90,7 +90,6 @@ void rtrim(char *s)
     while (n-- > 0 && isspace(s[n]))
         s[n] = '\0';
 }
-        
 
 
 status_t copy_word(

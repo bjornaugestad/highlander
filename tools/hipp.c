@@ -12,17 +12,17 @@
  *	 with one entry per line.
  * - everything INSIDE these tags are left untouched.
  * - A function suitable for the Highlander web server is created.
- * 
+ *
  * You can also run the hipp in a special prototype mode, which will
  * generate function declarations for all pages. These functions should
- * be stored in an include file suitable for inclusion in a C or C++ 
+ * be stored in an include file suitable for inclusion in a C or C++
  * source file.
  *
  * A special section at the top of the file is also understood. There
- * may exist a need to add code outside the generated function, e.g. 
+ * may exist a need to add code outside the generated function, e.g.
  * include-statements or local functions/variables. That can be done
- * within the tags <[ and ]>. Note that these tags MUST be at the 
- * very beginning of the file. 
+ * within the tags <[ and ]>. Note that these tags MUST be at the
+ * very beginning of the file.
  *
  * Limits:
  * Line length: 2048
@@ -79,13 +79,13 @@ static void parr(FILE *f, const char *arr[], size_t n)
 {
     size_t i;
 
-    for (i = 0; i < n; i++) 
+    for (i = 0; i < n; i++)
         fprintf(f, "%s\n", arr[i]);
 }
 
 int main(int argc, char *argv[])
 {
-    int i, c; 
+    int i, c;
     extern int optind;
     extern char* optarg;
 
@@ -149,21 +149,21 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    if (prototype_mode) 
+    if (prototype_mode)
         create_header(g_headerfile, argc, argv, optind);
     else {
         /* Generate C code for all the files */
-        for (i = optind; i < argc; i++) 
+        for (i = optind; i < argc; i++)
             process_file(argv[i]);
     }
 
 
-    /* 
+    /*
      * New stuff 20070401:
      * -m can be used to generate a skeleton main function
      * which sets up a web server for us.
      */
-    if (g_mainfile != NULL) 
+    if (g_mainfile != NULL)
         create_mainfile(argc - optind, &argv[optind], g_mainfile);
 
     if (m_automake)
@@ -179,7 +179,7 @@ static void show_help(void)
     printf("\n");
 }
 
-// Create a legal C name, but do NOT add more than one consecutive underscore. 
+// Create a legal C name, but do NOT add more than one consecutive underscore.
 static const char* legal_name(const char* base)
 {
     char *s;
@@ -214,7 +214,7 @@ static const char* legal_name(const char* base)
 }
 
 /* call this function with full path.
- * It creates *the* function name we want to use. 
+ * It creates *the* function name we want to use.
  */
 static const char* function_name(char* file)
 {
@@ -228,7 +228,7 @@ static const char* function_name(char* file)
 }
 
 /**
- * Adds standard stuff to all files. 
+ * Adds standard stuff to all files.
  * Stuff we need is:
  * Standard C header files
  * The Highlander header file
@@ -308,7 +308,7 @@ static void write_html_buffer(FILE* f, const char* str)
             p(f, "\\n\"\n\t\t\"");
             last = '\0';
         }
-        else 
+        else
             last = *s;
 
         s++;
@@ -339,7 +339,7 @@ static const char* remove_ext(char* name)
         fprintf(stderr, "hipp: internal error\n");
         exit(EXIT_FAILURE);
     }
-    
+
     return buf;
 }
 
@@ -469,10 +469,10 @@ static void process_file(char* name)
         }
     }
 
-    if (!fn_written) 
+    if (!fn_written)
         print_fn(fout, name);
 
-    if (strlen(buf) > 0) 
+    if (strlen(buf) > 0)
         write_html_buffer(fout, buf);
 
     p(fout, "\treturn 0;\n");
@@ -485,7 +485,7 @@ static void process_file(char* name)
 
 static void print_line_directive(FILE *f, const char* file, int line)
 {
-    if (!m_skip_line_numbers) 
+    if (!m_skip_line_numbers)
         p(f, "#line %d \"%s\"\n", line, file);
 }
 
@@ -526,7 +526,7 @@ static void create_header(char* filename, int argc, char *argv[], int opt_ind)
     p(f, "\n");
 
 
-    for (i = opt_ind; i < argc; i++) 
+    for (i = opt_ind; i < argc; i++)
         p(f, "int %s(http_request request, http_response response);\n", function_name(argv[i]));
 
     p(f, "\n");
@@ -541,7 +541,7 @@ static void create_header(char* filename, int argc, char *argv[], int opt_ind)
 
 /*
  * Creates the main function and saves it in filename.
- * Now, what goes into the main function? 
+ * Now, what goes into the main function?
  * #include statements
  * a http_server object
  * Adding all the function handlers for the pages
@@ -692,16 +692,16 @@ static void create_makefile_am(int argc, char *argv[])
     if (g_mainfile != NULL)
         p(f, "%s ", g_mainfile);
 
-    for (i = 0; i < argc; i++) 
+    for (i = 0; i < argc; i++)
         p(f, "%s ", argv[i]);
-    
+
     p(f, "\n");
     p(f, "\n");
 
 
     /* No dist files */
     p(f, "nodist_foo_SOURCES=%s ", g_headerfile);
-    for (i = 0; i < argc; i++) 
+    for (i = 0; i < argc; i++)
         p(f, "%s.c ", remove_ext(argv[i]));
     p(f, "\n");
     p(f, "foo_CFLAGS=-W -Wall -pedantic -Wextra -std=gnu99 -Wshadow -Wmissing-prototypes -pthread\n");

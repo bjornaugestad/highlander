@@ -41,8 +41,8 @@ status_t configfile_get_int(configfile cf, const char *name, int *value)
     __attribute__((nonnull(1, 2, 3)))
     __attribute__((warn_unused_result));
 
-status_t configfile_get_uint(configfile cf, const char *name, 
-    unsigned int *value) 
+status_t configfile_get_uint(configfile cf, const char *name,
+    unsigned int *value)
     __attribute__((nonnull(1, 2, 3)))
     __attribute__((warn_unused_result));
 

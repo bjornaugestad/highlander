@@ -76,7 +76,7 @@ socket_t socket_create_server_socket(int type, const char *host, int port)
         this->instance = tcpsocket_create_server_socket(host, port);
     else
         this->instance = sslsocket_create_server_socket(host, port);
-    
+
     if (this->instance == NULL) {
         free(this);
         return NULL;
@@ -98,7 +98,7 @@ socket_t socket_create_client_socket(int type, const char *host, int port)
         this->instance = tcpsocket_create_client_socket(host, port);
     else
         this->instance = sslsocket_create_client_socket(host, port);
-    
+
     if (this->instance == NULL) {
         free(this);
         return NULL;
@@ -120,7 +120,7 @@ socket_t socket_socket(int type)
         this->instance = tcpsocket_socket();
     else
         this->instance = sslsocket_socket();
-    
+
     if (this->instance == NULL) {
         free(this);
         return NULL;
@@ -142,7 +142,7 @@ socket_t socket_accept(socket_t p, struct sockaddr *addr, socklen_t *addrsize)
         new->instance = tcpsocket_accept(p->instance, addr, addrsize);
     else
         new->instance = sslsocket_accept(p->instance, addr, addrsize);
-    
+
     if (new->instance == NULL) {
         free(new);
         return NULL;
@@ -226,4 +226,3 @@ ssize_t socket_read(socket_t p, char *buf, size_t count, int timeout, int retrie
 
     return p->read(p->instance, buf, count, timeout, retries);
 }
-

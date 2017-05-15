@@ -157,7 +157,7 @@ status_t map_set(map this, const char *key, void *value)
         free(entry);
         return failure;
     }
-    
+
     return success;
 }
 
@@ -175,7 +175,7 @@ void *map_get(map this, const char *key)
 
     if ((pair = map_find(this, key)) == NULL)
         return NULL;
-        
+
     return pair->value;
 }
 

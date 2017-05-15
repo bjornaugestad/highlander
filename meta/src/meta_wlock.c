@@ -91,7 +91,7 @@ status_t wlock_broadcast(wlock p)
 
     if ((err = pthread_cond_broadcast(&p->condvar)))
         return fail(err);
-    
+
     return success;
 }
 

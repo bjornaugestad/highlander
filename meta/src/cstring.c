@@ -307,7 +307,7 @@ cstring cstring_left(cstring src, size_t n)
 
     if ((dest = cstring_new()) == NULL)
         return NULL;
-        
+
     if (!cstring_extend(dest, n)) {
         cstring_free(dest);
         return NULL;
@@ -330,7 +330,7 @@ cstring cstring_right(cstring src, size_t n)
     /* Get mem */
     if ((dest = cstring_new()) == NULL)
         return NULL;
-        
+
     if (!cstring_extend(dest, n)) {
         cstring_free(dest);
         return NULL;
@@ -366,7 +366,7 @@ cstring cstring_substring(cstring src, size_t from, size_t to)
     cb = to - from + 1;
     if ((dest = cstring_new()) == NULL)
         return NULL;
-        
+
     if (!cstring_extend(dest, cb)) {
         cstring_free(dest);
         return NULL;

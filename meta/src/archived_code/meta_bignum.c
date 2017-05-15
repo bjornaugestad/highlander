@@ -96,7 +96,7 @@ static inline status_t add(bignum * restrict dest, const bignum *a, const bignum
         // debugging
         if (sum > UINT64_MAX)
             carry = 1;
-        else 
+        else
             carry = 0;
 #endif
         dest->value[i] = sum;
@@ -277,7 +277,7 @@ status_t bignum_set(bignum *p, const char *value)
         return failure;
 
     // Consume 16 bytes from 'value' for each iteration.
-    // Remember that we store values as MSB, so 
+    // Remember that we store values as MSB, so
     // lower bits go to the end of the array.
     // Also keep in mind that i refers to uint64_t array entries,
     // and n to char entries. Each iteration decrements n with 8
@@ -421,7 +421,7 @@ int main(void)
             die("Meh.\n");
     }
     if (0) dump(&dest, "dest(mul):");
-    
+
     // factorial with mul
     if (!bignum_set(&dest, "01"))
         die("meh");
@@ -442,8 +442,6 @@ int main(void)
     }
     if (1) dump(&dest, "1000!");
 
-
-    
 
     return 0;
 }

@@ -416,7 +416,7 @@ ssize_t connection_read(connection this, void *buf, size_t count)
     if (!fill_read_buffer(this))
         return -1;
 
-    /* Now read as much as possible from the buffer, and 
+    /* Now read as much as possible from the buffer, and
      * return count, or possible short count, to our caller. */
     nread = copy_from_readbuf(this, cbuf, count);
     return ncopied + nread;

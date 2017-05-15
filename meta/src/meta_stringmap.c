@@ -251,7 +251,7 @@ stringmap stringmap_subset(stringmap sm1, stringmap sm2)
             for (li = list_first(sm1->hashtable[i]); !list_end(li); li = list_next(li)) {
                 struct entry* p = list_get(li);
                 assert(p != NULL);
-                if (!stringmap_exists(sm2, p->s) 
+                if (!stringmap_exists(sm2, p->s)
                 && !stringmap_add(sm, p->s, &id))
                     goto err;
             }

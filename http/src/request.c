@@ -619,7 +619,7 @@ http_request request_new(void)
     if ((p->entity_header = entity_header_new()) == NULL)
         goto err;
 
-    if (!cstring_multinew(arr, sizeof arr / sizeof *arr)) 
+    if (!cstring_multinew(arr, sizeof arr / sizeof *arr))
         goto err;
 
     p->version = VERSION_UNKNOWN;
@@ -1472,7 +1472,7 @@ status_t request_send(http_request r, connection c, error e)
     assert(r != NULL);
     assert(c != NULL);
     (void)e; /* for now, we may want to add semantic checks later */
- 
+
     if (!send_request_line(r, c, e))
         return failure;
 

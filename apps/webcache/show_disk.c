@@ -33,7 +33,7 @@ int show_disk(http_request req, http_response page)
     || !response_href(page, "/disk?a=summary", "Show summary of changes\n")
     || !response_br(page))
         goto err;
-    
+
     if ( (action = request_get_parameter_value(req, "a")) == NULL) {
         /* No action */
         if (!add_page_end(page, NULL))
@@ -69,7 +69,7 @@ static int show_deleted_files(http_request req, http_response page)
     int rc = HTTP_500_INTERNAL_SERVER_ERROR;
     list deleted = NULL;
 
-    /* We lookup all deleted files from the cache to get the 
+    /* We lookup all deleted files from the cache to get the
      * fileinfo data for the files. Just copy the pointer and
      * use sublist_free() to free mem.
      */
@@ -103,7 +103,7 @@ static int show_deleted_files(http_request req, http_response page)
         if (!show_file_list(page, desc, filist))
             goto cleanup;
     }
-    else 
+    else
         msg = no_files;
 
     if (!add_page_end(page, msg))
@@ -123,7 +123,7 @@ static int show_new_files(http_request req, http_response page)
     int rc = HTTP_500_INTERNAL_SERVER_ERROR; /* Default return in case of errors */
 
     const char* msg = NULL;
-    const char* desc = 
+    const char* desc =
         "Below is a list all the files on disk that match the files pattern"
         " from the configuration file and aren't already in the cache";
 
@@ -135,7 +135,7 @@ static int show_new_files(http_request req, http_response page)
     if ( (files = find_new_files(g_dirs, g_patterns, g_npatterns)) == NULL)
         goto cleanup;
 
-    if (list_size(files) == 0) 
+    if (list_size(files) == 0)
         msg = no_files;
     else if (!show_file_list(page, desc, files))
         goto cleanup;
@@ -156,12 +156,12 @@ static int show_modified_files(http_request req, http_response page)
     int rc = HTTP_500_INTERNAL_SERVER_ERROR; /* Default return in case of errors */
 
     const char* msg = NULL;
-    const char* desc = 
+    const char* desc =
         "Below is a list all the files on disk that match the files pattern"
         " from the configuration file and have been modified on disk"
         " since the server started.";
 
-    const char* no_files = 
+    const char* no_files =
         "No files in cache have been modified on disk after the cache was loaded";
 
     list files = NULL;
@@ -170,7 +170,7 @@ static int show_modified_files(http_request req, http_response page)
     if ( (files = find_modified_files(g_dirs, g_patterns, g_npatterns)) == NULL)
         goto cleanup;
     else {
-        if (list_size(files) == 0) 
+        if (list_size(files) == 0)
             msg = no_files;
         else if (!show_file_list(page, desc, files))
             goto cleanup;

@@ -12,7 +12,7 @@ status_t show_file_list(http_response page, const char* desc, list lst)
     char buf[100];
     struct tm t;
 
-    const char* table_start = 
+    const char* table_start =
         "<table columns='2' border='1' borderwidth='2'>\n"
         "<th>File name</th>\n"
         "<th>Alias/URI</th>\n"
@@ -70,7 +70,7 @@ static struct {
 };
 
     size_t i, nelem = sizeof items / sizeof *items;
-    const char* formatstring = 
+    const char* formatstring =
         "<li id='%s' class='%s'>\n\t<a href='%s' title='%s'>%s</a>\n</li>\n";
 
     if (!response_add(page, "<ul id='menulist'>\n"))
@@ -79,7 +79,7 @@ static struct {
 
     for (i = 0; i < nelem; i++) {
         const char* sel = "plain";
-        if (items[i].pageid == pageid) 
+        if (items[i].pageid == pageid)
             sel = "selected";
 
         if (!response_printf(page, formatstring, items[i].id,
@@ -94,7 +94,7 @@ static struct {
     if (!response_add(page, "</ul>\n"))
         return failure;
 
-    /* That's the main tabs. Now throw in a second ul with one item, /about, 
+    /* That's the main tabs. Now throw in a second ul with one item, /about,
      * and place it on the line below.
      */
 
@@ -106,12 +106,12 @@ static struct {
 }
 
 /*
- * Adds everything from <HTML> to <BODY>. title will be added 
- * between <title> and </title> 
+ * Adds everything from <HTML> to <BODY>. title will be added
+ * between <title> and </title>
  */
 status_t add_page_start(http_response page, int pageid)
 {
-    const char* html = 
+    const char* html =
         "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Strict//EN\">\n"
         "<html>\n"
         "<head>\n"
@@ -134,12 +134,12 @@ status_t add_page_start(http_response page, int pageid)
     return success;
 }
 
-/* All pages have a common end so call this function for all page handlers. 
+/* All pages have a common end so call this function for all page handlers.
  * It will add "</body></html>" so don't add html to the page after calling
  * this function. */
 status_t add_page_end(http_response page, const char* msg)
 {
-    const char* html = 
+    const char* html =
     "\n<hr>\n"
 #ifdef PACKAGE_VERSION
     "The Highlander Web Cache, version " PACKAGE_VERSION ".\n"

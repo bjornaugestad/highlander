@@ -24,7 +24,7 @@ extern "C" {
  * in any way, which means that it can be quite easy to miscalculate
  * e.g. offsets or lengths when we access them.
  *
- * You can write data to the buffer and you can read data from the 
+ * You can write data to the buffer and you can read data from the
  * buffer, assuming that there's data in the buffer.
  *
  * Note that the membuf isn't a ring buffer. If there are e.g. 100
@@ -34,7 +34,7 @@ extern "C" {
  * are nice... Well, I don't remember the rationale for the current
  * membuf semantics. I think the general idea is to use the membuf
  * to read chunks of data from e.g. a socket, and then read the
- * data while e.g parsing a protocol. 
+ * data while e.g parsing a protocol.
  */
 
 /* The membuf adt */
@@ -137,7 +137,7 @@ static inline status_t membuf_unget(membuf mb)
 
 /*
  * Returns a pointer to the data in the buffer. Nice to have
- * if you e.g. want to pass the contents of the buffer as an argument 
+ * if you e.g. want to pass the contents of the buffer as an argument
  * to a different function like write(2). The buffer must contain some
  * data.
  */
@@ -181,7 +181,7 @@ static inline size_t membuf_size(membuf mb)
 // Returns the number of bytes read, or 0 if no data was available to read.
 __attribute__((warn_unused_result))
 __attribute__((nonnull(1, 2)))
-static inline size_t 
+static inline size_t
 membuf_read(membuf this, void *dest, size_t count)
 {
     size_t navail;

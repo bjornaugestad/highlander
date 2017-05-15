@@ -353,7 +353,7 @@ int main(void)
         pthread_join(w, NULL);
         if (!fifo_wake(f))
             exit(EXIT_FAILURE);
-            
+
         pthread_join(r, NULL);
      }
 

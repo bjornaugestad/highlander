@@ -65,7 +65,7 @@ void *array_get(array a, size_t ielem)
 
     if (ielem >= a->nused)
         return NULL;
-    
+
     return a->elements[ielem];
 }
 

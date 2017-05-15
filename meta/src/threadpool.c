@@ -60,7 +60,7 @@ struct threadpool_tag {
     // counters used to track and analyze the behaviour of the threadpool.
     // We count how many times we blocked due to full queue, how many work
     // request that's been added to the queue, how many that's in the queue
-    // right now, and more... 
+    // right now, and more...
     atomic_ulong sum_work_added; // Successfully added to queue
     atomic_ulong sum_blocked;    // How many times we blocked
     atomic_ulong sum_discarded;  // discarded due to queue full and no-block
@@ -88,7 +88,7 @@ static void *threadpool_exec_thread(void *arg)
         // Get the lock so that we can do a cond_wait later
         pthread_mutex_lock(&pool->queue_lock);
 
-        // Wait for entries in the queue 
+        // Wait for entries in the queue
         while (queue_empty(pool) && !pool->shutting_down)
             pthread_cond_wait(&pool->queue_not_empty, &pool->queue_lock);
 

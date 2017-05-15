@@ -70,7 +70,7 @@ status_t ticker_add_action(ticker t, void(*pfn)(void*), void *arg)
 
     if (list_add(t->actions, pa))
         return success;
-        
+
     free(pa);
     return failure;
 }

@@ -49,10 +49,10 @@ status_t tolong(const char *src, long *dest)
 
     assert(src != NULL);
     assert(dest != NULL);
-    
+
     old_errno = errno;
     errno = 0;
-    
+
     res = strtol(src, &endp, 10);
     if (res == LONG_MIN && errno == ERANGE)
         return failure;
@@ -82,10 +82,10 @@ status_t toulong(const char *src, unsigned long *dest)
 
     assert(src != NULL);
     assert(dest != NULL);
-    
+
     old_errno = errno;
     errno = 0;
-    
+
     res = strtoul(src, &endp, 10);
     if (res == ULONG_MAX && errno == ERANGE)
         return failure;
@@ -112,13 +112,13 @@ status_t tosize_t(const char *src, size_t *dest)
 
     assert(src != NULL);
     assert(dest != NULL);
-    
+
     old_errno = errno;
     errno = 0;
 
     if (*src == '-')
         return fail(EINVAL);
-    
+
     res = strtoull(src, &endp, 10);
     if (res == ULLONG_MAX && errno == ERANGE)
         return failure;
@@ -148,13 +148,13 @@ status_t hextosize_t(const char *src, size_t *dest)
 
     assert(src != NULL);
     assert(dest != NULL);
-    
+
     old_errno = errno;
     errno = 0;
-    
+
     if (*src == '-')
         return fail(EINVAL);
-    
+
     res = strtoull(src, &endp, 16);
     if (res == ULONG_MAX && errno == ERANGE)
         return failure;
@@ -184,10 +184,10 @@ status_t tofloat(const char *src, float *dest)
 
     assert(src != NULL);
     assert(dest != NULL);
-    
+
     old_errno = errno;
     errno = 0;
-    
+
     res = strtof(src, &endp);
     if (errno == ERANGE)
         return failure;
@@ -211,10 +211,10 @@ status_t todouble(const char *src, double *dest)
 
     assert(src != NULL);
     assert(dest != NULL);
-    
+
     old_errno = errno;
     errno = 0;
-    
+
     res = strtod(src, &endp);
     if (errno == ERANGE)
         return failure;
@@ -307,7 +307,7 @@ int main(void)
         if (itests[i].expected_result == success) {
             // Check that isint() returns true.
             if (!isint(itests[i].src)) {
-                fprintf(stderr, "%s was not interpreted as int.\n", 
+                fprintf(stderr, "%s was not interpreted as int.\n",
                     itests[i].src);
                 return 1;
             }
@@ -320,8 +320,8 @@ int main(void)
         }
 
         if (rc == success && ires != itests[i].expected_value) {
-            fprintf(stderr, "Incorrect result for buf %s: expected %d, got %d\n", 
-                itests[i].src, 
+            fprintf(stderr, "Incorrect result for buf %s: expected %d, got %d\n",
+                itests[i].src,
                 itests[i].expected_value, ires);
             return 1;
         }
@@ -336,8 +336,8 @@ int main(void)
         }
 
         if (rc == success && ures != utests[i].expected_value) {
-            fprintf(stderr, "Incorrect result for buf %s: expected %u, got %u\n", 
-                utests[i].src, 
+            fprintf(stderr, "Incorrect result for buf %s: expected %u, got %u\n",
+                utests[i].src,
                 utests[i].expected_value, ures);
             return 1;
         }
@@ -352,8 +352,8 @@ int main(void)
         }
 
         if (rc == success && zures != sizetests[i].expected_value) {
-            fprintf(stderr, "Incorrect result for buf %s: expected %zu, got %zu\n", 
-                sizetests[i].src, 
+            fprintf(stderr, "Incorrect result for buf %s: expected %zu, got %zu\n",
+                sizetests[i].src,
                 sizetests[i].expected_value, zures);
             return 1;
         }
@@ -368,8 +368,8 @@ int main(void)
         }
 
         if (rc == success && zures != hextests[i].expected_value) {
-            fprintf(stderr, "Incorrect result for buf %s: expected %zu, got %zu\n", 
-                hextests[i].src, 
+            fprintf(stderr, "Incorrect result for buf %s: expected %zu, got %zu\n",
+                hextests[i].src,
                 hextests[i].expected_value, zures);
             return 1;
         }

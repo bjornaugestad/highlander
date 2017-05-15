@@ -18,7 +18,7 @@ list list_new(void)
 
     if ((p = malloc(sizeof *p)) == NULL)
         return NULL;
-        
+
     p->next = NULL;
     p->prev = NULL;
     p->data = NULL;

@@ -12,7 +12,7 @@
 
 extern filecache g_filecache;
 
-/* Call popen() to get mime type, then niceify it a little and 
+/* Call popen() to get mime type, then niceify it a little and
  * return the mime type in buf.
  */
 static void popen_mime_type(const char* filename, char *buf, size_t cb)
@@ -73,13 +73,13 @@ list find_new_files(const char* directories, cstring* patterns, size_t npatterns
         goto err;
 
     /* Now see if all files are int the cache */
-    i = list_first(lst); 
+    i = list_first(lst);
     while (!list_end(i)) {
         fileinfo fi = list_get(i);
         assert(fi != NULL);
-        if (filecache_exists(g_filecache, fileinfo_alias(fi)))  
+        if (filecache_exists(g_filecache, fileinfo_alias(fi)))
             i = list_delete(lst, i, (dtor)fileinfo_free);
-        else 
+        else
             i = list_next(i);
     }
 
@@ -105,7 +105,7 @@ list find_modified_files(const char* directories, cstring* patterns, size_t npat
         goto err;
 
     /* Now see if all files are int the cache */
-    i = list_first(lst); 
+    i = list_first(lst);
     while (!list_end(i)) {
         fileinfo fi = list_get(i);
         assert(fi != NULL);
@@ -155,7 +155,7 @@ list find_deleted_files(const char* directories, cstring* patterns, size_t npatt
 
     if ((nfiles = list_size(diskfiles)) == 0) {
         /* Found no files at all. Not exactly an internal server error,
-         * so we return an empty list. 
+         * so we return an empty list.
          */
         list_free(diskfiles, (dtor)fileinfo_free);
         return list_new();
@@ -205,7 +205,7 @@ status_t walk_all_directories(const char* directories, cstring* patterns, size_t
     cstring *pstr;
     size_t i, nelem;
     status_t rc = success;
-    
+
     /* Split the directories argument and then walk each element in the path */
     if ( (nelem = cstring_split(&pstr, directories, " \t")) == 0)
         return failure;
@@ -278,7 +278,7 @@ static int handle_one_file(
     const char *known_as;
     char *base = NULL;
 
-    /* Extract the base name of the object, including 
+    /* Extract the base name of the object, including
      * extensions. */
     cb = strlen(path) + 1;
     if ( (base = malloc(cb)) == NULL)
@@ -292,7 +292,7 @@ static int handle_one_file(
             fileinfo fi;
             char mimetype[2048];
 
-            if ( (fi = fileinfo_new()) == NULL) 
+            if ( (fi = fileinfo_new()) == NULL)
                 goto err;
 
             if (get_mimetype)
@@ -309,7 +309,7 @@ static int handle_one_file(
             && fileinfo_set_mimetype(fi, mimetype)
             && list_add(lst, fi)) {
                 /* Stop checking patterns */
-                break; 
+                break;
             }
 
             /* Crapola, out of memory */
@@ -327,29 +327,29 @@ err:
 }
 
 /*
- * This function finds all files in all dirs matching the patterns 
+ * This function finds all files in all dirs matching the patterns
  * from the configuration file. The result is stored in a meta_list
  * for further processing by other functions. We do NOT use ftw()
  * as it isn't thread safe. Wrapping ntw() in a mutex and global list
  * is just too ugly for my taste.
- * 
+ *
  * Anyway, this function is recursive and will use a lot of file descriptors
  * if the directory tree is deep.
  *
  * Params:
- * rootdir is where we started to traverse the tree. We use it to construct 
+ * rootdir is where we started to traverse the tree. We use it to construct
  * the known_as alias for files
  *
  * curdir is the full path to the current directory(Note: Not getcwd()),
  * we construct this once for each dir we check. We realloc() this variable
  * to make room for the appended strings.
  *
- * dirname is the name of the directory we shall check. 
+ * dirname is the name of the directory we shall check.
  *
  * patterns&npatterns are the files setting from the configuration file,
  * split up into cstring strings.
  *
- * lst is where we append our data. 
+ * lst is where we append our data.
  */
 status_t find_files(
     const char* rootdir,
@@ -360,7 +360,7 @@ status_t find_files(
     int get_mimetype)
 {
     DIR *d = NULL;
-    status_t rc = failure; 
+    status_t rc = failure;
 
     /* Buffers used for string/path manipulation */
     char *path = NULL;
@@ -389,14 +389,14 @@ status_t find_files(
         snprintf(path, cb, "%s/%s", dirname, de->d_name);
 
         /* Get file info */
-        if (stat(path, &st) == -1) 
+        if (stat(path, &st) == -1)
             goto err;
 
         /* Check subdirectory for more files */
         if (S_ISDIR(st.st_mode)) {
             /* We found a directory, check it */
             verbose(2, "Checking path %s...\n", path);
-            if (find_files(rootdir, path,  patterns, npatterns, lst, get_mimetype) == 0) 
+            if (find_files(rootdir, path,  patterns, npatterns, lst, get_mimetype) == 0)
                 goto err;
         }
         else if (S_ISREG(st.st_mode)) {
@@ -406,7 +406,7 @@ status_t find_files(
     }
 
     /* Indicate success and fallthrough to cleanup */
-    rc = success; 
+    rc = success;
 
 err:
     if (d != NULL)

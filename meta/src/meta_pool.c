@@ -65,7 +65,7 @@ void pool_free(pool this, dtor free_fn)
 
     if (this == NULL)
         return;
-        
+
     /* Free entries if we have a dtor and the entry is not NULL */
     if (free_fn != NULL) {
         assert(this->pdata != NULL);

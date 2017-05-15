@@ -24,7 +24,7 @@ const char*g_hostname = NULL;
 int g_port = 0;
 const char *g_uri = "/";
 //
-// timeout is in ms. 
+// timeout is in ms.
 int timeout_reads = 400, timeout_writes = 50;
 int nretries_read = 8, nretries_write = 4;
 
@@ -79,7 +79,7 @@ void parse_commandline(int argc, char *argv[])
                 g_nthreads = atoi(optarg);
                 break;
 
-            case 'r': 
+            case 'r':
                 g_nrequests = atoi(optarg);
                 break;
 
@@ -116,7 +116,7 @@ static void print_response_contents(http_response response)
 {
     size_t cb = response_get_content_length(response);
     const char* s = response_get_entity(response);
-    
+
     while (cb--)
         putchar(*s++);
 }
@@ -127,7 +127,7 @@ void* threadfunc(void* arg)
 
     http_request request = request_new();
     http_response response = response_new();
-    connection conn = connection_new(timeout_reads, timeout_writes, 
+    connection conn = connection_new(timeout_reads, timeout_writes,
         nretries_read, nretries_write, NULL);
 
     membuf rb = membuf_new(10000);
@@ -153,11 +153,11 @@ void* threadfunc(void* arg)
 
     for (int i = 0; i < g_nrequests; i++) {
         verbose(1, "Sending request for uri %s\n", g_uri);
-        if (!request_send(request, conn, e)) 
+        if (!request_send(request, conn, e))
             die_error("Could not send request to server", e);
 
         /* Now read the response back from the server */
-        if (!response_receive(response, conn, 10 * 1024 * 1024, e)) 
+        if (!response_receive(response, conn, 10 * 1024 * 1024, e))
             die_error("Could not receive response from server", e);
 
         verbose(1, "Got response from server.\n");

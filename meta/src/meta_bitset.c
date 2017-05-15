@@ -100,7 +100,7 @@ int bitset_allzero(const bitset b)
 
     assert(b != NULL);
 
-    for (i = 0; i < b->size; i++) 
+    for (i = 0; i < b->size; i++)
         if (b->data[i] != 0)
             return 0;
 
@@ -113,7 +113,7 @@ int bitset_allone(const bitset b)
 
     assert(b != NULL);
 
-    for (i = 0; i < b->size; i++) 
+    for (i = 0; i < b->size; i++)
         if (b->data[i] != 0xff)
             return 0;
 
@@ -337,7 +337,7 @@ int main(void)
 
     bitset_free(a);
 
-    // Now do the same for _or(). 
+    // Now do the same for _or().
     if ((a = bitset_or(b, c)) == NULL)
         return 1;
 
@@ -423,7 +423,7 @@ int main(void)
 
     bitset_free(a);
 
-    // Now do the same for _or(). 
+    // Now do the same for _or().
     if ((a = bitset_or(b, c)) == NULL)
         return 77;
 

@@ -7,19 +7,19 @@
 #include <httpcache.h>
 
 /*
- * This is our statistics package, maintaining all the stat info we later want 
- * to report back to the user. 
+ * This is our statistics package, maintaining all the stat info we later want
+ * to report back to the user.
  *
- * So what do we store here and how is the info updated and read? 
+ * So what do we store here and how is the info updated and read?
  * First of all the handle_requests() function increments a set of counters:
  * - Currently running instances of handle_requests()
  * - The return status of each request(200/304/500/404 and more)
  * - Number of successful requests
  * - Number of failed requests
- * - Bytes transfered to user 
+ * - Bytes transfered to user
  * - And More...
  * We use fast fully inlined variables and functions for this and place these
- * variables in handle_requests(), so that updates are as fast as possible. 
+ * variables in handle_requests(), so that updates are as fast as possible.
  * Here we just read them once a minute so an extern should be OK.
  */
 extern atomic_u32 sum_requests;
@@ -34,12 +34,12 @@ extern http_server g_server;
 
 /*
  *
- * All these items are single instance variables written to by 
+ * All these items are single instance variables written to by
  * handle_requests().
  *
  * We also want to log changes over time. To do that, we start a new thread
- * that every minute(or second?) reads the variables and updates a 
- * meta_sampler object. We have other meta_sampler objects too, 
+ * that every minute(or second?) reads the variables and updates a
+ * meta_sampler object. We have other meta_sampler objects too,
  * one with 24 hours, one with 7 days and one with 52 weeks.
  * That way we can store history for the last year with reasonable resolution.
  */
@@ -69,7 +69,7 @@ static pthread_t m_thread_id;
 
 static int sample_data(sampler s)
 {
-    /* We only store the delta so this is the data for the 
+    /* We only store the delta so this is the data for the
      * previous(last) sampling */
     static uint32_t last_requests;
     static unsigned long long last_bytes;
@@ -86,7 +86,7 @@ static int sample_data(sampler s)
     static unsigned long last_accept_failed;
     static unsigned long last_denied_clients;
 
-    /* Gather all the data we want and stuff it into the sampler object. 
+    /* Gather all the data we want and stuff it into the sampler object.
      * Remember that the entities must be indexed from 0..n.
      */
     uint32_t requests = atomic_u32_get(&sum_requests);
@@ -149,23 +149,23 @@ static void* sampler_thread(void* arg)
 
     assert(s != NULL);
 
-    /* Wake up every minute and sample the data. 
+    /* Wake up every minute and sample the data.
      * To get the resolution right, we sleep for less than
-     * a minute and tests to see if we have entered a new 
+     * a minute and tests to see if we have entered a new
      * minute. For this to work, we must sleep for <= max tolerance
      * which in our case is one second. We therefore sleep for 1 sec.
      */
     time_t last = time(NULL);
     while (!m_shutting_down) {
         time_t now = time(NULL);
-        if (difftime(now, last) >= 60.0) { 
+        if (difftime(now, last) >= 60.0) {
             sample_data(s);
             last = now;
         }
 
         if (nanosleep(&ts, &rem) == -1 && errno == EINTR) {
             /* Just try to sleep the remaining period, ignore failure */
-            nanosleep(&rem, NULL); 
+            nanosleep(&rem, NULL);
         }
     }
 

@@ -183,7 +183,7 @@ status_t html_template_send(
                     rc = response_add(response, usercode);
                 else
                     rc = response_add(response, html_section_get_code(sect));
-                
+
                 if (rc != success)
                     return failure;
 

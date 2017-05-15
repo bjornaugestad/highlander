@@ -458,7 +458,7 @@ static status_t send_cookie(cookie c, connection conn, error e)
     return success;
 }
 
-static status_t response_send_cookies(http_response p, connection conn, 
+static status_t response_send_cookies(http_response p, connection conn,
     error e)
 {
     list_iterator i;
@@ -485,7 +485,7 @@ static status_t response_send_header(http_response response,
         return failure;
 
     /* Special stuff to support pers. conns in HTTP 1.0 */
-    if (connection_is_persistent(conn) 
+    if (connection_is_persistent(conn)
     && response->version == VERSION_10
     && !response_set_connection(response, "Keep-Alive"))
         return set_os_error(e, errno);
@@ -494,7 +494,7 @@ static status_t response_send_header(http_response response,
         return set_tcpip_error(e, errno);
 
     /* Send cookies, if any */
-    if (response->cookies != NULL 
+    if (response->cookies != NULL
     && !response_send_cookies(response, conn, e))
         return failure;
 
@@ -1061,8 +1061,8 @@ response_send_entity(http_response r, connection conn, size_t *pcb)
 }
 
 /*
- * Returns failure and sets e to the proper HTTP error code if a http error 
- * was sent back to the user. Returns a tcpip_error in e if a tcp/ip error 
+ * Returns failure and sets e to the proper HTTP error code if a http error
+ * was sent back to the user. Returns a tcpip_error in e if a tcp/ip error
  * occurs, even if the response originally was a http error.
  * This is done so that we can detect and handle disconnects or
  * other tcp/ip issues when sending responses back to the client.
@@ -1304,7 +1304,7 @@ static status_t parse_server(http_response r, const char* value, error e)
 
 /*
  * §14.5: Accept-Ranges is either "bytes", "none", or range-units(section 3.12)
- * The only range unit defined by HTTP 1.1 is "bytes", and we MAY ignore 
+ * The only range unit defined by HTTP 1.1 is "bytes", and we MAY ignore
  * all others.
  */
 static status_t parse_accept_ranges(http_response r, const char* value, error e)
@@ -1519,7 +1519,7 @@ static status_t read_chunked_response(http_response this, connection conn,
     size_t chunklen, ntotal = 0;
     ssize_t nread;
     char *content = NULL, *tmp;
-    
+
     for (;;) {
         if (!get_chunklen(conn, &chunklen))
             return failure;

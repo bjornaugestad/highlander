@@ -34,7 +34,7 @@ fileinfo fileinfo_new(void)
 
     if ((p = malloc(sizeof *p)) == NULL)
         return NULL;
-        
+
     p->mimetype = NULL;
     p->name = NULL;
     p->alias = NULL;

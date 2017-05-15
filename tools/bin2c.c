@@ -6,7 +6,7 @@
 
 /**
  * bin2c - Create a C representation of something binary.
- * The input is normally an image, and the output is always 
+ * The input is normally an image, and the output is always
  * a C source file and/or a C header file. The header file contains a function
  * declaration.
  *
@@ -46,7 +46,7 @@ int g_veryverbose = 0;
 int g_store_as_text = 0;
 int g_create_access_function = 0;
 
-/* Use only the basename of the input file for the name of the 
+/* Use only the basename of the input file for the name of the
  * generated function. Needed when we build and the source resides
  * in a different directory. (Try make distcheck without -b to see..)
  */
@@ -65,13 +65,13 @@ int main(int ac, char** av)
             case 'a':
                 g_create_access_function = 1;
                 break;
-            
+
             case 'b':
                 g_basename_only = 1;
             case 'c':
                 sourcefile = optarg;
                 break;
-            
+
             case 'h':
                 headerfile = optarg;
                 break;
@@ -109,9 +109,9 @@ int main(int ac, char** av)
     }
 
     /*
-     * Now for some semantics. We can generate the header file without 
+     * Now for some semantics. We can generate the header file without
      * specifying the type, but we need the type if we generate the source file.
-     * bin2c can generate just the header, just the source file, or both header 
+     * bin2c can generate just the header, just the source file, or both header
      * and source. It is meaningless to generate nothing...
      */
     if (sourcefile == NULL && headerfile == NULL) {
@@ -128,7 +128,7 @@ int main(int ac, char** av)
     }
 
     /* We need -i includefile if -h header isn't provided and we generate source .
-     * It is confusing to provide both -i and -h, so we disallow that. -h wins. 
+     * It is confusing to provide both -i and -h, so we disallow that. -h wins.
      */
     if (sourcefile != NULL) {
         if ((headerfile == NULL && includefile == NULL)
@@ -138,8 +138,8 @@ int main(int ac, char** av)
         }
 
         /*
-         * The test above should assert that one and only 
-         * one file is provided. 
+         * The test above should assert that one and only
+         * one file is provided.
          */
         if (headerfile != NULL)
             includefile = headerfile;
@@ -171,7 +171,7 @@ int main(int ac, char** av)
 
     if (header != NULL) {
         start_header(header, headerfile);
-    
+
         for (i = optind; i < ac; i++)
             create_declarations(av[i], header);
 
@@ -189,9 +189,9 @@ int main(int ac, char** av)
 
 void create_bin_arrays(const char* filename, FILE *f);
 void create_text_arrays(const char* filename, FILE *f);
-void create_arrays(const char* filename, FILE *f) 
+void create_arrays(const char* filename, FILE *f)
 {
-    if (g_store_as_text) 
+    if (g_store_as_text)
         create_text_arrays(filename, f);
     else
         create_bin_arrays(filename, f);
@@ -204,7 +204,7 @@ static void remove_trailing_newline(char *sz)
             sz[n] = '\0';
 }
 
-void create_text_arrays(const char* filename, FILE *f) 
+void create_text_arrays(const char* filename, FILE *f)
 {
     char *s, sz[20480];
     FILE *fin;
@@ -233,7 +233,7 @@ void create_text_arrays(const char* filename, FILE *f)
     fprintf(f, "\n;\n");
 }
 
-void create_bin_arrays(const char* filename, FILE *f) 
+void create_bin_arrays(const char* filename, FILE *f)
 {
     int fd, printed;
     size_t cb;
@@ -366,14 +366,14 @@ void start_header(FILE *f, const char *filename)
             *s = toupper(*s);
         else if (!isalnum(*s))
             *s = '_';
-        
+
         s++;
     }
 
     fprintf(f, "#ifndef %s\n", guard);
     fprintf(f, "#define %s\n\n", guard);
     fprintf(f, "\n");
-    
+
     fprintf(f, "#ifdef __cplusplus\n");
     fprintf(f, "extern \"C\" {\n");
     fprintf(f, "#endif\n");

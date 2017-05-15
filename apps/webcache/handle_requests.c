@@ -43,10 +43,10 @@ static inline void inc_status_counter(int rc)
 }
 
 /*
- * This is our callback function, called from highlander whenever 
- * the http_server gets a request for a page. 
+ * This is our callback function, called from highlander whenever
+ * the http_server gets a request for a page.
  *
- * 
+ *
  * This function accepts any URI and tries to map that URI to a file
  * already in the cache. Only GET is OK and we never want params.
  * We always need an URI, / does not default to anything.

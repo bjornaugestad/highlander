@@ -26,7 +26,7 @@ void hellofn(void)
     }
 
 end: // Not much to do here.
-    return; 
+    return;
 }
 
 

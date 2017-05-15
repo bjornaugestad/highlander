@@ -36,7 +36,7 @@ int show_configuration(http_request req, http_response page)
 
         if (!response_add(page, "</pre>"))
             goto err;
-            
+
         fclose(f);
     }
 

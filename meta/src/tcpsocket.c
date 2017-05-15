@@ -163,11 +163,11 @@ status_t tcpsocket_write(tcpsocket this, const char *buf, size_t count, int time
  * to say the _max_ number of bytes to read, i.e., the buffer size.
  * If we require count bytes each time, we end up timing out
  * every damn time, if 'count' is greater than number of bytes
- * available. 
+ * available.
  *
  * Therefore, return whatever we have as soon as possible. If
  * the data is fragmented, then the protocol handler must handle
- * those cases. 
+ * those cases.
  */
 ssize_t tcpsocket_read(tcpsocket this, char *dest, size_t count, int timeout, int nretries)
 {
@@ -277,11 +277,11 @@ status_t tcpsocket_listen(tcpsocket this, int backlog)
 
 // SSLTODO: We need to initialize the _server_, that'll create an SSL_CTX
 // SSLTODO: object. We use that object to create a BIO object. Then we accept
-// SSLTODO: connections to the BIO, and create an SSL object using 
+// SSLTODO: connections to the BIO, and create an SSL object using
 // SSLTODO: SSL_new(), SSL_set_accept_state(), SSL_set_bio(). When all
 // SSLTODO: that shit's done, we can call SSL_accept(), and do
 // SSLTODO: post connection checks on the server side too. (highly optional)
-// SSLTODO: 
+// SSLTODO:
 // SSLTODO: The example programs are good. Go with them
 tcpsocket tcpsocket_create_server_socket(const char *host, int port)
 {
@@ -300,7 +300,7 @@ tcpsocket tcpsocket_create_server_socket(const char *host, int port)
 }
 
 // SSLTODO: The SSL connect procedure is more complicated than the normal connect procedure.
-// SSLTODO: The sample code in client3.c illustrates this. One first connects a BIO, then 
+// SSLTODO: The sample code in client3.c illustrates this. One first connects a BIO, then
 // SSLTODO: create an SSL object, initializes it with the BIO, then connects the SSL object
 // SSLTODO: itself. The client3.c code uses a post connection check which validates the
 // SSLTODO: server's certificate. This code is not for the meek. ;)

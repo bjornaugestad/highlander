@@ -3,8 +3,8 @@
 
 /*
  * bignums are big numbers, up to 4096 bits wide. We provide
- * support for math operations on them. Not sure what to use 
- * them for yet. Maybe for metassl? :) 
+ * support for math operations on them. Not sure what to use
+ * them for yet. Maybe for metassl? :)
  *
  * Update 20160614: The original implementation was based on
  * the implementation in "the book". That implementation is
@@ -31,7 +31,7 @@
 // Max number of bytes. We intentionally do not use CHAR_BIT.
 #define META_BIGNUM_SIZE (META_BIGNUM_MAXBITS / (sizeof (uint64_t) * CHAR_BIT))
 
-// We store our values here, in LSB order. 
+// We store our values here, in LSB order.
 typedef struct {
     uint64_t value[META_BIGNUM_SIZE] __attribute__((aligned(8)));
 } bignum;
@@ -46,8 +46,8 @@ void bignum_free(bignum *p);
 // The functions all return success on success, and failure on failure.
 // errno will be set when a function can fail for more than one reason.
 //
-// Keep in mind that, for now, all bignums are unsigned integers. 
-// No sign involved. 
+// Keep in mind that, for now, all bignums are unsigned integers.
+// No sign involved.
 status_t bignum_add(bignum * restrict dest, const bignum *a, const bignum *b);
 status_t bignum_sub(bignum * restrict dest, const bignum *a, const bignum *b);
 status_t bignum_mul(bignum * restrict dest, const bignum *a, const bignum *b);
@@ -64,7 +64,7 @@ status_t bignum_set(bignum *p, const char *value)
 // Let users verify their values before calling _set(), as _set() will assert
 // if values are illegal. A string is a valid bignum
 // if length % 8 == 0, if length < MAX_BYTES, and if all
-// characters are hex values (00..ff). 
+// characters are hex values (00..ff).
 bool valid_bignum(const char *value);
 
 int bignum_cmp(const bignum *a, const bignum *b);

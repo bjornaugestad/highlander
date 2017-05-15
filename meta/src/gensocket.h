@@ -15,7 +15,7 @@ extern "C" {
 #endif
 
 // Our socket types, which need to be specified when creating
-// our generic object. Since the types requires different 
+// our generic object. Since the types requires different
 // options, ssl requires certs and shit, we may have to add
 // type-specific functions too.
 //

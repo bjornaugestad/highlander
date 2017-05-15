@@ -20,23 +20,23 @@ wlock wlock_new(void)
 
 void wlock_free(wlock p);
 
-status_t wlock_lock(wlock p) 
+status_t wlock_lock(wlock p)
     __attribute__((nonnull(1)))
     __attribute__((warn_unused_result));
 
-status_t wlock_unlock(wlock p) 
+status_t wlock_unlock(wlock p)
     __attribute__((nonnull(1)))
     __attribute__((warn_unused_result));
 
-status_t wlock_signal(wlock p) 
+status_t wlock_signal(wlock p)
     __attribute__((nonnull(1)))
     __attribute__((warn_unused_result));
 
-status_t wlock_wait(wlock p) 
+status_t wlock_wait(wlock p)
     __attribute__((nonnull(1)))
     __attribute__((warn_unused_result));
 
-status_t wlock_broadcast(wlock p) 
+status_t wlock_broadcast(wlock p)
     __attribute__((nonnull(1)))
     __attribute__((warn_unused_result));
 

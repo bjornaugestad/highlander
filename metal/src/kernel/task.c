@@ -101,12 +101,12 @@ status_t task_subscriber_remove(task p, tid_t tid)
     return success;
 }
 
-status_t message_publish(msgid_t msg, msgarg_t arg1, msgarg_t arg2) 
+status_t message_publish(msgid_t msg, msgarg_t arg1, msgarg_t arg2)
 {
     task p;
     size_t i;
     int err;
-    
+
     p = self();
 
     if ((err = pthread_rwlock_rdlock(&p->sublock)) != 0)
@@ -177,7 +177,7 @@ static void *wrap_pthread_fn(void *vtask)
     task p;
 
     assert(vtask != NULL);
-    
+
     p = vtask;
 
     assert(p->fn != 0);
@@ -211,7 +211,7 @@ status_t task_message_add(task p, tid_t sender, msgid_t msg, msgarg_t arg1, msga
 
     assert(p != NULL);
 
-    // This is silly because it's slow. TODO: Figure out a way 
+    // This is silly because it's slow. TODO: Figure out a way
     // to allocate meta_fifos inplace.
     if ((pm = malloc(sizeof *pm)) == NULL)
         return failure;
@@ -229,8 +229,8 @@ status_t task_message_add(task p, tid_t sender, msgid_t msg, msgarg_t arg1, msga
 }
 
 // Grab a lock on the FIFO. Then do a condwait until we get a message.
-// 
-status_t message_get(tid_t *sender, msgid_t *msg, msgarg_t *arg1, msgarg_t *arg2) 
+//
+status_t message_get(tid_t *sender, msgid_t *msg, msgarg_t *arg1, msgarg_t *arg2)
 {
     struct message *pm;
 
@@ -248,7 +248,7 @@ status_t message_get(tid_t *sender, msgid_t *msg, msgarg_t *arg1, msgarg_t *arg2
             return false;
     }
 
-    // We now hold a lock. 
+    // We now hold a lock.
     assert(fifo_nelem(p->q) > 0);
 
     if ((pm = fifo_get(p->q)) == NULL)

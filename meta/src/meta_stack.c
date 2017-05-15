@@ -24,7 +24,7 @@ stack stack_new(void)
 
     if ((new = malloc(sizeof *new)) == NULL)
         return NULL;
-        
+
     if ((new->lst = list_new()) == NULL) {
         free(new);
         return NULL;

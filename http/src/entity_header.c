@@ -539,7 +539,7 @@ static status_t eh_parse_multivalued_fields(
 }
 
 /*
- * Notes: The language tags are defined in RFC1766, and there are 
+ * Notes: The language tags are defined in RFC1766, and there are
  * too many to check. Anything goes, IOW.
  */
 static status_t parse_content_language(entity_header eh, const char* value, error e)

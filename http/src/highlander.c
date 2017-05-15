@@ -314,7 +314,7 @@ static status_t serviceConnection2(
                 return failure;
         }
 
-        if (!response_send(response, conn, e, &cbSent))	
+        if (!response_send(response, conn, e, &cbSent))
             return failure;
 
         http_server_add_logentry(srv, conn, request, response_get_status(response), cbSent);
@@ -371,7 +371,7 @@ void* serviceConnection(void* psa)
     ok = serviceConnection2(srv, conn, request, response, e);
     if (!ok && is_tcpip_error(e))
         connection_discard(conn);
-    else if (!connection_close(conn)) 
+    else if (!connection_close(conn))
         warning("Could not close connection\n");
 
     http_server_recycle_request(srv, request);

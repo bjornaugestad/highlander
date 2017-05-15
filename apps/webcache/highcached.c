@@ -100,12 +100,12 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    if (!process_start(p, g_daemonize)) 
+    if (!process_start(p, g_daemonize))
         die_perror("process_start");
 
     /* NOTE TO SELF:
      * Do not start threads before the call to process_start(), as that
-     * function sets up the handling of signals. Linux will send the 
+     * function sets up the handling of signals. Linux will send the
      * TERM signal to a randomly chosen thread unless process_start()
      * has been called. If that thread is your thread and the thread
      * doesn't block signals appropriately, the process will be
@@ -141,7 +141,7 @@ static void show_usage(FILE *out)
 
 /*
  * Create a cstring array with one entry per pattern.
- * We will  use it to match file names later 
+ * We will  use it to match file names later
  */
 
 static void split_filename_patterns(void)
@@ -213,7 +213,7 @@ static void configure_admin_server(http_server s, const char* configfilename)
     assert(s != NULL);
     assert(configfilename != NULL);
 
-    if ( (cf = configfile_read(configfilename)) == NULL) 
+    if ( (cf = configfile_read(configfilename)) == NULL)
         die_perror("%s", configfilename);
 
     if (!configfile_get_int(cf, "admin_port", &port))
@@ -245,18 +245,18 @@ static void configure_admin_server(http_server s, const char* configfilename)
 
 int handle_main(http_request req, http_response page)
 {
-    const char* html = 
+    const char* html =
     "<p>Welcome to the Highlander web cache Administation server."
     "Here you can view statistics about the performance of the web cache,"
     " view changes on disk since the files in the cache was loaded."
     " You can also reload the cache from disk."
     "<p>The web cache is primarily controlled by the configuration file,"
-    " which is read at startup." 
+    " which is read at startup."
     ;
 
     (void)req;
 
-    if (add_page_start(page, PAGE_MAIN) 
+    if (add_page_start(page, PAGE_MAIN)
     && response_add(page, html)
     && add_page_end(page, NULL))
         return 0;

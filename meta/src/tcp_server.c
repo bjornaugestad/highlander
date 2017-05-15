@@ -35,13 +35,13 @@ struct tcp_server_tag {
     /* Port to listen to */
     int port;
 
-    // timeout in seconds 
+    // timeout in seconds
     int timeout_reads, timeout_writes, timeout_accepts;
 
     // How many times should we try to read/write before we disconnect?
     int retries_reads, retries_writes;
 
-    // The size of the connections read/write buffers 
+    // The size of the connections read/write buffers
     size_t readbuf_size, writebuf_size;
 
     // Function to call when a new connection is accepted
@@ -61,7 +61,7 @@ struct tcp_server_tag {
 
     // Pool of connection objects. Allocated and initiated in tcp_server_init(),
     // freed in tcp_server_free().  Accessed by tcp_server_get_connection() and
-    // tcp_server_recycle_connection(). Size equals the # of queue entries 
+    // tcp_server_recycle_connection(). Size equals the # of queue entries
     // + # of worker threads + 1 as each entry consumes one connection.
     // The +1 is in case the queue is full.
     pool connections;
@@ -133,7 +133,7 @@ static bool client_can_connect(tcp_server srv, struct sockaddr_in* addr)
 
 // SSLTODO: We need a per-server SSL_CTX, I guess. Remember that one
 // SSLTODO: UNIX process can contain many active tcp_server objects
-// SSLTODO: and run many servers from within the same process. 
+// SSLTODO: and run many servers from within the same process.
 // SSLTODO:
 // SSLTODO: Each socket(active connection) will have its own SSL object.
 tcp_server tcp_server_new(int socktype)
@@ -500,8 +500,8 @@ static status_t accept_new_connections(tcp_server this, socket_t sock)
         /* Start a thread to handle the connection with this client. */
         connection_set_params(conn, newsock, &addr);
 
-        rc = threadpool_add_work(this->queue, 
-            assign_rw_buffers, this, 
+        rc = threadpool_add_work(this->queue,
+            assign_rw_buffers, this,
             this->service_func, conn,
             tcp_server_recycle_connection, this);
 

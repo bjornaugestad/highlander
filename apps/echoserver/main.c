@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
     if (!openssl_init())
         exit(2);
     parse_command_line(argc, argv);
-    
+
     p = process_new("echoserver");
     srv = tcp_server_new(m_servertype);
 

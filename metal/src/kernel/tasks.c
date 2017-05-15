@@ -2,7 +2,7 @@
  * A task is a central concept in metal. It is a POSIX thread
  * with an associated message queue.
  *
- * Tasks publish messages, and other tasks can subscribe to 
+ * Tasks publish messages, and other tasks can subscribe to
  * these messages.
  */
 
@@ -59,7 +59,7 @@ static task find_task(const char *name, int instance)
     size_t i, n = sizeof tasks / sizeof *tasks;
 
     for (i = 0; i < n; i++) {
-        if (tasks[i] != NULL 
+        if (tasks[i] != NULL
         && strcmp(task_name(tasks[i]), name) == 0
         && task_instance(tasks[i]) == instance)
             return tasks[i];
@@ -120,7 +120,7 @@ tid_t self_tid(void)
     pthread_t ptid;
     int err;
     tid_t tid;
-    
+
     if ((err = pthread_rwlock_rdlock(&taskslock)) != 0)
         die("Internal error.");
 
@@ -143,14 +143,14 @@ found:
     return tid;
 }
 
-status_t publish(msgid_t msg, msgarg_t arg1, msgarg_t arg2) 
+status_t publish(msgid_t msg, msgarg_t arg1, msgarg_t arg2)
 {
     int err;
     status_t rc;
 
     if ((err = pthread_rwlock_rdlock(&taskslock)) != 0)
         die("Internal error.");
-    
+
     rc = message_publish(msg, arg1, arg2);
 
     pthread_rwlock_unlock(&taskslock);
@@ -310,7 +310,7 @@ status_t metal_subscribe(tid_t publisher, tid_t subscriber)
 // 3. Profit. :)
 //
 // Locking: It's sufficient to read-lock the tasks array.
-status_t message_send(tid_t sender, tid_t dest, msgid_t msg, msgarg_t arg1, msgarg_t arg2) 
+status_t message_send(tid_t sender, tid_t dest, msgid_t msg, msgarg_t arg1, msgarg_t arg2)
 {
     task p;
     int err;
@@ -333,7 +333,7 @@ error:
     fprintf(stderr, "meh in %s\n", __func__);
     pthread_rwlock_unlock(&taskslock);
     return failure;
-    
+
 }
 
 
@@ -365,7 +365,7 @@ int main(void)
         if (!metal_task_stop(tid))
             die("task_stop\n");
     }
-        
+
 
     if (!metal_exit())
         die("Meh 2");

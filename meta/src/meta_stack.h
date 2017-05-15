@@ -14,12 +14,12 @@ extern "C" {
 
 typedef struct stack_tag* stack;
 
-stack stack_new(void) 
+stack stack_new(void)
     __attribute__((malloc));
 
 void stack_free(stack s);
 
-status_t stack_push(stack s, void *p) 
+status_t stack_push(stack s, void *p)
     __attribute__((nonnull(1)))
     __attribute__((warn_unused_result));
 

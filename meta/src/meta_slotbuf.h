@@ -14,7 +14,7 @@
  *     actual_index = index % nslots
  *
  * This means that we can use slotbufs for many things, like
- * an array indexed by an increasing value. 
+ * an array indexed by an increasing value.
  *
  * Not sure how usable this ADT is. Maybe archive it?
  */
@@ -30,7 +30,7 @@ extern "C" {
 
 typedef struct slotbuf_tag *slotbuf;
 
-slotbuf slotbuf_new(size_t size, int can_overwrite, dtor fn) 
+slotbuf slotbuf_new(size_t size, int can_overwrite, dtor fn)
     __attribute__((malloc));
 
 void slotbuf_free(slotbuf p);

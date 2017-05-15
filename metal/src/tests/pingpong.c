@@ -1,6 +1,6 @@
 /* Pingpong sends a message back and forth between two tasks.
  * Pingpong requires a working subscription scheme, which we
- * don't have yet. Pingpong also requires support for 
+ * don't have yet. Pingpong also requires support for
  * multiple instances of tasks, which we don't have either.
  * IOW, we need to do some work before pingpong is up and running.
  */
@@ -38,7 +38,7 @@ void pingpongfn(void)
 
 end: // Not much to do here.
     printf("Got %ld messages. Good bye\n", n);
-    return; 
+    return;
 }
 
 int main(void)

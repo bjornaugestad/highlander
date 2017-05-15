@@ -379,7 +379,7 @@ status_t http_server_start(http_server this)
 {
     if (!tcp_server_init(this->tcpsrv))
         return failure;
-        
+
     if (!tcp_server_start(this->tcpsrv))
         return failure;
 
@@ -1033,13 +1033,13 @@ status_t http_server_configure(http_server this, process p, const char* filename
     if (p == NULL)
         return success;
 
-    if (strlen(username) > 0 
-    && getuid() == 0 
+    if (strlen(username) > 0
+    && getuid() == 0
     && !process_set_username(p, username))
         return failure;
 
     if (strlen(rootdir) > 0
-    && getuid() == 0 
+    && getuid() == 0
     && !process_set_rootdir(p, rootdir))
         return failure;
 

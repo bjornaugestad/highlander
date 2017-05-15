@@ -35,7 +35,7 @@ http_client http_client_new(void)
     if ((new->writebuf = membuf_new(10 * 1024)) == NULL)
         goto memerr;
 
-    // Some default timeout and retry values. Later, 
+    // Some default timeout and retry values. Later,
     // change connection_new() to not accept these. Instead,
     // use set/get-functions.
     new->timeout_reads = new->timeout_writes = 1000;

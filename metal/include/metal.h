@@ -24,19 +24,19 @@ typedef uintptr_t msgarg_t;
 typedef void (*taskfn)(void);
 
 // Initialize the metal library
-status_t metal_init(int flags) 
+status_t metal_init(int flags)
     __attribute__((warn_unused_result));
 
 status_t metal_exit(void);
 
 // Create a new task and return the task's id in the tid arg.
-status_t metal_task_new(tid_t *tid, const char *name, int instance, taskfn fn) 
+status_t metal_task_new(tid_t *tid, const char *name, int instance, taskfn fn)
     __attribute__((warn_unused_result));
 
-status_t metal_task_start(tid_t tid) 
+status_t metal_task_start(tid_t tid)
     __attribute__((warn_unused_result));
 
-status_t metal_task_stop(tid_t tid) 
+status_t metal_task_stop(tid_t tid)
     __attribute__((warn_unused_result));
 
 status_t publish(msgid_t msg, msgarg_t arg1, msgarg_t arg2);
@@ -44,20 +44,20 @@ status_t publish(msgid_t msg, msgarg_t arg1, msgarg_t arg2);
 // Messages : We want to send and receive messages.
 // Strictly speaking we publish events and subscribe to events.
 // For all practical purposes, a message is an event.
-status_t message_get(tid_t *sender, msgid_t *msg, msgarg_t *arg1, msgarg_t *arg2) 
+status_t message_get(tid_t *sender, msgid_t *msg, msgarg_t *arg1, msgarg_t *arg2)
     __attribute__((warn_unused_result));
 
-status_t message_send(tid_t sender, tid_t dest, msgid_t msg, msgarg_t arg1, msgarg_t arg2) 
+status_t message_send(tid_t sender, tid_t dest, msgid_t msg, msgarg_t arg1, msgarg_t arg2)
     __attribute__((warn_unused_result));
 
-status_t message_publish(msgid_t msg, msgarg_t arg1, msgarg_t arg2) 
+status_t message_publish(msgid_t msg, msgarg_t arg1, msgarg_t arg2)
     __attribute__((warn_unused_result));
 
 // Functions to subscribe to tasks' events
-status_t metal_subscribe(tid_t publisher, tid_t subscriber) 
+status_t metal_subscribe(tid_t publisher, tid_t subscriber)
     __attribute__((warn_unused_result));
 
-status_t metal_unsubscribe(tid_t publisher, tid_t subscriber) 
+status_t metal_unsubscribe(tid_t publisher, tid_t subscriber)
     __attribute__((warn_unused_result));
 
 
@@ -70,7 +70,7 @@ task self(void);
 void task_free(task p);
 status_t task_start(task p) __attribute__((nonnull(1)));
 
-status_t task_message_add(task p, tid_t sender, msgid_t msg, msgarg_t arg1, msgarg_t arg2) 
+status_t task_message_add(task p, tid_t sender, msgid_t msg, msgarg_t arg1, msgarg_t arg2)
     __attribute__((nonnull(1)));
 
 status_t task_subscriber_add(task p, tid_t tid) __attribute__((nonnull(1)));

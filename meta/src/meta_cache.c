@@ -84,7 +84,7 @@ cache cache_new(size_t nelem, size_t hotlist_nelem, size_t cb)
         free(c);
         return NULL;
     }
-        
+
     if ((c->hotlist = calloc(hotlist_nelem, sizeof *c->hotlist)) == NULL) {
         free(c->hashtable);
         free(c);
@@ -107,9 +107,9 @@ static void cache_entry_free(struct cache_entry* p)
     }
 }
 
-/* We need to free whatever is in the cache, for which we use the cleanup 
+/* We need to free whatever is in the cache, for which we use the cleanup
  * argument. We also need to free the cache_entry node itself. That node
- * contains a pointer to the data we (optionally) freed with the 
+ * contains a pointer to the data we (optionally) freed with the
  * cleanup function. Hmm... :-(
  *
  * We therefore free like this:
