@@ -9,7 +9,7 @@
 struct sockaddr_in;
 
 #include <meta_membuf.h>
-#include <meta_socket.h>
+#include <tcpsocket.h>
 #include <meta_common.h>
 
 #ifdef __cplusplus

@@ -18,7 +18,7 @@
 #include <meta_common.h>
 #include <meta_membuf.h>
 #include <connection.h>
-#include <meta_socket.h>
+#include <tcpsocket.h>
 
 /*
  * NOTE: Security

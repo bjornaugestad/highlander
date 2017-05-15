@@ -22,7 +22,7 @@
 #endif
 
 
-#include <meta_socket.h>
+#include <tcpsocket.h>
 
 // SSLTODO: Extend / change struct to contain all SSL-relevant info for the socket. SSL may be relevant, but not SSL_CTX. Stuff unique to a socket, goes here.
 struct tcpsocket_tag {

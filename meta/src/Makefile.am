@@ -15,7 +15,7 @@ include_HEADERS=\
 	meta_array.h\
 	meta_list.h\
 	meta_fifo.h\
-	meta_socket.h\
+	tcpsocket.h\
 	meta_ssl.h\
 	meta_membuf.h\
 	meta_stack.h\
@@ -44,7 +44,7 @@ libmeta_a_SOURCES=\
 	meta_stack.c\
 	meta_bitset.c\
 	meta_process.c\
-	meta_socket.c\
+	tcpsocket.c\
 	meta_ssl.c\
 	meta_error.c\
 	tcp_server.c\
@@ -136,7 +136,7 @@ check_PROGRAMS=\
 
 AM_CFLAGS=-p -pg -Wall --std=gnu99 -Wextra -Werror -O0 -ggdb
 tcp_server_check_SOURCES=tcp_server.c threadpool.c meta_membuf.c meta_pool.c\
-	meta_socket.c connection.c meta_process.c cstring.c meta_common.c
+	tcpsocket.c connection.c meta_process.c cstring.c meta_common.c
 tcp_server_check_CFLAGS=-DCHECK_TCP_SERVER $(AM_CFLAGS) 
 
 list_check_SOURCES=meta_list.c
