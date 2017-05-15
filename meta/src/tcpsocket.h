@@ -16,55 +16,55 @@ extern "C" {
 
 typedef struct tcpsocket_tag *tcpsocket;
 
-tcpsocket sock_socket(void)
+tcpsocket tcpsock_socket(void)
     __attribute__((malloc));
 
-status_t sock_listen(tcpsocket p, int backlog)
+status_t tcpsock_listen(tcpsocket p, int backlog)
     __attribute__((nonnull(1)))
     __attribute__((warn_unused_result));
 
-tcpsocket sock_accept(tcpsocket p, struct sockaddr *addr,
+tcpsocket tcpsock_accept(tcpsocket p, struct sockaddr *addr,
     socklen_t *addrsize)
     __attribute__((nonnull(1, 2, 3)))
     __attribute__((malloc));
 
-ssize_t sock_read(tcpsocket p, char *buf, size_t count,
+ssize_t tcpsock_read(tcpsocket p, char *buf, size_t count,
     int timeout, int retries)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t sock_wait_for_data(tcpsocket p, int timeout)
+status_t tcpsock_wait_for_data(tcpsocket p, int timeout)
     __attribute__((nonnull(1)))
     __attribute__((warn_unused_result));
 
-status_t sock_wait_for_writability(tcpsocket p, int timeout)
+status_t tcpsock_wait_for_writability(tcpsocket p, int timeout)
     __attribute__((nonnull(1)))
     __attribute__((warn_unused_result));
 
-status_t sock_write(tcpsocket p, const char *s, size_t count,
+status_t tcpsock_write(tcpsocket p, const char *s, size_t count,
     int timeout, int retries)
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t sock_bind(tcpsocket p, const char *hostname, int port)
+status_t tcpsock_bind(tcpsocket p, const char *hostname, int port)
     __attribute__((nonnull(1)));
 
-status_t sock_set_nonblock(tcpsocket p)
+status_t tcpsock_set_nonblock(tcpsocket p)
     __attribute__((nonnull(1)));
 
-status_t sock_clear_nonblock(tcpsocket p)
+status_t tcpsock_clear_nonblock(tcpsocket p)
     __attribute__((nonnull(1)));
 
-tcpsocket sock_create_server_socket(const char *host, int port)
+tcpsocket tcpsock_create_server_socket(const char *host, int port)
     __attribute__((malloc))
     __attribute__((warn_unused_result));
 
-tcpsocket sock_create_client_socket(const char *host, int port)
+tcpsocket tcpsock_create_client_socket(const char *host, int port)
     __attribute__((malloc))
     __attribute__((nonnull(1)))
     __attribute__((warn_unused_result));
 
-status_t sock_close(tcpsocket p)
+status_t tcpsock_close(tcpsocket p)
     __attribute__((nonnull(1)));
 
 #ifdef __cplusplus

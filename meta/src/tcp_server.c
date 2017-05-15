@@ -388,11 +388,11 @@ static status_t accept_new_connections(tcp_server this, tcpsocket sock)
     assert(sock != NULL);
 
     /* Make the socket non-blocking so that accept() won't block */
-    if (!sock_set_nonblock(sock))
+    if (!tcpsock_set_nonblock(sock))
         return failure;
 
     while (!this->shutting_down) {
-        if (!sock_wait_for_data(sock, this->timeout_accepts)) {
+        if (!tcpsock_wait_for_data(sock, this->timeout_accepts)) {
             if (errno == EINTR) {
                 /* Someone interrupted us, why?
                  * NOTE: This happens when the load is very high
@@ -438,7 +438,7 @@ static status_t accept_new_connections(tcp_server this, tcpsocket sock)
          * Linux does not as it doesn't have that struct member.
          */
         addrsize = sizeof addr;
-        newsock = sock_accept(sock, (struct sockaddr*)&addr, &addrsize);
+        newsock = tcpsock_accept(sock, (struct sockaddr*)&addr, &addrsize);
         if (newsock == NULL) {
             switch (errno) {
                 /* NOTE: EPROTO is not defined for freebsd, and Stevens
@@ -475,14 +475,14 @@ static status_t accept_new_connections(tcp_server this, tcpsocket sock)
             }
         }
 
-        if (!sock_set_nonblock(newsock)) {
-            sock_close(newsock);
+        if (!tcpsock_set_nonblock(newsock)) {
+            tcpsock_close(newsock);
             return failure;
         }
 
         /* Check if the client is permitted to connect or not. */
         if (!client_can_connect(this, &addr)) {
-            sock_close(newsock);
+            tcpsock_close(newsock);
             atomic_ulong_inc(&this->sum_denied_clients);
             continue;
         }
@@ -492,7 +492,7 @@ static status_t accept_new_connections(tcp_server this, tcpsocket sock)
           * never returns NULL as enough connection resources has
           * been allocated already. */
          if (!tcp_server_get_connection(this, &conn)) {
-            sock_close(newsock);
+            tcpsock_close(newsock);
             return failure;
          }
 
@@ -534,7 +534,7 @@ status_t tcp_server_get_root_resources(tcp_server this)
     if (this->host != NULL)
         hostname = c_str(this->host);
 
-    this->sock = sock_create_server_socket(hostname, this->port);
+    this->sock = tcpsock_create_server_socket(hostname, this->port);
     if (this->sock == NULL)
         return failure;
 
@@ -549,10 +549,10 @@ status_t tcp_server_start(tcp_server this)
     assert(this != NULL);
 
     if (!accept_new_connections(this, this->sock)) {
-        sock_close(this->sock);
+        tcpsock_close(this->sock);
         rc = failure;
     }
-    else if (!sock_close(this->sock))
+    else if (!tcpsock_close(this->sock))
         rc = failure;
     else
         rc = success;

@@ -97,7 +97,7 @@ static inline status_t fill_read_buffer(connection conn)
     /* Clear the read buffer */
     membuf_reset(conn->readbuf);
 
-    nread = sock_read(
+    nread = tcpsock_read(
         conn->sock,
         membuf_data(conn->readbuf),
         membuf_size(conn->readbuf),
@@ -208,7 +208,7 @@ status_t connection_connect(connection c, const char *host, int port)
 {
     assert(c != NULL);
 
-    if ((c->sock = sock_create_client_socket(host, port)) == NULL)
+    if ((c->sock = tcpsock_create_client_socket(host, port)) == NULL)
         return failure;
 
     return success;
@@ -263,7 +263,7 @@ status_t connection_flush(connection conn)
 
     count = membuf_canread(conn->writebuf);
     if (count > 0) {
-        status = sock_write(
+        status = tcpsock_write(
             conn->sock,
             membuf_data(conn->writebuf),
             count,
@@ -286,7 +286,7 @@ status_t connection_close(connection conn)
     assert(conn != NULL);
 
     flush_success = connection_flush(conn);
-    close_success = sock_close(conn->sock);
+    close_success = tcpsock_close(conn->sock);
 
     if (!flush_success)
         return failure;
@@ -319,7 +319,7 @@ status_t connection_getc(connection conn, int *pc)
 static inline status_t
 write_to_socket(connection conn, const char *buf, size_t count)
 {
-    return sock_write(
+    return tcpsock_write(
         conn->sock,
         buf,
         count,
@@ -357,7 +357,7 @@ status_t connection_write(connection conn, const void *buf, size_t count)
 /*
  * Here is where we have to measure bps for incoming
  * data. All we have to do is to do a time(NULL) or clock() before
- * and after the call to sock_read(). Then we can compute
+ * and after the call to tcpsock_read(). Then we can compute
  * the duration and compare it with the number of bytes
  * read from the socket.
  *
@@ -380,7 +380,7 @@ static ssize_t read_from_socket(connection p, void *buf, size_t count)
     assert(buf != NULL);
     assert(readbuf_empty(p));
 
-    nread = sock_read(p->sock, buf, count, p->timeout_reads, p->retries_reads);
+    nread = tcpsock_read(p->sock, buf, count, p->timeout_reads, p->retries_reads);
     if (nread > 0)
         p->incoming_bytes += nread;
 
@@ -440,7 +440,7 @@ void connection_discard(connection conn)
     assert(conn != NULL);
 
     /* Close the socket, ignoring any messages */
-    sock_close(conn->sock);
+    tcpsock_close(conn->sock);
     reset_counters(conn);
 }
 
@@ -500,7 +500,7 @@ int data_on_socket(connection conn)
 {
     assert(conn != NULL);
 
-    return sock_wait_for_data(conn->sock, conn->timeout_reads) == success;
+    return tcpsock_wait_for_data(conn->sock, conn->timeout_reads) == success;
 }
 
 status_t connection_putc(connection conn, int ch)
@@ -557,7 +557,7 @@ status_t connection_write_big_buffer(
     assert(nretries >= 0);
 
     if ((rc = connection_flush(conn))) {
-        rc = sock_write(conn->sock, buf, count, timeout, nretries);
+        rc = tcpsock_write(conn->sock, buf, count, timeout, nretries);
     }
 
     return rc;
