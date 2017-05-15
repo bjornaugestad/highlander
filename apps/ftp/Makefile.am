@@ -13,7 +13,7 @@ metaftpd_CFLAGS=\
 	-Wall -pedantic -W -Werror -Wno-long-long -pthread -DNDEBUG -O3
 
 metaftpd_LDFLAGS=-L$(top_srcdir)/http/src -L$(top_srcdir)/meta/src
-metaftpd_LDADD=-lhighlander -lmeta -lpthread
+metaftpd_LDADD=-lhighlander -lmeta -lssl -lcrypto -lpthread
 
 # New version of bin2c, can now create a header in a separate run
 # I'm gonna eat my own dog food and change this project accordingly :-)

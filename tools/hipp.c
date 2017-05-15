@@ -705,7 +705,7 @@ static void create_makefile_am(int argc, char *argv[])
         p(f, "%s.c ", remove_ext(argv[i]));
     p(f, "\n");
     p(f, "foo_CFLAGS=-W -Wall -pedantic -Wextra -std=gnu99 -Wshadow -Wmissing-prototypes -pthread\n");
-    p(f, "foo_LDADD=-lhighlander -lmeta -lpthread\n");
+    p(f, "foo_LDADD=-lhighlander -lmeta -lssl -lcrypto -lpthread\n");
     p(f, "\n");
 
     /* Add all the translation rules for extensions? */

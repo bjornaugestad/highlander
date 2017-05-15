@@ -16,6 +16,7 @@
 #include <netdb.h>
 #include <fcntl.h>
 #include <openssl/ssl.h>
+#include <openssl/err.h>
 
 #ifdef _XOPEN_SOURCE_EXTENDED
 #include <arpa/inet.h>
@@ -26,14 +27,145 @@
 
 // SSLTODO: Extend / change struct to contain all SSL-relevant info for the socket. SSL may be relevant, but not SSL_CTX. Stuff unique to a socket, goes here.
 struct sslsocket_tag {
+    SSL_CTX *ctx;
     int fd;
 };
 
+#define CADIR    NULL
+#define CAFILE   "rootcert.pem"
+#define CERTFILE "server.pem"
+#define CIPHER_LIST "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"
 
-/*
- * Sets the socket options we want on the main socket
- * Suitable for server sockets only.
- */
+// Copied from sample program.
+static int verify_callback(int ok, X509_STORE_CTX *store)
+{
+    char data[256];
+ 
+    if (!ok) {
+        X509 *cert = X509_STORE_CTX_get_current_cert(store);
+        int  depth = X509_STORE_CTX_get_error_depth(store);
+        int  err = X509_STORE_CTX_get_error(store);
+ 
+        fprintf(stderr, "-Error with certificate at depth: %i\n", depth);
+        X509_NAME_oneline(X509_get_issuer_name(cert), data, 256);
+        fprintf(stderr, "  issuer   = %s\n", data);
+        X509_NAME_oneline(X509_get_subject_name(cert), data, 256);
+        fprintf(stderr, "  subject  = %s\n", data);
+        fprintf(stderr, "  err %i:%s\n", err, X509_verify_cert_error_string(err));
+    }
+ 
+    return ok;
+}
+
+// Copied from sample program. Needs change.
+DH *dh512 = NULL;
+DH *dh1024 = NULL;
+
+__attribute__((warn_unused_result))
+static status_t init_dhparams(void)
+{
+    BIO *bio;
+
+    bio = BIO_new_file("dh512.pem", "r");
+    if (!bio)
+        return failure;
+
+    dh512 = PEM_read_bio_DHparams(bio, NULL, NULL, NULL);
+    if (!dh512)
+        return failure;
+
+    BIO_free(bio);
+
+    bio = BIO_new_file("dh1024.pem", "r");
+    if (!bio)
+        return failure;
+
+    dh1024 = PEM_read_bio_DHparams(bio, NULL, NULL, NULL);
+    if (!dh1024)
+        return failure;
+
+    BIO_free(bio);
+    return success;
+}
+
+static DH *tmp_dh_callback(SSL *ssl, int is_export, int keylength)
+{
+    DH *ret;
+    (void)ssl;
+    (void)is_export;
+
+    if (!dh512 || !dh1024)
+        if (!init_dhparams())
+            return NULL;
+
+    switch (keylength) {
+        case 512:
+            ret = dh512;
+            break;
+
+        case 1024:
+        default: /* generating DH params is too costly to do on the fly */
+            ret = dh1024;
+            break;
+    }
+    return ret;
+}
+
+static status_t setup_server_ctx(sslsocket this)
+{
+    int verifyflags = SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
+    int options = SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_SINGLE_DH_USE;
+
+    assert(this != NULL);
+    assert(this->ctx == NULL);
+ 
+    fputs("X1\n", stderr);
+    this->ctx = SSL_CTX_new(TLSv1_server_method());
+    if (this->ctx == NULL)
+        goto err;
+
+    fputs("X2\n", stderr);
+    // Tell SSL where to find trusted CA certificates
+    if (SSL_CTX_load_verify_locations(this->ctx, CAFILE, CADIR) != 1)
+        goto err;
+
+    if (SSL_CTX_set_default_verify_paths(this->ctx) != 1)
+        goto err;
+
+    // Load CERTFILE from disk
+    if (SSL_CTX_use_certificate_chain_file(this->ctx, CERTFILE) != 1)
+        goto err;
+
+    // Load Private Key from disk
+    if (SSL_CTX_use_PrivateKey_file(this->ctx, CERTFILE, SSL_FILETYPE_PEM) != 1)
+        goto err;
+
+    SSL_CTX_set_verify(this->ctx, verifyflags, verify_callback);
+    SSL_CTX_set_verify_depth(this->ctx, 4);
+    SSL_CTX_set_options(this->ctx, options);
+
+    SSL_CTX_set_tmp_dh_callback(this->ctx, tmp_dh_callback);
+    if (SSL_CTX_set_cipher_list(this->ctx, CIPHER_LIST) != 1)
+        goto err;
+
+    return success;
+
+err:
+    // An error message is (probably) available on SSL's error stack.
+    // Pop it and set errno using fail().
+    // For now, dump all errors on stderr.
+    ERR_print_errors_fp(stderr);
+
+    if (this->ctx != NULL) {
+        SSL_CTX_free(this->ctx);
+        this->ctx = NULL;
+    }
+
+    return failure;
+}
+
+// Sets the socket options we want on the main socket
+// Suitable for server sockets only.
 // SSLTODO: Use an SSL way of setting SO_REUSEADDR
 static int sslsocket_set_reuseaddr(sslsocket this)
 {
@@ -148,27 +280,6 @@ status_t sslsocket_write(sslsocket this, const char *buf, size_t count, int time
     return success;
 }
 
-/*
- * read UP TO AND INCLUDING count bytes off the socket.
- *	The rules are:
- *	1. We poll with a timeout of timeout
- *	2. We retry for nretries times.
- *	The reason for this is:
- *	If the # of bytes requested are > one packet and poll()
- *	returns when the first packet returns, we must retry to
- *	get the second packet.
- *
- * update 20170514: This sucks. Why? Because the caller doesn't
- * know how many bytes are available. All the caller can do, is
- * to say the _max_ number of bytes to read, i.e., the buffer size.
- * If we require count bytes each time, we end up timing out
- * every damn time, if 'count' is greater than number of bytes
- * available. 
- *
- * Therefore, return whatever we have as soon as possible. If
- * the data is fragmented, then the protocol handler must handle
- * those cases. 
- */
 ssize_t sslsocket_read(sslsocket this, char *dest, size_t count, int timeout, int nretries)
 {
     ssize_t nread;
@@ -206,7 +317,7 @@ ssize_t sslsocket_read(sslsocket this, char *dest, size_t count, int timeout, in
  * created a socket with a specific protocol family,
  * and here we bind it to the PF specified in the services...
  */
-static status_t sslsocket_bind_inet(sslsocket this, const char *hostname, int port)
+status_t sslsocket_bind(sslsocket this, const char *hostname, int port)
 {
     struct hostent* host = NULL;
     struct sockaddr_in my_addr;
@@ -240,14 +351,6 @@ static status_t sslsocket_bind_inet(sslsocket this, const char *hostname, int po
 
     return success;
 }
-
-status_t sslsocket_bind(sslsocket this, const char *hostname, int port)
-{
-    assert(this != NULL);
-
-    return sslsocket_bind_inet(this, hostname, port);
-}
-
 sslsocket sslsocket_socket(void)
 {
     sslsocket this;
@@ -289,6 +392,11 @@ sslsocket sslsocket_create_server_socket(const char *host, int port)
 
     if ((this = sslsocket_socket()) == NULL)
         return NULL;
+
+    if (!setup_server_ctx(this)) {
+        sslsocket_close(this);
+        return NULL;
+    }
 
     if (sslsocket_set_reuseaddr(this)
     && sslsocket_bind(this, host, port)

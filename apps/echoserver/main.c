@@ -4,9 +4,10 @@
 #include <tcp_server.h>
 #include <connection.h>
 #include <meta_process.h>
+#include <miscssl.h>
 
-// Default type is TCP. We may enable SSL instead.
-static int m_servertype = SOCKTYPE_TCP;
+// Default type is SSL. We may enable TCP instead.
+static int m_servertype = SOCKTYPE_SSL;
 
 static void* fn(void* arg)
 {
@@ -23,19 +24,19 @@ static void* fn(void* arg)
 
 static void parse_command_line(int argc, char *argv[])
 {
-    const char *options = "s";
+    const char *options = "t";
 
     int c;
 
     while ((c = getopt(argc, argv, options)) != -1) {
         switch (c) {
-            case 's':
-                m_servertype = SOCKTYPE_SSL;
+            case 't':
+                m_servertype = SOCKTYPE_TCP;
                 break;
 
             case '?':
             default:
-                fprintf(stderr, "USAGE: %s [-s] where -s enables ssl\n", argv[0]);
+                fprintf(stderr, "USAGE: %s [-t] where -t disables ssl(enables TCP)\n", argv[0]);
                 exit(1);
         }
     }
@@ -46,6 +47,8 @@ int main(int argc, char *argv[])
     process p;
     tcp_server srv;
 
+    if (!openssl_init())
+        exit(2);
     parse_command_line(argc, argv);
     
     p = process_new("echoserver");

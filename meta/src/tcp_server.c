@@ -712,7 +712,7 @@ unsigned long tcp_server_sum_denied_clients(tcp_server this)
 // could be what?
 int main(void)
 {
-    tcp_server srv = tcp_server_new();
+    tcp_server srv = tcp_server_new(SOCKTYPE_TCP);
 
     tcp_server_free(srv);
     return 0;

@@ -1169,7 +1169,7 @@ static void make_request(void)
 
 static void check_response_time(void)
 {
-    http_server this = http_server_new();
+    http_server this = http_server_new(SOCKTYPE_TCP);
     pthread_t t;
     int err;
     clock_t start, stop;

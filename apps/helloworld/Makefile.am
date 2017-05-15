@@ -13,5 +13,5 @@ helloworld_CFLAGS=\
 	-Wall -pedantic -W -Werror -Wno-long-long -pthread -DNDEBUG -O3
 
 helloworld_LDFLAGS=-L$(top_srcdir)/meta/src -L$(top_srcdir)/http/src
-helloworld_LDADD=-lhighlander -lmeta -lpthread
+helloworld_LDADD=-lhighlander -lmeta -lssl -lcrypto -lpthread
 
