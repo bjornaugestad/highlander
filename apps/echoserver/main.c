@@ -1,9 +1,11 @@
 #include <stdio.h>
+#include <unistd.h>
 
 #include <tcp_server.h>
 #include <connection.h>
 #include <meta_process.h>
 
+static int m_use_ssl;
 
 static void* fn(void* arg)
 {
@@ -18,10 +20,35 @@ static void* fn(void* arg)
     return NULL;
 }
 
-int main(void)
+static void parse_command_line(int argc, char *argv[])
 {
-    process p = process_new("echoserver");
-    tcp_server srv = tcp_server_new();
+    const char *options = "s";
+
+    int c;
+
+    while ((c = getopt(argc, argv, options)) != -1) {
+        switch (c) {
+            case 's':
+                m_use_ssl = 1;
+                break;
+
+            case '?':
+            default:
+                fprintf(stderr, "USAGE: %s [-s] where -s enables ssl\n", argv[0]);
+                exit(1);
+        }
+    }
+}
+
+int main(int argc, char *argv[])
+{
+    process p;
+    tcp_server srv;
+
+    parse_command_line(argc, argv);
+    
+    p = process_new("echoserver");
+    srv = tcp_server_new();
 
     tcp_server_init(srv);
     tcp_server_set_service_function(srv, fn, NULL);
