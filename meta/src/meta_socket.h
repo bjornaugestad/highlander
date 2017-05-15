@@ -33,11 +33,11 @@ ssize_t sock_read(meta_socket p, char *buf, size_t count,
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
-status_t wait_for_data(meta_socket p, int timeout)
+status_t sock_wait_for_data(meta_socket p, int timeout)
     __attribute__((nonnull(1)))
     __attribute__((warn_unused_result));
 
-status_t wait_for_writability(meta_socket p, int timeout)
+status_t sock_wait_for_writability(meta_socket p, int timeout)
     __attribute__((nonnull(1)))
     __attribute__((warn_unused_result));
 
@@ -55,11 +55,11 @@ status_t sock_set_nonblock(meta_socket p)
 status_t sock_clear_nonblock(meta_socket p)
     __attribute__((nonnull(1)));
 
-meta_socket create_server_socket(const char *host, int port)
+meta_socket sock_create_server_socket(const char *host, int port)
     __attribute__((malloc))
     __attribute__((warn_unused_result));
 
-meta_socket create_client_socket(const char *host, int port)
+meta_socket sock_create_client_socket(const char *host, int port)
     __attribute__((malloc))
     __attribute__((nonnull(1)))
     __attribute__((warn_unused_result));

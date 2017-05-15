@@ -392,7 +392,7 @@ static status_t accept_new_connections(tcp_server this, meta_socket sock)
         return failure;
 
     while (!this->shutting_down) {
-        if (!wait_for_data(sock, this->timeout_accepts)) {
+        if (!sock_wait_for_data(sock, this->timeout_accepts)) {
             if (errno == EINTR) {
                 /* Someone interrupted us, why?
                  * NOTE: This happens when the load is very high
@@ -534,7 +534,7 @@ status_t tcp_server_get_root_resources(tcp_server this)
     if (this->host != NULL)
         hostname = c_str(this->host);
 
-    this->sock = create_server_socket(hostname, this->port);
+    this->sock = sock_create_server_socket(hostname, this->port);
     if (this->sock == NULL)
         return failure;
 

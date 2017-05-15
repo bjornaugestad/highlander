@@ -208,7 +208,7 @@ status_t connection_connect(connection c, const char *host, int port)
 {
     assert(c != NULL);
 
-    if ((c->sock = create_client_socket(host, port)) == NULL)
+    if ((c->sock = sock_create_client_socket(host, port)) == NULL)
         return failure;
 
     return success;
@@ -500,7 +500,7 @@ int data_on_socket(connection conn)
 {
     assert(conn != NULL);
 
-    return wait_for_data(conn->sock, conn->timeout_reads) == success;
+    return sock_wait_for_data(conn->sock, conn->timeout_reads) == success;
 }
 
 status_t connection_putc(connection conn, int ch)
