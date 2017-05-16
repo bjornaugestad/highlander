@@ -18,14 +18,8 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
-#ifdef _XOPEN_SOURCE_EXTENDED
-#include <arpa/inet.h>
-#endif
-
-
 #include <sslsocket.h>
 
-// SSLTODO: Extend / change struct to contain all SSL-relevant info for the socket. SSL may be relevant, but not SSL_CTX. Stuff unique to a socket, goes here.
 struct sslsocket_tag {
     SSL_CTX *ctx;
     SSL *ssl;
@@ -59,23 +53,12 @@ static int verify_callback(int ok, X509_STORE_CTX *store)
 }
 
 // Copied from sample program. Needs change.
-DH *dh512 = NULL;
 DH *dh1024 = NULL;
 
 __attribute__((warn_unused_result))
 static status_t init_dhparams(void)
 {
     BIO *bio;
-
-    bio = BIO_new_file("dh512.pem", "r");
-    if (!bio)
-        return failure;
-
-    dh512 = PEM_read_bio_DHparams(bio, NULL, NULL, NULL);
-    if (!dh512)
-        return failure;
-
-    BIO_free(bio);
 
     bio = BIO_new_file("dh1024.pem", "r");
     if (!bio)
@@ -95,15 +78,11 @@ static DH *tmp_dh_callback(SSL *ssl, int is_export, int keylength)
     (void)ssl;
     (void)is_export;
 
-    if (!dh512 || !dh1024)
+    if (!dh1024)
         if (!init_dhparams())
             return NULL;
 
     switch (keylength) {
-        case 512:
-            ret = dh512;
-            break;
-
         case 1024:
         default: /* generating DH params is too costly to do on the fly */
             ret = dh1024;
@@ -198,16 +177,15 @@ static int sslsocket_set_reuseaddr(sslsocket this)
 static status_t sslsocket_poll_for(sslsocket this, int timeout, short poll_for)
 {
     status_t status = failure;
-#if 0
+
     struct pollfd pfd;
     int rc;
 
     assert(this != NULL);
-    assert(this->fd >= 0);
     assert(poll_for == POLLIN || poll_for == POLLOUT);
     assert(timeout >= 0);
 
-    pfd.fd = this->fd;
+    pfd.fd = BIO_get_fd(this->bio, NULL);
     pfd.events = poll_for;
 
     /* NOTE: poll is XPG4, not POSIX */
@@ -233,13 +211,7 @@ static status_t sslsocket_poll_for(sslsocket this, int timeout, short poll_for)
     else if (rc == -1) {
     }
 
-#else
-    (void)this;
-    (void)timeout;
-    (void)poll_for;
-#endif
     return status;
-
 }
 
 status_t sslsocket_wait_for_writability(sslsocket this, int timeout)
@@ -252,6 +224,10 @@ status_t sslsocket_wait_for_writability(sslsocket this, int timeout)
 status_t sslsocket_wait_for_data(sslsocket this, int timeout)
 {
     assert(this != NULL);
+
+    // Are there bytes already read and available?
+    if (SSL_pending(this->ssl) > 0)
+        return success;
 
     return sslsocket_poll_for(this, timeout, POLLIN);
 }
@@ -427,6 +403,7 @@ sslsocket sslsocket_create_client_socket(const char *host, int port)
     sslsocket this;
     char hostport[1024];
     size_t n;
+    int rc;
 
     assert(host != NULL);
 
@@ -438,22 +415,33 @@ sslsocket sslsocket_create_client_socket(const char *host, int port)
         return NULL;
 
     this->bio = BIO_new_connect(hostport);
-    if (this->bio == NULL) {
-        sslsocket_close(this);
-        return NULL;
-    }
+    if (this->bio == NULL)
+        goto err;
 
-    if (BIO_do_connect(this->bio) <= 0) {
-        sslsocket_close(this);
-        return NULL;
-    }
+    // Set nonblock before connecting. Internet Wisdom(tm)
+    if (!sslsocket_set_nonblock(this))
+        goto err;
 
-    if (!sslsocket_set_nonblock(this)) {
-        sslsocket_close(this);
-        return NULL;
+    if (BIO_do_connect(this->bio) <= 0)
+        goto err;
+
+    // Note that this->ctx is garbage. We need API changes.
+    this->ssl = SSL_new(this->ctx);
+    if (this->ssl == NULL)
+        goto err;
+
+    SSL_set_bio(this->ssl, this->bio, this->bio);
+    rc = SSL_connect(this->ssl);
+    if (rc <= 0) {
+        fprintf(stderr, "SSL_connect failed\n");
+        goto err;
     }
 
     return this;
+
+err:
+    sslsocket_close(this);
+    return NULL;
 }
 
 // SSLTODO: Read the doc and figure out how to toggle non-block
@@ -482,10 +470,10 @@ status_t sslsocket_close(sslsocket this)
     assert(this != NULL);
     assert(this->ssl != NULL);
 
-    //ssl = this->ssl;
+    //SSL_shutdown(this->ssl);
+    SSL_free(this->ssl);
     free(this);
 
-    //SSL_shutdown(ssl);
 
     return success;
 }
@@ -502,7 +490,6 @@ sslsocket sslsocket_accept(sslsocket this, struct sockaddr *addr, socklen_t *add
     assert(addr != NULL);
     assert(addrsize != NULL);
 
-    // SSLTODO: Use SSL_accept()?
     rc = BIO_do_accept(this->bio);
     if (rc <= 0)
         return NULL;
