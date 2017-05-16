@@ -28,7 +28,8 @@
 // SSLTODO: Extend / change struct to contain all SSL-relevant info for the socket. SSL may be relevant, but not SSL_CTX. Stuff unique to a socket, goes here.
 struct sslsocket_tag {
     SSL_CTX *ctx;
-    int fd;
+    SSL *ssl;
+    BIO *bio;
 };
 
 #define CADIR    NULL
@@ -119,12 +120,10 @@ static status_t setup_server_ctx(sslsocket this)
     assert(this != NULL);
     assert(this->ctx == NULL);
 
-    fputs("X1\n", stderr);
     this->ctx = SSL_CTX_new(TLSv1_server_method());
     if (this->ctx == NULL)
         goto err;
 
-    fputs("X2\n", stderr);
     // Tell SSL where to find trusted CA certificates
     if (SSL_CTX_load_verify_locations(this->ctx, CAFILE, CADIR) != 1)
         goto err;
@@ -169,6 +168,7 @@ err:
 // SSLTODO: Use an SSL way of setting SO_REUSEADDR
 static int sslsocket_set_reuseaddr(sslsocket this)
 {
+#if 0
     int optval;
     socklen_t optlen;
 
@@ -179,6 +179,9 @@ static int sslsocket_set_reuseaddr(sslsocket this)
     optlen = (socklen_t)sizeof optval;
     if (setsockopt(this->fd, SOL_SOCKET, SO_REUSEADDR, &optval, optlen) == -1)
         return 0;
+#else
+    (void)this;
+#endif
 
     return 1;
 }
@@ -194,9 +197,10 @@ static int sslsocket_set_reuseaddr(sslsocket this)
 // SSLTODO: Polling must change, I guess
 static status_t sslsocket_poll_for(sslsocket this, int timeout, short poll_for)
 {
+    status_t status = failure;
+#if 0
     struct pollfd pfd;
     int rc;
-    status_t status = failure;
 
     assert(this != NULL);
     assert(this->fd >= 0);
@@ -229,7 +233,13 @@ static status_t sslsocket_poll_for(sslsocket this, int timeout, short poll_for)
     else if (rc == -1) {
     }
 
+#else
+    (void)this;
+    (void)timeout;
+    (void)poll_for;
+#endif
     return status;
+
 }
 
 status_t sslsocket_wait_for_writability(sslsocket this, int timeout)
@@ -251,7 +261,6 @@ status_t sslsocket_write(sslsocket this, const char *buf, size_t count, int time
     ssize_t nwritten = 0;
 
     assert(this != NULL);
-    assert(this->fd >= 0);
     assert(buf != NULL);
     assert(timeout >= 0);
     assert(nretries >= 0);
@@ -265,8 +274,7 @@ status_t sslsocket_write(sslsocket this, const char *buf, size_t count, int time
             continue;
         }
 
-        // SSLTODO: Use SSL_write(), I guess
-        if ((nwritten = write(this->fd, buf, count)) == -1)
+        if ((nwritten = SSL_write(this->ssl, buf, count)) == -1)
             return failure;
 
         buf += nwritten;
@@ -285,7 +293,7 @@ ssize_t sslsocket_read(sslsocket this, char *dest, size_t count, int timeout, in
     ssize_t nread;
 
     assert(this != NULL);
-    assert(this->fd >= 0);
+    assert(this->ssl != NULL);
     assert(timeout >= 0);
     assert(nretries >= 0);
     assert(dest != NULL);
@@ -299,7 +307,7 @@ ssize_t sslsocket_read(sslsocket this, char *dest, size_t count, int timeout, in
         }
 
         // Return data asap, even if partial
-        if ((nread = read(this->fd, dest, count)) > 0)
+        if ((nread = SSL_read(this->ssl, dest, count)) > 0)
             return nread;
 
         if (nread == -1 && errno != EAGAIN) {
@@ -317,63 +325,56 @@ ssize_t sslsocket_read(sslsocket this, char *dest, size_t count, int timeout, in
  * created a socket with a specific protocol family,
  * and here we bind it to the PF specified in the services...
  */
-status_t sslsocket_bind(sslsocket this, const char *hostname, int port)
+status_t
+sslsocket_bind(sslsocket this, const char *hostname, int port)
 {
-    struct hostent* host = NULL;
-    struct sockaddr_in my_addr;
-    socklen_t cb = (socklen_t)sizeof my_addr;
+    (void)hostname;
+    (void)port;
 
-    assert(this != NULL);
-    assert(this->fd >= 0);
-    assert(port > 0);
-
-    if (hostname != NULL) {
-        if ((host = gethostbyname(hostname)) ==NULL) {
-            errno = h_errno; /* OBSOLETE? */
-            return failure;
-        }
-    }
-
-    memset(&my_addr, '\0', sizeof my_addr);
-    my_addr.sin_port = htons(port);
-
-    if (hostname == NULL) {
-        my_addr.sin_family = AF_INET;
-        my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    }
-    else {
-        my_addr.sin_family = host->h_addrtype;
-        my_addr.sin_addr.s_addr = ((struct in_addr*)host->h_addr)->s_addr;
-    }
-
-    if (bind(this->fd, (struct sockaddr *)&my_addr, cb) == -1)
+    // Binds at first call
+    if (BIO_do_accept(this->bio))
         return failure;
 
     return success;
 }
+
+// TODO: Lots of stuff. We need the SSL_CTX since that one's
+// global-ish. I guess the SSL_CTX should belong to
+// the tcp_server instance? We don't want to create
+// one SSL_CTX per sslsocket. ATM, we only have one
+// server class, the tcp_server. That class knows about
+// the socktype and holds a socket_t base class instance.
+// tcp_server_get_root_resources() calls socket_create_server_socket(),
+// it could do more. For example, it could create the
+// SSL_CTX and serve that as an argument to this fn.
+// An alternative is to virtualize the tcp_server class,
+// but that seems overkill when we just need a couple
+// of if-statements and some calls.
+//
+// One issue may be that we don't know the socket type
+// at this point. 
 sslsocket sslsocket_socket(void)
 {
     sslsocket this;
-    int af = AF_INET;
 
     if ((this = malloc(sizeof *this)) == NULL)
         return NULL;
-
-    if ((this->fd = socket(af, SOCK_STREAM, 0)) == -1) {
-        free(this);
-        return NULL;
-    }
 
     return this;
 }
 
 status_t sslsocket_listen(sslsocket this, int backlog)
 {
+#if 0
     assert(this != NULL);
     assert(this->fd >= 0);
 
     if (listen(this->fd, backlog) == -1)
         return failure;
+#else
+    (void)this; 
+    (void)backlog;
+#endif
 
     return success;
 }
@@ -389,6 +390,12 @@ status_t sslsocket_listen(sslsocket this, int backlog)
 sslsocket sslsocket_create_server_socket(const char *host, int port)
 {
     sslsocket this;
+    char hostport[1024];
+    size_t n;
+
+    n = snprintf(hostport, sizeof hostport, "%s:%d", host, port);
+    if (n >= sizeof hostport)
+        return NULL;
 
     if ((this = sslsocket_socket()) == NULL)
         return NULL;
@@ -397,6 +404,9 @@ sslsocket sslsocket_create_server_socket(const char *host, int port)
         sslsocket_close(this);
         return NULL;
     }
+
+    // Now create the server socket
+    this->bio = BIO_new_accept(hostport);
 
     if (sslsocket_set_reuseaddr(this)
     && sslsocket_bind(this, host, port)
@@ -414,28 +424,26 @@ sslsocket sslsocket_create_server_socket(const char *host, int port)
 // SSLTODO: server's certificate. This code is not for the meek. ;)
 sslsocket sslsocket_create_client_socket(const char *host, int port)
 {
-    struct hostent *phost;
-    struct sockaddr_in sa;
     sslsocket this;
+    char hostport[1024];
+    size_t n;
 
     assert(host != NULL);
 
-    if ((phost = gethostbyname(host)) == NULL) {
-        errno = h_errno; /* OBSOLETE? */
+    n = snprintf(hostport, sizeof hostport, "%s:%d", host, port);
+    if (n >= sizeof hostport)
         return NULL;
-    }
 
-    /* Create a socket structure */
-    sa.sin_family = phost->h_addrtype;
-    memcpy(&sa.sin_addr, phost->h_addr, (size_t)phost->h_length);
-    sa.sin_port = htons(port);
-
-    /* Open a socket to the server */
     if ((this = sslsocket_socket()) == NULL)
         return NULL;
 
-    /* Connect to the server. */
-    if (connect(this->fd, (struct sockaddr *) &sa, sizeof sa) == -1) {
+    this->bio = BIO_new_connect(hostport);
+    if (this->bio == NULL) {
+        sslsocket_close(this);
+        return NULL;
+    }
+
+    if (BIO_do_connect(this->bio) <= 0) {
         sslsocket_close(this);
         return NULL;
     }
@@ -451,61 +459,33 @@ sslsocket sslsocket_create_client_socket(const char *host, int port)
 // SSLTODO: Read the doc and figure out how to toggle non-block
 status_t sslsocket_set_nonblock(sslsocket this)
 {
-    int flags;
-
     assert(this != NULL);
-    assert(this->fd >= 0);
+    assert(this->bio != NULL);
 
-    flags = fcntl(this->fd, F_GETFL);
-    if (flags == -1)
-        return failure;
-
-    flags |= O_NONBLOCK;
-    if (fcntl(this->fd, F_SETFL, flags) == -1)
-        return failure;
-
+    BIO_set_nbio(this->bio, 1);
     return success;
 }
 
 status_t sslsocket_clear_nonblock(sslsocket this)
 {
-    int flags;
-
     assert(this != NULL);
-    assert(this->fd >= 0);
+    assert(this->bio != NULL);
 
-    flags = fcntl(this->fd, F_GETFL);
-    if (flags == -1)
-        return failure;
-
-    flags -= (flags & O_NONBLOCK);
-    if (fcntl(this->fd, F_SETFL, flags) == -1)
-        return failure;
-
+    BIO_set_nbio(this->bio, 0);
     return success;
 }
 
 status_t sslsocket_close(sslsocket this)
 {
-    int fd;
+    //SSL *ssl;
 
     assert(this != NULL);
-    assert(this->fd >= 0);
+    assert(this->ssl != NULL);
 
-    fd = this->fd;
+    //ssl = this->ssl;
     free(this);
 
-    /* shutdown() may return an error from time to time,
-     * e.g. if the client already closed the socket. We then
-     * get error ENOTCONN.
-     * We still need to close the socket locally, therefore
-     * the return code from shutdown is ignored.
-     */
-    // SSLTODO: Use SSL_shutdown
-    shutdown(fd, SHUT_RDWR);
-
-    if (close(fd))
-        return failure;
+    //SSL_shutdown(ssl);
 
     return success;
 }
@@ -513,24 +493,34 @@ status_t sslsocket_close(sslsocket this)
 sslsocket sslsocket_accept(sslsocket this, struct sockaddr *addr, socklen_t *addrsize)
 {
     sslsocket new;
-    int fd;
+    int rc;
+
+    (void)addr;
+    (void)addrsize;
 
     assert(this != NULL);
     assert(addr != NULL);
     assert(addrsize != NULL);
 
     // SSLTODO: Use SSL_accept()?
-    fd = accept(this->fd, addr, addrsize);
-    if (fd == -1)
+    rc = BIO_do_accept(this->bio);
+    if (rc <= 0)
         return NULL;
 
     if ((new = malloc(sizeof *new)) == NULL) {
-        // SSLTODO: Use SSL_shutdown()?
-        close(fd);
+        BIO_free(BIO_pop(this->bio)); // Just guessing here...
         return NULL;
     }
 
-    // SSLTODO: We need more init stuff here, I guess.
-    new->fd = fd;
+    new->bio = BIO_pop(this->bio);
+    new->ssl = SSL_new(new->ctx);
+    if (new->ssl == NULL) {
+        // Meh.
+        return NULL; // Big leak, I know
+    }
+
+    SSL_set_accept_state(new->ssl);
+    SSL_set_bio(new->ssl, new->bio, new->bio);
+
     return new;
 }
