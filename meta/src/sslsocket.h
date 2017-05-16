@@ -20,6 +20,7 @@ sslsocket sslsocket_socket(void);
 status_t sslsocket_listen(sslsocket p, int backlog);
 sslsocket sslsocket_accept(sslsocket p, struct sockaddr *addr, socklen_t *addrsize);
 ssize_t  sslsocket_read(sslsocket p, char *buf, size_t count, int timeout, int retries);
+status_t sslsocket_poll_for(sslsocket this, int timeout, int poll_for);
 status_t sslsocket_wait_for_data(sslsocket p, int timeout);
 status_t sslsocket_wait_for_writability(sslsocket p, int timeout);
 status_t sslsocket_write(sslsocket p, const char *s, size_t count, int timeout, int retries);

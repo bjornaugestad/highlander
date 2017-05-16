@@ -33,6 +33,8 @@ status_t socket_bind(socket_t p, const char *hostname, int port);
 status_t socket_listen(socket_t p, int backlog);
 status_t socket_close(socket_t p);
 
+// polltype is POLLIN and friends
+status_t socket_poll_for(socket_t p, int timeout, int polltype);
 status_t socket_wait_for_data(socket_t p, int timeout);
 status_t socket_wait_for_writability(socket_t p, int timeout);
 status_t socket_write(socket_t p, const char *s, size_t count, int timeout, int retries);

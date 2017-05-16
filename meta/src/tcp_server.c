@@ -14,6 +14,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <regex.h>
+#include <poll.h>   // for POLLIN
 
 #include <openssl/ssl.h>
 
@@ -393,7 +394,7 @@ static status_t accept_new_connections(tcp_server this, socket_t sock)
         return failure;
 
     while (!this->shutting_down) {
-        if (!socket_wait_for_data(sock, this->timeout_accepts)) {
+        if (!socket_poll_for(sock, this->timeout_accepts, POLLIN)) {
             if (errno == EINTR) {
                 /* Someone interrupted us, why?
                  * NOTE: This happens when the load is very high
@@ -535,10 +536,12 @@ status_t tcp_server_get_root_resources(tcp_server this)
     if (this->host != NULL)
         hostname = c_str(this->host);
 
+    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     this->sock = socket_create_server_socket(this->socktype, hostname, this->port);
     if (this->sock == NULL)
         return failure;
 
+    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     return success;
 }
 

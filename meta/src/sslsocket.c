@@ -174,7 +174,7 @@ static int sslsocket_set_reuseaddr(sslsocket this)
  * it maps POLLHUP and POLLERR to EPIPE, and POLLNVAL to EINVAL.
  */
 // SSLTODO: Polling must change, I guess
-static status_t sslsocket_poll_for(sslsocket this, int timeout, short poll_for)
+status_t sslsocket_poll_for(sslsocket this, int timeout, int poll_for)
 {
     status_t status = failure;
 
@@ -224,6 +224,7 @@ status_t sslsocket_wait_for_writability(sslsocket this, int timeout)
 status_t sslsocket_wait_for_data(sslsocket this, int timeout)
 {
     assert(this != NULL);
+    assert(this->ssl != NULL);
 
     // Are there bytes already read and available?
     if (SSL_pending(this->ssl) > 0)
@@ -304,13 +305,20 @@ ssize_t sslsocket_read(sslsocket this, char *dest, size_t count, int timeout, in
 status_t
 sslsocket_bind(sslsocket this, const char *hostname, int port)
 {
+    int rc;
+
     (void)hostname;
     (void)port;
 
+    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     // Binds at first call
-    if (BIO_do_accept(this->bio))
+    rc = BIO_do_accept(this->bio);
+    if (rc <= 0) {
+        ERR_print_errors_fp(stderr);
         return failure;
+    }
 
+    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     return success;
 }
 
@@ -369,26 +377,35 @@ sslsocket sslsocket_create_server_socket(const char *host, int port)
     char hostport[1024];
     size_t n;
 
+    if (host == NULL)
+        host = "localhost";
+
+    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     n = snprintf(hostport, sizeof hostport, "%s:%d", host, port);
     if (n >= sizeof hostport)
         return NULL;
 
+    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     if ((this = sslsocket_socket()) == NULL)
         return NULL;
 
+    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     if (!setup_server_ctx(this)) {
         sslsocket_close(this);
         return NULL;
     }
 
+    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     // Now create the server socket
     this->bio = BIO_new_accept(hostport);
 
+    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     if (sslsocket_set_reuseaddr(this)
     && sslsocket_bind(this, host, port)
     && sslsocket_listen(this, 100))
         return this;
 
+    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     sslsocket_close(this);
     return NULL;
 }

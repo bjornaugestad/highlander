@@ -60,7 +60,7 @@ static int tcpsocket_set_reuseaddr(tcpsocket this)
  * it maps POLLHUP and POLLERR to EPIPE, and POLLNVAL to EINVAL.
  */
 // SSLTODO: Polling must change, I guess
-static status_t tcpsocket_poll_for(tcpsocket this, int timeout, short poll_for)
+status_t tcpsocket_poll_for(tcpsocket this, int timeout, int poll_for)
 {
     struct pollfd pfd;
     int rc;

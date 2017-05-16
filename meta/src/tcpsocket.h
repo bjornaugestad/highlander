@@ -35,6 +35,10 @@ ssize_t tcpsocket_read(tcpsocket p, char *buf, size_t count,
     __attribute__((nonnull))
     __attribute__((warn_unused_result));
 
+status_t tcpsocket_poll_for(tcpsocket p, int timeout, int polltype)
+    __attribute__((nonnull))
+    __attribute__((warn_unused_result));
+
 status_t tcpsocket_wait_for_data(tcpsocket p, int timeout)
     __attribute__((nonnull))
     __attribute__((warn_unused_result));

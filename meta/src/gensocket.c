@@ -16,6 +16,7 @@ struct gensocket_tag {
     status_t (*listen)(void *instance, int backlog);
     status_t (*close)(void *instance);
 
+    status_t (*poll_for)(void *instance, int timeout, int polltype);
     status_t (*wait_for_data)(void *instance, int timeout);
     status_t (*wait_for_writability)(void *instance, int timeout);
     status_t (*write)(void *instance, const char *s, size_t count, int timeout, int retries);
@@ -40,6 +41,7 @@ static socket_t create_instance(int type)
         p->bind = (typeof(p->bind))tcpsocket_bind;
         p->listen = (typeof(p->listen))tcpsocket_listen;
         p->close = (typeof(p->close))tcpsocket_close;
+        p->poll_for = (typeof(p->poll_for))tcpsocket_poll_for;
         p->wait_for_data = (typeof(p->wait_for_data))tcpsocket_wait_for_data;
         p->wait_for_writability = (typeof(p->wait_for_writability))tcpsocket_wait_for_writability;
         p->write = (typeof(p->write))tcpsocket_write;
@@ -51,6 +53,7 @@ static socket_t create_instance(int type)
         p->bind = (typeof(p->bind))sslsocket_bind;
         p->listen = (typeof(p->listen))sslsocket_listen;
         p->close = (typeof(p->close))sslsocket_close;
+        p->poll_for = (typeof(p->poll_for))sslsocket_poll_for;
         p->wait_for_data = (typeof(p->wait_for_data))sslsocket_wait_for_data;
         p->wait_for_writability = (typeof(p->wait_for_writability))sslsocket_wait_for_writability;
         p->write = (typeof(p->write))sslsocket_write;
@@ -68,15 +71,18 @@ socket_t socket_create_server_socket(int type, const char *host, int port)
 {
     socket_t this;
 
+    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     this = create_instance(type);
     if (this == NULL)
         return NULL;
 
+    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     if (type == SOCKTYPE_TCP)
         this->instance = tcpsocket_create_server_socket(host, port);
     else
         this->instance = sslsocket_create_server_socket(host, port);
 
+    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     if (this->instance == NULL) {
         free(this);
         return NULL;
@@ -178,6 +184,14 @@ status_t socket_close(socket_t p)
     return p->close(p->instance);
 }
 
+
+status_t socket_poll_for(socket_t p, int timeout, int polltype)
+{
+    assert(p != NULL);
+    assert(p->instance != NULL);
+
+    return p->poll_for(p->instance, timeout, polltype);
+}
 
 status_t socket_wait_for_data(socket_t p, int timeout)
 {
