@@ -531,17 +531,15 @@ static status_t accept_new_connections(tcp_server this, socket_t sock)
 
 status_t tcp_server_get_root_resources(tcp_server this)
 {
-    const char *hostname = NULL;
+    const char *hostname = "localhost";
 
     if (this->host != NULL)
         hostname = c_str(this->host);
 
-    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     this->sock = socket_create_server_socket(this->socktype, hostname, this->port);
     if (this->sock == NULL)
         return failure;
 
-    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     return success;
 }
 

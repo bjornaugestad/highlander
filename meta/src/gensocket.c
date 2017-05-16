@@ -65,24 +65,20 @@ static socket_t create_instance(int type)
     return p;
 }
 
-
 // A ctor function
 socket_t socket_create_server_socket(int type, const char *host, int port)
 {
     socket_t this;
 
-    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     this = create_instance(type);
     if (this == NULL)
         return NULL;
 
-    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     if (type == SOCKTYPE_TCP)
         this->instance = tcpsocket_create_server_socket(host, port);
     else
         this->instance = sslsocket_create_server_socket(host, port);
 
-    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     if (this->instance == NULL) {
         free(this);
         return NULL;

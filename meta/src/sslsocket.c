@@ -310,7 +310,6 @@ sslsocket_bind(sslsocket this, const char *hostname, int port)
     (void)hostname;
     (void)port;
 
-    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     // Binds at first call
     rc = BIO_do_accept(this->bio);
     if (rc <= 0) {
@@ -318,7 +317,6 @@ sslsocket_bind(sslsocket this, const char *hostname, int port)
         return failure;
     }
 
-    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     return success;
 }
 
@@ -380,32 +378,26 @@ sslsocket sslsocket_create_server_socket(const char *host, int port)
     if (host == NULL)
         host = "localhost";
 
-    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     n = snprintf(hostport, sizeof hostport, "%s:%d", host, port);
     if (n >= sizeof hostport)
         return NULL;
 
-    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     if ((this = sslsocket_socket()) == NULL)
         return NULL;
 
-    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     if (!setup_server_ctx(this)) {
         sslsocket_close(this);
         return NULL;
     }
 
-    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     // Now create the server socket
     this->bio = BIO_new_accept(hostport);
 
-    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     if (sslsocket_set_reuseaddr(this)
     && sslsocket_bind(this, host, port)
     && sslsocket_listen(this, 100))
         return this;
 
-    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     sslsocket_close(this);
     return NULL;
 }
