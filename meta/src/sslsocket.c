@@ -152,7 +152,6 @@ err:
 
 // Sets the socket options we want on the main socket
 // Suitable for server sockets only.
-// SSLTODO: Use an SSL way of setting SO_REUSEADDR
 static status_t sslsocket_set_reuseaddr(sslsocket this)
 {
     assert(this != NULL);
@@ -162,7 +161,6 @@ static status_t sslsocket_set_reuseaddr(sslsocket this)
     return success;
 }
 
-
 /*
  * This is a local helper function. It polls for some kind of event,
  * which normally is POLLIN or POLLOUT.
@@ -170,7 +168,6 @@ static status_t sslsocket_set_reuseaddr(sslsocket this)
  * error occured. It set errno to EAGAIN if a timeout occured, and
  * it maps POLLHUP and POLLERR to EPIPE, and POLLNVAL to EINVAL.
  */
-// SSLTODO: Polling must change, I guess
 status_t sslsocket_poll_for(sslsocket this, int timeout, int poll_for)
 {
     status_t status = failure;
@@ -262,7 +259,8 @@ status_t sslsocket_write(sslsocket this, const char *buf, size_t count, int time
     return success;
 }
 
-ssize_t sslsocket_read(sslsocket this, char *dest, size_t count, int timeout, int nretries)
+ssize_t sslsocket_read(sslsocket this, char *dest, size_t count,
+    int timeout, int nretries)
 {
     ssize_t nread;
 
@@ -310,6 +308,7 @@ sslsocket_bind(sslsocket this, const char *hostname, int port)
     // Binds at first call
     rc = BIO_do_accept(this->bio);
     if (rc <= 0) {
+        ssl_die(this);
         ERR_print_errors_fp(stderr);
         return failure;
     }
@@ -439,7 +438,6 @@ sslsocket sslsocket_create_client_socket(const char *host, int port)
     SSL_set_bio(this->ssl, this->bio, this->bio);
     rc = SSL_connect(this->ssl);
     if (rc <= 0) {
-        fprintf(stderr, "SSL_connect failed\n");
         goto err;
     }
 
@@ -480,32 +478,38 @@ status_t sslsocket_close(sslsocket this)
     SSL_free(this->ssl);
     free(this);
 
-
     return success;
 }
 
-sslsocket sslsocket_accept(sslsocket this, struct sockaddr *addr, socklen_t *addrsize)
+sslsocket sslsocket_accept(sslsocket this, struct sockaddr *addr,
+    socklen_t *addrsize)
 {
     sslsocket new;
     int rc;
 
     (void)addr;
-    (void)addrsize;
+    *addrsize = 0; // Mark addr as unused
 
     assert(this != NULL);
     assert(addr != NULL);
     assert(addrsize != NULL);
 
     rc = BIO_do_accept(this->bio);
-    if (rc <= 0)
+    if (rc <= 0) {
+        ssl_die(this);
         return NULL;
+    }
 
     if ((new = malloc(sizeof *new)) == NULL) {
         BIO_free(BIO_pop(this->bio)); // Just guessing here...
+        ssl_die(this);
         return NULL;
     }
 
     new->bio = BIO_pop(this->bio);
+    if (new->bio == NULL)
+        ssl_die(new);
+
     new->ssl = SSL_new(this->ctx);
     if (new->ssl == NULL) {
         ssl_die(new);
@@ -515,6 +519,9 @@ sslsocket sslsocket_accept(sslsocket this, struct sockaddr *addr, socklen_t *add
 
     SSL_set_accept_state(new->ssl);
     SSL_set_bio(new->ssl, new->bio, new->bio);
+    rc = SSL_accept(new->ssl);
+    if (rc <= 0)
+        ssl_die(new);
 
     return new;
 }

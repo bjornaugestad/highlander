@@ -253,27 +253,27 @@ void connection_assign_write_buffer(connection this, membuf buf)
 
 status_t connection_flush(connection this)
 {
-    status_t status = success;
+    status_t rc = success;
     size_t count;
 
     assert(this != NULL);
 
     count = membuf_canread(this->writebuf);
     if (count > 0) {
-        status = socket_write(
+        rc = socket_write(
             this->sock,
             membuf_data(this->writebuf),
             count,
             this->timeout_writes,
             this->retries_writes);
 
-        if (status) {
+        if (rc) {
             this->outgoing_bytes += count;
             membuf_reset(this->writebuf);
         }
     }
 
-    return status;
+    return rc;
 }
 
 status_t connection_close(connection this)
@@ -286,10 +286,7 @@ status_t connection_close(connection this)
     close_success = socket_close(this->sock);
     this->sock = NULL;
 
-    if (!flush_success)
-        return failure;
-
-    if (!close_success)
+    if (!flush_success || !close_success)
         return failure;
 
     return success;
@@ -519,7 +516,7 @@ status_t connection_puts(connection this, const char *s)
 
 status_t connection_gets(connection this, char *dest, size_t destsize)
 {
-    status_t status = success;
+    status_t rc = success;
     int c;
     size_t i = 0;
 
@@ -527,7 +524,7 @@ status_t connection_gets(connection this, char *dest, size_t destsize)
     assert(dest != NULL);
     assert(destsize > 0);
 
-    while (i < destsize && (status = connection_getc(this, &c))) {
+    while (i < destsize && (rc = connection_getc(this, &c))) {
         *dest++ = c;
         i++;
 
@@ -535,10 +532,10 @@ status_t connection_gets(connection this, char *dest, size_t destsize)
             break;
     }
 
-    if (status && i < destsize)
+    if (rc && i < destsize)
         *dest = '\0';
 
-    return status;
+    return rc;
 }
 
 status_t connection_write_big_buffer(

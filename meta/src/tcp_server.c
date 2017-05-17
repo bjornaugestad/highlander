@@ -378,6 +378,24 @@ static status_t tcp_server_get_connection(tcp_server srv, connection *pconn)
     return pool_get(srv->connections, (void **)pconn);
 }
 
+// See "Advanced Programming in the UNIX environment"
+// for a discussion of EINTR, select(), SA_RESTART
+// and portability between SVR4 and BSD.
+// Interesting chapters are 12.5 and 10.x
+//
+// if polling returned success,  we most likely have a new
+// connection present. The connection may have been closed between
+// the poll() and our accept, so the non-blocking accept() may
+// return -1. errno will then be EAGAIN | EWOULDBLOCK.
+//
+// In addition to this, Linux, according to accept(2), will
+// pass any pending errors as an error code to accept(). The
+// errors listed in the man page are:
+//	ENETDOWN, EPROTO, ENOPROTOOPT, EHOSTDOWN, ENONET,
+//	EHOSTUNREACH, EOPNOTSUPP and ENETUNREACH.
+// These errors should, on Linux, be treated as EAGAIN acc.
+// to the man page.
+
 static status_t accept_new_connections(tcp_server this, socket_t sock)
 {
     status_t rc;
@@ -389,77 +407,39 @@ static status_t accept_new_connections(tcp_server this, socket_t sock)
     assert(this != NULL);
     assert(sock != NULL);
 
-    /* Make the socket non-blocking so that accept() won't block */
-    if (!socket_set_nonblock(sock))
-        return failure;
-
     while (!this->shutting_down) {
         if (!socket_poll_for(sock, this->timeout_accepts, POLLIN)) {
-            if (errno == EINTR) {
-                /* Someone interrupted us, why?
-                 * NOTE: This happens when the load is very high
-                 * and the number of connections in TIME_WAIT
-                 * state is high (800+).
-                 *
-                 * What do we do, just restart or try to handle some
-                 * condition? We just restart for now...
-                 *
-                 * See "Advanced Programming in the UNIX environment"
-                 * for a discussion of EINTR, select(), SA_RESTART
-                 * and portability between SVR4 and BSD-based kernels.
-                 * Interesting chapters are 12.5 and 10.x
-                 */
+            if (errno == EINTR)
                 atomic_ulong_inc(&this->sum_poll_intr);
-                continue;
-            }
-
-            if (errno == EAGAIN)  {
+            else if (errno == EAGAIN)
                 atomic_ulong_inc(&this->sum_poll_again);
-                continue;
-            }
+            else
+                return failure;
 
-            return failure;
+            continue; // retry
         }
 
-        /*
-         * Now we most likely have a new connection present.
-         * The connection may have been closed between the select()
-         * above and here, so the non-blocking accept() may return -1.
-         * errno will then be EAGAIN | EWOULDBLOCK.
-         * In addition to this, Linux, according to accept(2), will
-         * pass any pending errors as an error code to accept(). The
-         * errors listed in the man page are:
-         *	ENETDOWN, EPROTO, ENOPROTOOPT, EHOSTDOWN, ENONET,
-         *	EHOSTUNREACH, EOPNOTSUPP and ENETUNREACH.
-         * These errors should, on Linux, be treated as EAGAIN acc.
-         * to the man page.
-         */
-        /*
-         * NOTE: BSD may require us to set sockaddr.sa_len
-         * to sizeof struct sockaddr_XX
-         * Linux does not as it doesn't have that struct member.
-         */
         addrsize = sizeof addr;
         newsock = socket_accept(sock, (struct sockaddr*)&addr, &addrsize);
         if (newsock == NULL) {
             switch (errno) {
-                /* NOTE: EPROTO is not defined for freebsd, and Stevens
-                 * says, in UNP, vol. 1, page 424 that EPROTO should
-                 * be ignored. Hmm...  */
+                // EPROTO is not defined for freebsd, and Stevens
+                // says, in UNP, vol. 1, page 424 that EPROTO should
+                // be ignored.
 #ifdef EPROTO
                 case EPROTO:
 #endif
 
-                /* NOTE: ENONET does not exist under freebsd, and is
-                 * not even mentioned in UNP1. Alan Cox refers to
-                 * RFC1122 in a patch posted to news... */
+                // ENONET does not exist under freebsd, and is
+                // not even mentioned in UNP1. Alan Cox refers to
+                // RFC1122 in a patch posted to news.
 #ifdef ENONET
                 case ENONET:
 #endif
 
-                /* AIX specific stuff. Nmap causes accept to return
-                 * ENOTCONN, but oddly enough only on port 80.
-                 * Let's see if a retry helps. */
+                // AIX specific stuff. Nmap causes accept to return
+                // ENOTCONN, but oddly enough only on port 80.
+                // Let's see if a retry helps.
                 case ENOTCONN:
 
                 case EAGAIN:
@@ -477,17 +457,17 @@ static status_t accept_new_connections(tcp_server this, socket_t sock)
             }
         }
 
-        /* Check if the client is permitted to connect or not. */
+        // Check if the client is permitted to connect or not.
         if (!client_can_connect(this, &addr)) {
             socket_close(newsock);
             atomic_ulong_inc(&this->sum_denied_clients);
             continue;
         }
 
-         /* Get a new, per-connection, struct containing data
-          * unique to this connection. tcp_server_get_connection()
-          * never returns NULL as enough connection resources has
-          * been allocated already. */
+         // Get a new, per-connection, struct containing data
+         // unique to this connection. tcp_server_get_connection()
+         // never returns NULL as enough connection resources has
+         // been allocated already.
          if (!tcp_server_get_connection(this, &conn)) {
             socket_close(newsock);
             return failure;
@@ -501,22 +481,8 @@ static status_t accept_new_connections(tcp_server this, socket_t sock)
             this->service_func, conn,
             tcp_server_recycle_connection, this);
 
+        // queue full. Skip this connection attempt.
         if (!rc) {
-            /* Could not add work to the queue */
-            /*
-             * NOTE:
-             * The proper HTTP response is "503 Service Unavailable",
-             * but tcp_server does not know about HTTP.
-             * What do we do, add a callback error handler or
-             * something else?
-             * It is, according to rfc2616, $10.5.4, OK just to
-             * ignore the request, but hardly the most user friendly
-             * way of doing it. Anyway, if we choose to handle this,
-             * a) will that create even more overload?
-             * b) What do we do with the data(if any) that the client
-             * tries to send us? Can we just 'dump' a 503 on the
-             * socket and then close it?
-             */
             if (!connection_close(conn))
                 warning("Could not flush and close connection");
 
