@@ -1,5 +1,8 @@
 #include <stdio.h>
+#include <unistd.h>
+
 #include <highlander.h>
+#include <miscssl.h>
 
 int page_handler(http_request req, http_response page)
 {
@@ -15,9 +18,34 @@ int page_handler(http_request req, http_response page)
    return 0;
 }
 
-int main(void)
+static int m_servertype = SOCKTYPE_SSL;
+static void parse_command_line(int argc, char *argv[])
 {
-    http_server s = http_server_new(SOCKTYPE_TCP);
+    const char *options = "t";
+
+    int c;
+
+    while ((c = getopt(argc, argv, options)) != -1) {
+        switch (c) {
+            case 't':
+                m_servertype = SOCKTYPE_TCP;
+                break;
+
+            case '?':
+            default:
+                fprintf(stderr, "USAGE: %s [-t] where -t disables ssl(enables TCP)\n", argv[0]);
+                exit(1);
+        }
+    }
+}
+int main(int argc, char *argv[])
+{
+    http_server s;
+    if (!openssl_init())
+        exit(1);
+    parse_command_line(argc, argv);
+
+    s = http_server_new(m_servertype);
     http_server_set_port(s, 2000);
     if (!http_server_alloc(s))
         die("Could not allocate resources\n");
