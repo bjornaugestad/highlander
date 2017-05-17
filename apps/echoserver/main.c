@@ -14,9 +14,7 @@ static void* fn(void* arg)
     connection c = arg;
     char buf[1024];
 
-    fprintf(stderr, "%s(%d) A good thing!\n", __func__, __LINE__);
     while (connection_gets(c, buf, sizeof buf)) {
-        fprintf(stderr, "Got something:%s\n", buf);
         if (!connection_puts(c, buf) || !connection_flush(c))
             warning("Could not echo input.\n");
     }
@@ -67,7 +65,7 @@ int main(int argc, char *argv[])
 
     if (!process_wait_for_shutdown(p)) {
         perror("process_wait_for_shutdown");
-        exit(EXIT_FAILURE);
+        exit(4);
     }
 
     tcp_server_free(srv);

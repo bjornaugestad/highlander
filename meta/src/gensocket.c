@@ -180,7 +180,6 @@ status_t socket_close(socket_t p)
     return p->close(p->instance);
 }
 
-
 status_t socket_poll_for(socket_t p, int timeout, int polltype)
 {
     assert(p != NULL);

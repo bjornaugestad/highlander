@@ -9,7 +9,7 @@ include_HEADERS=\
 bin_PROGRAMS=metalsh
 lib_LIBRARIES=libmetal.a
 metalsh_CFLAGS=$(AM_CFLAGS)
-metalsh_LDADD=-L. -lmetal -lmeta -lpthread
+metalsh_LDADD=-L. -lmetal -lmetad -lpthread
 metalsh_SOURCES=\
 	src/apps/metalsh.c
 
@@ -36,7 +36,7 @@ tasks_check_SOURCES=\
 	src/kernel/tasks.c
 
 tasks_check_CFLAGS=-DTASKS_CHECK -I$(top_srcdir)/include -ggdb -O0
-tasks_check_LDADD=-lmeta -lpthread
+tasks_check_LDADD=-lmetad -lpthread
 
 helloworld_SOURCES=\
 	src/tests/helloworld.c\
@@ -44,7 +44,7 @@ helloworld_SOURCES=\
 	src/kernel/tasks.c
 
 helloworld_CFLAGS=-I$(top_srcdir)/include -ggdb -O0
-helloworld_LDADD=-lmeta -lpthread
+helloworld_LDADD=-lmetad -lpthread
 
 pingpong_SOURCES=\
 	src/tests/pingpong.c\
@@ -52,11 +52,11 @@ pingpong_SOURCES=\
 	src/kernel/tasks.c
 
 pingpong_CFLAGS=-I$(top_srcdir)/include -ggdb -O0
-pingpong_LDADD=-lmeta -lpthread
+pingpong_LDADD=-lmetad -lpthread
 
 
 webcamtask_SOURCES=\
 	src/video/webcam_task.c
 
 webcamtask_CFLAGS=-I$(top_srcdir)/include -ggdb -O0 -DWEBCAMTASK_CHECK
-webcamtask_LDADD=-lmeta -lpthread
+webcamtask_LDADD=-lmetad -lpthread

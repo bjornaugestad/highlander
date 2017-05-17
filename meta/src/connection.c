@@ -284,6 +284,7 @@ status_t connection_close(connection this)
 
     flush_success = connection_flush(this);
     close_success = socket_close(this->sock);
+    this->sock = NULL;
 
     if (!flush_success)
         return failure;
@@ -434,6 +435,7 @@ void connection_discard(connection this)
 
     /* Close the socket, ignoring any messages */
     socket_close(this->sock);
+    this->sock = NULL;
     reset_counters(this);
 }
 
@@ -484,11 +486,6 @@ void connection_recycle(connection this)
     assert(this != NULL);
 
     this->persistent = 0;
-    if (this->sock != NULL) {
-        socket_close(this->sock);
-        this->sock = NULL;
-    }
-
     reset_counters(this);
 }
 

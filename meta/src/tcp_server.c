@@ -96,14 +96,14 @@ struct tcp_server_tag {
  *
  * This is new stuff, so some notes.
  * a) Allow DNS names or not?
- *	  We do not want to be vulnerable to DNS spoofing attacks.
- *	  At the same time we want easy configuration.
- *	  Safety first, which means that we only match IP for now.
- *	  DNS also means that we must do a getpeername(), which is slow.
+ *   We do not want to be vulnerable to DNS spoofing attacks.
+ *   At the same time we want easy configuration.
+ *   Safety first, which means that we only match IP for now.
+ *   DNS also means that we must do a getpeername(), which is slow.
  *
  * b) If the caller has set us up to do access control, we'll
- *	  already have a precompiled regexp available. All we now
- *	  have to do is to regexec.
+ *   already have a precompiled regexp available. All we now
+ *   have to do is to regexec.
  */
 static bool client_can_connect(tcp_server srv, struct sockaddr_in* addr)
 {
@@ -248,7 +248,7 @@ status_t tcp_server_init(tcp_server this)
         membuf rb, wb;
 
         if ((rb = membuf_new(this->readbuf_size)) == NULL
-        ||	(wb = membuf_new(this->writebuf_size)) == NULL)
+        || (wb = membuf_new(this->writebuf_size)) == NULL)
             goto err;
 
         pool_add(this->read_buffers, rb);
@@ -504,15 +504,18 @@ static status_t accept_new_connections(tcp_server this, socket_t sock)
         if (!rc) {
             /* Could not add work to the queue */
             /*
-             *	NOTE: The proper HTTP response is "503 Service Unavailable"
-             *	but tcp_server does not know about HTTP. What do we do, add a
-             *	callback error handler or something else? It is, according to
-             *	rfc2616, $10.5.4, OK just to ignore the request, but hardly the
-             *	most userfriendly way of doing it.  Anyway, if we choose to
-             *	handle this,
-             *	a) will that create even more overload?
-             *	b) What do we do with the data(if any) that the client tries to
-             *	send us? Can we just 'dump' a 503 on the socket and then close it?
+             * NOTE:
+             * The proper HTTP response is "503 Service Unavailable",
+             * but tcp_server does not know about HTTP.
+             * What do we do, add a callback error handler or
+             * something else?
+             * It is, according to rfc2616, $10.5.4, OK just to
+             * ignore the request, but hardly the most user friendly
+             * way of doing it. Anyway, if we choose to handle this,
+             * a) will that create even more overload?
+             * b) What do we do with the data(if any) that the client
+             * tries to send us? Can we just 'dump' a 503 on the
+             * socket and then close it?
              */
             if (!connection_close(conn))
                 warning("Could not flush and close connection");

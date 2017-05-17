@@ -18,9 +18,8 @@
 #include <openssl/ssl.h>
 
 #ifdef _XOPEN_SOURCE_EXTENDED
-#include <arpa/inet.h>
+//#include <arpa/inet.h>
 #endif
-
 
 #include <tcpsocket.h>
 
@@ -368,12 +367,10 @@ status_t tcpsocket_close(tcpsocket this)
     fd = this->fd;
     free(this);
 
-    /* shutdown() may return an error from time to time,
-     * e.g. if the client already closed the socket. We then
-     * get error ENOTCONN.
-     * We still need to close the socket locally, therefore
-     * the return code from shutdown is ignored.
-     */
+    // shutdown() may return an error from time to time, e.g. if the client
+    // already closed the socket. We then get error ENOTCONN. We still
+    // need to close the socket locally, therefore the return code
+    // from shutdown is ignored.
     shutdown(fd, SHUT_RDWR);
 
     if (close(fd))
@@ -385,31 +382,29 @@ status_t tcpsocket_close(tcpsocket this)
 tcpsocket tcpsocket_accept(tcpsocket this, struct sockaddr *addr, socklen_t *addrsize)
 {
     tcpsocket new;
-    int fd;
+    int clientfd;
 
     assert(this != NULL);
     assert(addr != NULL);
     assert(addrsize != NULL);
 
-    fd = accept(this->fd, addr, addrsize);
-    if (fd == -1)
+    clientfd = accept(this->fd, addr, addrsize);
+    if (clientfd == -1)
         return NULL;
 
     if ((new = malloc(sizeof *new)) == NULL) {
-        close(fd);
+        close(clientfd);
         return NULL;
     }
 
-    new->fd = fd;
-
-    // We set the nonblock flag here, since SSL prefers to
-    // set this early and we want tcp_server to treat sockets
-    // uniformly.
+    // We set the nonblock flag here, since SSL prefers to set this
+    // early and we want tcp_server to treat sockets uniformly.
     if (!tcpsocket_set_nonblock(new)) {
-        close(fd);
+        close(clientfd);
         free(new);
         return NULL;
     }
 
+    new->fd = clientfd;
     return new;
 }
