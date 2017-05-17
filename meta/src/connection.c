@@ -485,6 +485,12 @@ void connection_recycle(connection this)
 {
     assert(this != NULL);
 
+    // We need to close the socket here, if it still is open
+    if (this->sock != NULL) {
+        socket_close(this->sock);
+        this->sock = NULL;
+    }
+
     this->persistent = 0;
     reset_counters(this);
 }
