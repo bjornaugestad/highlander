@@ -24,17 +24,14 @@
 
 #include <tcpsocket.h>
 
-// SSLTODO: Extend / change struct to contain all SSL-relevant info for the socket. SSL may be relevant, but not SSL_CTX. Stuff unique to a socket, goes here.
 struct tcpsocket_tag {
     int fd;
 };
-
 
 /*
  * Sets the socket options we want on the main socket
  * Suitable for server sockets only.
  */
-// SSLTODO: Use an SSL way of setting SO_REUSEADDR
 static int tcpsocket_set_reuseaddr(tcpsocket this)
 {
     int optval;
@@ -59,7 +56,6 @@ static int tcpsocket_set_reuseaddr(tcpsocket this)
  * error occured. It set errno to EAGAIN if a timeout occured, and
  * it maps POLLHUP and POLLERR to EPIPE, and POLLNVAL to EINVAL.
  */
-// SSLTODO: Polling must change, I guess
 status_t tcpsocket_poll_for(tcpsocket this, int timeout, int poll_for)
 {
     struct pollfd pfd;
@@ -133,7 +129,6 @@ status_t tcpsocket_write(tcpsocket this, const char *buf, size_t count, int time
             continue;
         }
 
-        // SSLTODO: Use SSL_write(), I guess
         if ((nwritten = write(this->fd, buf, count)) == -1)
             return failure;
 
@@ -275,14 +270,6 @@ status_t tcpsocket_listen(tcpsocket this, int backlog)
     return success;
 }
 
-// SSLTODO: We need to initialize the _server_, that'll create an SSL_CTX
-// SSLTODO: object. We use that object to create a BIO object. Then we accept
-// SSLTODO: connections to the BIO, and create an SSL object using
-// SSLTODO: SSL_new(), SSL_set_accept_state(), SSL_set_bio(). When all
-// SSLTODO: that shit's done, we can call SSL_accept(), and do
-// SSLTODO: post connection checks on the server side too. (highly optional)
-// SSLTODO:
-// SSLTODO: The example programs are good. Go with them
 tcpsocket tcpsocket_create_server_socket(const char *host, int port)
 {
     tcpsocket this;
@@ -299,11 +286,6 @@ tcpsocket tcpsocket_create_server_socket(const char *host, int port)
     return NULL;
 }
 
-// SSLTODO: The SSL connect procedure is more complicated than the normal connect procedure.
-// SSLTODO: The sample code in client3.c illustrates this. One first connects a BIO, then
-// SSLTODO: create an SSL object, initializes it with the BIO, then connects the SSL object
-// SSLTODO: itself. The client3.c code uses a post connection check which validates the
-// SSLTODO: server's certificate. This code is not for the meek. ;)
 tcpsocket tcpsocket_create_client_socket(const char *host, int port)
 {
     struct hostent *phost;
@@ -340,7 +322,6 @@ tcpsocket tcpsocket_create_client_socket(const char *host, int port)
     return this;
 }
 
-// SSLTODO: Read the doc and figure out how to toggle non-block
 status_t tcpsocket_set_nonblock(tcpsocket this)
 {
     int flags;
@@ -393,7 +374,6 @@ status_t tcpsocket_close(tcpsocket this)
      * We still need to close the socket locally, therefore
      * the return code from shutdown is ignored.
      */
-    // SSLTODO: Use SSL_shutdown
     shutdown(fd, SHUT_RDWR);
 
     if (close(fd))
@@ -411,18 +391,25 @@ tcpsocket tcpsocket_accept(tcpsocket this, struct sockaddr *addr, socklen_t *add
     assert(addr != NULL);
     assert(addrsize != NULL);
 
-    // SSLTODO: Use SSL_accept()?
     fd = accept(this->fd, addr, addrsize);
     if (fd == -1)
         return NULL;
 
     if ((new = malloc(sizeof *new)) == NULL) {
-        // SSLTODO: Use SSL_shutdown()?
         close(fd);
         return NULL;
     }
 
-    // SSLTODO: We need more init stuff here, I guess.
     new->fd = fd;
+
+    // We set the nonblock flag here, since SSL prefers to
+    // set this early and we want tcp_server to treat sockets
+    // uniformly.
+    if (!tcpsocket_set_nonblock(new)) {
+        close(fd);
+        free(new);
+        return NULL;
+    }
+
     return new;
 }

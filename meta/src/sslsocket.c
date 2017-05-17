@@ -31,6 +31,14 @@ struct sslsocket_tag {
 #define CERTFILE "server.pem"
 #define CIPHER_LIST "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"
 
+static void ssl_die(sslsocket sock)
+{
+    ERR_print_errors_fp(stderr);
+    if (sock != NULL) {
+    }
+    exit(1);
+}
+
 // Copied from sample program.
 static int verify_callback(int ok, X509_STORE_CTX *store)
 {
@@ -145,24 +153,13 @@ err:
 // Sets the socket options we want on the main socket
 // Suitable for server sockets only.
 // SSLTODO: Use an SSL way of setting SO_REUSEADDR
-static int sslsocket_set_reuseaddr(sslsocket this)
+static status_t sslsocket_set_reuseaddr(sslsocket this)
 {
-#if 0
-    int optval;
-    socklen_t optlen;
-
     assert(this != NULL);
-    assert(this->fd >= 0);
+    assert(this->bio != NULL);
 
-    optval = 1;
-    optlen = (socklen_t)sizeof optval;
-    if (setsockopt(this->fd, SOL_SOCKET, SO_REUSEADDR, &optval, optlen) == -1)
-        return 0;
-#else
-    (void)this;
-#endif
-
-    return 1;
+    BIO_set_bind_mode(this->bio, BIO_BIND_REUSEADDR);
+    return success;
 }
 
 
@@ -509,8 +506,9 @@ sslsocket sslsocket_accept(sslsocket this, struct sockaddr *addr, socklen_t *add
     }
 
     new->bio = BIO_pop(this->bio);
-    new->ssl = SSL_new(new->ctx);
+    new->ssl = SSL_new(this->ctx);
     if (new->ssl == NULL) {
+        ssl_die(new);
         // Meh.
         return NULL; // Big leak, I know
     }

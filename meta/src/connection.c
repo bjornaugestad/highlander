@@ -484,7 +484,10 @@ void connection_recycle(connection this)
     assert(this != NULL);
 
     this->persistent = 0;
-    this->sock = NULL; // Maybe free it too?
+    if (this->sock != NULL) {
+        socket_close(this->sock);
+        this->sock = NULL;
+    }
 
     reset_counters(this);
 }

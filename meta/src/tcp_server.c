@@ -477,11 +477,6 @@ static status_t accept_new_connections(tcp_server this, socket_t sock)
             }
         }
 
-        if (!socket_set_nonblock(newsock)) {
-            socket_close(newsock);
-            return failure;
-        }
-
         /* Check if the client is permitted to connect or not. */
         if (!client_can_connect(this, &addr)) {
             socket_close(newsock);
@@ -498,7 +493,7 @@ static status_t accept_new_connections(tcp_server this, socket_t sock)
             return failure;
          }
 
-        /* Start a thread to handle the connection with this client. */
+        // Start a thread to handle the connection with this client.
         connection_set_params(conn, newsock, &addr);
 
         rc = threadpool_add_work(this->queue,
@@ -543,7 +538,6 @@ status_t tcp_server_get_root_resources(tcp_server this)
     return success;
 }
 
-// SSLTODO: tagonly
 status_t tcp_server_start(tcp_server this)
 {
     status_t rc;
@@ -635,9 +629,7 @@ status_t tcp_server_set_hostname(tcp_server this, const char *host)
 
 status_t tcp_server_start_via_process(process p, tcp_server s)
 {
-    return process_add_object_to_start(
-        p,
-        s,
+    return process_add_object_to_start(p, s,
         (status_t(*)(void*))tcp_server_get_root_resources,
         (status_t(*)(void*))tcp_server_free_root_resources,
         (status_t(*)(void*))tcp_server_start,
@@ -647,7 +639,10 @@ status_t tcp_server_start_via_process(process p, tcp_server s)
 status_t tcp_server_free_root_resources(tcp_server s)
 {
     /* NOTE: 2005-11-27: Check out why we don't close the socket here. */
-    (void)s;
+    // NOTE: 2017-05-17: Maybe because it's the accept-socket? We should still close it, though
+    assert(s != NULL);
+    if (s->sock != NULL)
+        return socket_close(s->sock);
     return success;
 }
 
