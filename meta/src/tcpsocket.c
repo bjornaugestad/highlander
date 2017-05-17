@@ -397,6 +397,7 @@ tcpsocket tcpsocket_accept(tcpsocket this, struct sockaddr *addr, socklen_t *add
         return NULL;
     }
 
+    new->fd = clientfd;
     // We set the nonblock flag here, since SSL prefers to set this
     // early and we want tcp_server to treat sockets uniformly.
     if (!tcpsocket_set_nonblock(new)) {
@@ -405,6 +406,5 @@ tcpsocket tcpsocket_accept(tcpsocket this, struct sockaddr *addr, socklen_t *add
         return NULL;
     }
 
-    new->fd = clientfd;
     return new;
 }
