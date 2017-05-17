@@ -101,7 +101,7 @@ static DH *tmp_dh_callback(SSL *ssl, int is_export, int keylength)
 
 static status_t setup_server_ctx(sslsocket this)
 {
-    int verifyflags = SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
+    int verifyflags = 0; // SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
     int options = SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_SINGLE_DH_USE;
 
     assert(this != NULL);
