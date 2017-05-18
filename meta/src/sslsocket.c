@@ -496,32 +496,33 @@ sslsocket sslsocket_accept(sslsocket this, struct sockaddr *addr,
 
     rc = BIO_do_accept(this->bio);
     if (rc <= 0) {
-        ssl_die(this);
         return NULL;
     }
 
     if ((new = malloc(sizeof *new)) == NULL) {
         BIO_free(BIO_pop(this->bio)); // Just guessing here...
-        ssl_die(this);
         return NULL;
     }
 
     new->bio = BIO_pop(this->bio);
-    if (new->bio == NULL)
-        ssl_die(new);
+    if (new->bio == NULL) {
+        free(new);
+        return NULL;
+    }
 
     new->ssl = SSL_new(this->ctx);
     if (new->ssl == NULL) {
-        ssl_die(new);
-        // Meh.
+        free(new);
         return NULL; // Big leak, I know
     }
 
     SSL_set_accept_state(new->ssl);
     SSL_set_bio(new->ssl, new->bio, new->bio);
     rc = SSL_accept(new->ssl);
-    if (rc <= 0)
+    if (rc <= 0) {
+        // Here we probably want to check for WANT_READ and WANT_WRITE
         ssl_die(new);
+    }
 
     return new;
 }
