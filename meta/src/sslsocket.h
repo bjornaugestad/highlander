@@ -31,6 +31,11 @@ sslsocket sslsocket_create_server_socket(const char *host, int port);
 sslsocket sslsocket_create_client_socket(const char *host, int port);
 status_t sslsocket_close(sslsocket p);
 
+status_t sslsocket_set_rootcert(sslsocket p, const char *path);
+status_t sslsocket_set_private_key(sslsocket p, const char *path);
+status_t sslsocket_set_ciphers(sslsocket p, const char *ciphers);
+status_t sslsocket_set_ca_directory(sslsocket p, const char *path);
+
 #ifdef __cplusplus
 }
 #endif

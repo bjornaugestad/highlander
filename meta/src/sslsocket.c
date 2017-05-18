@@ -24,12 +24,9 @@ struct sslsocket_tag {
     SSL_CTX *ctx;
     SSL *ssl;
     BIO *bio;
-};
 
-#define CADIR    NULL
-#define CAFILE   "rootcert.pem"
-#define CERTFILE "server.pem"
-#define CIPHER_LIST "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"
+    const char *rootcert, *ciphers, *cadir, *private_key;
+};
 
 static void ssl_die(sslsocket sock)
 {
@@ -98,6 +95,27 @@ static DH *tmp_dh_callback(SSL *ssl, int is_export, int keylength)
     }
     return ret;
 }
+
+// This must happen once per server (accept) context.
+// At the same time, the defines must go, and their values
+// must be provided via an API. That's not hard, but we need to do
+// it in a pretty way that doesn't affect the generalized socket
+// API too much.
+// IRL, where would these values reside? The pem-files would
+// of course be very protected and not stored in the bin directory.
+// Maybe in /opt/foo/etc, /opt/foo/conf.d or something similar?
+// Or maybe on some medium removed after start? Who knows?
+// We only know that we need these two files, and optionally
+// a path, CADIR, to a directory with trusted certs. 
+// We overload some functions so we can do instantaneous verification.
+// An alternative could be to add a map/list of "properties".
+// For now, we prefer the most deterministic version.
+//
+
+#define CADIR    NULL
+#define CAFILE   "rootcert.pem"
+#define CERTFILE "server.pem"
+#define CIPHER_LIST "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"
 
 static status_t setup_server_ctx(sslsocket this)
 {
@@ -526,3 +544,32 @@ sslsocket sslsocket_accept(sslsocket this, struct sockaddr *addr,
 
     return new;
 }
+
+status_t sslsocket_set_rootcert(sslsocket this, const char *path)
+{
+    assert(this != NULL);
+    this->rootcert = path;
+    return success;
+}
+
+status_t sslsocket_set_private_key(sslsocket this, const char *path)
+{
+    assert(this != NULL);
+    this->private_key = path;
+    return success;
+}
+
+status_t sslsocket_set_ciphers(sslsocket this, const char *ciphers)
+{
+    assert(this != NULL);
+    this->ciphers = ciphers;
+    return success;
+}
+
+status_t sslsocket_set_ca_directory(sslsocket this, const char *path)
+{
+    assert(this != NULL);
+    this->cadir = path;
+    return success;
+}
+
