@@ -1120,7 +1120,7 @@ static void * serverthread(void *arg)
     http_server_set_default_page_handler(this, pageserver);
 
     if (!http_server_get_root_resources(this))
-        die("Could not get root resources\n");
+        die("%s:Could not get root resources\n", __func__);
 
     if (!http_server_start(this))
         die("Could not start server:%s\n", strerror(errno));

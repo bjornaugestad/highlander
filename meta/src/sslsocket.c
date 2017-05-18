@@ -21,11 +21,8 @@
 #include <sslsocket.h>
 
 struct sslsocket_tag {
-    SSL_CTX *ctx;
     SSL *ssl;
     BIO *bio;
-
-    const char *rootcert, *ciphers, *cadir, *private_key;
 };
 
 static void ssl_die(sslsocket sock)
@@ -35,67 +32,6 @@ static void ssl_die(sslsocket sock)
     }
     exit(1);
 }
-
-// Copied from sample program.
-static int verify_callback(int ok, X509_STORE_CTX *store)
-{
-    char data[256];
-
-    if (!ok) {
-        X509 *cert = X509_STORE_CTX_get_current_cert(store);
-        int  depth = X509_STORE_CTX_get_error_depth(store);
-        int  err = X509_STORE_CTX_get_error(store);
-
-        fprintf(stderr, "-Error with certificate at depth: %i\n", depth);
-        X509_NAME_oneline(X509_get_issuer_name(cert), data, 256);
-        fprintf(stderr, "  issuer   = %s\n", data);
-        X509_NAME_oneline(X509_get_subject_name(cert), data, 256);
-        fprintf(stderr, "  subject  = %s\n", data);
-        fprintf(stderr, "  err %i:%s\n", err, X509_verify_cert_error_string(err));
-    }
-
-    return ok;
-}
-
-// Copied from sample program. Needs change.
-DH *dh1024 = NULL;
-
-__attribute__((warn_unused_result))
-static status_t init_dhparams(void)
-{
-    BIO *bio;
-
-    bio = BIO_new_file("dh1024.pem", "r");
-    if (!bio)
-        return failure;
-
-    dh1024 = PEM_read_bio_DHparams(bio, NULL, NULL, NULL);
-    if (!dh1024)
-        return failure;
-
-    BIO_free(bio);
-    return success;
-}
-
-static DH *tmp_dh_callback(SSL *ssl, int is_export, int keylength)
-{
-    DH *ret;
-    (void)ssl;
-    (void)is_export;
-
-    if (!dh1024)
-        if (!init_dhparams())
-            return NULL;
-
-    switch (keylength) {
-        case 1024:
-        default: /* generating DH params is too costly to do on the fly */
-            ret = dh1024;
-            break;
-    }
-    return ret;
-}
-
 // This must happen once per server (accept) context.
 // At the same time, the defines must go, and their values
 // must be provided via an API. That's not hard, but we need to do
@@ -115,58 +51,7 @@ static DH *tmp_dh_callback(SSL *ssl, int is_export, int keylength)
 #define CADIR    NULL
 #define CAFILE   "rootcert.pem"
 #define CERTFILE "server.pem"
-#define CIPHER_LIST "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"
 
-static status_t setup_server_ctx(sslsocket this)
-{
-    int verifyflags = 0; // SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
-    int options = SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_SINGLE_DH_USE;
-
-    assert(this != NULL);
-    assert(this->ctx == NULL);
-
-    this->ctx = SSL_CTX_new(TLSv1_server_method());
-    if (this->ctx == NULL)
-        goto err;
-
-    // Tell SSL where to find trusted CA certificates
-    if (SSL_CTX_load_verify_locations(this->ctx, CAFILE, CADIR) != 1)
-        goto err;
-
-    if (SSL_CTX_set_default_verify_paths(this->ctx) != 1)
-        goto err;
-
-    // Load CERTFILE from disk
-    if (SSL_CTX_use_certificate_chain_file(this->ctx, CERTFILE) != 1)
-        goto err;
-
-    // Load Private Key from disk
-    if (SSL_CTX_use_PrivateKey_file(this->ctx, CERTFILE, SSL_FILETYPE_PEM) != 1)
-        goto err;
-
-    SSL_CTX_set_verify(this->ctx, verifyflags, verify_callback);
-    SSL_CTX_set_verify_depth(this->ctx, 4);
-    SSL_CTX_set_options(this->ctx, options);
-
-    SSL_CTX_set_tmp_dh_callback(this->ctx, tmp_dh_callback);
-    if (SSL_CTX_set_cipher_list(this->ctx, CIPHER_LIST) != 1)
-        goto err;
-
-    return success;
-
-err:
-    // An error message is (probably) available on SSL's error stack.
-    // Pop it and set errno using fail().
-    // For now, dump all errors on stderr.
-    ERR_print_errors_fp(stderr);
-
-    if (this->ctx != NULL) {
-        SSL_CTX_free(this->ctx);
-        this->ctx = NULL;
-    }
-
-    return failure;
-}
 
 // Sets the socket options we want on the main socket
 // Suitable for server sockets only.
@@ -375,14 +260,6 @@ status_t sslsocket_listen(sslsocket this, int backlog)
     return success;
 }
 
-// SSLTODO: We need to initialize the _server_, that'll create an SSL_CTX
-// SSLTODO: object. We use that object to create a BIO object. Then we accept
-// SSLTODO: connections to the BIO, and create an SSL object using
-// SSLTODO: SSL_new(), SSL_set_accept_state(), SSL_set_bio(). When all
-// SSLTODO: that shit's done, we can call SSL_accept(), and do
-// SSLTODO: post connection checks on the server side too. (highly optional)
-// SSLTODO:
-// SSLTODO: The example programs are good. Go with them
 sslsocket sslsocket_create_server_socket(const char *host, int port)
 {
     sslsocket this;
@@ -399,10 +276,12 @@ sslsocket sslsocket_create_server_socket(const char *host, int port)
     if ((this = sslsocket_socket()) == NULL)
         return NULL;
 
+    #if 0
     if (!setup_server_ctx(this)) {
         sslsocket_close(this);
         return NULL;
     }
+    #endif
 
     // Now create the server socket
     this->bio = BIO_new_accept(hostport);
@@ -449,7 +328,7 @@ sslsocket sslsocket_create_client_socket(const char *host, int port)
         goto err;
 
     // Note that this->ctx is garbage. We need API changes.
-    this->ssl = SSL_new(this->ctx);
+    this->ssl = NULL; // SSL_new(this->ctx);
     if (this->ssl == NULL)
         goto err;
 
@@ -528,7 +407,7 @@ sslsocket sslsocket_accept(sslsocket this, struct sockaddr *addr,
         return NULL;
     }
 
-    new->ssl = SSL_new(this->ctx);
+    new->ssl = NULL; // TO make things build: SSL_new(this->ctx);
     if (new->ssl == NULL) {
         free(new);
         return NULL; // Big leak, I know
@@ -543,33 +422,5 @@ sslsocket sslsocket_accept(sslsocket this, struct sockaddr *addr,
     }
 
     return new;
-}
-
-status_t sslsocket_set_rootcert(sslsocket this, const char *path)
-{
-    assert(this != NULL);
-    this->rootcert = path;
-    return success;
-}
-
-status_t sslsocket_set_private_key(sslsocket this, const char *path)
-{
-    assert(this != NULL);
-    this->private_key = path;
-    return success;
-}
-
-status_t sslsocket_set_ciphers(sslsocket this, const char *ciphers)
-{
-    assert(this != NULL);
-    this->ciphers = ciphers;
-    return success;
-}
-
-status_t sslsocket_set_ca_directory(sslsocket this, const char *path)
-{
-    assert(this != NULL);
-    this->cadir = path;
-    return success;
 }
 

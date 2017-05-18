@@ -23,13 +23,6 @@ struct gensocket_tag {
     status_t (*set_nonblock)(void *instance);
     status_t (*clear_nonblock)(void *instance);
     ssize_t  (*read)(void *instance, char *buf, size_t count, int timeout, int retries);
-
-    // Some function which make sense only to sslsockets.
-    // They return true for other socket types.
-    status_t (*set_rootcert)(void *instance, const char *path);
-    status_t (*set_private_key)(void *instance, const char *path);
-    status_t (*set_ciphers)(void *instance, const char *ciphers);
-    status_t (*set_ca_directory)(void *instance, const char *path);
 };
 
 static socket_t create_instance(int type)
@@ -55,12 +48,6 @@ static socket_t create_instance(int type)
         p->set_nonblock = (typeof(p->set_nonblock))tcpsocket_set_nonblock;
         p->clear_nonblock = (typeof(p->clear_nonblock))tcpsocket_clear_nonblock;
         p->read = (typeof(p->read))tcpsocket_read;
-
-        // No implementation
-        p->set_rootcert = 0;
-        p->set_private_key = 0;
-        p->set_ciphers = 0;
-        p->set_ca_directory = 0;
     }
     else {
         p->bind = (typeof(p->bind))sslsocket_bind;
@@ -73,11 +60,6 @@ static socket_t create_instance(int type)
         p->set_nonblock = (typeof(p->set_nonblock))sslsocket_set_nonblock;
         p->clear_nonblock = (typeof(p->clear_nonblock))sslsocket_clear_nonblock;
         p->read = (typeof(p->read))sslsocket_read;
-
-        p->set_rootcert = (typeof(p->set_rootcert))sslsocket_set_rootcert;
-        p->set_private_key = (typeof(p->set_private_key))sslsocket_set_private_key;
-        p->set_ciphers = (typeof(p->set_ciphers))sslsocket_set_ciphers;
-        p->set_ca_directory = (typeof(p->set_ca_directory))sslsocket_set_ca_directory;
     }
 
     return p;
@@ -252,49 +234,5 @@ ssize_t socket_read(socket_t p, char *buf, size_t count, int timeout, int retrie
     assert(p->instance != NULL);
 
     return p->read(p->instance, buf, count, timeout, retries);
-}
-
-status_t socket_set_rootcert(socket_t p, const char *path)
-{
-    assert(p != NULL);
-    assert(p->instance != NULL);
-
-    if (p->set_rootcert == 0)
-        return success;
-
-    return p->set_rootcert(p->instance, path);
-}
-
-status_t socket_set_private_key(socket_t p, const char *path)
-{
-    assert(p != NULL);
-    assert(p->instance != NULL);
-
-    if (p->set_private_key == 0)
-        return success;
-
-    return p->set_private_key(p->instance, path);
-}
-
-status_t socket_set_ciphers(socket_t p, const char *ciphers)
-{
-    assert(p != NULL);
-    assert(p->instance != NULL);
-
-    if (p->set_ciphers == 0)
-        return success;
-
-    return p->set_ciphers(p->instance, ciphers);
-}
-
-status_t socket_set_ca_directory(socket_t p, const char *path)
-{
-    assert(p != NULL);
-    assert(p->instance != NULL);
-
-    if (p->set_ca_directory == 0)
-        return success;
-
-    return p->set_ca_directory(p->instance, path);
 }
 

@@ -41,12 +41,6 @@ status_t socket_write(socket_t p, const char *s, size_t count, int timeout, int 
 status_t socket_set_nonblock(socket_t p);
 status_t socket_clear_nonblock(socket_t p);
 ssize_t  socket_read(socket_t p, char *buf, size_t count, int timeout, int retries);
-
-status_t socket_set_rootcert(socket_t p, const char *path);
-status_t socket_set_private_key(socket_t p, const char *path);
-status_t socket_set_ciphers(socket_t p, const char *ciphers);
-status_t socket_set_ca_directory(socket_t p, const char *path);
-
 #ifdef __cplusplus
 }
 #endif
