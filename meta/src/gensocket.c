@@ -88,18 +88,18 @@ socket_t socket_create_server_socket(int type, const char *host, int port)
 }
 
 // A ctor function
-socket_t socket_create_client_socket(int type, const char *host, int port)
+socket_t socket_create_client_socket(int type, void *context, 
+    const char *host, int port)
 {
     socket_t this;
 
-    this = create_instance(type);
-    if (this == NULL)
+    if ((this = create_instance(type)) == NULL)
         return NULL;
 
     if (type == SOCKTYPE_TCP)
         this->instance = tcpsocket_create_client_socket(host, port);
     else
-        this->instance = sslsocket_create_client_socket(host, port);
+        this->instance = sslsocket_create_client_socket(context, host, port);
 
     if (this->instance == NULL) {
         free(this);
@@ -132,7 +132,8 @@ socket_t socket_socket(int type)
 }
 
 // Accept is special and is also a ctor like function.
-socket_t socket_accept(socket_t p, struct sockaddr *addr, socklen_t *addrsize)
+socket_t socket_accept(socket_t p, void *context, 
+    struct sockaddr *addr, socklen_t *addrsize)
 {
     socket_t new;
 
@@ -143,7 +144,7 @@ socket_t socket_accept(socket_t p, struct sockaddr *addr, socklen_t *addrsize)
     if (p->type == SOCKTYPE_TCP)
         new->instance = tcpsocket_accept(p->instance, addr, addrsize);
     else
-        new->instance = sslsocket_accept(p->instance, addr, addrsize);
+        new->instance = sslsocket_accept(p->instance, context, addr, addrsize);
 
     if (new->instance == NULL) {
         free(new);

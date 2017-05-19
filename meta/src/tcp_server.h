@@ -136,7 +136,6 @@ status_t tcp_server_set_rootcert(tcp_server p, const char *path);
 status_t tcp_server_set_private_key(tcp_server p, const char *path);
 status_t tcp_server_set_ciphers(tcp_server p, const char *ciphers);
 status_t tcp_server_set_ca_directory(tcp_server p, const char *path);
-status_t tcp_server_set_dh1024(tcp_server p, const char *path);
 
 #ifdef __cplusplus
 }

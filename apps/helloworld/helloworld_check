@@ -1,0 +1,55 @@
+#!/bin/bash
+# We test the hello world program by 
+# a) starting the server
+# b) Issuing a get request, e.g. using wget
+# c) interpret the result
+# d) stop the server
+# e) report the result
+
+
+FACIT="<html><head><title>Hello, world</title></head><body>Hello, world</body></html>"
+
+# Kill other instances, if any
+killall -qw helloworld > /dev/null 2>&1
+
+./helloworld -t > /dev/null 2>&1 &
+sleep 0.5
+
+wget -O /tmp/x localhost:2000 > /dev/null 2>&1
+GOT=$?
+killall -qw helloworld > /dev/null 2>&1
+
+if test $GOT -ne 0; then
+    exit 1
+fi
+
+REPLY=$(cat /tmp/x)
+if test "$REPLY" != "$FACIT" ; then
+    echo "Expected: $FACIT"
+    echo "Received: $REPLY"
+    exit 1
+fi
+
+# Rinse and repeat for https
+killall -qw helloworld > /dev/null 2>&1
+
+./helloworld > /dev/null 2>&1 &
+sleep 0.5
+
+wget -O /tmp/x --no-check-certificate --secure-protocol=auto https://localhost:2000 > /dev/null 2>&1
+GOT=$?
+killall -qw helloworld > /dev/null 2>&1
+
+if test $GOT -ne 0; then
+    exit 1
+fi
+
+REPLY=$(cat /tmp/x)
+if test "$REPLY" != "$FACIT" ; then
+    echo "Expected: $FACIT"
+    echo "Received: $REPLY"
+    exit 1
+fi
+
+echo 0
+

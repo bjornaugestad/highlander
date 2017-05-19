@@ -57,6 +57,8 @@ int main(int argc, char *argv[])
     if (!tcp_server_init(srv))
         exit(2);
 
+    tcp_server_set_rootcert(srv, "./rootcert.pem");
+    tcp_server_set_private_key(srv, "./server.pem");
     tcp_server_set_service_function(srv, fn, NULL);
     tcp_server_start_via_process(p, srv);
 

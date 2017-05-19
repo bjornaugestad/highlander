@@ -351,19 +351,16 @@ status_t http_server_alloc(http_server this)
 
 static status_t configure_tcp_server(http_server this)
 {
-    tcp_server se;
-
-    se = this->tcpsrv;
-    if (!tcp_server_set_hostname(se, this->host))
+    if (!tcp_server_set_hostname(this->tcpsrv, this->host))
         return failure;
 
-    tcp_server_set_port(se, this->port);
-    tcp_server_set_timeout(se, this->timeout_read, this->timeout_write, this->timeout_accept);
-    tcp_server_set_retries(se, this->retries_read, this->retries_write);
-    tcp_server_set_queue_size(se, this->queue_size);
-    tcp_server_set_block_when_full(se, this->block_when_full);
-    tcp_server_set_worker_threads(se, this->worker_threads);
-    tcp_server_set_service_function(se, serviceConnection, this);
+    tcp_server_set_port(this->tcpsrv, this->port);
+    tcp_server_set_timeout(this->tcpsrv, this->timeout_read, this->timeout_write, this->timeout_accept);
+    tcp_server_set_retries(this->tcpsrv, this->retries_read, this->retries_write);
+    tcp_server_set_queue_size(this->tcpsrv, this->queue_size);
+    tcp_server_set_block_when_full(this->tcpsrv, this->block_when_full);
+    tcp_server_set_worker_threads(this->tcpsrv, this->worker_threads);
+    tcp_server_set_service_function(this->tcpsrv, serviceConnection, this);
 
     return success;
 }
@@ -1090,6 +1087,38 @@ unsigned long http_server_sum_denied_clients(http_server p)
 {
     assert(p != NULL);
     return tcp_server_sum_denied_clients(p->tcpsrv);
+}
+
+status_t http_server_set_rootcert(http_server this, const char *path)
+{
+    assert(this != NULL);
+    assert(this->tcpsrv != NULL);
+
+    return tcp_server_set_rootcert(this->tcpsrv, path);
+}
+
+status_t http_server_set_private_key(http_server this, const char *path)
+{
+    assert(this != NULL);
+    assert(this->tcpsrv != NULL);
+
+    return tcp_server_set_private_key(this->tcpsrv, path);
+}
+
+status_t http_server_set_ciphers(http_server this, const char *ciphers)
+{
+    assert(this != NULL);
+    assert(this->tcpsrv != NULL);
+
+    return tcp_server_set_ciphers(this->tcpsrv, ciphers);
+}
+
+status_t http_server_set_ca_directory(http_server this, const char *path)
+{
+    assert(this != NULL);
+    assert(this->tcpsrv != NULL);
+
+    return tcp_server_set_ca_directory(this->tcpsrv, path);
 }
 
 #ifdef CHECK_HTTP_SERVER

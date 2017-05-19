@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# Kill off other instances, if any
+killall -qw echoserver >/dev/null 2>&1
+
+./echoserver -t >/dev/null 2>&1 &
+pid=$!
+sleep 0.5s
+
+X=$(echo "hello" | nc localhost 2000)
+if test "x$X" != "xhello"; then
+    exit 1
+fi
+killall -qw echoserver >/dev/null 2>&1
+
+# Now do the same with SSL
+./echoserver >/dev/null 2>&1 &
+pid=$!
+sleep 0.5s
+X=$(echo "hellossl" | nc --ssl localhost 2000)
+if test "x$X" != "xhellossl"; then
+    exit 1
+fi
+
+killall -qw echoserver >/dev/null 2>&1
+exit 0

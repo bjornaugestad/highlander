@@ -6,7 +6,6 @@
 *.log
 *.trs
 Makefile.in
-*_check
 autom4te.cache
 Makefile
 .deps

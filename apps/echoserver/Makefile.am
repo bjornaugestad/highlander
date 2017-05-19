@@ -13,3 +13,4 @@ echoserver_CFLAGS=\
 echoserver_LDFLAGS=-L$(top_srcdir)/meta/src -L$(top_srcdir)/http/src
 echoserver_LDADD=-lhighlander -lmetad -lpthread -lssl -lcrypto
 
+TESTS=echoserver_check

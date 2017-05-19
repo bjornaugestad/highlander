@@ -140,12 +140,6 @@ static bool client_can_connect(tcp_server srv, struct sockaddr_in* addr)
     return true;
 }
 
-// SSLTODO: We need a per-server SSL_CTX, I guess. Remember that one
-// SSLTODO: UNIX process can contain many active tcp_server objects
-// SSLTODO: and run many servers from within the same process.
-// SSLTODO:
-// SSLTODO: Each socket(active connection) will have its own SSL object.
-
 // Default cipherlist. Probably needs updating/tightening.
 #define CIPHER_LIST "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"
 tcp_server tcp_server_new(int socktype)
@@ -168,14 +162,13 @@ tcp_server tcp_server_new(int socktype)
         new->sock = NULL;
         new->rootcert = NULL;
         new->private_key = NULL;
+        new->cadir = NULL;
 
         new->ciphers = cstring_dup(CIPHER_LIST);
         if (new->ciphers == NULL) {
             free(new);
             return NULL;
         }
-
-        new->cadir = NULL;
 
         new->pattern_compiled = false;
         new->host = NULL;
@@ -442,7 +435,7 @@ static status_t accept_new_connections(tcp_server this, socket_t sock)
         }
 
         addrsize = sizeof addr;
-        newsock = socket_accept(sock, (struct sockaddr*)&addr, &addrsize);
+        newsock = socket_accept(sock, this->ctx, (struct sockaddr*)&addr, &addrsize);
         if (newsock == NULL) {
             switch (errno) {
                 // EPROTO is not defined for freebsd, and Stevens
@@ -536,6 +529,44 @@ static int verify_callback(int ok, X509_STORE_CTX *store)
     return ok;
 }
 
+static DH *get_dh2048(void)
+{
+	static const unsigned char dh2048_p[]={
+		0x9D,0xFC,0x9A,0xE3,0xC2,0xE0,0x67,0xDF,0xDD,0x87,0xC9,0x88,
+		0x1A,0xFA,0xB9,0x0F,0x4D,0xD8,0x0C,0xF1,0x91,0x51,0x61,0xEC,
+		0x39,0x13,0x0D,0x9B,0xCA,0x0A,0x67,0x3A,0x3B,0xE1,0x86,0xB6,
+		0xE0,0x0A,0xAA,0xE3,0xDC,0x02,0xA0,0x10,0x10,0x25,0xAD,0x90,
+		0xFD,0x86,0x1B,0x0F,0xA6,0xDF,0x47,0x84,0x33,0x6D,0x13,0x64,
+		0x78,0xAA,0xDD,0x69,0x39,0x67,0x94,0x85,0x8A,0xD7,0x9C,0x95,
+		0x32,0x32,0x92,0x2A,0x33,0xAE,0xFC,0xB8,0xA7,0xC9,0x49,0x91,
+		0x57,0x51,0x38,0xD7,0xCA,0xC7,0x12,0x9B,0x5C,0x8C,0xBD,0x81,
+		0x4D,0x92,0xB4,0xD5,0x6A,0x0E,0x28,0x30,0x49,0x35,0x14,0x56,
+		0x97,0x69,0x5B,0xBE,0xA5,0x96,0x5E,0xA6,0xCC,0x2B,0xAD,0xD9,
+		0x00,0x65,0x0A,0x7A,0x74,0x40,0x36,0x3D,0x1A,0x08,0x09,0x6B,
+		0x99,0xC2,0xDA,0x75,0xA4,0x45,0x09,0xFA,0xC3,0x57,0x99,0x1F,
+		0xF5,0x59,0x0A,0xD2,0x4C,0x97,0x41,0xDB,0x6E,0x3A,0x7E,0x5D,
+		0x0E,0x7F,0xC6,0x9A,0x07,0xA7,0x6D,0xFC,0x3E,0xDC,0xB4,0x45,
+		0x0D,0x61,0x9E,0x42,0x1F,0x8E,0x18,0x9D,0x9C,0xEB,0x34,0x67,
+		0x11,0x6F,0xF7,0x72,0x2B,0x1F,0x46,0xFC,0x4F,0xFC,0x38,0x29,
+		0xFF,0x9F,0x57,0x2F,0xA2,0x8E,0xBE,0x14,0x3D,0xF8,0xAB,0x15,
+		0xF4,0x27,0x45,0xCE,0x94,0xE6,0x86,0x75,0x9A,0x33,0x35,0x57,
+		0x6C,0xA1,0x00,0x5B,0x6F,0x0C,0x74,0x8C,0x85,0x1B,0x62,0x3D,
+		0x4A,0x98,0x20,0xC0,0x81,0x33,0x02,0xEE,0x9A,0x45,0xF2,0xC9,
+		0x11,0x65,0x9E,0xB3,0x02,0xA0,0x13,0x85,0xAC,0xCF,0x73,0x01,
+		0x46,0x00,0xEC,0x83,
+		};
+	static const unsigned char dh2048_g[]={
+		0x02,
+		};
+	DH *dh;
+
+	if ((dh=DH_new()) == NULL) return(NULL);
+	dh->p=BN_bin2bn(dh2048_p,sizeof(dh2048_p),NULL);
+	dh->g=BN_bin2bn(dh2048_g,sizeof(dh2048_g),NULL);
+	if ((dh->p == NULL) || (dh->g == NULL))
+		{ DH_free(dh); return(NULL); }
+	return(dh);
+}
 static DH *get_dh4096(void)
 {
     static const unsigned char dh4096_p[] = {
@@ -600,6 +631,7 @@ static DH *get_dh4096(void)
 
     return dh;
 }
+
 static status_t setup_server_ctx(tcp_server this)
 {
     int verifyflags = 0; // SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
@@ -614,9 +646,7 @@ static status_t setup_server_ctx(tcp_server this)
         goto err;
 
     // Tell SSL where to find trusted CA certificates
-    assert(this->rootcert && "set rootcert first");
     const char *rootcert = c_str(this->rootcert);
-    assert(rootcert && *rootcert && "rootcert can't be empty");
 
     const char *cadir = NULL;
     if (this->cadir != NULL)
@@ -631,15 +661,11 @@ static status_t setup_server_ctx(tcp_server this)
         goto err;
 
     // Load private key/certfile from disk
-    assert(this->private_key && "Set private key first");
     const char *private_key = c_str(this->private_key);
-    assert(private_key && *private_key && "Private key can't be empty");
-
     rc = SSL_CTX_use_certificate_chain_file(this->ctx, private_key);
     if (rc != 1)
         goto err;
 
-    // Load Private Key from disk
     rc = SSL_CTX_use_PrivateKey_file(this->ctx, private_key, SSL_FILETYPE_PEM);
     if (rc != 1)
         goto err;
@@ -648,7 +674,10 @@ static status_t setup_server_ctx(tcp_server this)
     SSL_CTX_set_verify_depth(this->ctx, 4);
     SSL_CTX_set_options(this->ctx, options);
 
-    SSL_CTX_set_tmp_dh(this->ctx, get_dh4096());
+    if (1)
+        SSL_CTX_set_tmp_dh(this->ctx, get_dh2048());
+    else
+        SSL_CTX_set_tmp_dh(this->ctx, get_dh4096());
 
     const char *ciphers = c_str(this->ciphers);
     rc = SSL_CTX_set_cipher_list(this->ctx, ciphers);
@@ -661,6 +690,7 @@ err:
     // An error message is (probably) available on SSL's error stack.
     // Pop it and set errno using fail().
     // For now, dump all errors on stderr.
+    fprintf(stderr, "%s(): Some error occurred\n", __func__);
     ERR_print_errors_fp(stderr);
 
     if (this->ctx != NULL) {

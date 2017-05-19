@@ -18,7 +18,8 @@ typedef struct sslsocket_tag *sslsocket;
 
 sslsocket sslsocket_socket(void);
 status_t sslsocket_listen(sslsocket p, int backlog);
-sslsocket sslsocket_accept(sslsocket p, struct sockaddr *addr, socklen_t *addrsize);
+sslsocket sslsocket_accept(sslsocket p, void *ssl_ctx, 
+    struct sockaddr *addr, socklen_t *addrsize);
 ssize_t  sslsocket_read(sslsocket p, char *buf, size_t count, int timeout, int retries);
 status_t sslsocket_poll_for(sslsocket this, int timeout, int poll_for);
 status_t sslsocket_wait_for_data(sslsocket p, int timeout);
@@ -28,7 +29,7 @@ status_t sslsocket_bind(sslsocket p, const char *hostname, int port);
 status_t sslsocket_set_nonblock(sslsocket p);
 status_t sslsocket_clear_nonblock(sslsocket p);
 sslsocket sslsocket_create_server_socket(const char *host, int port);
-sslsocket sslsocket_create_client_socket(const char *host, int port);
+sslsocket sslsocket_create_client_socket(void *context, const char *host, int port);
 status_t sslsocket_close(sslsocket p);
 
 status_t sslsocket_set_rootcert(sslsocket p, const char *path);

@@ -15,3 +15,5 @@ helloworld_CFLAGS=\
 helloworld_LDFLAGS=-L$(top_srcdir)/meta/src -L$(top_srcdir)/http/src
 helloworld_LDADD=-lhighlander -lmetad -lssl -lcrypto -lpthread
 
+# See if we can use a script to check this program
+TESTS=helloworld_check

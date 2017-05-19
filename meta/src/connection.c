@@ -205,7 +205,7 @@ status_t connection_connect(connection this, const char *host, int port)
 {
     assert(this != NULL);
 
-    if ((this->sock = socket_create_client_socket(SOCKTYPE_TCP, host, port)) == NULL)
+    if ((this->sock = socket_create_client_socket(SOCKTYPE_TCP, NULL, host, port)) == NULL)
         return failure;
 
     return success;

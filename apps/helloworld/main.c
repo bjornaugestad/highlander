@@ -41,8 +41,6 @@ static void parse_command_line(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
     http_server s;
-    if (!openssl_init())
-        exit(1);
     parse_command_line(argc, argv);
 
     s = http_server_new(m_servertype);
@@ -53,6 +51,18 @@ int main(int argc, char *argv[])
     if (!http_server_add_page(s, "/", page_handler, NULL))
         die("Could not add page.\n");
 
+    if (m_servertype == SOCKTYPE_SSL) {
+        if (!openssl_init())
+            exit(1);
+
+        if (!http_server_set_rootcert(s, "./rootcert.pem"))
+            die("Meh. Could not set root cert\n");
+
+        if (!http_server_set_private_key(s, "./server.pem"))
+            die("Meh. Could not set private key\n");
+    }
+
+    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     if (!http_server_get_root_resources(s))
         die("Could not get root resources\n");
 

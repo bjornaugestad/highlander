@@ -25,9 +25,9 @@ extern "C" {
 typedef struct gensocket_tag *socket_t;
 
 socket_t socket_create_server_socket(int type, const char *host, int port);
-socket_t socket_create_client_socket(int type, const char *host, int port);
+socket_t socket_create_client_socket(int type, void *context, const char *host, int port);
 socket_t socket_socket(int type);
-socket_t socket_accept(socket_t p, struct sockaddr *addr, socklen_t *addrsize);
+socket_t socket_accept(socket_t p, void *context, struct sockaddr *addr, socklen_t *addrsize);
 
 status_t socket_bind(socket_t p, const char *hostname, int port);
 status_t socket_listen(socket_t p, int backlog);

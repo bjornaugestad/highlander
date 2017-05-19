@@ -32,26 +32,6 @@ static void ssl_die(sslsocket sock)
     }
     exit(1);
 }
-// This must happen once per server (accept) context.
-// At the same time, the defines must go, and their values
-// must be provided via an API. That's not hard, but we need to do
-// it in a pretty way that doesn't affect the generalized socket
-// API too much.
-// IRL, where would these values reside? The pem-files would
-// of course be very protected and not stored in the bin directory.
-// Maybe in /opt/foo/etc, /opt/foo/conf.d or something similar?
-// Or maybe on some medium removed after start? Who knows?
-// We only know that we need these two files, and optionally
-// a path, CADIR, to a directory with trusted certs. 
-// We overload some functions so we can do instantaneous verification.
-// An alternative could be to add a map/list of "properties".
-// For now, we prefer the most deterministic version.
-//
-
-#define CADIR    NULL
-#define CAFILE   "rootcert.pem"
-#define CERTFILE "server.pem"
-
 
 // Sets the socket options we want on the main socket
 // Suitable for server sockets only.
@@ -276,13 +256,6 @@ sslsocket sslsocket_create_server_socket(const char *host, int port)
     if ((this = sslsocket_socket()) == NULL)
         return NULL;
 
-    #if 0
-    if (!setup_server_ctx(this)) {
-        sslsocket_close(this);
-        return NULL;
-    }
-    #endif
-
     // Now create the server socket
     this->bio = BIO_new_accept(hostport);
 
@@ -295,12 +268,8 @@ sslsocket sslsocket_create_server_socket(const char *host, int port)
     return NULL;
 }
 
-// SSLTODO: The SSL connect procedure is more complicated than the normal connect procedure.
-// SSLTODO: The sample code in client3.c illustrates this. One first connects a BIO, then
-// SSLTODO: create an SSL object, initializes it with the BIO, then connects the SSL object
-// SSLTODO: itself. The client3.c code uses a post connection check which validates the
-// SSLTODO: server's certificate. This code is not for the meek. ;)
-sslsocket sslsocket_create_client_socket(const char *host, int port)
+sslsocket sslsocket_create_client_socket(void *context,
+    const char *host, int port)
 {
     sslsocket this;
     char hostport[1024];
@@ -327,8 +296,7 @@ sslsocket sslsocket_create_client_socket(const char *host, int port)
     if (BIO_do_connect(this->bio) <= 0)
         goto err;
 
-    // Note that this->ctx is garbage. We need API changes.
-    this->ssl = NULL; // SSL_new(this->ctx);
+    this->ssl = SSL_new(context);
     if (this->ssl == NULL)
         goto err;
 
@@ -378,8 +346,8 @@ status_t sslsocket_close(sslsocket this)
     return success;
 }
 
-sslsocket sslsocket_accept(sslsocket this, struct sockaddr *addr,
-    socklen_t *addrsize)
+sslsocket sslsocket_accept(sslsocket this, void *context, 
+    struct sockaddr *addr, socklen_t *addrsize)
 {
     sslsocket new;
     int rc;
@@ -407,7 +375,7 @@ sslsocket sslsocket_accept(sslsocket this, struct sockaddr *addr,
         return NULL;
     }
 
-    new->ssl = NULL; // TO make things build: SSL_new(this->ctx);
+    new->ssl = SSL_new(context);
     if (new->ssl == NULL) {
         free(new);
         return NULL; // Big leak, I know
