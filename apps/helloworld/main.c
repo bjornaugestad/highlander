@@ -62,7 +62,6 @@ int main(int argc, char *argv[])
             die("Meh. Could not set private key\n");
     }
 
-    fprintf(stderr, "%s(%d)\n", __func__, __LINE__);
     if (!http_server_get_root_resources(s))
         die("Could not get root resources\n");
 

@@ -25,14 +25,6 @@ struct sslsocket_tag {
     BIO *bio;
 };
 
-static void ssl_die(sslsocket sock)
-{
-    ERR_print_errors_fp(stderr);
-    if (sock != NULL) {
-    }
-    exit(1);
-}
-
 // Sets the socket options we want on the main socket
 // Suitable for server sockets only.
 static status_t sslsocket_set_reuseaddr(sslsocket this)
@@ -191,29 +183,12 @@ sslsocket_bind(sslsocket this, const char *hostname, int port)
     // Binds at first call
     rc = BIO_do_accept(this->bio);
     if (rc <= 0) {
-        ssl_die(this);
-        ERR_print_errors_fp(stderr);
         return failure;
     }
 
     return success;
 }
 
-// TODO: Lots of stuff. We need the SSL_CTX since that one's
-// global-ish. I guess the SSL_CTX should belong to
-// the tcp_server instance? We don't want to create
-// one SSL_CTX per sslsocket. ATM, we only have one
-// server class, the tcp_server. That class knows about
-// the socktype and holds a socket_t base class instance.
-// tcp_server_get_root_resources() calls socket_create_server_socket(),
-// it could do more. For example, it could create the
-// SSL_CTX and serve that as an argument to this fn.
-// An alternative is to virtualize the tcp_server class,
-// but that seems overkill when we just need a couple
-// of if-statements and some calls.
-//
-// One issue may be that we don't know the socket type
-// at this point. 
 sslsocket sslsocket_socket(void)
 {
     sslsocket this;
@@ -257,7 +232,10 @@ sslsocket sslsocket_create_server_socket(const char *host, int port)
         return NULL;
 
     // Now create the server socket
-    this->bio = BIO_new_accept(hostport);
+    if ((this->bio = BIO_new_accept(hostport)) == NULL) {
+        free(this);
+        return NULL;
+    }
 
     if (sslsocket_set_reuseaddr(this)
     && sslsocket_bind(this, host, port)
@@ -313,7 +291,6 @@ err:
     return NULL;
 }
 
-// SSLTODO: Read the doc and figure out how to toggle non-block
 status_t sslsocket_set_nonblock(sslsocket this)
 {
     assert(this != NULL);
@@ -334,13 +311,16 @@ status_t sslsocket_clear_nonblock(sslsocket this)
 
 status_t sslsocket_close(sslsocket this)
 {
-    //SSL *ssl;
-
     assert(this != NULL);
-    assert(this->ssl != NULL);
+    
+    if (this->ssl) {
+        //SSL_shutdown(this->ssl);
+        SSL_free(this->ssl);
+    }
+    else if (this->bio) {
+        BIO_free(this->bio);
+    }
 
-    //SSL_shutdown(this->ssl);
-    SSL_free(this->ssl);
     free(this);
 
     return success;
@@ -377,16 +357,18 @@ sslsocket sslsocket_accept(sslsocket this, void *context,
 
     new->ssl = SSL_new(context);
     if (new->ssl == NULL) {
+        BIO_free(new->bio);
         free(new);
-        return NULL; // Big leak, I know
+        return NULL;
     }
 
     SSL_set_accept_state(new->ssl);
     SSL_set_bio(new->ssl, new->bio, new->bio);
     rc = SSL_accept(new->ssl);
     if (rc <= 0) {
-        // Here we probably want to check for WANT_READ and WANT_WRITE
-        ssl_die(new);
+        sslsocket_close(new);
+        errno = EPROTO; // so caller doesn't get a random value
+        return NULL;
     }
 
     return new;
