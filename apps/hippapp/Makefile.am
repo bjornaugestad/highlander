@@ -2,8 +2,8 @@ bin_PROGRAMS=foo
 foo_SOURCES=main.c hippapp.html 
 
 nodist_foo_SOURCES=mypages.h hippapp.c 
-foo_CFLAGS=-W -Wall -pedantic -Wextra -std=gnu99 -Wshadow -Wmissing-prototypes -pthread -I $(HOME)/include
-foo_LDFLAGS=-L$(HOME)/lib
+foo_CFLAGS=-W -Wall -pedantic -Wextra -std=gnu99 -Wshadow -Wmissing-prototypes -pthread
+foo_LDFLAGS=-L$(HOME)/lib # Assuming local install of highlander
 foo_LDADD=-lhighlanderd -lmetad -lssl -lcrypto -lpthread
 
 %.c : %.html

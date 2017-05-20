@@ -1,1 +1,18 @@
 This is an example program using hipp to generate an app framework
+
+These commands should be enough to build a running HTTP server
+servicing requests to http://localhost:2000/hippapp.html
+    hipp -Api mypages.h -m main.c hippapp.html 
+    aclocal
+    automake --add-missing
+    autoconf
+    ./configure
+    make
+    ./foo
+
+Edit configure.ac and Makefile.am to suit your needs, and edit
+main.c for other needs. This is just an example program to show
+how you can build a skeleton web server in a minute or two.
+
+You can re-run hipp if you want to add more dynamic html pages.
+Just add them at the end of the command listed above.
