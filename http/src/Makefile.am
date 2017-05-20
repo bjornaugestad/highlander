@@ -44,6 +44,7 @@ libhighlander_a_CFLAGS=\
 	-DNDEBUG\
 	-I$(srcdir)\
 	-I$(top_srcdir)/meta/src\
+	-ffunction-sections -fdata-sections\
 	-Werror -Wshadow -W -Wmissing-prototypes\
 	-O2 -Wextra -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
     -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast

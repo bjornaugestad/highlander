@@ -398,9 +398,9 @@ ssize_t connection_read(connection this, void *buf, size_t count)
     count -= ncopied;
     cbuf += ncopied;
 
-    /* If the buffer can't hold the number of bytes we're
-     * trying to read, there's no point in filling it. Therefore
-     * we read directly from the socket if buffer is too small. */
+    // If the buffer can't hold the number of bytes we're
+    // trying to read, there's no point in filling it. Therefore
+    // we read directly from the socket if buffer is too small.
     if (membuf_size(this->readbuf) < count) {
         if ((nread = read_from_socket(this, cbuf, count)) == -1)
             return -1;
