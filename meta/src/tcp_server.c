@@ -460,7 +460,9 @@ static status_t accept_new_connections(tcp_server this, socket_t sock)
                     continue;
 
                 default:
-                    return failure;
+                    // We may want to retry here, to avoid DoS attacks
+                    // and to survive unknown errno values.
+                    continue;
             }
         }
 
@@ -487,9 +489,8 @@ static status_t accept_new_connections(tcp_server this, socket_t sock)
             this->service_func, conn,
             tcp_server_recycle_connection, this);
 
-        // The queue was full, so we couldn't add the new connection
-        // to the queue. We must therefore close the connection and
-        // do some cleanup.
+        // The queue was full, so we couldn't add the new connection to the 
+        // queue. We must therefore close the connection and do some cleanup.
         if (!rc) {
             if (!connection_close(conn))
                 warning("Could not flush and close connection");
@@ -554,8 +555,8 @@ static DH *get_dh2048(void)
 	DH *dh;
 
 	if ((dh=DH_new()) == NULL) return(NULL);
-	dh->p=BN_bin2bn(dh2048_p,sizeof(dh2048_p),NULL);
-	dh->g=BN_bin2bn(dh2048_g,sizeof(dh2048_g),NULL);
+	dh->p=BN_bin2bn(dh2048_p, sizeof dh2048_p, NULL);
+	dh->g=BN_bin2bn(dh2048_g, sizeof dh2048_g, NULL);
 	if ((dh->p == NULL) || (dh->g == NULL))
 		{ DH_free(dh); return(NULL); }
 	return(dh);
@@ -615,8 +616,8 @@ static DH *get_dh4096(void)
     if ((dh = DH_new()) == NULL)
         return (NULL);
 
-    dh->p = BN_bin2bn(dh4096_p, sizeof(dh4096_p), NULL);
-    dh->g = BN_bin2bn(dh4096_g, sizeof(dh4096_g), NULL);
+    dh->p = BN_bin2bn(dh4096_p, sizeof dh4096_p, NULL);
+    dh->g = BN_bin2bn(dh4096_g, sizeof dh4096_g, NULL);
     if (dh->p == NULL || dh->g == NULL) {
         DH_free(dh);
         return NULL;

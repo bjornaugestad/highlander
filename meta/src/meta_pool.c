@@ -190,7 +190,6 @@ static void *tfn(void *arg)
     return NULL;
 }
 
-
 int main(void)
 {
     pool pool;
