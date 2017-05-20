@@ -1,0 +1,15 @@
+Highlander is a web server library written in C. It supports
+HTTP 1.0 and most of HTTP 1.1.
+
+Highlander is designed to be small, safe and have excellent performance.
+It's also designed to be a library, not a static program serving pages
+and executing some yalla interpreted language. In Highlander, dynamic
+web pages are written in C or C++, compiled and linked as any other 
+function. This allows high performance, controlled deployment, easy
+debugging and proper versioning and change management.
+
+Since all of Highlander is written in C and is free of cruft, the
+executables are small too. A "hello world" program, supporting both
+HTTP and HTTPS, as well as multiple, simultaneous clients, is as 
+small as 124KB. That's kilobytes, not megabytes. :) 
+

@@ -13,7 +13,7 @@ helloworld_CFLAGS=\
 	-Wall -pedantic -W -Werror -Wno-long-long -pthread -DNDEBUG -O3
 
 helloworld_LDFLAGS=-L$(top_srcdir)/meta/src -L$(top_srcdir)/http/src
-helloworld_LDADD=-lhighlander -lmetad -lssl -lcrypto -lpthread
+helloworld_LDADD=-lhighlander -lmeta -lssl -lcrypto -lpthread
 
 # See if we can use a script to check this program
 TESTS=helloworld_check
