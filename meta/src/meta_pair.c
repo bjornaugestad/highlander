@@ -10,117 +10,54 @@
 #include <meta_common.h>
 #include <meta_pair.h>
 
-/*
- * Local helper structure.
- */
-struct element {
-    char *name;
-    char *value;
-};
-
-/*
- * Implementation of the meta_pair ADT
- */
-struct pair_tag {
-    struct element* element;
-    size_t nelem;
-    size_t used;
-};
-
-/* Small helper returning the index to an element or 0 if not found */
-static int pair_find(pair p, const char *name, size_t* pi)
-{
-    assert(p != NULL);
-    assert(name != NULL);
-
-    for (*pi = 0; *pi < p->used; (*pi)++) {
-        if (0 == strcmp(p->element[*pi].name, name))
-            return 1;
-    }
-
-    return 0;
-}
-
 pair pair_new(size_t nelem)
 {
-    pair p;
+    pair new;
 
     assert(nelem > 0);
 
-    if ((p = malloc(sizeof *p)) == NULL)
-        return NULL;
-
-    if ((p->element = calloc(nelem, sizeof *p->element)) == NULL) {
-        free(p);
+    if ((new = malloc(sizeof *new)) == NULL
+    || (new->element = calloc(nelem, sizeof *new->element)) == NULL) {
+        free(new);
         return NULL;
     }
 
-    p->used = 0;
-    p->nelem = nelem;
+    new->used = 0;
+    new->nelem = nelem;
 
-    return p;
+    return new;
 }
 
-void pair_free(pair p)
+void pair_free(pair this)
 {
     size_t i;
 
-    if (p == NULL)
+    if (this == NULL)
         return;
 
-    for (i = 0; i < p->used; i++) {
-        free(p->element[i].name);
-        free(p->element[i].value);
+    for (i = 0; i < this->used; i++) {
+        free(this->element[i].name);
+        free(this->element[i].value);
     }
 
-    free(p->element);
-    free(p);
+    free(this->element);
+    free(this);
 }
 
-static status_t pair_extend(pair p, size_t addcount)
+static status_t pair_extend(pair this, size_t addcount)
 {
-    struct element* new;
+    struct pair_element* new;
 
-    assert(p != NULL);
+    assert(this != NULL);
 
-    new = realloc(p->element, sizeof *p->element * (p->nelem + addcount));
+    new = realloc(this->element, sizeof *this->element * (this->nelem + addcount));
     if (new == NULL)
         return failure;
 
-    p->element = new;
-    p->nelem += addcount;
+    this->element = new;
+    this->nelem += addcount;
     return success;
 }
-
-size_t pair_size(pair p)
-{
-    assert(p != NULL);
-
-    return p->used;
-}
-
-const char *pair_get_value_by_index(pair p, size_t i)
-{
-    assert(p != NULL);
-    assert(i < p->nelem);
-
-    return p->element[i].value;
-}
-
-/* Returns pointer to value if name exists, else NULL */
-const char *pair_get(pair p, const char *name)
-{
-    size_t i;
-
-    assert(p != NULL);
-    assert(name != NULL);
-
-    if (!pair_find(p, name, &i))
-        return NULL;
-
-    return p->element[i].value;
-}
-
 
 /* overwrites an existing value. Adds a new entry if needed.  */
 status_t pair_set(pair p, const char *name, const char *value)
@@ -150,7 +87,7 @@ status_t pair_set(pair p, const char *name, const char *value)
 
 status_t pair_add(pair p, const char *name, const char *value)
 {
-    struct element* new; /* Just a helper to beautify the code */
+    struct pair_element* new; /* Just a helper to beautify the code */
     size_t namelen, valuelen;
 
     assert(p != NULL);
@@ -176,14 +113,6 @@ status_t pair_add(pair p, const char *name, const char *value)
     memcpy(new->value, value, valuelen);
     p->used++;
     return success;
-}
-
-const char *pair_get_name(pair p, size_t idx)
-{
-    assert(p != NULL);
-    assert(idx < p->used);
-
-    return p->element[idx].name;
 }
 
 #ifdef CHECK_PAIR
@@ -240,9 +169,7 @@ int main(void)
                 return 1;
         }
 
-
         pair_free(p);
-
     }
 
     return 0;

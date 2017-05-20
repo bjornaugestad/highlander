@@ -11,7 +11,7 @@
 
 /*
  * We implement the map as a list containing pairs. The pair
- * is private to this file size we have another class named pair.
+ * is private to this file since we have another class named pair.
  * (That other class should really be renamed one day)
  */
 struct pair {

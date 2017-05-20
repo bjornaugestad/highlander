@@ -75,8 +75,6 @@ void die_perror(const char *fmt, ...)
 // and links with the release version. It's not the library that's an
 // issue, but the calling code. We can't control the callers anyway,
 // but give them a chance to strip away debug info as long as they
-// use the debug() macro. We can't control the callers anyway,
-// but give them a chance to strip away debug info as long as they
 // use the debug() macro.
 void debugimpl(const char *fmt, ...);
 void meta_enable_debug_output(void);
