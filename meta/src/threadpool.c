@@ -124,9 +124,9 @@ static void *threadpool_exec_thread(void *arg)
         if (wp->initfn != 0)
             wp->initfn(wp->initarg, wp->workarg);
 
-        // Do the actual work. We cannot handle or use the
-        // return value, as we are a thread _pool_ and each
-        // thread will (over time) serve many different requests.
+        // Do the actual work. We cannot handle or use the return value, as we
+        // are a thread _pool_ and each thread will (over time) serve many
+        // different requests.
         wp->workfn(wp->workarg);
 
         // Call cleanup function, if present
@@ -136,15 +136,10 @@ static void *threadpool_exec_thread(void *arg)
         free(wp);
     }
 
-    // This function runs until pool->shutting_down is true, but the HP-UX
-    // compiler isn't smart enough to detect this. The line below is
-    // there just to avoid a warning.
     return NULL;
 }
 
-threadpool threadpool_new(
-    size_t nthreads,
-    size_t max_queue_size,
+threadpool threadpool_new(size_t nthreads, size_t max_queue_size,
     bool block_when_full)
 {
     int err;
@@ -183,7 +178,7 @@ threadpool threadpool_new(
         return NULL;
     }
 
-    /* Create the threads */
+    /* Create the worker threads */
     for (i = 0; i < nthreads; i++) {
         err = pthread_create(&p->threads[i], NULL, threadpool_exec_thread, p);
         if (err) {
@@ -217,34 +212,37 @@ status_t threadpool_add_work(threadpool pool,
 
     /* Check for available space and what to do if full */
     if (queue_full(pool) ) {
-        if (!pool->block_when_full) {
+        if (pool->block_when_full) {
+            atomic_ulong_inc(&pool->sum_blocked);
+        }
+        else {
             // Can't continue as the queue is full and we cannot block
             pthread_mutex_unlock(&pool->queue_lock);
             atomic_ulong_inc(&pool->sum_discarded);
             return fail(ENOSPC);
         }
-        else {
-            atomic_ulong_inc(&pool->sum_blocked);
-        }
     }
 
-    // Wait for available space in the queue
+    // Wait for available space in the queue. This is the 'block when full' part
     while (queue_full(pool) && !pool->shutting_down && !pool->queue_closed) {
         if ((err = pthread_cond_wait(&pool->queue_not_full, &pool->queue_lock)))
             return fail(err);
     }
 
-    // We cannot add more work to a closed queue. The same
-    // goes for an application which is shutting down. This isn't
-    // really an error, as it will happen in a threaded app.
+    // We cannot add more work to a closed queue. The same goes for an
+    // application which is shutting down. This isn't really an error, as it
+    // will happen in a threaded app.
     if (pool->shutting_down || pool->queue_closed) {
         pthread_mutex_unlock(&pool->queue_lock);
         return fail(EINVAL);
     }
 
-    // Now add a new entry to the queue
-    // Note 20170514: malloc()? really? Why not use something
-    // preallocated to reduce the risk of runtime errors?
+    // Now add a new entry to the queue. Note that this malloc() can be 
+    // avoided without performance loss if we make the threadpool less
+    // generic. For example, we could add the values to the connection
+    // object and totally avoid the malloc/free cycling of objects. The 
+    // downside is that then the threadpool would only work with connection
+    // objects.
     if ((wp = malloc(sizeof *wp)) == NULL) {
         pthread_mutex_unlock(&pool->queue_lock);
         return failure;
@@ -292,6 +290,7 @@ status_t threadpool_destroy(threadpool pool, bool finish)
 
     pool->queue_closed = true;
     if (finish) {
+        // Wait for the worker threads to perform all work in the queue.
         while (!queue_empty(pool)) {
             err = pthread_cond_wait(&pool->queue_empty, &pool->queue_lock);
             if (err) {
@@ -329,10 +328,9 @@ status_t threadpool_destroy(threadpool pool, bool finish)
     free(pool->threads);
 
     // Free the queue. The queue should be empty since all the worker
-    // threads remove entries from here, still we free it. Never know
-    // if a thread crashed.
-    // NOTE 20170514: Should we call the cleanup function? Probably not
-    // since we haven't called the initfn.
+    // threads remove entries from here, still we free it. The queue
+    // may have been closed just after a new entry was added, but before
+    // a worker thread could process the work.
     while (pool->queue_head != NULL) {
         struct work* wp = pool->queue_head;
         pool->queue_head = pool->queue_head->next;

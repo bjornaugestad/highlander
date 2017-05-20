@@ -393,30 +393,26 @@ static status_t tcp_server_get_connection(tcp_server srv, connection *pconn)
     return pool_get(srv->connections, (void **)pconn);
 }
 
-// See "Advanced Programming in the UNIX environment"
-// for a discussion of EINTR, select(), SA_RESTART
-// and portability between SVR4 and BSD.
-// Interesting chapters are 12.5 and 10.x
+// See "Advanced Programming in the UNIX environment" for a discussion of EINTR,
+// select(), SA_RESTART and portability between SVR4 and BSD. Interesting
+// chapters are 12.5 and 10.x
 //
-// if polling returned success,  we most likely have a new
-// connection present. The connection may have been closed between
-// the poll() and our accept, so the non-blocking accept() may
-// return -1. errno will then be EAGAIN | EWOULDBLOCK.
+// if polling returned success, we most likely have a new connection present.
+// The connection may have been closed between the poll() and our accept, so the
+// non-blocking accept() may return -1. errno will then be EAGAIN | EWOULDBLOCK.
 //
-// In addition to this, Linux, according to accept(2), will
-// pass any pending errors as an error code to accept(). The
-// errors listed in the man page are:
+// In addition to this, Linux, according to accept(2), will pass any pending
+// errors as an error code to accept(). The errors listed in the man page are:
 //	ENETDOWN, EPROTO, ENOPROTOOPT, EHOSTDOWN, ENONET,
 //	EHOSTUNREACH, EOPNOTSUPP and ENETUNREACH.
-// These errors should, on Linux, be treated as EAGAIN acc.
-// to the man page.
+// These errors should, on Linux, be treated as EAGAIN acc. to the man page.
 
 static status_t accept_new_connections(tcp_server this, socket_t sock)
 {
     status_t rc;
     socket_t newsock;
-    socklen_t addrsize;
     struct sockaddr_in addr;
+    socklen_t addrsize = sizeof addr;
     connection conn;
 
     assert(this != NULL);
@@ -434,27 +430,23 @@ static status_t accept_new_connections(tcp_server this, socket_t sock)
             continue; // retry
         }
 
-        addrsize = sizeof addr;
         newsock = socket_accept(sock, this->ctx, (struct sockaddr*)&addr, &addrsize);
         if (newsock == NULL) {
             switch (errno) {
-                // EPROTO is not defined for freebsd, and Stevens
-                // says, in UNP, vol. 1, page 424 that EPROTO should
-                // be ignored.
+                // EPROTO is not defined for freebsd, and Stevens says, in UNP,
+                // vol. 1, page 424 that EPROTO should be ignored.
 #ifdef EPROTO
                 case EPROTO:
 #endif
 
-                // ENONET does not exist under freebsd, and is
-                // not even mentioned in UNP1. Alan Cox refers to
-                // RFC1122 in a patch posted to news.
+                // ENONET does not exist under freebsd, and is not even mentioned
+                // in UNP1. Alan Cox refers to RFC1122 in a patch posted to news.
 #ifdef ENONET
                 case ENONET:
 #endif
 
-                // AIX specific stuff. Nmap causes accept to return
-                // ENOTCONN, but oddly enough only on port 80.
-                // Let's see if a retry helps.
+                // AIX specific stuff. Nmap causes accept to return ENOTCONN,
+                // but oddly enough only on port 80. Let's see if a retry helps.
                 case ENOTCONN:
 
                 case EAGAIN:
@@ -479,10 +471,9 @@ static status_t accept_new_connections(tcp_server this, socket_t sock)
             continue;
         }
 
-         // Get a new, per-connection, struct containing data
-         // unique to this connection. tcp_server_get_connection()
-         // never returns NULL as enough connection resources has
-         // been allocated already.
+         // Get a new, per-connection, struct containing data unique to this
+         // connection. tcp_server_get_connection() never returns NULL as enough
+         // connection resources has been allocated already.
          if (!tcp_server_get_connection(this, &conn)) {
             socket_close(newsock);
             return failure;
@@ -496,7 +487,9 @@ static status_t accept_new_connections(tcp_server this, socket_t sock)
             this->service_func, conn,
             tcp_server_recycle_connection, this);
 
-        // queue full. Skip this connection attempt.
+        // The queue was full, so we couldn't add the new connection
+        // to the queue. We must therefore close the connection and
+        // do some cleanup.
         if (!rc) {
             if (!connection_close(conn))
                 warning("Could not flush and close connection");
