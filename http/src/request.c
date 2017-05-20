@@ -1117,6 +1117,19 @@ static status_t parse_te(http_request req, const char *value, error e)
     return req_parse_multivalued_fields(req, value, request_set_te, e);
 }
 
+// Field ignored
+static status_t parse_upgrade_insecure_requests(http_request req, const char *value, error e)
+{
+    assert(req != NULL);
+    assert(value != NULL);
+
+    (void)req;
+    (void)value;
+    (void)e;
+
+    return success;
+}
+
 static status_t parse_mime_version(http_request r, const char *value, error e)
 {
     /* See rfc 2045 for syntax (MIME-Version=x.y) */
@@ -1925,6 +1938,13 @@ static const struct {
     { "range",				parse_range },
     { "referer",			parse_referer },
     { "te",					parse_te },
+
+    // Mozilla extension, new as of late 2016. It basically asks the 
+    // server to upgrade to https. We fake support for it by returning
+    // success, since we cannot know if the process has a secure 
+    // server running. 
+    // Details at: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Upgrade-Insecure-Requests
+    { "upgrade-insecure-requests",	parse_upgrade_insecure_requests },
 };
 
 
@@ -1938,6 +1958,7 @@ int find_request_header(const char *name)
             return i;
     }
 
+    fprintf(stderr, "Could not find name: <%s>\n", name);
     return -1;
 }
 
