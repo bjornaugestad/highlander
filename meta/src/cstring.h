@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include <meta_common.h>
 
@@ -45,10 +46,6 @@ status_t cstring_multinew(cstring *pstr, size_t nelem)
     __attribute__((warn_unused_result));
 
 status_t cstring_extend(cstring s, size_t size)
-    __attribute__((nonnull))
-    __attribute__((warn_unused_result));
-
-status_t cstring_copy(cstring dest, const cstring src)
     __attribute__((nonnull))
     __attribute__((warn_unused_result));
 
@@ -169,6 +166,29 @@ static inline void cstring_recycle(cstring s)
     *s->data = '\0';
     s->len = 0;
 }
+
+__attribute__((nonnull))
+__attribute__((warn_unused_result))
+static inline status_t
+cstring_copy(cstring dest, const cstring src)
+{
+    assert(dest != NULL);
+    assert(src != NULL);
+
+    return cstring_set(dest, src->data);
+}
+
+__attribute__((nonnull))
+__attribute__((warn_unused_result))
+static inline bool
+cstring_equal(cstring lhs, const cstring rhs)
+{
+    assert(lhs != NULL);
+    assert(rhs != NULL);
+
+    return lhs->len == rhs->len && strcmp(lhs->data, rhs->data) == 0;
+}
+
 
 /* Create an array of cstrings from a const char*, return the number
  * of items in the array. Each item must be freed separately.

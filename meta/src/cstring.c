@@ -195,14 +195,6 @@ cstring cstring_dup(const char *src)
     return dest;
 }
 
-status_t cstring_copy(cstring dest, const cstring src)
-{
-    assert(dest != NULL);
-    assert(src != NULL);
-
-    return cstring_set(dest, src->data);
-}
-
 status_t cstring_set(cstring dest, const char *src)
 {
     size_t n;
@@ -665,6 +657,24 @@ int main(void)
         assert(rc == 0);
         assert(cstring_length(s) == 11);
 
+        // cstring_dup
+        cstring dup = cstring_dup("hello dup");
+        rc = cstring_compare(dup, "hello dup");
+        assert(rc == 0);
+        cstring_free(dup);
+
+        // cstring_copy
+        cstring dest = cstring_new();
+        if (!cstring_set(s, "This is the source"))
+            exit(1);
+
+        if (!cstring_copy(dest, s))
+            exit(1);
+        if (!cstring_equal(dest, s))
+            exit(2);
+
+        cstring_free(dest);
+        cstring_free(s);
     }
 
     return 0;
