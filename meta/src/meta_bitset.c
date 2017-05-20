@@ -11,15 +11,6 @@
 #include <meta_common.h>
 #include <meta_bitset.h>
 
-/*
- * Implementation of the bitset ADT.
- * The bits are stored in an array of unsigned char, one bit per bit(Duh!)
- */
-struct bitset_tag {
-    size_t bitcount, size;
-    unsigned char *data;
-};
-
 bitset bitset_new(size_t bitcount)
 {
     bitset b;
@@ -40,139 +31,74 @@ bitset bitset_new(size_t bitcount)
     return b;
 }
 
-bitset bitset_dup(bitset b)
+void bitset_free(bitset this)
 {
-    bitset new;
-
-    assert(b != NULL);
-
-    if ((new = bitset_new(b->bitcount)) == NULL)
-        return NULL;
-
-    memcpy(new->data, b->data, new->size);
-    return new;
-}
-
-void bitset_free(bitset b)
-{
-    free(b->data);
-    free(b);
+    if (this) {
+        free(this->data);
+        free(this);
+    }
 }
 
 bitset bitset_map(void *data, size_t elemcount)
 {
-    bitset b;
+    bitset new;
 
     assert(data != NULL);
 
-    if ((b = calloc(1, sizeof *b)) != NULL) {
-        b->size = elemcount;
-        b->data = data;
+    if ((new = calloc(1, sizeof *new)) != NULL) {
+        new->size = elemcount;
+        new->data = data;
     }
 
-    return b;
+    return new;
 }
 
-void bitset_unmap(bitset b)
+void bitset_unmap(bitset this)
 {
-    free(b);
+    free(this);
 }
 
-void bitset_set(bitset b, size_t i)
-{
-    assert(b != NULL);
-    assert(i < b->size * CHAR_BIT);
-
-    b->data[i / CHAR_BIT] |= (1 << (i % CHAR_BIT));
-}
-
-int bitset_is_set(const bitset b, size_t i)
-{
-    assert(b != NULL);
-    assert(i < b->size * CHAR_BIT);
-
-    return b->data[i / CHAR_BIT] & (1 << (i % CHAR_BIT));
-}
-
-int bitset_allzero(const bitset b)
+int bitset_allzero(const bitset this)
 {
     size_t i;
 
-    assert(b != NULL);
+    assert(this != NULL);
 
-    for (i = 0; i < b->size; i++)
-        if (b->data[i] != 0)
+    for (i = 0; i < this->size; i++)
+        if (this->data[i] != 0)
             return 0;
 
     return 1;
 }
 
-int bitset_allone(const bitset b)
+int bitset_allone(const bitset this)
 {
     size_t i;
 
-    assert(b != NULL);
+    assert(this != NULL);
 
-    for (i = 0; i < b->size; i++)
-        if (b->data[i] != 0xff)
+    for (i = 0; i < this->size; i++)
+        if (this->data[i] != 0xff)
             return 0;
 
     return 1;
 }
 
-void bitset_clear_all(bitset b)
+void bitset_remap(bitset this, void *mem, size_t cb)
 {
-    assert(b != NULL);
-    memset(b->data, '\0', b->size);
-}
-
-void bitset_set_all(bitset b)
-{
-    assert(b != NULL);
-    memset(b->data, 0xff, b->size);
-}
-
-size_t bitset_size(bitset b)
-{
-    assert(b != NULL);
-    return b->size;
-}
-
-size_t bitset_bitcount(bitset b)
-{
-    assert(b != NULL);
-    return b->bitcount;
-}
-
-void *bitset_data(bitset b)
-{
-    assert(b != NULL);
-    return b->data;
-}
-
-void bitset_clear(bitset b, size_t i)
-{
-    assert(b != NULL);
-    assert(i < b->size * CHAR_BIT);
-
-    b->data[i / CHAR_BIT] &= ~(1 << (i % CHAR_BIT));
-}
-
-void bitset_remap(bitset b, void *mem, size_t cb)
-{
-    assert(b != NULL);
+    assert(this != NULL);
     assert(mem != NULL);
     assert(cb > 0);
 
-    free(b->data);
-    b->data = mem;
-    b->size = cb;
+    free(this->data);
+    this->data = mem;
+    this->size = cb;
 }
 
 bitset bitset_and(bitset b, bitset c)
 {
     size_t i, nbits, size;
-    bitset a;
+    bitset result;
     unsigned char *sa, *sb, *sc;
 
     assert(b != NULL);
@@ -180,10 +106,10 @@ bitset bitset_and(bitset b, bitset c)
     assert(bitset_size(b) == bitset_size(c));
 
     nbits = bitset_bitcount(b);
-    if ((a = bitset_new(nbits)) == NULL)
+    if ((result = bitset_new(nbits)) == NULL)
         return NULL;
 
-    sa = bitset_data(a);
+    sa = bitset_data(result);
     sb = bitset_data(b);
     sc = bitset_data(c);
 
@@ -191,13 +117,13 @@ bitset bitset_and(bitset b, bitset c)
     for (i = 0; i < size; i++)
         *sa++ = *sb++ & *sc++;
 
-    return a;
+    return result;
 }
 
 bitset bitset_or(bitset b, bitset c)
 {
     size_t i, nbits, size;
-    bitset a;
+    bitset result;
     unsigned char *sa, *sb, *sc;
 
     assert(b != NULL);
@@ -205,10 +131,10 @@ bitset bitset_or(bitset b, bitset c)
     assert(bitset_size(b) == bitset_size(c));
 
     nbits = bitset_bitcount(b);
-    if ((a = bitset_new(nbits)) == NULL)
+    if ((result = bitset_new(nbits)) == NULL)
         return NULL;
 
-    sa = bitset_data(a);
+    sa = bitset_data(result);
     sb = bitset_data(b);
     sc = bitset_data(c);
 
@@ -216,13 +142,13 @@ bitset bitset_or(bitset b, bitset c)
     for (i = 0; i < size; i++)
         *sa++ = *sb++ | *sc++;
 
-    return a;
+    return result;
 }
 
 bitset bitset_xor(bitset b, bitset c)
 {
     size_t i, nbits, size;
-    bitset a;
+    bitset result;
     unsigned char *sa, *sb, *sc;
 
     assert(b != NULL);
@@ -230,10 +156,10 @@ bitset bitset_xor(bitset b, bitset c)
     assert(bitset_size(b) == bitset_size(c));
 
     nbits = bitset_bitcount(b);
-    if ((a = bitset_new(nbits)) == NULL)
+    if ((result = bitset_new(nbits)) == NULL)
         return NULL;
 
-    sa = bitset_data(a);
+    sa = bitset_data(result);
     sb = bitset_data(b);
     sc = bitset_data(c);
 
@@ -241,60 +167,7 @@ bitset bitset_xor(bitset b, bitset c)
     for (i = 0; i < size; i++)
         *sa++ = *sb++ ^ *sc++;
 
-    return a;
-}
-
-void bitset_and_eq(bitset a, bitset b)
-{
-    size_t i;
-
-    assert(a != NULL);
-    assert(b != NULL);
-    assert(bitset_size(a) == bitset_size(b));
-
-    for (i = 0; i < a->size; i++)
-        a->data[i] &= b->data[i];
-}
-
-void bitset_or_eq(bitset a, bitset b)
-{
-    size_t i;
-
-    assert(a != NULL);
-    assert(b != NULL);
-    assert(bitset_size(a) == bitset_size(b));
-
-    for (i = 0; i < a->size; i++)
-        a->data[i] |= b->data[i];
-}
-
-void bitset_xor_eq(bitset a, bitset b)
-{
-    size_t i;
-
-    assert(a != NULL);
-    assert(b != NULL);
-    assert(bitset_size(a) == bitset_size(b));
-
-    for (i = 0; i < a->size; i++)
-        a->data[i] ^= b->data[i];
-}
-
-int bitset_cmp(const bitset a, const bitset b)
-{
-    size_t i;
-
-    assert(a != NULL);
-    assert(b != NULL);
-    assert(bitset_size(a) == bitset_size(b));
-
-    for (i = 0; i < a->size; i++) {
-        int delta = a->data[i] - b->data[i];
-        if (delta)
-            return delta;
-    }
-
-    return 0;
+    return result;
 }
 
 #ifdef BITSET_CHECK

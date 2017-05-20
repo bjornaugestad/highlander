@@ -15,24 +15,146 @@ extern "C" {
 
 typedef struct bitset_tag* bitset;
 
+// Implementation of the bitset ADT.
+// The bits are stored in an array of unsigned char
+// TODO: Consider using bigger units, e.g. uint64_t for 
+// much faster processing. We store bitcount, so it should be
+// easy to use a bigger unit.
+struct bitset_tag {
+    size_t bitcount, size;
+    unsigned char *data;
+};
+
+
 bitset bitset_new(size_t bitcount) __attribute__((malloc, warn_unused_result));
-bitset bitset_dup(bitset b) __attribute__((malloc, warn_unused_result));
 
 void bitset_free(bitset b);
 
-int bitset_cmp(const bitset a, const bitset b)
-    __attribute__((nonnull, warn_unused_result));
+static inline size_t bitset_size(bitset this)
+{
+    assert(this != NULL);
+    return this->size;
+}
 
-void bitset_set(bitset b, size_t i)   __attribute__((nonnull));
-void bitset_set_all(bitset b)         __attribute__((nonnull));
-void bitset_clear(bitset b, size_t i) __attribute__((nonnull));
-void bitset_clear_all(bitset b)       __attribute__((nonnull));
+// lhs &= rhs
+static inline void bitset_and_eq(bitset lhs, bitset rhs)
+{
+    size_t i;
 
-int bitset_is_set(const bitset b, size_t i) __attribute__((nonnull, warn_unused_result));
+    assert(lhs != NULL);
+    assert(rhs != NULL);
+    assert(bitset_size(lhs) == bitset_size(rhs));
+
+    for (i = 0; i < lhs->size; i++)
+        lhs->data[i] &= rhs->data[i];
+}
+
+static inline void bitset_or_eq(bitset lhs, bitset rhs)
+{
+    size_t i;
+
+    assert(lhs != NULL);
+    assert(rhs != NULL);
+    assert(bitset_size(lhs) == bitset_size(rhs));
+
+    for (i = 0; i < lhs->size; i++)
+        lhs->data[i] |= rhs->data[i];
+}
+
+static inline void bitset_xor_eq(bitset lhs, bitset rhs)
+{
+    size_t i;
+
+    assert(lhs != NULL);
+    assert(rhs != NULL);
+    assert(bitset_size(lhs) == bitset_size(rhs));
+
+    for (i = 0; i < lhs->size; i++)
+        lhs->data[i] ^= rhs->data[i];
+}
+
+static inline int bitset_cmp(const bitset a, const bitset b)
+{
+    size_t i;
+
+    assert(a != NULL);
+    assert(b != NULL);
+    assert(bitset_size(a) == bitset_size(b));
+
+    for (i = 0; i < a->size; i++) {
+        int delta = a->data[i] - b->data[i];
+        if (delta)
+            return delta;
+    }
+
+    return 0;
+}
+
+static inline bitset bitset_dup(bitset b)
+{
+    bitset new;
+
+    assert(b != NULL);
+
+    if ((new = bitset_new(b->bitcount)) == NULL)
+        return NULL;
+
+    memcpy(new->data, b->data, new->size);
+    return new;
+}
+
+static inline void bitset_set(bitset this, size_t i)
+{
+    assert(this != NULL);
+    assert(i < this->size * CHAR_BIT);
+
+    this->data[i / CHAR_BIT] |= (1 << (i % CHAR_BIT));
+}
+
+static inline int bitset_is_set(const bitset this, size_t i)
+{
+    assert(this != NULL);
+    assert(i < this->size * CHAR_BIT);
+
+    return this->data[i / CHAR_BIT] & (1 << (i % CHAR_BIT));
+}
+
+static inline void bitset_clear_all(bitset this)
+{
+    assert(this != NULL);
+    memset(this->data, '\0', this->size);
+}
+
+static inline void bitset_set_all(bitset this)
+{
+    assert(this != NULL);
+    memset(this->data, 0xff, this->size);
+}
+
+static inline size_t bitset_bitcount(bitset this)
+{
+    assert(this != NULL);
+    return this->bitcount;
+}
+
+static inline void *bitset_data(bitset this)
+{
+    assert(this != NULL);
+    return this->data;
+}
+
+static inline void bitset_clear(bitset this, size_t i)
+{
+    assert(this != NULL);
+    assert(i < this->size * CHAR_BIT);
+
+    this->data[i / CHAR_BIT] &= ~(1 << (i % CHAR_BIT));
+}
+
+
 int bitset_allzero(const bitset b)          __attribute__((nonnull, warn_unused_result));
 int bitset_allone(const bitset b)           __attribute__((nonnull, warn_unused_result));
 
-size_t bitset_size(bitset b)     __attribute__((nonnull, warn_unused_result));
 size_t bitset_bitcount(bitset b) __attribute__((nonnull, warn_unused_result));
 
 bitset bitset_map(void *mem, size_t cb) __attribute__((nonnull, warn_unused_result));
@@ -43,18 +165,15 @@ void *bitset_data(bitset b) __attribute__((nonnull, warn_unused_result));
 // equals a = b & c; and returns a. Remember to free it.
 bitset bitset_and(bitset b1, bitset b2)
     __attribute__((nonnull))
-    __attribute__((warn_unused_result))
-    __attribute__((malloc));
+    __attribute__((warn_unused_result));
 
 bitset bitset_or(bitset b1, bitset b2)
     __attribute__((nonnull))
-    __attribute__((warn_unused_result))
-    __attribute__((malloc));
+    __attribute__((warn_unused_result));
 
 bitset bitset_xor(bitset b1, bitset b2)
     __attribute__((nonnull))
-    __attribute__((warn_unused_result))
-    __attribute__((malloc));
+    __attribute__((warn_unused_result));
 
 // equals a &= b;
 void bitset_and_eq(bitset a, bitset b) __attribute__((nonnull));
