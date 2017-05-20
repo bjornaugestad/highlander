@@ -3,20 +3,10 @@
  * All Rights Reserved. See COPYING for license details
  */
 
-#include <stdlib.h>
 #include <assert.h>
+#include <stdlib.h>
 
 #include <meta_array.h>
-
-/*
- * Implementation of the array ADT.
- */
-struct array_tag {
-    int can_grow;		/* Can the array grow automatically? */
-    size_t nused;		/* How many that currently is in use */
-    size_t nallocated;	/* How many that currently is allocated */
-    void** elements;	/* Pointer to data */
-};
 
 array array_new(size_t nmemb, int can_grow)
 {
@@ -52,23 +42,6 @@ void array_free(array a, dtor free_fn)
     }
 }
 
-size_t array_nelem(array a)
-{
-    assert(a != NULL);
-    return a->nused;
-}
-
-void *array_get(array a, size_t ielem)
-{
-    assert(a != NULL);
-    assert(ielem < array_nelem(a));
-
-    if (ielem >= a->nused)
-        return NULL;
-
-    return a->elements[ielem];
-}
-
 status_t array_extend(array a, size_t nmemb)
 {
     void *tmp;
@@ -85,19 +58,6 @@ status_t array_extend(array a, size_t nmemb)
 
     a->elements = tmp;
     a->nallocated = n;
-    return success;
-}
-
-status_t array_add(array a, void *elem)
-{
-    assert(a != NULL);
-
-    if (a->nused == a->nallocated) {
-        if (!a->can_grow || !array_extend(a, a->nused))
-            return failure;
-    }
-
-    a->elements[a->nused++] = elem;
     return success;
 }
 
