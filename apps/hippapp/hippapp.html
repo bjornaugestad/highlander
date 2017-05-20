@@ -1,0 +1,21 @@
+%{
+#include <pthread.h>
+
+static int mycounter;
+pthread_mutex_t mylock = PTHREAD_MUTEX_INITIALIZER;
+%}
+
+<HTML>
+<HEAD><TITLE>Hippapp home</TITLE></HEAD>
+<BODY><H1>A counter</H1>
+<%
+    int n;
+    pthread_mutex_lock(&mylock);
+    n = ++mycounter;
+    pthread_mutex_unlock(&mylock);
+
+    if (!response_printf(response, "I've been called %d times so far", n))
+        return HTTP_500_INTERNAL_SERVER_ERROR;
+%>
+</BODY>
+</HTML>

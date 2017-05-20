@@ -97,13 +97,13 @@ pthread_mutex_t mylock = PTHREAD_MUTEX_INITIALIZER;
 <HEAD><TITLE>My page</TITLE></HEAD>
 <BODY><H1>A counter</H1>
 <%
-	int current_count;
+	int n;
 	pthread_mutex_lock(&mylock);
-	current_count = ++mycounter;
+	n = ++mycounter;
 	pthread_mutex_unlock(&mylock);
 
-	response_printf(response, 100, "I've been called %d times so far", 
-		current_count);
+	if (response_printf(response, "I've been called %d times so far", n))
+		return HTTP_500_INTERNAL_SERVER_ERROR; // Out of memory
 %>
 </BODY></HTML>
 .Be

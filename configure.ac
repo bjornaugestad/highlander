@@ -44,7 +44,9 @@ AC_CONFIG_FILES([
 	http/src/Makefile
 	http/doc/Makefile
 	apps/Makefile
-    apps/webcache/Makefile apps/ftp/Makefile apps/helloworld/Makefile
+    apps/webcache/Makefile
+    apps/ftp/Makefile
+    apps/helloworld/Makefile
 	apps/echoserver/Makefile
 	apps/webclient/Makefile
     ])

@@ -61,9 +61,16 @@ status_t cstring_vprintf(cstring dest, const char *fmt, va_list ap)
 {
     int i;
     size_t size;
+    va_list ap2;
 
+    va_copy(ap2, ap);
+    size = vsnprintf(NULL, 0, fmt, ap2);
+    va_end(ap2);
 
-    size = vsnprintf(NULL, 0, fmt, ap);
+    // size now contains the bytes needed _excluding_ the null char.
+    // We must add 1 to avoid truncation, since vsnprintf() will not
+    // write more than size bytes including the null character.
+    size++;
 
     assert(dest != NULL);
     assert(dest->data != NULL);
@@ -72,12 +79,11 @@ status_t cstring_vprintf(cstring dest, const char *fmt, va_list ap)
     if (!has_room_for(dest, size) && !cstring_extend(dest, size))
         return failure;
 
-    /* We append the new data, therefore the & */
+    // We append the new data, therefore the &
     i = vsnprintf(&dest->data[dest->len], size, fmt, ap);
 
-    /* We do not know the length of the data after vsnprintf()
-     * We therefore recompute the len member.
-     */
+    // We do not know the length of the data after vsnprintf()
+    // We therefore recompute the len member.
     dest->len += i;
 
     assert(dest->len == strlen(dest->data));
@@ -515,7 +521,6 @@ int main(void)
     memset(longstring, 'A', sizeof longstring);
     longstring[sizeof longstring - 1] = '\0';
 
-
     for (i = 0; i < nelem; i++) {
         s = cstring_new();
         assert(s != NULL);
@@ -629,7 +634,6 @@ int main(void)
         cstring_multifree(pstr, rc);
         free(pstr);
 
-
         rc = cstring_split(&pstr, "          foo bar baz", " ");
         assert(rc == 3);
         cstring_multifree(pstr, rc);
@@ -645,6 +649,21 @@ int main(void)
         cstring_multifree(pstr, rc);
         free(pstr);
 
+        // Test the printf functions
+        s = cstring_new();
+        assert(s != NULL);
+
+        status = cstring_printf(s, "Hello");
+        assert(status == success);
+        rc = cstring_compare(s, "Hello");
+        assert(rc == 0);
+
+        cstring_recycle(s);
+        status = cstring_printf(s, "%s %s", "Hello", "world");
+        assert(status == success);
+        rc = cstring_compare(s, "Hello world");
+        assert(rc == 0);
+        assert(cstring_length(s) == 11);
 
     }
 

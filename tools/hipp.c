@@ -598,7 +598,7 @@ static void create_mainfile(int argc, char *argv[], const char *filename)
     "\tdebug(\"Here we go\\n\");",
     "",
     "\t/* First we create the web server and the process */",
-    "\tif( (s = http_server_new()) == NULL)",
+    "\tif( (s = http_server_new(SOCKTYPE_TCP)) == NULL)",
     "\t\tdie(\"Could not create http server.\\n\");",
     "",
     "\tif( (proc = process_new(appname)) == NULL)",
@@ -705,7 +705,8 @@ static void create_makefile_am(int argc, char *argv[])
         p(f, "%s.c ", remove_ext(argv[i]));
     p(f, "\n");
     p(f, "foo_CFLAGS=-W -Wall -pedantic -Wextra -std=gnu99 -Wshadow -Wmissing-prototypes -pthread\n");
-    p(f, "foo_LDADD=-lhighlander -lmeta -lssl -lcrypto -lpthread\n");
+    p(f, "foo_LDFLAGS=-L$(HOME)/lib # Assuming local install of highlander\n");
+    p(f, "foo_LDADD=-lhighlanderd -lmetad -lssl -lcrypto -lpthread\n");
     p(f, "\n");
 
     /* Add all the translation rules for extensions? */
