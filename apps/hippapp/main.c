@@ -26,17 +26,17 @@ int main(int argc, char *argv[])
 	static const char *hostname = "localhost";
 	int portnumber = 2000;
 
-	/* Silence the compiler */
+	// Silence the compiler
 	(void)argc;
 	(void)argv;
 
-	/* Enable debug output from the debug() function. */
+	// Enable debug output from the debug() function.
 	meta_enable_debug_output();
 
-	/* Print a test line. */
+	// Print a test line.
 	debug("Here we go\n");
 
-	/* First we create the web server and the process */
+	// First we create the web server and the process
 	if( (s = http_server_new(SOCKTYPE_TCP)) == NULL)
 		die("Could not create http server.\n");
 
@@ -54,19 +54,19 @@ int main(int argc, char *argv[])
 			die("Could not set user name\n");
 	}
 
-	/* Configure some server values. Not needed, but makes it
-	 * to change values later. */
+	// Configure some server values. Not needed, but makes it
+	// to change values later.
 	http_server_set_worker_threads(s, 8);
 	http_server_set_queue_size(s, 10);
 	http_server_set_max_pages(s, 20);
 
-	/* Allocate all buffers needed */
+	// Allocate all buffers needed
 	if(!http_server_alloc(s)) {
 		http_server_free(s);
 		exit(EXIT_FAILURE);
 	}
 
-	/* Add pages to the server */
+	// Add HTML pages to the server
 	if (!http_server_add_page(s, "/hippapp.html", hipp_hippapp_html, NULL))
 		die("Could not add page to http server.\n");
 
@@ -82,7 +82,18 @@ int main(int argc, char *argv[])
 	http_server_set_post_limit(s, 1024 * 1024);
 #endif
 
-	/* Start the server from the process object. */
+#if 0
+	// SSL init code. Note that you need cert and key
+	// That takes some manual work.
+	if (!openssl_init())
+		die("Could not initialize SSL library\n");
+	if (!http_server_set_rootcert(s, "./rootcert.pem"))
+		die("Could not set root cert\n");
+	if (!http_server_set_private_key(s, "./server.pem"))
+		die("Could not set private key\n");
+#endif
+
+	// Start the server from the process object.
 	if (!http_server_start_via_process(proc, s))
 		die("Could not add http server to process object.\n");
 
@@ -92,7 +103,7 @@ int main(int argc, char *argv[])
 	if (!process_wait_for_shutdown(proc))
 		die("Failed to wait for shutdown.\n");
 
-	/* Do general cleanup */
+	// Do general cleanup
 	http_server_free(s);
 	process_free(proc);
 	return 0;

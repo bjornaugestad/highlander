@@ -587,17 +587,17 @@ static void create_mainfile(int argc, char *argv[], const char *filename)
     "\tstatic const char *hostname = \"localhost\";",
     "\tint portnumber = 2000;",
     "",
-    "\t/* Silence the compiler */",
+    "\t// Silence the compiler",
     "\t(void)argc;",
     "\t(void)argv;",
     "",
-    "\t/* Enable debug output from the debug() function. */",
+    "\t// Enable debug output from the debug() function.",
     "\tmeta_enable_debug_output();",
     "",
-    "\t/* Print a test line. */",
+    "\t// Print a test line.",
     "\tdebug(\"Here we go\\n\");",
     "",
-    "\t/* First we create the web server and the process */",
+    "\t// First we create the web server and the process",
     "\tif( (s = http_server_new(SOCKTYPE_TCP)) == NULL)",
     "\t\tdie(\"Could not create http server.\\n\");",
     "",
@@ -615,19 +615,19 @@ static void create_mainfile(int argc, char *argv[], const char *filename)
     "\t\t\tdie(\"Could not set user name\\n\");",
     "\t}",
     "",
-    "\t/* Configure some server values. Not needed, but makes it",
-    "\t * to change values later. */",
+    "\t// Configure some server values. Not needed, but makes it",
+    "\t// to change values later.",
     "\thttp_server_set_worker_threads(s, 8);",
     "\thttp_server_set_queue_size(s, 10);",
     "\thttp_server_set_max_pages(s, 20);",
     "",
-    "\t/* Allocate all buffers needed */",
+    "\t// Allocate all buffers needed",
     "\tif(!http_server_alloc(s)) {",
     "\t\thttp_server_free(s);",
     "\t\texit(EXIT_FAILURE);",
     "\t}",
     "",
-    "\t/* Add pages to the server */",
+    "\t// Add HTML pages to the server",
     };
 
     parr(f, mainfunc, sizeof mainfunc / sizeof *mainfunc);
@@ -651,7 +651,21 @@ static void create_mainfile(int argc, char *argv[], const char *filename)
     p(f, "#endif\n");
     p(f, "\n");
 
-    p(f, "\t/* Start the server from the process object. */\n");
+    p(f, "#if 0\n");
+    p(f, "\t// SSL init code. Note that you need cert and key\n");
+    p(f, "\t// That takes some manual work.\n");
+    p(f, "\tif (!openssl_init())\n");
+    p(f, "\t\tdie(\"Could not initialize SSL library\\n\");\n");
+
+    p(f, "\tif (!http_server_set_rootcert(s, \"./rootcert.pem\"))\n");
+    p(f, "\t\tdie(\"Could not set root cert\\n\");\n");
+
+    p(f, "\tif (!http_server_set_private_key(s, \"./server.pem\"))\n");
+    p(f, "\t\tdie(\"Could not set private key\\n\");\n");
+    p(f, "#endif\n");
+    p(f, "\n");
+
+    p(f, "\t// Start the server from the process object.\n");
     p(f, "\tif (!http_server_start_via_process(proc, s))\n");
     p(f, "\t\tdie(\"Could not add http server to process object.\\n\");\n");
     p(f, "\n");
@@ -663,7 +677,7 @@ static void create_mainfile(int argc, char *argv[], const char *filename)
     p(f, "\t\tdie(\"Failed to wait for shutdown.\\n\");\n");
     p(f, "\n");
 
-    p(f, "\t/* Do general cleanup */\n");
+    p(f, "\t// Do general cleanup\n");
     p(f, "\thttp_server_free(s);\n");
     p(f, "\tprocess_free(proc);\n");
     p(f, "\treturn 0;\n");
@@ -687,7 +701,8 @@ static void create_makefile_am(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    p(f, "bin_PROGRAMS=foo\n");
+    p(f, "# build both debug and non-debug versions\n");
+    p(f, "bin_PROGRAMS=foo food\n");
     p(f, "foo_SOURCES=");
     if (g_mainfile != NULL)
         p(f, "%s ", g_mainfile);
@@ -698,15 +713,26 @@ static void create_makefile_am(int argc, char *argv[])
     p(f, "\n");
     p(f, "\n");
 
-
     /* No dist files */
     p(f, "nodist_foo_SOURCES=%s ", g_headerfile);
     for (i = 0; i < argc; i++)
         p(f, "%s.c ", remove_ext(argv[i]));
     p(f, "\n");
-    p(f, "foo_CFLAGS=-W -Wall -pedantic -Wextra -std=gnu99 -Wshadow -Wmissing-prototypes -pthread\n");
+    p(f, "\n");
+
+    p(f, "food_SOURCES=$(foo_SOURCES)\n");
+    p(f, "nodist_food_SOURCES=$(nodist_foo_SOURCES)\n");
+    p(f, "\n");
+
+    // Flags
+    p(f, "foo_CFLAGS=-W -Wall -pedantic -Wextra -std=gnu99 -Wshadow -Wmissing-prototypes -pthread -O3 -DNDEBUG\n");
     p(f, "foo_LDFLAGS=-L$(HOME)/lib # Assuming local install of highlander\n");
-    p(f, "foo_LDADD=-lhighlanderd -lmetad -lssl -lcrypto -lpthread\n");
+    p(f, "foo_LDADD=-lhighlander -lmeta -lssl -lcrypto -lpthread\n");
+    p(f, "\n");
+
+    p(f, "food_CFLAGS=-W -Wall -pedantic -Wextra -std=gnu99 -Wshadow -Wmissing-prototypes -pthread -O0 -ggdb\n");
+    p(f, "food_LDFLAGS=-L$(HOME)/lib # Assuming local install of highlander\n");
+    p(f, "food_LDADD=-lhighlanderd -lmetad -lssl -lcrypto -lpthread\n");
     p(f, "\n");
 
     /* Add all the translation rules for extensions? */

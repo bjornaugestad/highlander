@@ -16,3 +16,9 @@ how you can build a skeleton web server in a minute or two.
 
 You can re-run hipp if you want to add more dynamic html pages.
 Just add them at the end of the command listed above.
+
+LPT: If you want to mix and match several different file types,
+e.g. foo.html and foo.css, just run hipp more than once.
+First run it to generate foo_html.c, then run it again to
+generate foo_css.c using -t text/css. Finally run hipp -p
+to generate function declarations for the page handler functions.
