@@ -1,2 +1,7 @@
-// Just a placeholder while adjusting autotools-scripts
-int hello_yes_this_is_imap;
+#include <highlander.h>
+
+int main(void)
+{
+	return 0;
+}
+

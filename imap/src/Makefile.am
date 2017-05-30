@@ -1,6 +1,7 @@
-lib_LIBRARIES=libimap.a libimapd.a
+# IMAP Secure Daemon Debug. imapsd (non-debug)
+bin_PROGRAMS=imapsdd imapsd
 
-libimap_a_SOURCES=\
+imapsdd_SOURCES=\
 	imap.c
 
-libimapd_a_SOURCES=$(libimap_a_SOURCES)
+imapsd_SOURCES=$(imapsdd_SOURCES)
