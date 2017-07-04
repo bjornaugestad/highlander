@@ -125,7 +125,6 @@ static inline size_t cstring_length(cstring s)
     return s->len;
 }
 
-__attribute__((nonnull))
 static inline void cstring_free(cstring s)
 {
     if (s != NULL) {

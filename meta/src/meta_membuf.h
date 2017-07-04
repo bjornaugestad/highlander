@@ -63,7 +63,6 @@ struct membuf_tag {
 membuf membuf_new(size_t size) __attribute__((malloc));
 
 // Frees a membuf buffer.
-__attribute__((nonnull))
 static inline void membuf_free(membuf this)
 {
     if (this != NULL) {

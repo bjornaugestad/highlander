@@ -10,7 +10,8 @@ AM_CFLAGS=-p -pg -Werror
 metaftpd_CFLAGS=\
 	-Winline -Wshadow -std=gnu99 -D_GNU_SOURCE\
 	-Wshadow\
-	-Wall -pedantic -W -Werror -Wno-long-long -pthread -DNDEBUG -O3
+	-Wall -pedantic -W -Werror -Wno-long-long -pthread -DNDEBUG -O3\
+	-Wno-deprecated-declarations
 
 metaftpd_LDFLAGS=-L$(top_srcdir)/http/src -L$(top_srcdir)/meta/src
 metaftpd_LDADD=-lhighlander -lmetad -lssl -lcrypto -lpthread

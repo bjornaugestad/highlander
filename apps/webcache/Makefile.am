@@ -23,7 +23,8 @@ webcached_CFLAGS=\
 	-I$(top_srcdir)/http/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\
 	-O2 -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
-    -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
+    -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast\
+	-Wno-deprecated-declarations
 
 
 webcached_LDADD=-lhighlander -lmetad -lssl -lcrypto -lpthread

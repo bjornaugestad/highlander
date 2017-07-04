@@ -71,7 +71,7 @@ size_t list_size(list lst)
     __attribute__((nonnull));
 
 list_iterator list_delete(list lst, list_iterator i, dtor dtor_fn)
-    __attribute__((nonnull));
+    __attribute__((nonnull(1)));
 
 list_iterator list_remove_node(list lst, list_iterator i)
     __attribute__((nonnull));
