@@ -213,7 +213,7 @@ status_t html_template_send(
         }
 
         /* was % found as last character */
-        if (identifier != '\0')
+        if (*identifier != '\0')
             identifier++;
 
         s = identifier;

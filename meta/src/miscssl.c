@@ -89,6 +89,13 @@ status_t openssl_thread_setup(void)
     CRYPTO_set_dynlock_create_callback(dyn_create_function);
     CRYPTO_set_dynlock_lock_callback(dyn_lock_function);
     CRYPTO_set_dynlock_destroy_callback(dyn_destroy_function);
+
+    (void)id_function;
+    (void)locking_function;
+    (void)dyn_create_function;
+    (void)dyn_lock_function;
+    (void)dyn_destroy_function;
+
     return success;
 }
 

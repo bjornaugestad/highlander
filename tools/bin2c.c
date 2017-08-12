@@ -68,6 +68,8 @@ int main(int ac, char** av)
 
             case 'b':
                 g_basename_only = 1;
+                break;
+
             case 'c':
                 sourcefile = optarg;
                 break;
