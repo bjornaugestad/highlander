@@ -28,7 +28,7 @@ webcached_CFLAGS=\
 
 
 webcached_LDADD=-lhighlander -lmetad -lssl -lcrypto -lpthread
-webcached_LDFLAGS=-L$(top_srcdir)/meta/src -L$(top_srcdir)/http/src
+webcached_LDFLAGS=-L/usr/local/lib -L$(top_srcdir)/meta/src -L$(top_srcdir)/http/src
 
 # Convert the GIF logo to C source code
 %.c : %.gif
