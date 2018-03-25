@@ -8,14 +8,16 @@
 .Sh SYNOPSIS
 .Fd #include <highlander.h>
 .Fo "http_server http_server_new"
-.Fa "void"
+.Fa "int socktype"
 .Fc
 .Fo "void http_server_free"
 .Fa "http_server s"
 .Fc
 .Sh DESCRIPTION
 .Nm http_server_new()
-creates a new HTTP server. 
+creates a new HTTP server.  The socktype is either SOCKTYPE_TCP or
+SOCKTYPE_SSL. This argument is passed on to the underlying tcp_server
+object.
 .Pp
 This is the first call to execute when building a HTTP server.
 The normal way to create a http server is to 
@@ -50,7 +52,7 @@ frees all memory allocated by the server.
 returns a new http_server or NULL if something fails.
 .Sh EXAMPLE
 .Bd -literal
-http_server s = http_server_new();
+http_server s = http_server_new(SOCKTYPE_TCP);
 http_server_alloc(s);
 http_server_add_page(s, "/", myhandler, NULL);
 http_server_get_root_resources(s);

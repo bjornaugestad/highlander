@@ -12,6 +12,6 @@ webclient_CFLAGS=\
 	-I$(top_srcdir)/meta/src\
 	-Wall -pedantic -W -Werror -Wno-long-long -pthread -DNDEBUG -O3
 
-webclient_LDFLAGS=-L$(top_srcdir)/meta/src -L$(top_srcdir)/http/src
+webclient_LDFLAGS=-L/usr/local/lib -L$(top_srcdir)/meta/src -L$(top_srcdir)/http/src
 webclient_LDADD=-lhighlanderd -lmetad -lssl -lcrypto -lpthread
 
