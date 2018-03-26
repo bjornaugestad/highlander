@@ -5,6 +5,9 @@
 *.swp
 *.log
 *.trs
+*_check
+*.gcda
+*.gcno
 Makefile.in
 autom4te.cache
 Makefile
