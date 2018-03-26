@@ -8,6 +8,7 @@
 *.gcda
 *.gcno
 *.gcov
+*_check
 Makefile.in
 autom4te.cache
 Makefile
