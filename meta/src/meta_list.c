@@ -143,7 +143,7 @@ list_iterator list_find(
 
     i.node = NULL;
     for (lst = lst->next; lst != NULL; lst = lst->next) {
-        if (cmp(data, lst->data) == 0) {
+        if (cmp(lst->data, data) == 0) {
             i.node = lst;
             break;
         }
