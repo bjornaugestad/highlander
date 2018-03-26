@@ -26,6 +26,7 @@ include_HEADERS=\
 	meta_cache.h\
 	meta_configfile.h\
 	meta_filecache.h\
+	meta_regex.h\
 	meta_stringmap.h\
 	meta_map.h\
 	connection.h\
@@ -66,6 +67,7 @@ libmeta_a_SOURCES=\
 	meta_filecache.c\
 	meta_list.c\
 	meta_convert.c\
+	meta_regex.c\
 	meta_stringmap.c
 
 libmetad_a_SOURCES=$(libmeta_a_SOURCES)
@@ -109,6 +111,7 @@ TESTS=\
 	membuf_check\
 	pool_check\
 	array_check\
+	regex_check\
 	cache_check\
 	filecache_check\
 	stringmap_check\
@@ -131,6 +134,7 @@ check_PROGRAMS=\
 	membuf_check\
 	pool_check\
 	array_check\
+	regex_check\
 	cache_check\
 	filecache_check\
 	stringmap_check\
@@ -205,5 +209,8 @@ slotbuf_check_CFLAGS=-DCHECK_SLOTBUF $(AM_CFLAGS)
 
 convert_check_SOURCES=meta_convert.c meta_common.c
 convert_check_CFLAGS=-DCHECK_CONVERT $(AM_CFLAGS)
+
+regex_check_SOURCES=meta_regex.c meta_common.c
+regex_check_CFLAGS=-DCHECK_REGEX $(AM_CFLAGS)
 
 LDADD=-lpthread
