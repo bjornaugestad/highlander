@@ -203,10 +203,8 @@ status_t http_server_set_logfile(http_server s, const char *logfile)
 void http_server_set_logrotate(http_server s, int logrotate)
     __attribute__((nonnull));
 
-
 int http_server_get_port(http_server s)
     __attribute__((nonnull, warn_unused_result));
-
 
 size_t http_server_get_worker_threads(http_server s)
     __attribute__((nonnull, warn_unused_result));
@@ -343,6 +341,7 @@ int cookie_get_max_age(cookie c)
 connection request_get_connection(http_request req)
     __attribute__((nonnull, warn_unused_result));
 
+// HTTP Request
 void request_set_defered_read(http_request req, int flag)
     __attribute__((nonnull));
 
@@ -469,17 +468,17 @@ status_t request_receive(http_request r, connection c, size_t max_posted_content
     __attribute__((warn_unused_result));
 
 
-http_response response_new(void)
-    __attribute__((malloc));
-
-void response_free(http_response p);
-void response_recycle(http_response p);
-void response_set_version(http_response r, http_version version);
-void response_set_status(http_response r, int status);
-int response_get_status(http_response r);
-
 general_header request_get_general_header(http_request r) __attribute__((nonnull, warn_unused_result));
 entity_header request_get_entity_header(http_request r) __attribute__((nonnull, warn_unused_result));
+
+// HTTP Response
+http_response response_new(void) __attribute__((malloc));
+
+void response_free(http_response response);
+void response_recycle(http_response response);
+void response_set_version(http_response response, http_version version);
+void response_set_status(http_response response, int status);
+int response_get_status(http_response response);
 
 general_header response_get_general_header(http_response r) __attribute__((nonnull, warn_unused_result));
 entity_header response_get_entity_header(http_response r) __attribute__((nonnull, warn_unused_result));
