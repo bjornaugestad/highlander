@@ -496,7 +496,50 @@ void cstring_upper(cstring s)
     }
 }
 
+status_t cstring_insert(cstring dest, size_t offset, const char *src)
+{
+    size_t slen;
 
+    assert(dest != NULL);
+    assert(offset <= dest->len);
+    assert(src != NULL);
+
+    slen = strlen(src);
+    if (!has_room_for(dest, slen) && !cstring_extend(dest, slen))
+        return failure;
+
+    // Move stuff to the right, then memcpy the new part in place.
+    memmove(&dest->data[offset + slen], &dest->data[offset], dest->len - offset);
+    memcpy(&dest->data[offset], src, slen);
+    dest->len += slen;
+    dest->data[dest->len] = '\0';
+    return success;
+}
+
+void cstring_cut(cstring s, size_t offset, size_t n)
+{
+    assert(s != NULL);
+    assert(offset < s->len);
+    assert(n <= s->len);
+    assert(offset + n <= s->len);
+
+    // memmove stuff to the left, starting at offset + n
+    memmove(&s->data[offset], &s->data[offset + n], s->len - offset);
+    s->len -= n;
+}
+    
+status_t cstring_replace(cstring s, size_t offset, size_t n, const char *to)
+{
+    assert(s != NULL);
+    assert(offset < s->len);
+    assert(n < s->len);
+    assert(offset + n <= s->len);
+    assert(to != NULL);
+
+    cstring_cut(s, offset, n);
+    return cstring_insert(s, offset, to);
+}
+    
 #ifdef CHECK_CSTRING
 int main(void)
 {
@@ -672,6 +715,33 @@ int main(void)
             exit(1);
         if (!cstring_equal(dest, s))
             exit(2);
+
+        // cstring insert. 
+        if (!cstring_set(dest, "is the source"))
+            exit(1);
+
+        if (!cstring_insert(dest, 0, "This "))
+            exit(2);
+
+        if (!cstring_equal(dest, s)) {
+            printf("Got: %s\n", c_str(dest));
+            exit(2);
+        }
+        
+        cstring_cut(dest, 5, 7);
+        if (cstring_compare(dest, "This source") != 0)
+            exit(123);
+
+        cstring_cut(dest, 0, cstring_length(dest));
+        assert(cstring_length(dest) == 0);
+
+        // Set dest to "This source".
+        // Then s/This/That/ and verify.
+        // Then s/source/object/ and verify
+        if (!cstring_set(dest, "This source")
+        ||  !cstring_replace(dest, 0, 4, "That")   || cstring_compare(dest, "That source") != 0
+        ||  !cstring_replace(dest, 5, 6, "object") || cstring_compare(dest, "That object") != 0)
+            exit(127);
 
         cstring_free(dest);
         cstring_free(s);
