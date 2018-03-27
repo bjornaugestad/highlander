@@ -209,6 +209,25 @@ void cstring_strip(cstring s) __attribute__((nonnull));
 void cstring_lower(cstring s) __attribute__((nonnull));
 void cstring_upper(cstring s) __attribute__((nonnull));
 
+/* New stuff 2018: We need to be able do insert, replace and remove stuff.
+ * Interface may look odd with all the offsets and n values, but the
+ * intention is to combine cstring with meta_regex to do regular expression
+ * search and replace. */
+
+// Insert src in dest at offset. 
+status_t cstring_insert(cstring dest, size_t offset, const char *src)
+    __attribute__((nonnull))
+    __attribute__((warn_unused_result));
+
+// Remove n characters at offset.
+void cstring_cut(cstring s, size_t offset, size_t n)
+    __attribute__((nonnull));
+
+// Replace 1..n bytes at offset with the string 'to'.
+status_t cstring_replace(cstring s, size_t offset, size_t n, const char *to)
+    __attribute__((nonnull))
+    __attribute__((warn_unused_result));
+
 #ifdef __cplusplus
 }
 #endif
