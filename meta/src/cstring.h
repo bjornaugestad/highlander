@@ -205,6 +205,9 @@ void cstring_multifree(cstring *pstr, size_t nelem)
 /* Strip leading and trailing white space, ie whatever isspace() returns. */
 void cstring_strip(cstring s) __attribute__((nonnull));
 
+// Strip right (trailing) ws */
+void cstring_rstrip(cstring s) __attribute__((nonnull));
+
 /* Convert to lower/upper letters only */
 void cstring_lower(cstring s) __attribute__((nonnull));
 void cstring_upper(cstring s) __attribute__((nonnull));
