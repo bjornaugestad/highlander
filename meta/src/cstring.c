@@ -446,6 +446,19 @@ size_t cstring_split(cstring** dest, const char *src, const char *delim)
     return nelem;
 }
 
+void cstring_rstrip(cstring s)
+{
+    size_t i;
+
+    assert(s != NULL);
+
+    i = s->len;
+    while (i-- > 0 && isspace((unsigned char)s->data[i])) {
+        s->data[i] = '\0';
+        s->len--;
+    }
+}
+
 void cstring_strip(cstring s)
 {
     size_t i;
@@ -646,10 +659,16 @@ int main(void)
         cstring_reverse(s);
         rc = cstring_compare(s, "dlrow ,olleh");
         assert(rc == 0);
-        /* cstring_strip */
 
+        /* cstring_strip */
         status = cstring_set(s, "  a b c d e f	");
         cstring_strip(s);
+        rc = cstring_compare(s, "a b c d e f");
+        assert(rc == 0);
+
+        /* cstring_rstrip */
+        status = cstring_set(s, "a b c d e f	");
+        cstring_rstrip(s);
         rc = cstring_compare(s, "a b c d e f");
         assert(rc == 0);
 
