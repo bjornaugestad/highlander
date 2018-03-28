@@ -552,6 +552,15 @@ status_t cstring_replace(cstring s, size_t offset, size_t n, const char *to)
     cstring_cut(s, offset, n);
     return cstring_insert(s, offset, to);
 }
+
+void cstring_truncate(cstring s, size_t offset)
+{
+    assert(s != NULL);
+    assert(offset < s->len);
+
+    s->data[offset] = '\0';
+    s->len = offset;
+}
     
 #ifdef CHECK_CSTRING
 int main(void)
@@ -761,6 +770,10 @@ int main(void)
         ||  !cstring_replace(dest, 0, 4, "That")   || cstring_compare(dest, "That source") != 0
         ||  !cstring_replace(dest, 5, 6, "object") || cstring_compare(dest, "That object") != 0)
             exit(127);
+
+        cstring_truncate(dest, 4);
+        if (cstring_compare(dest, "That"))
+            die("128");
 
         cstring_free(dest);
         cstring_free(s);

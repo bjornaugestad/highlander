@@ -226,6 +226,11 @@ status_t cstring_insert(cstring dest, size_t offset, const char *src)
 void cstring_cut(cstring s, size_t offset, size_t n)
     __attribute__((nonnull));
 
+// Remove all charactes to the right of offset. IOW, just write a
+// \0 at offset.
+void cstring_truncate(cstring s, size_t offset)
+    __attribute__((nonnull));
+
 // Replace 1..n bytes at offset with the string 'to'.
 status_t cstring_replace(cstring s, size_t offset, size_t n, const char *to)
     __attribute__((nonnull))
