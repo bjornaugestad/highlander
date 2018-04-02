@@ -561,7 +561,32 @@ void cstring_truncate(cstring s, size_t offset)
     s->data[offset] = '\0';
     s->len = offset;
 }
+
+int cstring_find(cstring s, int c)
+{
+    const char *p;
+
+    assert(s != NULL);
+
+    if ((p = strchr(s->data, c)) == NULL)
+        return -1;
+
+    return p - s->data;
+}
+
+int cstring_findstr(cstring s, const char *str)
+{
+    const char *p;
+
+    assert(s != NULL);
+    assert(str != NULL);
     
+    if ((p = strstr(s->data, str)) == NULL)
+        return -1;
+
+    return p - s->data;
+}
+
 #ifdef CHECK_CSTRING
 int main(void)
 {
