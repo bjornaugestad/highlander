@@ -236,6 +236,12 @@ status_t cstring_replace(cstring s, size_t offset, size_t n, const char *to)
     __attribute__((nonnull))
     __attribute__((warn_unused_result));
 
+int cstring_find(cstring s, int c)
+    __attribute__((nonnull));
+
+int cstring_findstr(cstring s, const char *str)
+    __attribute__((nonnull));
+
 #ifdef __cplusplus
 }
 #endif
