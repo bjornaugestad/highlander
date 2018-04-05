@@ -5,11 +5,13 @@
 *.swp
 *.log
 *.trs
-*_check
 *.gcda
 *.gcno
+*.gcov
+*_check
 Makefile.in
 autom4te.cache
 Makefile
 .deps
 .dirstamp
+
