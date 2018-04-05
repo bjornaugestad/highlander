@@ -6,6 +6,8 @@
 #ifndef META_STACK_H
 #define META_STACK_H
 
+#include <stddef.h>
+
 #include <meta_common.h>
 
 #ifdef __cplusplus
