@@ -1,4 +1,4 @@
-SUBDIRS=tools meta http imap apps 
+SUBDIRS=tools meta http apps 
 LDADD=-lpthread -L.
 #AUTOMAKE_OPTIONS=subdir-objects
 
