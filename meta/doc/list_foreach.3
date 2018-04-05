@@ -8,13 +8,13 @@
 .SH SYNOPSIS
 .B #include <meta_list.h>
 .sp
-.BI "int list_foreach(list lst, void* args, listfunc f);
+.BI "bool list_foreach(list lst, void* args, listfunc f);
 
-.BI "int list_foreach_reversed(list lst, void* arg, listfunc f);
+.BI "bool list_foreach_reversed(list lst, void* arg, listfunc f);
 
-.BI "int list_foreach_sep(list lst, void* arg, listfunc f, int(*sep)(void*arg));
+.BI "bool list_foreach_sep(list lst, void* arg, listfunc f, int(*sep)(void*arg));
 
-.BI "int list_dual_foreach(list lst, void *arg1, void *arg2, int(*dual)(void* a1, void *a2, void *data));
+.BI "bool list_dual_foreach(list lst, void *arg1, void *arg2, bool(*dual)(void* a1, void *a2, void *data));
 
 .SH DESCRIPTION
 .BR list_foreach()
