@@ -92,7 +92,7 @@ status_t tcp_server_start_via_process(process p, tcp_server srv)
 int tcp_server_shutting_down(tcp_server srv)
     __attribute__((nonnull));
 
-int tcp_server_shutdown(tcp_server srv)
+status_t tcp_server_shutdown(tcp_server srv)
     __attribute__((nonnull));
 
 /* performance counters */

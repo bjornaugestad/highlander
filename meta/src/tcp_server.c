@@ -769,11 +769,11 @@ int tcp_server_shutting_down(tcp_server this)
     return this->shutting_down;
 }
 
-int tcp_server_shutdown(tcp_server this)
+status_t tcp_server_shutdown(tcp_server this)
 {
     assert(this != NULL);
     this->shutting_down = 1;
-    return 1;
+    return success;
 }
 
 unsigned long tcp_server_sum_blocked(tcp_server this)
