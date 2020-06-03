@@ -37,6 +37,7 @@ AM_CONDITIONAL([WITH_VALGRIND], [test x$valgrind = xtrue])
 AC_CONFIG_FILES([
 	Makefile
 	tools/Makefile
+    json/Makefile
 	meta/Makefile
 	meta/src/Makefile
 	meta/doc/Makefile

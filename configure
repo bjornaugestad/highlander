@@ -4406,7 +4406,7 @@ else
 fi
 
 
-ac_config_files="$ac_config_files Makefile tools/Makefile meta/Makefile meta/src/Makefile meta/doc/Makefile http/Makefile http/src/Makefile http/doc/Makefile imap/Makefile imap/src/Makefile apps/Makefile apps/webcache/Makefile apps/ftp/Makefile apps/helloworld/Makefile apps/httpd/Makefile apps/echoserver/Makefile apps/webclient/Makefile"
+ac_config_files="$ac_config_files Makefile tools/Makefile json/Makefile meta/Makefile meta/src/Makefile meta/doc/Makefile http/Makefile http/src/Makefile http/doc/Makefile imap/Makefile imap/src/Makefile apps/Makefile apps/webcache/Makefile apps/ftp/Makefile apps/helloworld/Makefile apps/httpd/Makefile apps/echoserver/Makefile apps/webclient/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -5156,6 +5156,7 @@ do
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "tools/Makefile") CONFIG_FILES="$CONFIG_FILES tools/Makefile" ;;
+    "json/Makefile") CONFIG_FILES="$CONFIG_FILES json/Makefile" ;;
     "meta/Makefile") CONFIG_FILES="$CONFIG_FILES meta/Makefile" ;;
     "meta/src/Makefile") CONFIG_FILES="$CONFIG_FILES meta/src/Makefile" ;;
     "meta/doc/Makefile") CONFIG_FILES="$CONFIG_FILES meta/doc/Makefile" ;;
