@@ -1,0 +1,10 @@
+Sat Oct 26 12:58:46 CEST 2019
+So I want do learn more about OpenAPI, and hence I need a JSON parser.
+Since meta already has data structures I'll need, the JSON parser library
+is added here too.
+
+Approach: Find a complex JSON file and see if I'm able to parse it.
+Why not simply start off with OpenAPI's JSON definition? 
+
+The JSON definition is from https://www.json.org/. Looks simple enough,
+but beware of snags.
