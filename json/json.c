@@ -39,6 +39,13 @@ struct parsebuf {
     size_t nread, size;
 };
 
+static void parsebuf_dump(const struct parsebuf *p)
+{
+    size_t i;
+    for (i = 0; i < p->nread; i++)
+        fputc(p->mem[i], stderr);
+}
+
 static inline int parsebuf_getc(struct parsebuf *p)
 {
     if (p->nread == p->size)
@@ -47,12 +54,19 @@ static inline int parsebuf_getc(struct parsebuf *p)
     return p->mem[p->nread++];
 }
 
+static inline void parsebuf_ungetc(struct parsebuf *p)
+{
+    assert(p != NULL);
+    assert(p->nread > 0);
+
+    p->nread--;
+}
+
 struct node {
     // Which value type are we storing here?
     int type;
 
     // name, as in name/value pair.
-    // Kinda optional so we can reuse this struct for all values.
     char *name;
 
     union {
@@ -64,19 +78,22 @@ struct node {
     } v;
 };
 
+// forward declarations because of recursive calls
+static struct node* accept_object(struct parsebuf *src);
+static struct node* accept_array(struct parsebuf *src);
+
 #ifdef JSON_CHECK
 // some member functions
 static struct node * node_new(int type, const char *name, void *value)
 {
     struct node *p;
 
+    assert(name != NULL);
+
     if ((p = malloc(sizeof *p)) == NULL)
         return NULL;
 
-    if (name == NULL) {
-        p->name = NULL;
-    }
-    else if ((p->name = strdup(name)) == NULL) {
+    if ((p->name = strdup(name)) == NULL) {
         free(p);
         return NULL;
     }
@@ -85,8 +102,14 @@ static struct node * node_new(int type, const char *name, void *value)
     switch (type) {
         case VAL_STRING : p->v.sval = strdup(value); break;
         case VAL_INTEGER: p->v.lval = (long)value; break;
-        case VAL_ARRAY  : p->v.aval = value; break;
+        case VAL_ARRAY  :
+            p->v.aval = list_add(NULL, value);
+            if (p->v.aval == NULL)
+                die("Meh, no mem");
+            break;
         case VAL_OBJECT : p->v.oval = value; break;
+        default:
+            memset(&p->v, 0, sizeof p->v);
     }
 
     return p;
@@ -106,6 +129,27 @@ static status_t node_add(struct node *dest, struct node *src)
     return success;
 }
 
+// Set a value type and value for an existing node.
+static void node_set(struct node *p, int type, void *value)
+{
+    assert(p != NULL);
+    assert(value != NULL);
+
+    p->type = type;
+    switch (type) {
+        case VAL_STRING : p->v.sval = strdup(value); break;
+        case VAL_INTEGER: p->v.lval = (long)value; break;
+        case VAL_ARRAY  :
+            p->v.aval = list_add(NULL, value);
+            if (p->v.aval == NULL)
+                die("Meh, no mem");
+            break;
+        case VAL_OBJECT : p->v.oval = value; break;
+        default:
+            die("Internal error. Unsupported type");
+    }
+
+}
 static void node_free(struct node *p)
 {
     if (p == NULL)
@@ -138,28 +182,66 @@ static void node_free(struct node *p)
 #define TOK_DOUBLE     11
 #define TOK_NULL       12
 
+static const struct {
+    int value;
+    const char *text;
+} tokens[] = {
+    { TOK_ERROR       , "error" },
+    { TOK_UNKNOWN     , "unknown" },
+    { TOK_QSTRING     , "qstring" },
+    { TOK_TRUE        , "true" },
+    { TOK_FALSE       , "false" },
+    { TOK_COLON       , "colon" },
+    { TOK_COMMA       , "comma" },
+    { TOK_OBJECTSTART , "objectstart" },
+    { TOK_OBJECTEND   , "objectend" },
+    { TOK_ARRAYSTART  , "arraystart" },
+    { TOK_ARRAYEND    , "arrayend" },
+    { TOK_INTEGER     , "integer" },
+    { TOK_DOUBLE      , "double" },
+    { TOK_NULL        , "null" },
+};
+
+static const char *maptoken(int value)
+{
+    size_t i, n;
+
+    n = sizeof tokens / sizeof *tokens;
+    for (i = 0; i < n; i++)
+        if (tokens[i].value == value)
+            return tokens[i].text;
+
+    return "unknown token value";
+}
+
 // We have a ", which is start of quoted string. Read the rest of the
 // string and place it in value. 
 // I wonder if they escape quotes in json, for when one wants to transfer
 // a quote as part of a value. I guess I'll find out...
 // update: they do. see https://www.json.org/json-en.html for full syntax
+//
+// There's an error lurking here. \\" will be interpreted as \". TODO fix it
 int get_string(struct parsebuf *src, char *value, size_t valuesize)
 {
     size_t i = 0;
-    int c;
+    int c, prev = 0;
 
     assert(src != NULL);
     assert(value != NULL);
     assert(valuesize > 0);
 
-    while ((c = parsebuf_getc(src)) != EOF && c != '"') {
-        value[i++] = c;
+    while ((c = parsebuf_getc(src)) != EOF) {
+        if (c == '"' && prev != '\\')
+            break;
+
+        prev = value[i++] = c;
     }
 
     if (i == valuesize)
         return TOK_ERROR;
 
     value[i] = '\0';
+
     return TOK_QSTRING;
 }
 
@@ -215,6 +297,7 @@ int get_integer(struct parsebuf *src, char *value, size_t valuesize)
         }
         else {
             value[nread] = '\0';
+            parsebuf_ungetc(src);
             return TOK_INTEGER;
         }
     }
@@ -263,98 +346,170 @@ int get_token(struct parsebuf *src, char *value, size_t valuesize)
     }
 }
 
-// static int expect(int token, char *value, size_t valuesize);
-
-
-// Can we tokenize the json input? Let's try.
-// * Most stuff is quoted strings. Some values are unquoted strings, like true and false
-// * We must handle {}[]:,
-// * Things nest a lot, so we need some tree/stack model eventually. It nests on braces,
-// so we can push things to a stack on { and pop it on }. 
-// * We have enum lists between [ and ]. Some of these are simple "list of strings",
-//   but not all. Some are named "oneOf" and have multiple(two) alternatives. Each
-//   alternative is a block. So
-//      "oneof": [ { "foo": "bar" }, { "baz" : "blob" } ]
-//   happens to be a legal value. 
-static struct node* parse(struct parsebuf *src, struct node *root)
+static int accept_qstring(struct parsebuf *src, char *buf, size_t bufsize)
 {
-    int token;
-    char name[2048], value[2048] = "";
-    // struct node *p = root;
+    assert(src != NULL);
+    assert(buf != NULL);
+    assert(bufsize > 0);
 
-    #define STATE_UNKNOWN 0
-    #define STATE_OBJECT  1
-    #define STATE_ARRAY   2
-    int state = STATE_UNKNOWN;
+    return get_token(src, buf, bufsize);
+}
 
-    // Save name, if any, so we can use it when calling node_new().
-    // Note that name is required for objects(qstring : qstring),
-    // so we need to know if current context is object/array/
-    // We can feed that into get_token() as well, and distinguish
-    // between different types of QSTRINGs
+static struct node* accept_value(struct parsebuf *src, char *buf, size_t bufsize)
+{
+    int c;
+    struct node *p;
 
-    while ((token = get_token(src, value, sizeof value)) != EOF) {
+    assert(src != NULL);
+    assert(buf != NULL);
+    assert(bufsize > 0);
 
-        if (state == STATE_OBJECT) {
-            strcpy(name, value); // save it for later
-        }
-        else if (state == STATE_ARRAY) {
-            // We have a new array element. Add it to current node
-        }
+    c = get_token(src, buf, bufsize);
+    switch (c) {
+        case TOK_OBJECTSTART: 
+            p = accept_object(src);
+            break;
 
-        switch (token) {
-            case TOK_QSTRING:
+        case TOK_ARRAYSTART: 
+            p = accept_array(src);
+            break;
+
+        // Hmm, we don't want to do anything here, do we?
+        // case TOK_COMMA: return accept_value(src, buf, bufsize);
+
+        case TOK_QSTRING:
+        case TOK_TRUE:
+        case TOK_FALSE:
+        case TOK_INTEGER:
+        case TOK_DOUBLE:
+        case TOK_NULL:
+            return node_new(c, "val", buf);
+    }
+
+    return p;
+    die("%s(): Meh, shouldn't be here\n", __func__);
+}
+
+static int accept_token(struct parsebuf *src)
+{
+    int c;
+    char value[2048];
+    
+    value[0] = '\0';
+    c = get_token(src, value, sizeof value);
+    return c;
+}
+
+static struct node* accept_object(struct parsebuf *src)
+{
+    int c;
+    char name[2048], value[2048];
+    struct node *result = NULL;
+ 
+    (void)node_set;
+    // Keep reading name : value pairs until "}" is found
+    for (;;) {
+        name[0] = '\0';
+        if ((c = accept_qstring(src, name, sizeof name)) != TOK_QSTRING) {
+            if (c == TOK_OBJECTEND)
                 break;
 
-            case TOK_COLON:
+            parsebuf_dump(src);
+            die("Expected name, got token %d/%s\n", c, maptoken(c));
+        }
+
+        if (accept_token(src) != TOK_COLON)
+            die("Expected colon");
+
+        value[0] = '\0';
+        result = accept_value(src, value, sizeof value);
+        if (result == NULL)
+            die("%s(): Unable to read value\n", __func__);
+
+        if ((c = accept_token(src)) == TOK_OBJECTEND) {
+            break;
+        }
+        else if (c == TOK_COMMA) {
+            // read next name:value pair in next iteration
+        }
+        else
+            die("Expected comma or object end, got %s", maptoken(c));
+    }
+
+    return result;
+}
+
+// Arrays can contain strings, numbers, objects, other arrays, and true,false,null
+static struct node* accept_array(struct parsebuf *src)
+{
+    int c;
+    char value[2048];
+    struct node *result, *p;
+
+    assert(src != NULL);
+
+    result = node_new(VAL_ARRAY, "arrname", NULL);
+    if (result == NULL)
+        die("Out of memory");
+
+    while ((c = get_token(src, value, sizeof value)) != EOF) {
+        switch (c) {
+            case TOK_TRUE:
+            case TOK_FALSE:
+            case TOK_NULL:
+            case TOK_INTEGER:
+            case TOK_DOUBLE:
+            case TOK_QSTRING:
+                p = node_new(c, "val", value);
+                node_add(result, p);
                 break;
 
             case TOK_COMMA:
-                break;
-
-            case TOK_OBJECTSTART:
-                state = STATE_OBJECT;
-                parse(src, root);
-                break;
-
-            case TOK_OBJECTEND:
-                return root;
-
-            case TOK_ARRAYSTART:
-                state = STATE_ARRAY;
-                parse(src, root);
+                // Comma just separates array elements.
                 break;
 
             case TOK_ARRAYEND:
-                return root;
-                
-            case TOK_TRUE:
-            case TOK_FALSE:
-            case TOK_INTEGER:
-            case TOK_DOUBLE:
-            case TOK_NULL:
+                return result;
+
+            case TOK_ARRAYSTART:
+                p = accept_array(src);
+                if (p == NULL)
+                    die("%s(): Unable to read array\n", __func__);
+
+                node_add(result, p);
                 break;
 
-            case TOK_ERROR:
-            case TOK_UNKNOWN:
-            default:
-                fprintf(stderr, "meh, didn't handle token %d\n", token);
-                exit(EXIT_FAILURE);
+            case TOK_OBJECTSTART:
+                result = accept_object(src);
                 break;
+
+            default:
+                die("You gotta support all tokens, dude, even %d\n", c);
         }
     }
 
+    die("If we get here, we miss an array end token\n");
+    node_free(result);
     return NULL;
+}
+
+static struct node* parse(struct parsebuf *src)
+{
+    if (accept_token(src) != TOK_OBJECTSTART)
+        die("Input must start with a {\n");
+
+    return accept_object(src);
 }
 
 int main(void)
 {
     const char *filename = "./schema.json";
+    // const char *filename = "./xxx";
     int fd;
     struct stat st;
     struct parsebuf buf = { NULL, 0, 0 };
 
-    struct node *root = node_new(VAL_OBJECT, NULL, NULL);
+    struct node *root = node_new(VAL_OBJECT, "xx", NULL);
 
     fd = open(filename, O_RDONLY);
     if (fd == -1)
@@ -367,12 +522,11 @@ int main(void)
     if (buf.mem == MAP_FAILED)
         die_perror(filename);
 
-    parse(&buf, root);
+    parse(&buf);
 
     close(fd);
     node_free(root);
     return 0;
-    (void)node_add; // to avoid warning/error
 }
 
 #endif
