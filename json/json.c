@@ -21,32 +21,93 @@
 // * array entries are also value, see above list of alternatives. No name in arrays though.
 // OK, so we need some generic data structure to store everything in. We store
 // one of the following: string, number, array, object, true|false|null. 
-#define VAL_UNKNOWN 0
-#define VAL_STRING  1
-#define VAL_INTEGER 2
-#define VAL_ARRAY   3
-#define VAL_OBJECT  4
-#define VAL_TRUE    5
-#define VAL_FALSE   6
-#define VAL_NULL    7
-#define VAL_DOUBLE  8
+enum valuetype { VAL_UNKNOWN, VAL_STRING, VAL_INTEGER, VAL_ARRAY, VAL_OBJECT,
+    VAL_TRUE, VAL_FALSE, VAL_NULL, VAL_DOUBLE };
+
+enum tokentype { TOK_ERROR, TOK_UNKNOWN, TOK_QSTRING, TOK_TRUE, TOK_FALSE,
+    TOK_COLON, TOK_COMMA, TOK_OBJECTSTART, TOK_OBJECTEND, TOK_ARRAYSTART,
+    TOK_ARRAYEND, TOK_INTEGER, TOK_DOUBLE, TOK_NULL };
 
 
 // We store our input buffer in one of these, to make it easier to 
 // handle offset positions when we read from functions.
-struct parsebuf {
+struct buffer {
     const char *mem;
     size_t nread, size;
 };
 
-static void parsebuf_dump(const struct parsebuf *p)
+struct value {
+    // Which value type are we storing here?
+    enum valuetype type;
+
+    union {
+        char *sval; // string
+        long lval;  // long integers
+        double dval; // floating point numbers
+        list aval; // array value, all struct value-pointers.
+        list oval; // object value. 
+    } v;
+};
+
+struct pair {
+    char *name;
+    struct value *value;
+};
+
+static void value_free(struct value *p);
+
+static void pair_free(struct pair *p)
+{
+    if (p != NULL) {
+        free(p->name);
+        value_free(p->value);
+        free(p);
+    }
+}
+
+static void value_free(struct value *p)
+{
+    if (p == NULL)
+        return;
+
+    if (p->type == VAL_ARRAY)
+        list_free(p->v.aval, (dtor)pair_free);
+    else if (p->type == VAL_STRING)
+        free(p->v.sval);
+    else if (p->type == VAL_OBJECT)
+        list_free(p->v.oval, (dtor)pair_free);
+
+    free(p);
+}
+
+static struct pair* pair_new(const char *name, struct value *value)
+{
+    struct pair *p;
+
+    assert(name != NULL);
+    assert(value != NULL);
+
+    if ((p = malloc(sizeof *p)) != NULL) {
+        if ((p->name = strdup(name)) == NULL) {
+            free(p);
+            return NULL;
+        }
+
+        p->value = value;
+    }
+
+    return p;
+}
+
+static void buffer_dump(const struct buffer *p)
 {
     size_t i;
+
     for (i = 0; i < p->nread; i++)
         fputc(p->mem[i], stderr);
 }
 
-static inline int parsebuf_getc(struct parsebuf *p)
+static inline int parsebuf_getc(struct buffer *p)
 {
     if (p->nread == p->size)
         return EOF;
@@ -54,7 +115,7 @@ static inline int parsebuf_getc(struct parsebuf *p)
     return p->mem[p->nread++];
 }
 
-static inline void parsebuf_ungetc(struct parsebuf *p)
+static inline void parsebuf_ungetc(struct buffer *p)
 {
     assert(p != NULL);
     assert(p->nread > 0);
@@ -62,125 +123,58 @@ static inline void parsebuf_ungetc(struct parsebuf *p)
     p->nread--;
 }
 
-struct node {
-    // Which value type are we storing here?
-    int type;
-
-    // name, as in name/value pair.
-    char *name;
-
-    union {
-        char *sval; // string
-        long lval;  // long integers
-        double dval; // floating point numbers
-        list aval; // array value, all struct node-pointers.
-        struct node *oval; // object value. 
-    } v;
-};
-
 // forward declarations because of recursive calls
-static struct node* accept_object(struct parsebuf *src);
-static struct node* accept_array(struct parsebuf *src);
+static list accept_object(struct buffer *src);
+static list accept_array(struct buffer *src);
 
 #ifdef JSON_CHECK
 // some member functions
-static struct node * node_new(int type, const char *name, void *value)
+static struct value * value_new(enum valuetype type, void *value)
 {
-    struct node *p;
-
-    assert(name != NULL);
+    struct value *p;
 
     if ((p = malloc(sizeof *p)) == NULL)
         return NULL;
 
-    if ((p->name = strdup(name)) == NULL) {
-        free(p);
-        return NULL;
-    }
-
     p->type = type;
     switch (type) {
-        case VAL_STRING : p->v.sval = strdup(value); break;
-        case VAL_INTEGER: p->v.lval = (long)value; break;
-        case VAL_ARRAY  :
+        case VAL_STRING:
+            p->v.sval = strdup(value);
+            break;
+
+        case VAL_DOUBLE:
+            p->v.dval = strtod(value, NULL);
+            break;
+
+        case VAL_INTEGER:
+            p->v.lval = strtol(value, NULL, 10);
+            break;
+
+        case VAL_ARRAY:
             p->v.aval = list_add(NULL, value);
             if (p->v.aval == NULL)
                 die("Meh, no mem");
             break;
-        case VAL_OBJECT : p->v.oval = value; break;
+
+        case VAL_OBJECT:
+            p->v.oval = list_add(NULL, value);
+            break;
+
+        case VAL_UNKNOWN:
+            die("Can't deal with unknown types");
+
+        case VAL_TRUE:
+        case VAL_FALSE:
+        case VAL_NULL:
+            // handled directly via type
+            break;
+
         default:
             memset(&p->v, 0, sizeof p->v);
     }
 
     return p;
 }
-
-// Add src to dest's list of nodes. From now on the dest node owns
-// the memory. That's why src is non-const.
-static status_t node_add(struct node *dest, struct node *src)
-{
-    assert(dest != NULL);
-    assert(dest->type == VAL_ARRAY);
-    assert(src != NULL);
-    
-    if (list_add(dest->v.aval, src) == NULL)
-        return failure;
-
-    return success;
-}
-
-// Set a value type and value for an existing node.
-static void node_set(struct node *p, int type, void *value)
-{
-    assert(p != NULL);
-    assert(value != NULL);
-
-    p->type = type;
-    switch (type) {
-        case VAL_STRING : p->v.sval = strdup(value); break;
-        case VAL_INTEGER: p->v.lval = (long)value; break;
-        case VAL_ARRAY  :
-            p->v.aval = list_add(NULL, value);
-            if (p->v.aval == NULL)
-                die("Meh, no mem");
-            break;
-        case VAL_OBJECT : p->v.oval = value; break;
-        default:
-            die("Internal error. Unsupported type");
-    }
-
-}
-static void node_free(struct node *p)
-{
-    if (p == NULL)
-        return;
-
-    free(p->name);
-    if (p->type == VAL_ARRAY)
-        list_free(p->v.aval, (dtor)node_free); // wait with dtor
-    else if (p->type == VAL_STRING)
-        free(p->v.sval);
-    else if (p->type == VAL_OBJECT)
-        node_free(p->v.oval);
-    free(p);
-}
-
-
-// We have some tokens which we can return
-#define TOK_ERROR      -1
-#define TOK_UNKNOWN     0
-#define TOK_QSTRING     1
-#define TOK_TRUE        2
-#define TOK_FALSE       3
-#define TOK_COLON       4
-#define TOK_COMMA       5
-#define TOK_OBJECTSTART 6
-#define TOK_OBJECTEND   7
-#define TOK_ARRAYSTART  8
-#define TOK_ARRAYEND    9
-#define TOK_INTEGER    10
-#define TOK_DOUBLE     11
-#define TOK_NULL       12
 
 static const struct {
     int value;
@@ -221,7 +215,7 @@ static const char *maptoken(int value)
 // update: they do. see https://www.json.org/json-en.html for full syntax
 //
 // There's an error lurking here. \\" will be interpreted as \". TODO fix it
-int get_string(struct parsebuf *src, char *value, size_t valuesize)
+int get_string(struct buffer *src, char *value, size_t valuesize)
 {
     size_t i = 0;
     int c, prev = 0;
@@ -246,7 +240,7 @@ int get_string(struct parsebuf *src, char *value, size_t valuesize)
 }
 
 // We've read a t. Are the next characters rue, as in true?
-int get_true(struct parsebuf *src)
+int get_true(struct buffer *src)
 {
     if (parsebuf_getc(src) == 'r' 
     && parsebuf_getc(src) == 'u' 
@@ -256,7 +250,7 @@ int get_true(struct parsebuf *src)
     return TOK_UNKNOWN;
 }
 
-int get_false(struct parsebuf *src)
+int get_false(struct buffer *src)
 {
     if (parsebuf_getc(src) == 'a' 
     && parsebuf_getc(src) == 'l' 
@@ -267,7 +261,7 @@ int get_false(struct parsebuf *src)
     return TOK_UNKNOWN;
 }
 
-int get_null(struct parsebuf *src)
+int get_null(struct buffer *src)
 {
     if (parsebuf_getc(src) == 'u' 
     && parsebuf_getc(src) == 'l' 
@@ -279,7 +273,7 @@ int get_null(struct parsebuf *src)
 
 // Read digits and place them in buffer, ungetc() the first non-digit
 // so we can read it the next time.
-int get_integer(struct parsebuf *src, char *value, size_t valuesize)
+int get_integer(struct buffer *src, char *value, size_t valuesize)
 {
     size_t nread = 0;
     int c;
@@ -308,7 +302,7 @@ int get_integer(struct parsebuf *src, char *value, size_t valuesize)
     return EOF;
 }
 
-int get_token(struct parsebuf *src, char *value, size_t valuesize)
+int get_token(struct buffer *src, char *value, size_t valuesize)
 {
     int c;
 
@@ -346,7 +340,7 @@ int get_token(struct parsebuf *src, char *value, size_t valuesize)
     }
 }
 
-static int accept_qstring(struct parsebuf *src, char *buf, size_t bufsize)
+static int accept_qstring(struct buffer *src, char *buf, size_t bufsize)
 {
     assert(src != NULL);
     assert(buf != NULL);
@@ -355,42 +349,40 @@ static int accept_qstring(struct parsebuf *src, char *buf, size_t bufsize)
     return get_token(src, buf, bufsize);
 }
 
-static struct node* accept_value(struct parsebuf *src, char *buf, size_t bufsize)
+// Wrap lists in a struct value object before returning lists
+static struct value* accept_value(struct buffer *src)
 {
     int c;
-    struct node *p;
+    char buf[2048];
+    list lst;
 
     assert(src != NULL);
-    assert(buf != NULL);
-    assert(bufsize > 0);
 
-    c = get_token(src, buf, bufsize);
+    c = get_token(src, buf, sizeof buf);
     switch (c) {
         case TOK_OBJECTSTART: 
-            p = accept_object(src);
-            break;
+            lst = accept_object(src);
+            return value_new(VAL_OBJECT, lst);
 
         case TOK_ARRAYSTART: 
-            p = accept_array(src);
-            break;
+            lst = accept_array(src);
+            return value_new(VAL_ARRAY, lst);
 
         // Hmm, we don't want to do anything here, do we?
         // case TOK_COMMA: return accept_value(src, buf, bufsize);
 
-        case TOK_QSTRING:
-        case TOK_TRUE:
-        case TOK_FALSE:
-        case TOK_INTEGER:
-        case TOK_DOUBLE:
-        case TOK_NULL:
-            return node_new(c, "val", buf);
+        case TOK_QSTRING: return value_new(VAL_STRING, buf);
+        case TOK_TRUE:    return value_new(VAL_TRUE, buf);
+        case TOK_FALSE:   return value_new(VAL_FALSE, buf);
+        case TOK_INTEGER: return value_new(VAL_INTEGER, buf);
+        case TOK_DOUBLE:  return value_new(VAL_DOUBLE, buf);
+        case TOK_NULL:    return value_new(VAL_NULL, buf);
     }
 
-    return p;
     die("%s(): Meh, shouldn't be here\n", __func__);
 }
 
-static int accept_token(struct parsebuf *src)
+static int accept_token(struct buffer *src)
 {
     int c;
     char value[2048];
@@ -400,13 +392,17 @@ static int accept_token(struct parsebuf *src)
     return c;
 }
 
-static struct node* accept_object(struct parsebuf *src)
+// Should we not return a list of all objects found? I think we should.
+// Each entry in the list should be a name:value-pair known as a JSON object.
+// boa@20200622
+static list accept_object(struct buffer *src)
 {
     int c;
-    char name[2048], value[2048];
-    struct node *result = NULL;
+    char name[2048];
+    list result = list_new();
+    struct value *value;
+    struct pair *pr;
  
-    (void)node_set;
     // Keep reading name : value pairs until "}" is found
     for (;;) {
         name[0] = '\0';
@@ -414,25 +410,30 @@ static struct node* accept_object(struct parsebuf *src)
             if (c == TOK_OBJECTEND)
                 break;
 
-            parsebuf_dump(src);
+            buffer_dump(src);
             die("Expected name, got token %d/%s\n", c, maptoken(c));
         }
 
         if (accept_token(src) != TOK_COLON)
             die("Expected colon");
 
-        value[0] = '\0';
-        result = accept_value(src, value, sizeof value);
-        if (result == NULL)
-            die("%s(): Unable to read value\n", __func__);
+        if ((value = accept_value(src)) == NULL) {
+            buffer_dump(src);
+            fprintf(stderr, "Meh, could not get value for node with name %s\n", name);
+            return NULL;
+        }
 
-        if ((c = accept_token(src)) == TOK_OBJECTEND) {
+        // add name and value to list
+        if ((pr = pair_new(name, value)) == NULL || list_add(result, pr) == NULL)
+            die("Out of memory\n");
+
+        
+
+
+        if (0) fprintf(stderr, "name:%s\n", name);
+        if ((c = accept_token(src)) == TOK_OBJECTEND) 
             break;
-        }
-        else if (c == TOK_COMMA) {
-            // read next name:value pair in next iteration
-        }
-        else
+        else if (c != TOK_COMMA) 
             die("Expected comma or object end, got %s", maptoken(c));
     }
 
@@ -440,28 +441,57 @@ static struct node* accept_object(struct parsebuf *src)
 }
 
 // Arrays can contain strings, numbers, objects, other arrays, and true,false,null
-static struct node* accept_array(struct parsebuf *src)
+static list accept_array(struct buffer *src)
 {
     int c;
     char value[2048];
-    struct node *result, *p;
+    list result = list_new();
+    list lst;
+    struct value *val;
 
     assert(src != NULL);
 
-    result = node_new(VAL_ARRAY, "arrname", NULL);
+    result = list_new();
     if (result == NULL)
         die("Out of memory");
 
     while ((c = get_token(src, value, sizeof value)) != EOF) {
         switch (c) {
             case TOK_TRUE:
+                val = value_new(VAL_TRUE, value);
+                if (list_add(result, val) == NULL)
+                    die("out of memory\n");
+
+                break;
             case TOK_FALSE:
+                val = value_new(VAL_FALSE, value);
+                if (list_add(result, val) == NULL)
+                    die("out of memory\n");
+
+                break;
             case TOK_NULL:
+                val = value_new(VAL_NULL, value);
+                if (list_add(result, val) == NULL)
+                    die("out of memory\n");
+
+                break;
             case TOK_INTEGER:
+                val = value_new(VAL_INTEGER, value);
+                if (list_add(result, val) == NULL)
+                    die("out of memory\n");
+
+                break;
             case TOK_DOUBLE:
+                val = value_new(VAL_DOUBLE, value);
+                if (list_add(result, val) == NULL)
+                    die("out of memory\n");
+
+                break;
             case TOK_QSTRING:
-                p = node_new(c, "val", value);
-                node_add(result, p);
+                val = value_new(VAL_STRING, value);
+                if (list_add(result, val) == NULL)
+                    die("out of memory\n");
+
                 break;
 
             case TOK_COMMA:
@@ -472,15 +502,18 @@ static struct node* accept_array(struct parsebuf *src)
                 return result;
 
             case TOK_ARRAYSTART:
-                p = accept_array(src);
-                if (p == NULL)
+                if ((lst = accept_array(src)) == NULL)
                     die("%s(): Unable to read array\n", __func__);
 
-                node_add(result, p);
+                if (list_add(result, lst) == NULL)
+                    die("Out of memory\n");
+
                 break;
 
             case TOK_OBJECTSTART:
-                result = accept_object(src);
+                lst = accept_object(src);
+                if (list_add(result, lst) == NULL)
+                    die("Out of memory\n");
                 break;
 
             default:
@@ -489,11 +522,11 @@ static struct node* accept_array(struct parsebuf *src)
     }
 
     die("If we get here, we miss an array end token\n");
-    node_free(result);
+    list_free(result, 0);
     return NULL;
 }
 
-static struct node* parse(struct parsebuf *src)
+static list parse(struct buffer *src)
 {
     if (accept_token(src) != TOK_OBJECTSTART)
         die("Input must start with a {\n");
@@ -507,9 +540,8 @@ int main(void)
     // const char *filename = "./xxx";
     int fd;
     struct stat st;
-    struct parsebuf buf = { NULL, 0, 0 };
-
-    struct node *root = node_new(VAL_OBJECT, "xx", NULL);
+    struct buffer buf = { NULL, 0, 0 };
+    list objects;
 
     fd = open(filename, O_RDONLY);
     if (fd == -1)
@@ -522,10 +554,10 @@ int main(void)
     if (buf.mem == MAP_FAILED)
         die_perror(filename);
 
-    parse(&buf);
+    objects = parse(&buf);
+    if (0) list_free(objects, (dtor)pair_free);
 
     close(fd);
-    node_free(root);
     return 0;
 }
 
