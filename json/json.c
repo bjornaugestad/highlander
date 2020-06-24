@@ -21,12 +21,34 @@
 // * array entries are also value, see above list of alternatives. No name in arrays though.
 // OK, so we need some generic data structure to store everything in. We store
 // one of the following: string, number, array, object, true|false|null. 
-enum valuetype { VAL_UNKNOWN, VAL_STRING, VAL_INTEGER, VAL_ARRAY, VAL_OBJECT,
-    VAL_TRUE, VAL_FALSE, VAL_NULL, VAL_DOUBLE };
+enum valuetype {
+    VAL_UNKNOWN,
+    VAL_STRING,
+    VAL_INTEGER,
+    VAL_ARRAY,
+    VAL_OBJECT,
+    VAL_TRUE,
+    VAL_FALSE,
+    VAL_NULL,
+    VAL_DOUBLE 
+};
 
-enum tokentype { TOK_ERROR, TOK_UNKNOWN, TOK_QSTRING, TOK_TRUE, TOK_FALSE,
-    TOK_COLON, TOK_COMMA, TOK_OBJECTSTART, TOK_OBJECTEND, TOK_ARRAYSTART,
-    TOK_ARRAYEND, TOK_INTEGER, TOK_DOUBLE, TOK_NULL };
+enum tokentype {
+    TOK_ERROR,
+    TOK_UNKNOWN,
+    TOK_QSTRING,
+    TOK_TRUE,
+    TOK_FALSE,
+    TOK_COLON,
+    TOK_COMMA,
+    TOK_OBJECTSTART,
+    TOK_OBJECTEND,
+    TOK_ARRAYSTART,
+    TOK_ARRAYEND,
+    TOK_INTEGER,
+    TOK_DOUBLE,
+    TOK_NULL
+};
 
 
 // We store our input buffer in one of these, to make it easier to 
@@ -34,6 +56,11 @@ enum tokentype { TOK_ERROR, TOK_UNKNOWN, TOK_QSTRING, TOK_TRUE, TOK_FALSE,
 struct buffer {
     const char *mem;
     size_t nread, size;
+};
+
+struct object {
+    char *name;
+    struct value *value;
 };
 
 struct value {
@@ -45,18 +72,13 @@ struct value {
         long lval;  // long integers
         double dval; // floating point numbers
         list aval; // array value, all struct value-pointers.
-        list oval; // object value. 
+        struct object *oval; // object value. 
     } v;
-};
-
-struct pair {
-    char *name;
-    struct value *value;
 };
 
 static void value_free(struct value *p);
 
-static void pair_free(struct pair *p)
+static void object_free(struct object *p)
 {
     if (p != NULL) {
         free(p->name);
@@ -71,21 +93,20 @@ static void value_free(struct value *p)
         return;
 
     if (p->type == VAL_ARRAY)
-        list_free(p->v.aval, (dtor)pair_free);
+        list_free(p->v.aval, (dtor)value_free);
     else if (p->type == VAL_STRING)
         free(p->v.sval);
     else if (p->type == VAL_OBJECT)
-        list_free(p->v.oval, (dtor)pair_free);
+        object_free(p->v.oval);
 
     free(p);
 }
 
-static struct pair* pair_new(const char *name, struct value *value)
+static struct object* object_new(const char *name, struct value *value)
 {
-    struct pair *p;
+    struct object *p;
 
     assert(name != NULL);
-    assert(value != NULL);
 
     if ((p = malloc(sizeof *p)) != NULL) {
         if ((p->name = strdup(name)) == NULL) {
@@ -99,6 +120,7 @@ static struct pair* pair_new(const char *name, struct value *value)
     return p;
 }
 
+#if 0
 static void buffer_dump(const struct buffer *p)
 {
     size_t i;
@@ -106,6 +128,7 @@ static void buffer_dump(const struct buffer *p)
     for (i = 0; i < p->nread; i++)
         fputc(p->mem[i], stderr);
 }
+#endif
 
 static inline int parsebuf_getc(struct buffer *p)
 {
@@ -124,7 +147,8 @@ static inline void parsebuf_ungetc(struct buffer *p)
 }
 
 // forward declarations because of recursive calls
-static list accept_object(struct buffer *src);
+static struct object* accept_object(struct buffer *src);
+static list accept_objects(struct buffer *src);
 static list accept_array(struct buffer *src);
 
 #ifdef JSON_CHECK
@@ -133,7 +157,9 @@ static struct value * value_new(enum valuetype type, void *value)
 {
     struct value *p;
 
-    if ((p = malloc(sizeof *p)) == NULL)
+    fprintf(stderr, "Gottaval\n");
+
+    if ((p = calloc(1, sizeof *p)) == NULL)
         return NULL;
 
     p->type = type;
@@ -151,13 +177,11 @@ static struct value * value_new(enum valuetype type, void *value)
             break;
 
         case VAL_ARRAY:
-            p->v.aval = list_add(NULL, value);
-            if (p->v.aval == NULL)
-                die("Meh, no mem");
+            p->v.aval = value;
             break;
 
         case VAL_OBJECT:
-            p->v.oval = list_add(NULL, value);
+            p->v.oval = value;
             break;
 
         case VAL_UNKNOWN:
@@ -170,14 +194,14 @@ static struct value * value_new(enum valuetype type, void *value)
             break;
 
         default:
-            memset(&p->v, 0, sizeof p->v);
+            die("Dude, wtf?\n");
     }
 
     return p;
 }
 
 static const struct {
-    int value;
+    enum tokentype value;
     const char *text;
 } tokens[] = {
     { TOK_ERROR       , "error" },
@@ -196,7 +220,7 @@ static const struct {
     { TOK_NULL        , "null" },
 };
 
-static const char *maptoken(int value)
+static const char *maptoken(enum tokentype value)
 {
     size_t i, n;
 
@@ -236,6 +260,7 @@ int get_string(struct buffer *src, char *value, size_t valuesize)
 
     value[i] = '\0';
 
+    fprintf(stderr, "read string:%s\n", value);
     return TOK_QSTRING;
 }
 
@@ -349,20 +374,23 @@ static int accept_qstring(struct buffer *src, char *buf, size_t bufsize)
     return get_token(src, buf, bufsize);
 }
 
-// Wrap lists in a struct value object before returning lists
+// Wrap array list in a struct value object before returning 
 static struct value* accept_value(struct buffer *src)
 {
-    int c;
+    enum tokentype c;
     char buf[2048];
     list lst;
+    struct object *pr;
 
     assert(src != NULL);
 
     c = get_token(src, buf, sizeof buf);
     switch (c) {
         case TOK_OBJECTSTART: 
-            lst = accept_object(src);
-            return value_new(VAL_OBJECT, lst);
+            // Nah, we can't just return on first object, as it's very 
+            // common that an object has plenty of subobjects
+            pr = accept_object(src);
+            return value_new(VAL_OBJECT, pr);
 
         case TOK_ARRAYSTART: 
             lst = accept_array(src);
@@ -377,14 +405,23 @@ static struct value* accept_value(struct buffer *src)
         case TOK_INTEGER: return value_new(VAL_INTEGER, buf);
         case TOK_DOUBLE:  return value_new(VAL_DOUBLE, buf);
         case TOK_NULL:    return value_new(VAL_NULL, buf);
+
+        case TOK_ERROR:
+        case TOK_UNKNOWN:
+        case TOK_COLON:
+        case TOK_COMMA:
+        case TOK_OBJECTEND:
+        case TOK_ARRAYEND:
+        default: 
+            break;
     }
 
     die("%s(): Meh, shouldn't be here\n", __func__);
 }
 
-static int accept_token(struct buffer *src)
+static enum tokentype accept_token(struct buffer *src)
 {
-    int c;
+    enum tokentype c;
     char value[2048];
     
     value[0] = '\0';
@@ -392,48 +429,61 @@ static int accept_token(struct buffer *src)
     return c;
 }
 
-// Should we not return a list of all objects found? I think we should.
-// Each entry in the list should be a name:value-pair known as a JSON object.
-// boa@20200622
-static list accept_object(struct buffer *src)
+// Accept one object, i.e., a name:value pair. Opening brace HAS been read already
+static struct object* accept_object(struct buffer *src)
 {
-    int c;
     char name[2048];
-    list result = list_new();
     struct value *value;
-    struct pair *pr;
- 
-    // Keep reading name : value pairs until "}" is found
-    for (;;) {
-        name[0] = '\0';
-        if ((c = accept_qstring(src, name, sizeof name)) != TOK_QSTRING) {
-            if (c == TOK_OBJECTEND)
-                break;
+    struct object *result;
+    enum tokentype c;
 
-            buffer_dump(src);
-            die("Expected name, got token %d/%s\n", c, maptoken(c));
-        }
-
-        if (accept_token(src) != TOK_COLON)
-            die("Expected colon");
-
-        if ((value = accept_value(src)) == NULL) {
-            buffer_dump(src);
-            fprintf(stderr, "Meh, could not get value for node with name %s\n", name);
+    name[0] = '\0';
+    if ((c = accept_qstring(src, name, sizeof name)) != TOK_QSTRING) {
+        if (c == TOK_OBJECTEND) {
+            fprintf(stderr, "XX1\n");
             return NULL;
         }
+    }
 
-        // add name and value to list
-        if ((pr = pair_new(name, value)) == NULL || list_add(result, pr) == NULL)
-            die("Out of memory\n");
+    fprintf(stderr, "name:%s\n", name);
 
-        
+    if (accept_token(src) != TOK_COLON)
+        die("Expected colon");
 
+    // Value may be null, as in { "foo" : { } }
+    // Aw fuck, an object's value may be 0..n objects. IOW, accept_value()
+    // must handle this case.
+    value = accept_value(src);
 
-        if (0) fprintf(stderr, "name:%s\n", name);
+    if ((result = object_new(name, value)) == NULL)
+        die("Out of memory\n");
+
+    fprintf(stderr, "XX2\n");
+    return result;
+}
+
+static list accept_objects(struct buffer *src)
+{
+    enum tokentype c;
+    list result;
+
+    struct object *pr;
+ 
+    if ((result = list_new()) == NULL)
+        die("Out of memory");
+
+    // Keep reading name : value pairs until "}" is found
+    for (;;) {
+        if ((pr = accept_object(src)) == NULL)
+            break;
+
+        if (list_add(result, pr) == NULL)
+            die("Out of memory");
+
         if ((c = accept_token(src)) == TOK_OBJECTEND) 
             break;
-        else if (c != TOK_COMMA) 
+
+        if (c != TOK_COMMA) 
             die("Expected comma or object end, got %s", maptoken(c));
     }
 
@@ -448,6 +498,7 @@ static list accept_array(struct buffer *src)
     list result = list_new();
     list lst;
     struct value *val;
+    struct object *obj;
 
     assert(src != NULL);
 
@@ -456,46 +507,46 @@ static list accept_array(struct buffer *src)
         die("Out of memory");
 
     while ((c = get_token(src, value, sizeof value)) != EOF) {
+        fprintf(stderr, "%s(): read %s\n", __func__, maptoken(c));
         switch (c) {
             case TOK_TRUE:
                 val = value_new(VAL_TRUE, value);
                 if (list_add(result, val) == NULL)
                     die("out of memory\n");
-
                 break;
+
             case TOK_FALSE:
                 val = value_new(VAL_FALSE, value);
                 if (list_add(result, val) == NULL)
                     die("out of memory\n");
-
                 break;
+
             case TOK_NULL:
                 val = value_new(VAL_NULL, value);
                 if (list_add(result, val) == NULL)
                     die("out of memory\n");
-
                 break;
+
             case TOK_INTEGER:
                 val = value_new(VAL_INTEGER, value);
                 if (list_add(result, val) == NULL)
                     die("out of memory\n");
-
                 break;
             case TOK_DOUBLE:
                 val = value_new(VAL_DOUBLE, value);
                 if (list_add(result, val) == NULL)
                     die("out of memory\n");
-
                 break;
+
             case TOK_QSTRING:
                 val = value_new(VAL_STRING, value);
                 if (list_add(result, val) == NULL)
                     die("out of memory\n");
-
                 break;
 
             case TOK_COMMA:
                 // Comma just separates array elements.
+                fprintf(stderr, "At array's comma\n");
                 break;
 
             case TOK_ARRAYEND:
@@ -511,10 +562,18 @@ static list accept_array(struct buffer *src)
                 break;
 
             case TOK_OBJECTSTART:
-                lst = accept_object(src);
-                if (list_add(result, lst) == NULL)
+                if ((obj = accept_object(src)) == NULL)
+                    break;
+
+                if ((val = value_new(VAL_OBJECT, obj)) == NULL)
+                    die("Out of memory\n");
+                
+                if (list_add(result, val) == NULL)
                     die("Out of memory\n");
                 break;
+
+            case TOK_OBJECTEND:
+                die("wtf? accept_object() should've detected this, right?\n");
 
             default:
                 die("You gotta support all tokens, dude, even %d\n", c);
@@ -531,13 +590,97 @@ static list parse(struct buffer *src)
     if (accept_token(src) != TOK_OBJECTSTART)
         die("Input must start with a {\n");
 
-    return accept_object(src);
+    return accept_objects(src);
+}
+
+static void print_value(struct value *p);
+
+static void traverse(list objects)
+{
+    list_iterator i;
+
+    for (i = list_first(objects); !list_end(i); i = list_next(i)) {
+        struct object *pr = list_get(i);
+        printf("\"%s\" : ", pr->name);
+        if (pr->value == NULL)
+            printf("(nullval)");
+        else
+            print_value(pr->value);
+
+        printf("\n");
+    }
+}
+
+static void print_array(list lst)
+{
+    list_iterator i;
+
+    printf("[\n");
+
+    for (i = list_first(lst); !list_end(i); i = list_next(i)) {
+        struct value *v = list_get(i);
+        if (v == NULL) 
+            printf("(no val in lst)");
+        else
+            print_value(v);
+    }
+    printf("]\n");
+}
+
+static void print_value(struct value *p)
+{
+    assert(p != NULL);
+
+    switch (p->type) {
+        case VAL_UNKNOWN:
+            printf("unknown");
+            break;
+
+        case VAL_STRING:
+            printf("\"%s\"", p->v.sval);
+            break;
+
+        case VAL_INTEGER:
+            printf("%s", p->v.sval);
+            break;
+
+        case VAL_ARRAY:
+            print_array(p->v.aval);
+            break;
+
+        case VAL_OBJECT:
+            printf("{\n\"%s\" : ", p->v.oval->name);
+            print_value(p->v.oval->value);
+            printf("\n}");
+            break;
+
+        case VAL_TRUE:
+            printf("true");
+            break;
+
+        case VAL_FALSE:
+            printf("false");
+            break;
+
+        case VAL_NULL:
+            printf("null");
+            break;
+
+        case VAL_DOUBLE:
+            printf("%g", p->v.dval);
+            break;
+
+        // default:
+            // die("Gotta cover all values. %ld is missing\n", (long)p->type);
+    }
+
+    printf(",");
 }
 
 int main(void)
 {
-    const char *filename = "./schema.json";
-    // const char *filename = "./xxx";
+    // const char *filename = "./schema.json";
+    const char *filename = "./xxx";
     int fd;
     struct stat st;
     struct buffer buf = { NULL, 0, 0 };
@@ -555,7 +698,8 @@ int main(void)
         die_perror(filename);
 
     objects = parse(&buf);
-    if (0) list_free(objects, (dtor)pair_free);
+    if (0) traverse(objects);
+    if (0) list_free(objects, (dtor)object_free);
 
     close(fd);
     return 0;
