@@ -47,7 +47,8 @@ enum tokentype {
     TOK_ARRAYEND,
     TOK_INTEGER,
     TOK_DOUBLE,
-    TOK_NULL
+    TOK_NULL,
+    TOK_EOF,
 };
 
 
@@ -56,6 +57,9 @@ enum tokentype {
 struct buffer {
     const char *mem;
     size_t nread, size;
+
+    enum tokentype token;
+    char value[2048];
 };
 
 struct object {
@@ -120,6 +124,14 @@ static struct object* object_new(const char *name, struct value *value)
     return p;
 }
 
+static void object_set_value(struct object *p, struct value *v)
+{
+    assert(p != NULL);
+    assert(v != NULL);
+
+    p->value = v;
+}
+
 #if 0
 static void buffer_dump(const struct buffer *p)
 {
@@ -130,7 +142,7 @@ static void buffer_dump(const struct buffer *p)
 }
 #endif
 
-static inline int parsebuf_getc(struct buffer *p)
+static inline int buffer_getc(struct buffer *p)
 {
     if (p->nread == p->size)
         return EOF;
@@ -138,7 +150,7 @@ static inline int parsebuf_getc(struct buffer *p)
     return p->mem[p->nread++];
 }
 
-static inline void parsebuf_ungetc(struct buffer *p)
+static inline void buffer_ungetc(struct buffer *p)
 {
     assert(p != NULL);
     assert(p->nread > 0);
@@ -149,15 +161,12 @@ static inline void parsebuf_ungetc(struct buffer *p)
 // forward declarations because of recursive calls
 static struct object* accept_object(struct buffer *src);
 static list accept_objects(struct buffer *src);
-static list accept_array(struct buffer *src);
 
 #ifdef JSON_CHECK
 // some member functions
 static struct value * value_new(enum valuetype type, void *value)
 {
     struct value *p;
-
-    fprintf(stderr, "Gottaval\n");
 
     if ((p = calloc(1, sizeof *p)) == NULL)
         return NULL;
@@ -218,6 +227,7 @@ static const struct {
     { TOK_INTEGER     , "integer" },
     { TOK_DOUBLE      , "double" },
     { TOK_NULL        , "null" },
+    { TOK_EOF         , "eof" },
 };
 
 static const char *maptoken(enum tokentype value)
@@ -239,37 +249,34 @@ static const char *maptoken(enum tokentype value)
 // update: they do. see https://www.json.org/json-en.html for full syntax
 //
 // There's an error lurking here. \\" will be interpreted as \". TODO fix it
-int get_string(struct buffer *src, char *value, size_t valuesize)
+int get_string(struct buffer *src)
 {
     size_t i = 0;
     int c, prev = 0;
 
     assert(src != NULL);
-    assert(value != NULL);
-    assert(valuesize > 0);
 
-    while ((c = parsebuf_getc(src)) != EOF) {
+    while (i < sizeof src->value && (c = buffer_getc(src)) != EOF) {
         if (c == '"' && prev != '\\')
             break;
 
-        prev = value[i++] = c;
+        prev = src->value[i++] = c;
     }
 
-    if (i == valuesize)
+    if (i == sizeof src->value)
         return TOK_ERROR;
 
-    value[i] = '\0';
+    src->value[i] = '\0';
 
-    fprintf(stderr, "read string:%s\n", value);
     return TOK_QSTRING;
 }
 
 // We've read a t. Are the next characters rue, as in true?
 int get_true(struct buffer *src)
 {
-    if (parsebuf_getc(src) == 'r' 
-    && parsebuf_getc(src) == 'u' 
-    && parsebuf_getc(src) == 'e')
+    if (buffer_getc(src) == 'r' 
+    && buffer_getc(src) == 'u' 
+    && buffer_getc(src) == 'e')
         return TOK_TRUE;
 
     return TOK_UNKNOWN;
@@ -277,10 +284,10 @@ int get_true(struct buffer *src)
 
 int get_false(struct buffer *src)
 {
-    if (parsebuf_getc(src) == 'a' 
-    && parsebuf_getc(src) == 'l' 
-    && parsebuf_getc(src) == 's' 
-    && parsebuf_getc(src) == 'e')
+    if (buffer_getc(src) == 'a' 
+    && buffer_getc(src) == 'l' 
+    && buffer_getc(src) == 's' 
+    && buffer_getc(src) == 'e')
         return TOK_FALSE;
 
     return TOK_UNKNOWN;
@@ -288,9 +295,9 @@ int get_false(struct buffer *src)
 
 int get_null(struct buffer *src)
 {
-    if (parsebuf_getc(src) == 'u' 
-    && parsebuf_getc(src) == 'l' 
-    && parsebuf_getc(src) == 'l')
+    if (buffer_getc(src) == 'u' 
+    && buffer_getc(src) == 'l' 
+    && buffer_getc(src) == 'l')
         return TOK_NULL;
 
     return TOK_UNKNOWN;
@@ -298,25 +305,23 @@ int get_null(struct buffer *src)
 
 // Read digits and place them in buffer, ungetc() the first non-digit
 // so we can read it the next time.
-int get_integer(struct buffer *src, char *value, size_t valuesize)
+int get_integer(struct buffer *src)
 {
     size_t nread = 0;
     int c;
 
     assert(src != NULL);
-    assert(value != NULL);
-    assert(valuesize > 1);
 
-    while ((c = parsebuf_getc(src)) != EOF) {
+    while (nread < sizeof src->value && (c = buffer_getc(src)) != EOF) {
         if (isdigit(c)) {
-            if (nread < valuesize)
-                value[nread++] = c;
+            if (nread < sizeof src->value)
+                src->value[nread++] = c;
             else
                 die("%s(): Buffer too small.\n", __func__);
         }
         else {
-            value[nread] = '\0';
-            parsebuf_ungetc(src);
+            src->value[nread] = '\0';
+            buffer_ungetc(src);
             return TOK_INTEGER;
         }
     }
@@ -324,270 +329,172 @@ int get_integer(struct buffer *src, char *value, size_t valuesize)
     // we get here on eof. That doesn't mean that we didn't read a number,
     // e.g. if the last token is this number.  Not very likely due 
     // to syntax requirements, so we EOF here always.
-    return EOF;
+    return TOK_EOF;
 }
 
-int get_token(struct buffer *src, char *value, size_t valuesize)
+void get_token(struct buffer *src)
 {
     int c;
 
-    while ((c = parsebuf_getc(src)) != EOF && isspace(c))
+    src->value[0] = '\0';
+    src->token = TOK_UNKNOWN;
+
+    // skip ws
+    while ((c = buffer_getc(src)) != EOF && isspace(c))
         ;
 
     switch (c) {
-        case EOF: return EOF;
-        case '[': return TOK_ARRAYSTART;
-        case ']': return TOK_ARRAYEND;
-        case '{': return TOK_OBJECTSTART;
-        case '}': return TOK_OBJECTEND;
-        case ':': return TOK_COLON;
-        case ',': return TOK_COMMA;
-        case '"': return get_string(src, value, valuesize);
-    }
+        case EOF: src->token = TOK_EOF; break;
+        case '[': src->token = TOK_ARRAYSTART; break;
+        case ']': src->token = TOK_ARRAYEND; break;
+        case '{': src->token = TOK_OBJECTSTART; break;
+        case '}': src->token = TOK_OBJECTEND; break;
+        case ':': src->token = TOK_COLON; break;
+        case ',': src->token = TOK_COMMA; break;
+        case '"': src->token = get_string(src); break;
+        case 't': src->token = get_true(src); break;
+        case 'f': src->token = get_false(src); break;
+        case 'n': src->token = get_null(src); break;
 
-    // are we looking at a digit? If so, we need to retain its value
-    // before we read more of the number.
-    if (isdigit(c)) {
-        value[0] = c;
-        return get_integer(src, value + 1, valuesize - 1);
-    }
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+            buffer_ungetc(src);
+            src->token = get_integer(src);
+            break;
 
-    // At this point, we may have a true/false value, or even null
-    if (c == 't')
-        return get_true(src);
-    else if (c == 'f')
-        return get_false(src);
-    else if (c == 'n')
-        return get_null(src);
-    else {
-        fprintf(stderr, "c==%d\n", c);
-        return TOK_UNKNOWN;
+        default:
+            fprintf(stderr, "c==%d\n", c);
+            src->token = TOK_UNKNOWN;
     }
 }
 
-static int accept_qstring(struct buffer *src, char *buf, size_t bufsize)
+static void nextsym(struct buffer *p)
 {
-    assert(src != NULL);
-    assert(buf != NULL);
-    assert(bufsize > 0);
+    if (p->token != TOK_EOF)
+        get_token(p);
+}
 
-    return get_token(src, buf, bufsize);
+static int accept(struct buffer *p, enum tokentype tok)
+{
+    if (p->token == tok) {
+        nextsym(p);
+        return 1;
+    }
+
+    return 0;
+}
+
+static int expect(struct buffer *p, enum tokentype tok)
+{
+    if (accept(p, tok))
+        return 1;
+
+    
+    die("Unexpected token found: %s\n", maptoken(p->token));
+    return 0;
 }
 
 // Wrap array list in a struct value object before returning 
 static struct value* accept_value(struct buffer *src)
 {
-    enum tokentype c;
-    char buf[2048];
-    list lst;
-    struct object *pr;
 
     assert(src != NULL);
 
-    c = get_token(src, buf, sizeof buf);
-    switch (c) {
-        case TOK_OBJECTSTART: 
-            // Nah, we can't just return on first object, as it's very 
-            // common that an object has plenty of subobjects
-            pr = accept_object(src);
-            return value_new(VAL_OBJECT, pr);
-
-        case TOK_ARRAYSTART: 
-            lst = accept_array(src);
-            return value_new(VAL_ARRAY, lst);
-
-        // Hmm, we don't want to do anything here, do we?
-        // case TOK_COMMA: return accept_value(src, buf, bufsize);
-
-        case TOK_QSTRING: return value_new(VAL_STRING, buf);
-        case TOK_TRUE:    return value_new(VAL_TRUE, buf);
-        case TOK_FALSE:   return value_new(VAL_FALSE, buf);
-        case TOK_INTEGER: return value_new(VAL_INTEGER, buf);
-        case TOK_DOUBLE:  return value_new(VAL_DOUBLE, buf);
-        case TOK_NULL:    return value_new(VAL_NULL, buf);
-
-        case TOK_ERROR:
-        case TOK_UNKNOWN:
-        case TOK_COLON:
-        case TOK_COMMA:
-        case TOK_OBJECTEND:
-        case TOK_ARRAYEND:
-        default: 
-            break;
+    if (accept(src, TOK_OBJECTSTART)) {
+        struct object *pr = accept_object(src);
+        return value_new(VAL_OBJECT, pr);
     }
+    else if (accept(src, TOK_ARRAYSTART)) {
+        list lst = NULL;
+        do {
+            struct value *p = accept_value(src);
+            lst = list_add(lst, p);
+        } while (accept(src, TOK_COMMA));
 
-    die("%s(): Meh, shouldn't be here\n", __func__);
+        expect(src, TOK_ARRAYEND);
+        return value_new(VAL_ARRAY, lst);
+    }
+    else if (accept(src, TOK_TRUE)) {
+        return value_new(VAL_TRUE, src->value);
+    }
+    else if (accept(src, TOK_FALSE)) {
+        return value_new(VAL_FALSE, src->value);
+    }
+    else if (accept(src, TOK_NULL)) {
+        return value_new(VAL_NULL, src->value);
+    }
+    else if (accept(src, TOK_INTEGER)) {
+        return value_new(VAL_INTEGER, src->value);
+    }
+    else if (accept(src, TOK_DOUBLE)) {
+        return value_new(VAL_DOUBLE, src->value);
+    }
+    else if (accept(src, TOK_QSTRING)) {
+        return value_new(VAL_STRING, src->value);
+    }
+    else {
+        die("%s(): Meh, shouldn't be here\n", __func__);
+    }
 }
 
-static enum tokentype accept_token(struct buffer *src)
-{
-    enum tokentype c;
-    char value[2048];
-    
-    value[0] = '\0';
-    c = get_token(src, value, sizeof value);
-    return c;
-}
 
 // Accept one object, i.e., a name:value pair. Opening brace HAS been read already
+// Value may be null, as in { "foo" : { } }
 static struct object* accept_object(struct buffer *src)
 {
-    char name[2048];
-    struct value *value;
     struct object *result;
-    enum tokentype c;
+    struct value *value;
 
-    name[0] = '\0';
-    if ((c = accept_qstring(src, name, sizeof name)) != TOK_QSTRING) {
-        if (c == TOK_OBJECTEND) {
-            fprintf(stderr, "XX1\n");
-            return NULL;
-        }
-    }
+    do {
+        if (!accept(src, TOK_QSTRING))
+            die("expected object name\n");
 
-    fprintf(stderr, "name:%s\n", name);
+        expect(src, TOK_COLON);
 
-    if (accept_token(src) != TOK_COLON)
-        die("Expected colon");
+        result = object_new(src->value, NULL);
+        value = accept_value(src);
+        object_set_value(result, value);
+    } while (accept(src, TOK_COMMA));
+    expect(src, TOK_OBJECTEND);
 
-    // Value may be null, as in { "foo" : { } }
-    // Aw fuck, an object's value may be 0..n objects. IOW, accept_value()
-    // must handle this case.
-    value = accept_value(src);
-
-    if ((result = object_new(name, value)) == NULL)
-        die("Out of memory\n");
-
-    fprintf(stderr, "XX2\n");
     return result;
 }
 
 static list accept_objects(struct buffer *src)
 {
-    enum tokentype c;
     list result;
-
-    struct object *pr;
  
     if ((result = list_new()) == NULL)
         die("Out of memory");
 
-    // Keep reading name : value pairs until "}" is found
-    for (;;) {
+    do {
+        struct object *pr;
+
         if ((pr = accept_object(src)) == NULL)
             break;
 
         if (list_add(result, pr) == NULL)
             die("Out of memory");
 
-        if ((c = accept_token(src)) == TOK_OBJECTEND) 
-            break;
-
-        if (c != TOK_COMMA) 
-            die("Expected comma or object end, got %s", maptoken(c));
-    }
+    } while (accept(src, TOK_COMMA));
+    expect(src, TOK_EOF);
 
     return result;
 }
 
-// Arrays can contain strings, numbers, objects, other arrays, and true,false,null
-static list accept_array(struct buffer *src)
-{
-    int c;
-    char value[2048];
-    list result = list_new();
-    list lst;
-    struct value *val;
-    struct object *obj;
-
-    assert(src != NULL);
-
-    result = list_new();
-    if (result == NULL)
-        die("Out of memory");
-
-    while ((c = get_token(src, value, sizeof value)) != EOF) {
-        fprintf(stderr, "%s(): read %s\n", __func__, maptoken(c));
-        switch (c) {
-            case TOK_TRUE:
-                val = value_new(VAL_TRUE, value);
-                if (list_add(result, val) == NULL)
-                    die("out of memory\n");
-                break;
-
-            case TOK_FALSE:
-                val = value_new(VAL_FALSE, value);
-                if (list_add(result, val) == NULL)
-                    die("out of memory\n");
-                break;
-
-            case TOK_NULL:
-                val = value_new(VAL_NULL, value);
-                if (list_add(result, val) == NULL)
-                    die("out of memory\n");
-                break;
-
-            case TOK_INTEGER:
-                val = value_new(VAL_INTEGER, value);
-                if (list_add(result, val) == NULL)
-                    die("out of memory\n");
-                break;
-            case TOK_DOUBLE:
-                val = value_new(VAL_DOUBLE, value);
-                if (list_add(result, val) == NULL)
-                    die("out of memory\n");
-                break;
-
-            case TOK_QSTRING:
-                val = value_new(VAL_STRING, value);
-                if (list_add(result, val) == NULL)
-                    die("out of memory\n");
-                break;
-
-            case TOK_COMMA:
-                // Comma just separates array elements.
-                fprintf(stderr, "At array's comma\n");
-                break;
-
-            case TOK_ARRAYEND:
-                return result;
-
-            case TOK_ARRAYSTART:
-                if ((lst = accept_array(src)) == NULL)
-                    die("%s(): Unable to read array\n", __func__);
-
-                if (list_add(result, lst) == NULL)
-                    die("Out of memory\n");
-
-                break;
-
-            case TOK_OBJECTSTART:
-                if ((obj = accept_object(src)) == NULL)
-                    break;
-
-                if ((val = value_new(VAL_OBJECT, obj)) == NULL)
-                    die("Out of memory\n");
-                
-                if (list_add(result, val) == NULL)
-                    die("Out of memory\n");
-                break;
-
-            case TOK_OBJECTEND:
-                die("wtf? accept_object() should've detected this, right?\n");
-
-            default:
-                die("You gotta support all tokens, dude, even %d\n", c);
-        }
-    }
-
-    die("If we get here, we miss an array end token\n");
-    list_free(result, 0);
-    return NULL;
-}
-
 static list parse(struct buffer *src)
 {
-    if (accept_token(src) != TOK_OBJECTSTART)
+    nextsym(src);
+
+    if (!accept(src, TOK_OBJECTSTART))
         die("Input must start with a {\n");
 
     return accept_objects(src);
@@ -683,9 +590,10 @@ int main(void)
     const char *filename = "./xxx";
     int fd;
     struct stat st;
-    struct buffer buf = { NULL, 0, 0 };
+    struct buffer buf;
     list objects;
 
+    memset(&buf, 0, sizeof buf);
     fd = open(filename, O_RDONLY);
     if (fd == -1)
         die_perror(filename);
@@ -698,7 +606,7 @@ int main(void)
         die_perror(filename);
 
     objects = parse(&buf);
-    if (0) traverse(objects);
+    if (1) traverse(objects);
     if (0) list_free(objects, (dtor)object_free);
 
     close(fd);
