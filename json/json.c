@@ -23,14 +23,15 @@
 // one of the following: string, number, array, object, true|false|null. 
 enum valuetype {
     VAL_UNKNOWN,
-    VAL_STRING,
+    VAL_QSTRING,
     VAL_INTEGER,
     VAL_ARRAY,
     VAL_OBJECT,
     VAL_TRUE,
     VAL_FALSE,
     VAL_NULL,
-    VAL_DOUBLE 
+    VAL_DOUBLE,
+    VAL_STRING, // This is not a quoted string, but the string keyword from oas 3.0.3
 };
 
 enum tokentype {
@@ -49,6 +50,7 @@ enum tokentype {
     TOK_DOUBLE,
     TOK_NULL,
     TOK_EOF,
+    TOK_STRING, // This is not a quoted string, but the string keyword from oas 3.0.3
 };
 
 
@@ -100,7 +102,7 @@ static void value_free(struct value *p)
 
     if (p->type == VAL_ARRAY)
         list_free(p->v.aval, (dtor)value_free);
-    else if (p->type == VAL_STRING)
+    else if (p->type == VAL_QSTRING)
         free(p->v.sval);
     else if (p->type == VAL_OBJECT)
         list_free(p->v.oval, (dtor)object_free);
@@ -156,7 +158,7 @@ static struct value * value_new(enum valuetype type, void *value)
 
     p->type = type;
     switch (type) {
-        case VAL_STRING:
+        case VAL_QSTRING:
             p->v.sval = strdup(value);
             break;
 
@@ -179,6 +181,7 @@ static struct value * value_new(enum valuetype type, void *value)
         case VAL_UNKNOWN:
             die("Can't deal with unknown types");
 
+        case VAL_STRING:
         case VAL_TRUE:
         case VAL_FALSE:
         case VAL_NULL:
@@ -212,6 +215,7 @@ static const struct {
     { TOK_DOUBLE      , 1, "double" },
     { TOK_NULL        , 0, "null" },
     { TOK_EOF         , 0, "eof" },
+    { TOK_STRING      , 0, "string" },
 };
 
 static const char *maptoken(enum tokentype value)
@@ -228,7 +232,7 @@ static const char *maptoken(enum tokentype value)
 
 // We have a ", which is start of quoted string. Read the rest of the
 // string and place it in value. 
-int get_string(struct buffer *src)
+int get_qstring(struct buffer *src)
 {
     size_t i = 0;
     int c, prev = 0;
@@ -278,6 +282,18 @@ int get_null(struct buffer *src)
     && buffer_getc(src) == 'l' 
     && buffer_getc(src) == 'l')
         return TOK_NULL;
+
+    return TOK_UNKNOWN;
+}
+
+int get_string(struct buffer *src)
+{
+    if (buffer_getc(src) == 't' 
+    && buffer_getc(src) == 'r' 
+    && buffer_getc(src) == 'i'
+    && buffer_getc(src) == 'n'
+    && buffer_getc(src) == 'g')
+        return TOK_STRING;
 
     return TOK_UNKNOWN;
 }
@@ -342,10 +358,11 @@ void get_token(struct buffer *src)
         case '}': src->token = TOK_OBJECTEND; break;
         case ':': src->token = TOK_COLON; break;
         case ',': src->token = TOK_COMMA; break;
-        case '"': src->token = get_string(src); break;
+        case '"': src->token = get_qstring(src); break;
         case 't': src->token = get_true(src); break;
         case 'f': src->token = get_false(src); break;
         case 'n': src->token = get_null(src); break;
+        case 's': src->token = get_string(src); break;
 
         case '0':
         case '1':
@@ -445,10 +462,14 @@ static struct value* accept_value(struct buffer *src)
         return value_new(VAL_DOUBLE, src->savedvalue);
     }
     else if (accept(src, TOK_QSTRING)) {
-        return value_new(VAL_STRING, src->savedvalue);
+        return value_new(VAL_QSTRING, src->savedvalue);
+    }
+    else if (accept(src, TOK_STRING)) {
+        return value_new(VAL_STRING, NULL);
     }
     else {
-        die("%s(): Meh, shouldn't be here\n", __func__);
+        die("%s(): Meh, shouldn't be here. Token intval==%d(%s)\n", __func__, (int)src->token,
+            maptoken(src->token));
     }
 }
 
@@ -588,7 +609,7 @@ static void print_value(struct value *p)
             printf("unknown");
             break;
 
-        case VAL_STRING:
+        case VAL_QSTRING:
             printf("\"%s\"", p->v.sval);
             break;
 
@@ -602,6 +623,10 @@ static void print_value(struct value *p)
 
         case VAL_OBJECT:
             print_objects(p->v.oval);
+            break;
+
+        case VAL_STRING:
+            printf("string");
             break;
 
         case VAL_TRUE:
@@ -622,7 +647,7 @@ static void print_value(struct value *p)
     }
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
     const char *filename = "./schema.json";
     // const char *filename = "./xxx";
@@ -630,6 +655,10 @@ int main(void)
     struct stat st;
     struct buffer buf;
     list objects;
+
+    if (argc > 1) {
+        filename = argv[1];
+    }
 
     memset(&buf, 0, sizeof buf);
     fd = open(filename, O_RDONLY);
