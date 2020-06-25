@@ -513,11 +513,16 @@ static void traverse(list objects)
 
     for (i = list_first(objects); !list_end(i); i = list_next(i)) {
         struct object *obj = list_get(i);
-        printf("\"%s\" : ", obj->name);
-        if (obj->value == NULL)
-            printf("(nullval)");
-        else
-            print_value(obj->value);
+        if (obj->name != NULL) {
+            printf("\"%s\" : ", obj->name);
+            if (obj->value == NULL)
+                printf("(nullval)");
+            else
+                print_value(obj->value);
+
+            if (!list_last(i))
+                printf(",\n");
+        }
 
         printf("\n");
     }
@@ -535,6 +540,9 @@ static void print_array(list lst)
             printf("(no val in lst)");
         else
             print_value(v);
+
+        if (!list_last(i))
+            printf(",\n");
     }
 
     printf("]\n");
@@ -545,7 +553,7 @@ static void print_object(const struct object *p)
     assert(p != NULL);
 
     if (p->name != NULL) {
-        printf("%s :", p->name);
+        printf("\"%s\" :", p->name);
         print_value(p->value);
     }
 }
@@ -563,6 +571,9 @@ static void print_objects(list lst)
             printf("(no object in lst)");
         else
             print_object(obj);
+
+        if (!list_last(i))
+            printf(",\n");
     }
 
     printf("\n}");
@@ -571,7 +582,6 @@ static void print_objects(list lst)
 static void print_value(struct value *p)
 {
     assert(p != NULL);
-    // printf("%s():", __func__);
 
     switch (p->type) {
         case VAL_UNKNOWN:
@@ -610,8 +620,6 @@ static void print_value(struct value *p)
             printf("%g", p->v.dval);
             break;
     }
-
-    printf(",");
 }
 
 int main(void)
