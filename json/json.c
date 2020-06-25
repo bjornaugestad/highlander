@@ -108,14 +108,13 @@ static void value_free(struct value *p)
     free(p);
 }
 
+// name and value may be NULL
 static struct object* object_new(const char *name, struct value *value)
 {
     struct object *p;
 
-    assert(name != NULL);
-
-    if ((p = malloc(sizeof *p)) != NULL) {
-        if ((p->name = strdup(name)) == NULL) {
+    if ((p = calloc(1, sizeof *p)) != NULL) {
+        if (name != NULL && (p->name = strdup(name)) == NULL) {
             free(p);
             return NULL;
         }
@@ -312,6 +311,18 @@ int get_integer(struct buffer *src)
     return TOK_EOF;
 }
 
+static int hasvalue(enum tokentype tok)
+{
+    size_t i, n = sizeof tokens / sizeof *tokens;
+
+    for (i = 0; i < n; i++) {
+        if (tokens[i].value == tok)
+            return tokens[i].hasvalue;
+    }
+
+    die("Unknown token %d\n", (int)tok);
+}
+
 void get_token(struct buffer *src)
 {
     int c;
@@ -354,6 +365,11 @@ void get_token(struct buffer *src)
             fprintf(stderr, "c==%d\n", c);
             src->token = TOK_UNKNOWN;
     }
+
+    if (hasvalue(src->token))
+        fprintf(stderr, "Read token from buf:%s(%s)\n", maptoken(src->token), src->bf_value);
+    else
+        fprintf(stderr, "Read token from buf:%s\n", maptoken(src->token));
 }
 
 static void nextsym(struct buffer *p)
@@ -362,18 +378,6 @@ static void nextsym(struct buffer *p)
         get_token(p);
 }
 
-
-static int hasvalue(enum tokentype tok)
-{
-    size_t i, n = sizeof tokens / sizeof *tokens;
-
-    for (i = 0; i < n; i++) {
-        if (tokens[i].value == tok)
-            return tokens[i].hasvalue;
-    }
-
-    die("Unknown token %d\n", (int)tok);
-}
 
 static void savevalue(struct buffer *p)
 {
@@ -400,7 +404,8 @@ static int expect(struct buffer *p, enum tokentype tok)
         return 1;
 
     
-    die("Unexpected token found: %s\n", maptoken(p->token));
+    die("expected %s, but unexpected token found: %s\n",
+        maptoken(tok), maptoken(p->token));
     return 0;
 }
 
@@ -452,16 +457,15 @@ static struct value* accept_value(struct buffer *src)
 // Value may be null, as in { "foo" : { } }
 static struct object* accept_object(struct buffer *src)
 {
-    struct object *obj;
+    struct object *obj = NULL;
 
-    if (!accept(src, TOK_QSTRING))
-        die("expected object name\n");
+    // Did we get a name?
+    if (accept(src, TOK_QSTRING)) {
+        obj = object_new(src->savedvalue, NULL);
+        expect(src, TOK_COLON);
 
-    obj = object_new(src->savedvalue, NULL);
-    expect(src, TOK_COLON);
-
-    obj->value = accept_value(src);
-    // expect(src, TOK_OBJECTEND);
+        obj->value = accept_value(src);
+    }
 
     return obj;
 }
@@ -540,8 +544,10 @@ static void print_object(const struct object *p)
 {
     assert(p != NULL);
 
-    printf("%s :", p->name);
-    print_value(p->value);
+    if (p->name != NULL) {
+        printf("%s :", p->name);
+        print_value(p->value);
+    }
 }
 
 static void print_objects(list lst)
@@ -577,7 +583,7 @@ static void print_value(struct value *p)
             break;
 
         case VAL_INTEGER:
-            printf("%s", p->v.sval);
+            printf("%ld", p->v.lval);
             break;
 
         case VAL_ARRAY:
@@ -610,8 +616,8 @@ static void print_value(struct value *p)
 
 int main(void)
 {
-    // const char *filename = "./schema.json";
-    const char *filename = "./xxx";
+    const char *filename = "./schema.json";
+    // const char *filename = "./xxx";
     int fd;
     struct stat st;
     struct buffer buf;
