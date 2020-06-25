@@ -78,7 +78,7 @@ struct value {
         long lval;  // long integers
         double dval; // floating point numbers
         list aval; // array value, all struct value-pointers.
-        struct object *oval; // object value. 
+        list oval; // object value. 
     } v;
 };
 
@@ -103,7 +103,7 @@ static void value_free(struct value *p)
     else if (p->type == VAL_STRING)
         free(p->v.sval);
     else if (p->type == VAL_OBJECT)
-        object_free(p->v.oval);
+        list_free(p->v.oval, (dtor)object_free);
 
     free(p);
 }
@@ -410,8 +410,9 @@ static struct value* accept_value(struct buffer *src)
     assert(src != NULL);
 
     if (accept(src, TOK_OBJECTSTART)) {
-        struct object *pr = accept_object(src);
-        return value_new(VAL_OBJECT, pr);
+        list lst = accept_objects(src);
+        expect(src, TOK_OBJECTEND);
+        return value_new(VAL_OBJECT, lst);
     }
     else if (accept(src, TOK_ARRAYSTART)) {
         list lst = NULL;
@@ -453,16 +454,14 @@ static struct object* accept_object(struct buffer *src)
 {
     struct object *obj;
 
-    do {
-        if (!accept(src, TOK_QSTRING))
-            die("expected object name\n");
+    if (!accept(src, TOK_QSTRING))
+        die("expected object name\n");
 
-        obj = object_new(src->savedvalue, NULL);
-        expect(src, TOK_COLON);
+    obj = object_new(src->savedvalue, NULL);
+    expect(src, TOK_COLON);
 
-        obj->value = accept_value(src);
-    } while (accept(src, TOK_COMMA));
-    expect(src, TOK_OBJECTEND);
+    obj->value = accept_value(src);
+    // expect(src, TOK_OBJECTEND);
 
     return obj;
 }
@@ -484,19 +483,22 @@ static list accept_objects(struct buffer *src)
             die("Out of memory");
 
     } while (accept(src, TOK_COMMA));
-    expect(src, TOK_EOF);
 
     return result;
 }
 
 static list parse(struct buffer *src)
 {
+    list result;
     nextsym(src);
 
     if (!accept(src, TOK_OBJECTSTART))
         die("Input must start with a {\n");
 
-    return accept_objects(src);
+    result = accept_objects(src);
+    expect(src, TOK_OBJECTEND);
+    expect(src, TOK_EOF);
+    return result;
 }
 
 
@@ -534,6 +536,32 @@ static void print_array(list lst)
     printf("]\n");
 }
 
+static void print_object(const struct object *p)
+{
+    assert(p != NULL);
+
+    printf("%s :", p->name);
+    print_value(p->value);
+}
+
+static void print_objects(list lst)
+{
+    list_iterator i;
+
+    assert(lst != NULL);
+    printf("{\n");
+
+    for (i = list_first(lst); !list_end(i); i = list_next(i)) {
+        struct object *obj = list_get(i);
+        if (obj == NULL) 
+            printf("(no object in lst)");
+        else
+            print_object(obj);
+    }
+
+    printf("\n}");
+}
+
 static void print_value(struct value *p)
 {
     assert(p != NULL);
@@ -557,9 +585,7 @@ static void print_value(struct value *p)
             break;
 
         case VAL_OBJECT:
-            printf("{\n\"%s\" : ", p->v.oval->name);
-            print_value(p->v.oval->value);
-            printf("\n}");
+            print_objects(p->v.oval);
             break;
 
         case VAL_TRUE:
