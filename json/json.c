@@ -59,7 +59,9 @@ struct buffer {
     size_t nread, size;
 
     enum tokentype token;
-    char value[2048];
+    char bf_value[2048];
+
+    char *savedvalue;
 };
 
 struct object {
@@ -123,24 +125,6 @@ static struct object* object_new(const char *name, struct value *value)
 
     return p;
 }
-
-static void object_set_value(struct object *p, struct value *v)
-{
-    assert(p != NULL);
-    assert(v != NULL);
-
-    p->value = v;
-}
-
-#if 0
-static void buffer_dump(const struct buffer *p)
-{
-    size_t i;
-
-    for (i = 0; i < p->nread; i++)
-        fputc(p->mem[i], stderr);
-}
-#endif
 
 static inline int buffer_getc(struct buffer *p)
 {
@@ -211,23 +195,24 @@ static struct value * value_new(enum valuetype type, void *value)
 
 static const struct {
     enum tokentype value;
+    int hasvalue;
     const char *text;
 } tokens[] = {
-    { TOK_ERROR       , "error" },
-    { TOK_UNKNOWN     , "unknown" },
-    { TOK_QSTRING     , "qstring" },
-    { TOK_TRUE        , "true" },
-    { TOK_FALSE       , "false" },
-    { TOK_COLON       , "colon" },
-    { TOK_COMMA       , "comma" },
-    { TOK_OBJECTSTART , "objectstart" },
-    { TOK_OBJECTEND   , "objectend" },
-    { TOK_ARRAYSTART  , "arraystart" },
-    { TOK_ARRAYEND    , "arrayend" },
-    { TOK_INTEGER     , "integer" },
-    { TOK_DOUBLE      , "double" },
-    { TOK_NULL        , "null" },
-    { TOK_EOF         , "eof" },
+    { TOK_ERROR       , 0, "error" },
+    { TOK_UNKNOWN     , 0, "unknown" },
+    { TOK_QSTRING     , 1, "qstring" },
+    { TOK_TRUE        , 0, "true" },
+    { TOK_FALSE       , 0, "false" },
+    { TOK_COLON       , 0, "colon" },
+    { TOK_COMMA       , 0, "comma" },
+    { TOK_OBJECTSTART , 0, "objectstart" },
+    { TOK_OBJECTEND   , 0, "objectend" },
+    { TOK_ARRAYSTART  , 0, "arraystart" },
+    { TOK_ARRAYEND    , 0, "arrayend" },
+    { TOK_INTEGER     , 1, "integer" },
+    { TOK_DOUBLE      , 1, "double" },
+    { TOK_NULL        , 0, "null" },
+    { TOK_EOF         , 0, "eof" },
 };
 
 static const char *maptoken(enum tokentype value)
@@ -244,11 +229,6 @@ static const char *maptoken(enum tokentype value)
 
 // We have a ", which is start of quoted string. Read the rest of the
 // string and place it in value. 
-// I wonder if they escape quotes in json, for when one wants to transfer
-// a quote as part of a value. I guess I'll find out...
-// update: they do. see https://www.json.org/json-en.html for full syntax
-//
-// There's an error lurking here. \\" will be interpreted as \". TODO fix it
 int get_string(struct buffer *src)
 {
     size_t i = 0;
@@ -256,17 +236,17 @@ int get_string(struct buffer *src)
 
     assert(src != NULL);
 
-    while (i < sizeof src->value && (c = buffer_getc(src)) != EOF) {
+    while (i < sizeof src->bf_value && (c = buffer_getc(src)) != EOF) {
         if (c == '"' && prev != '\\')
             break;
 
-        prev = src->value[i++] = c;
+        prev = src->bf_value[i++] = c;
     }
 
-    if (i == sizeof src->value)
+    if (i == sizeof src->bf_value)
         return TOK_ERROR;
 
-    src->value[i] = '\0';
+    src->bf_value[i] = '\0';
 
     return TOK_QSTRING;
 }
@@ -312,15 +292,15 @@ int get_integer(struct buffer *src)
 
     assert(src != NULL);
 
-    while (nread < sizeof src->value && (c = buffer_getc(src)) != EOF) {
+    while (nread < sizeof src->bf_value && (c = buffer_getc(src)) != EOF) {
         if (isdigit(c)) {
-            if (nread < sizeof src->value)
-                src->value[nread++] = c;
+            if (nread < sizeof src->bf_value)
+                src->bf_value[nread++] = c;
             else
                 die("%s(): Buffer too small.\n", __func__);
         }
         else {
-            src->value[nread] = '\0';
+            src->bf_value[nread] = '\0';
             buffer_ungetc(src);
             return TOK_INTEGER;
         }
@@ -336,7 +316,7 @@ void get_token(struct buffer *src)
 {
     int c;
 
-    src->value[0] = '\0';
+    src->bf_value[0] = '\0';
     src->token = TOK_UNKNOWN;
 
     // skip ws
@@ -382,10 +362,32 @@ static void nextsym(struct buffer *p)
         get_token(p);
 }
 
-static int accept(struct buffer *p, enum tokentype tok)
+
+static int hasvalue(enum tokentype tok)
 {
-    if (p->token == tok) {
-        nextsym(p);
+    size_t i, n = sizeof tokens / sizeof *tokens;
+
+    for (i = 0; i < n; i++) {
+        if (tokens[i].value == tok)
+            return tokens[i].hasvalue;
+    }
+
+    die("Unknown token %d\n", (int)tok);
+}
+
+static void savevalue(struct buffer *p)
+{
+    free(p->savedvalue);
+    if ((p->savedvalue = strdup(p->bf_value)) == NULL)
+        die("Out of memory\n");
+}
+
+static int accept(struct buffer *src, enum tokentype tok)
+{
+    if (src->token == tok) {
+        if (hasvalue(tok))
+            savevalue(src);
+        nextsym(src);
         return 1;
     }
 
@@ -405,7 +407,6 @@ static int expect(struct buffer *p, enum tokentype tok)
 // Wrap array list in a struct value object before returning 
 static struct value* accept_value(struct buffer *src)
 {
-
     assert(src != NULL);
 
     if (accept(src, TOK_OBJECTSTART)) {
@@ -423,22 +424,22 @@ static struct value* accept_value(struct buffer *src)
         return value_new(VAL_ARRAY, lst);
     }
     else if (accept(src, TOK_TRUE)) {
-        return value_new(VAL_TRUE, src->value);
+        return value_new(VAL_TRUE, NULL);
     }
     else if (accept(src, TOK_FALSE)) {
-        return value_new(VAL_FALSE, src->value);
+        return value_new(VAL_FALSE, NULL);
     }
     else if (accept(src, TOK_NULL)) {
-        return value_new(VAL_NULL, src->value);
+        return value_new(VAL_NULL, NULL);
     }
     else if (accept(src, TOK_INTEGER)) {
-        return value_new(VAL_INTEGER, src->value);
+        return value_new(VAL_INTEGER, src->savedvalue);
     }
     else if (accept(src, TOK_DOUBLE)) {
-        return value_new(VAL_DOUBLE, src->value);
+        return value_new(VAL_DOUBLE, src->savedvalue);
     }
     else if (accept(src, TOK_QSTRING)) {
-        return value_new(VAL_STRING, src->value);
+        return value_new(VAL_STRING, src->savedvalue);
     }
     else {
         die("%s(): Meh, shouldn't be here\n", __func__);
@@ -450,22 +451,20 @@ static struct value* accept_value(struct buffer *src)
 // Value may be null, as in { "foo" : { } }
 static struct object* accept_object(struct buffer *src)
 {
-    struct object *result;
-    struct value *value;
+    struct object *obj;
 
     do {
         if (!accept(src, TOK_QSTRING))
             die("expected object name\n");
 
+        obj = object_new(src->savedvalue, NULL);
         expect(src, TOK_COLON);
 
-        result = object_new(src->value, NULL);
-        value = accept_value(src);
-        object_set_value(result, value);
+        obj->value = accept_value(src);
     } while (accept(src, TOK_COMMA));
     expect(src, TOK_OBJECTEND);
 
-    return result;
+    return obj;
 }
 
 static list accept_objects(struct buffer *src)
@@ -476,12 +475,12 @@ static list accept_objects(struct buffer *src)
         die("Out of memory");
 
     do {
-        struct object *pr;
+        struct object *obj;
 
-        if ((pr = accept_object(src)) == NULL)
+        if ((obj = accept_object(src)) == NULL)
             break;
 
-        if (list_add(result, pr) == NULL)
+        if (list_add(result, obj) == NULL)
             die("Out of memory");
 
     } while (accept(src, TOK_COMMA));
@@ -500,19 +499,19 @@ static list parse(struct buffer *src)
     return accept_objects(src);
 }
 
-static void print_value(struct value *p);
 
+static void print_value(struct value *p);
 static void traverse(list objects)
 {
     list_iterator i;
 
     for (i = list_first(objects); !list_end(i); i = list_next(i)) {
-        struct object *pr = list_get(i);
-        printf("\"%s\" : ", pr->name);
-        if (pr->value == NULL)
+        struct object *obj = list_get(i);
+        printf("\"%s\" : ", obj->name);
+        if (obj->value == NULL)
             printf("(nullval)");
         else
-            print_value(pr->value);
+            print_value(obj->value);
 
         printf("\n");
     }
@@ -531,12 +530,14 @@ static void print_array(list lst)
         else
             print_value(v);
     }
+
     printf("]\n");
 }
 
 static void print_value(struct value *p)
 {
     assert(p != NULL);
+    // printf("%s():", __func__);
 
     switch (p->type) {
         case VAL_UNKNOWN:
@@ -576,9 +577,6 @@ static void print_value(struct value *p)
         case VAL_DOUBLE:
             printf("%g", p->v.dval);
             break;
-
-        // default:
-            // die("Gotta cover all values. %ld is missing\n", (long)p->type);
     }
 
     printf(",");
