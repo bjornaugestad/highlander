@@ -32,6 +32,7 @@ enum valuetype {
     VAL_NULL,
     VAL_DOUBLE,
     VAL_STRING, // This is not a quoted string, but the string keyword from oas 3.0.3
+    VAL_BOOLEAN, // This is the boolean keyword from oas 3.0.3
 };
 
 enum tokentype {
@@ -51,6 +52,7 @@ enum tokentype {
     TOK_NULL,
     TOK_EOF,
     TOK_STRING, // This is not a quoted string, but the string keyword from oas 3.0.3
+    TOK_BOOLEAN, // This is the boolean keyword from oas 3.0.3
 };
 
 
@@ -181,6 +183,7 @@ static struct value * value_new(enum valuetype type, void *value)
         case VAL_UNKNOWN:
             die("Can't deal with unknown types");
 
+        case VAL_BOOLEAN:
         case VAL_STRING:
         case VAL_TRUE:
         case VAL_FALSE:
@@ -298,6 +301,19 @@ int get_string(struct buffer *src)
     return TOK_UNKNOWN;
 }
 
+int get_boolean(struct buffer *src)
+{
+    if (buffer_getc(src) == 'o' 
+    && buffer_getc(src) == 'o' 
+    && buffer_getc(src) == 'l'
+    && buffer_getc(src) == 'e'
+    && buffer_getc(src) == 'a'
+    && buffer_getc(src) == 'n')
+        return TOK_BOOLEAN;
+
+    return TOK_UNKNOWN;
+}
+
 // Read digits and place them in buffer, ungetc() the first non-digit
 // so we can read it the next time.
 int get_integer(struct buffer *src)
@@ -363,6 +379,7 @@ void get_token(struct buffer *src)
         case 'f': src->token = get_false(src); break;
         case 'n': src->token = get_null(src); break;
         case 's': src->token = get_string(src); break;
+        case 'b': src->token = get_boolean(src); break;
 
         case '0':
         case '1':
@@ -467,6 +484,9 @@ static struct value* accept_value(struct buffer *src)
     else if (accept(src, TOK_STRING)) {
         return value_new(VAL_STRING, NULL);
     }
+    else if (accept(src, TOK_BOOLEAN)) {
+        return value_new(VAL_BOOLEAN, NULL);
+    }
     else {
         die("%s(): Meh, shouldn't be here. Token intval==%d(%s)\n", __func__, (int)src->token,
             maptoken(src->token));
@@ -487,6 +507,11 @@ static struct object* accept_object(struct buffer *src)
 
         obj->value = accept_value(src);
     }
+
+    // It turns out that e.g. Google uses (key) as name, but without quotes.
+    // This is not really JSON, but maybe it's OAS compliant?
+
+
 
     return obj;
 }
@@ -635,6 +660,10 @@ static void print_value(struct value *p)
 
         case VAL_FALSE:
             printf("false");
+            break;
+
+        case VAL_BOOLEAN:
+            printf("boolean");
             break;
 
         case VAL_NULL:
