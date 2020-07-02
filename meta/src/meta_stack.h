@@ -17,7 +17,7 @@ extern "C" {
 typedef struct stack_tag* stack;
 
 stack stack_new(void)
-    __attribute__((warn_unused_result));
+    __attribute__((malloc, warn_unused_result));
 
 void stack_free(stack s);
 

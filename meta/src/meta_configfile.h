@@ -18,7 +18,7 @@ extern "C" {
 typedef struct configfile_tag* configfile;
 
 configfile configfile_read(const char *path)
-    __attribute__((malloc));
+    __attribute__((malloc, nonnull));
 
 bool configfile_exists(configfile cf, const char *name)
     __attribute__((nonnull(1, 2)));

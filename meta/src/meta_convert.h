@@ -41,14 +41,47 @@ status_t todouble(const char *s, double *dest)
     __attribute__((warn_unused_result))
     __attribute__((nonnull(1, 2)));
 
-/* Check source */
-static inline bool isint(const char *s) { int d; return toint(s, &d) != failure;}
-static inline bool isuint(const char *s) { unsigned int d; return touint(s, &d) != failure;}
-static inline bool issize_t(const char *s) { size_t d; return tosize_t(s, &d) != failure;}
-static inline bool islong(const char *s) { long d; return tolong(s, &d) != failure;}
-static inline bool isulong(const char *s) { unsigned long d; return toulong(s, &d) != failure;}
-static inline bool isfloat(const char *s) { float d; return tofloat(s, &d) != failure;}
-static inline bool isdouble(const char *s) { double d; return todouble(s, &d) != failure;}
+static inline bool isint(const char *s)
+{
+    int d;
+    return toint(s, &d) != failure;
+}
+
+static inline bool isuint(const char *s)
+{
+    unsigned int d;
+    return touint(s, &d) != failure;
+}
+
+static inline bool issize_t(const char *s)
+{
+    size_t d;
+    return tosize_t(s, &d) != failure;
+}
+
+static inline bool islong(const char *s)
+{
+    long d;
+    return tolong(s, &d) != failure;
+}
+
+static inline bool isulong(const char *s)
+{
+    unsigned long d;
+    return toulong(s, &d) != failure;
+}
+
+static inline bool isfloat(const char *s)
+{
+    float d;
+    return tofloat(s, &d) != failure;
+}
+
+static inline bool isdouble(const char *s)
+{
+    double d;
+    return todouble(s, &d) != failure;
+}
 
 
 #endif

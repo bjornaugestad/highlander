@@ -39,7 +39,7 @@ void regex_free(regex p)
     free(p);
 }
 
-bool regex_comp(regex p, const char *expr)
+status_t regex_comp(regex p, const char *expr)
 {
     int cflags = REG_EXTENDED;
 
@@ -53,10 +53,10 @@ bool regex_comp(regex p, const char *expr)
     p->result = regcomp(&p->re, expr, cflags);
     if (p->result == 0) {
         p->compiled_ok = 1;
-        return true;
+        return success;
     }
 
-    return false;
+    return failure;
 }
 
 int regex_exec(regex p, const char *haystack)
@@ -123,28 +123,29 @@ int main(void)
 
         // We expect a compilation result (most times 0), and an 
         // execution result. The latter varies with the expression.
-        int compres, expected;
+        status_t compres;
+        int expected;
     } tests[] = {
-        { "[a-c-e]",                    "abc",              false, -1},    // intentional error
-        { "abc",                        "abc",              true,   1},
-        { "abc",                        "def",              true,   0},
-        { "(abc)",                      "abc",              true,   2},
-        { "foobar",                     "xxfoobarxx",       true,   1},
-        { "(foo)(bar)",                 "xxfoobarxx",       true,   3},
-        { "ab*",                        "abc",              true,   1},
-        { "ab*",                        "abcdefghiabcde",   true,   1},
-        { "ab.*",                       "xxabcdefghiabcde", true,   1},
-        { "(abc|def)",                  "abc",              true,   2},
-        { "abc",                        "xabc",             true,   1},
-        { "abc",                        "abcx",             true,   1},
-        { "abc",                        "xabcx",            true,   1},
-        { "abc",                        "abc abc",          true,   1},
-        { "(abc)",                      "abc abc",          true,   2},
-        { "(abc){1,}",                  "abcabcabc",        true,   2},
-        { "(@index\\()([^)]*)\\)",      "@index(foo)",      true,   3},
-        { "@(index|xref)(\\([^)]*\\))", "@index(foo)",      true,   3},
-        { "@(index|xref)\\([^\\)]*\\)", "@xref(bar)",       true,   2},
-        { "@(index|xref)\\([^)]*\\)",   "@xref(baz",        true,   0},
+        { "[a-c-e]",                    "abc",              failure, -1},    // intentional error
+        { "abc",                        "abc",              success,   1},
+        { "abc",                        "def",              success,   0},
+        { "(abc)",                      "abc",              success,   2},
+        { "foobar",                     "xxfoobarxx",       success,   1},
+        { "(foo)(bar)",                 "xxfoobarxx",       success,   3},
+        { "ab*",                        "abc",              success,   1},
+        { "ab*",                        "abcdefghiabcde",   success,   1},
+        { "ab.*",                       "xxabcdefghiabcde", success,   1},
+        { "(abc|def)",                  "abc",              success,   2},
+        { "abc",                        "xabc",             success,   1},
+        { "abc",                        "abcx",             success,   1},
+        { "abc",                        "xabcx",            success,   1},
+        { "abc",                        "abc abc",          success,   1},
+        { "(abc)",                      "abc abc",          success,   2},
+        { "(abc){1,}",                  "abcabcabc",        success,   2},
+        { "(@index\\()([^)]*)\\)",      "@index(foo)",      success,   3},
+        { "@(index|xref)(\\([^)]*\\))", "@index(foo)",      success,   3},
+        { "@(index|xref)\\([^\\)]*\\)", "@xref(bar)",       success,   2},
+        { "@(index|xref)\\([^)]*\\)",   "@xref(baz",        success,   0},
     };
     size_t i, n;
     int retcode = 0;
@@ -165,7 +166,7 @@ int main(void)
         }
 
         // Don't exec if we wanted compilation to fail
-        if (tests[i].compres == false)
+        if (tests[i].compres == failure)
             continue;
 
         nfound = regex_exec(p, tests[i].haystack);

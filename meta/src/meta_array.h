@@ -35,14 +35,14 @@ status_t array_extend(array a, size_t nmemb)
     __attribute__((warn_unused_result))
     __attribute__((nonnull));
 
-__attribute__((warn_unused_result))
+__attribute__((warn_unused_result, nonnull))
 static inline size_t array_nelem(array a)
 {
     assert(a != NULL);
     return a->nused;
 }
 
-__attribute__((warn_unused_result))
+__attribute__((warn_unused_result, nonnull))
 static inline void *array_get(array a, size_t ielem)
 {
     assert(a != NULL);
@@ -54,7 +54,7 @@ static inline void *array_get(array a, size_t ielem)
     return a->elements[ielem];
 }
 
-__attribute__((warn_unused_result))
+__attribute__((warn_unused_result, nonnull))
 static inline status_t array_add(array a, void *elem)
 {
     assert(a != NULL);

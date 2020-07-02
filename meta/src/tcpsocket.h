@@ -53,6 +53,7 @@ status_t tcpsocket_write(tcpsocket p, const char *s, size_t count,
     __attribute__((warn_unused_result));
 
 status_t tcpsocket_bind(tcpsocket p, const char *hostname, int port)
+    __attribute__((warn_unused_result))
     __attribute__((nonnull(1)));
 
 status_t tcpsocket_set_nonblock(tcpsocket p)

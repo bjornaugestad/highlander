@@ -2,13 +2,20 @@
 #define META_REGEX_H
 
 #include <stddef.h>
-#include <stdbool.h>
+
+#include <meta_common.h>
 
 typedef struct regex_tag *regex;
-regex regex_new(void);
+
+regex regex_new(void)
+   __attribute__((warn_unused_result))
+   __attribute__((malloc));
+
 void regex_free(regex p);
 
-bool regex_comp(regex p, const char *expr);
+status_t regex_comp(regex p, const char *expr)
+    __attribute__((nonnull))
+    __attribute__((warn_unused_result));
 
 // Return number of matches, or -1 if an error occurred.
 // Note that, depending on the expression, the returned number
@@ -18,7 +25,9 @@ bool regex_comp(regex p, const char *expr);
 // The reason for this is that each () is a submatch in
 // extended POSIX regexp. The first has two, so regexec() 
 // returns 3 values, the whole and the two subexpressions.
-int regex_exec(regex p, const char *haystack);
+int regex_exec(regex p, const char *haystack)
+    __attribute__((nonnull))
+    __attribute__((warn_unused_result));
 
 // Get start and stop for expr and subexpr. The silly pointer names are to
 // mimic the original struct member names in regmatch_t, which
@@ -29,7 +38,8 @@ int regex_exec(regex p, const char *haystack);
 // Function will barf, loudly, on invalid index values. Should be
 // in the range 0 <= regex_exec()'s return value. index 0 is for
 // the full match and 1..n are for the submatches, if any.
-void regex_get_match(regex p, int index, size_t *pso, size_t *peo);
+void regex_get_match(regex p, int index, size_t *pso, size_t *peo)
+    __attribute__((nonnull));
 
 // If buf is NULL and bufsize is 0, function returns the
 // required buffer size to store the error message.
