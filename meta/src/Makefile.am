@@ -143,7 +143,7 @@ check_PROGRAMS=\
 	tcp_server_check
 
 
-AM_CFLAGS=-p -pg -Wall --std=gnu99 -Wextra -Werror -O0 -ggdb
+AM_CFLAGS=-Wall --std=gnu99 -Wextra -Werror -O0 -ggdb
 
 tcp_server_check_SOURCES=tcp_server.c threadpool.c meta_membuf.c meta_pool.c\
 	gensocket.c sslsocket.c tcpsocket.c connection.c\
@@ -211,6 +211,6 @@ convert_check_SOURCES=meta_convert.c meta_common.c
 convert_check_CFLAGS=-DCHECK_CONVERT $(AM_CFLAGS)
 
 regex_check_SOURCES=meta_regex.c meta_common.c
-regex_check_CFLAGS=-DCHECK_REGEX $(AM_CFLAGS)
+regex_check_CFLAGS=-DCHECK_REGEX $(AM_CFLAGS) 
 
 LDADD=-lpthread

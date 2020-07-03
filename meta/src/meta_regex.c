@@ -61,7 +61,7 @@ status_t regex_comp(regex p, const char *expr)
 
 int regex_exec(regex p, const char *haystack)
 {
-    int matches, eflags = 0;
+    int result, eflags = 0;
     size_t i, maxmatches = sizeof p->matches / sizeof *p->matches;
 
     assert(p != NULL);
@@ -75,14 +75,14 @@ int regex_exec(regex p, const char *haystack)
         return p->result == REG_NOMATCH ? 0 : -1;
 
     // Count matches
-    matches = 0;
+    result = 0;
     for (i = 0; i < maxmatches; i++) {
         if (p->matches[i].rm_so == -1)
             break;
-        matches++;
+        result++;
     }
 
-    return matches;
+    return result;
 }
 
 size_t regex_error(regex p, char *buf, size_t bufsize)
@@ -125,27 +125,28 @@ int main(void)
         // execution result. The latter varies with the expression.
         status_t compres;
         int expected;
+        const char *matches[10];
     } tests[] = {
-        { "[a-c-e]",                    "abc",              failure, -1},    // intentional error
-        { "abc",                        "abc",              success,   1},
-        { "abc",                        "def",              success,   0},
-        { "(abc)",                      "abc",              success,   2},
-        { "foobar",                     "xxfoobarxx",       success,   1},
-        { "(foo)(bar)",                 "xxfoobarxx",       success,   3},
-        { "ab*",                        "abc",              success,   1},
-        { "ab*",                        "abcdefghiabcde",   success,   1},
-        { "ab.*",                       "xxabcdefghiabcde", success,   1},
-        { "(abc|def)",                  "abc",              success,   2},
-        { "abc",                        "xabc",             success,   1},
-        { "abc",                        "abcx",             success,   1},
-        { "abc",                        "xabcx",            success,   1},
-        { "abc",                        "abc abc",          success,   1},
-        { "(abc)",                      "abc abc",          success,   2},
-        { "(abc){1,}",                  "abcabcabc",        success,   2},
-        { "(@index\\()([^)]*)\\)",      "@index(foo)",      success,   3},
-        { "@(index|xref)(\\([^)]*\\))", "@index(foo)",      success,   3},
-        { "@(index|xref)\\([^\\)]*\\)", "@xref(bar)",       success,   2},
-        { "@(index|xref)\\([^)]*\\)",   "@xref(baz",        success,   0},
+        { "[a-c-e]",                    "abc",              failure,  -1, { NULL } },    // intentional error
+        { "abc",                        "abc",              success,   1, { "abc", NULL } },
+        { "abc",                        "def",              success,   0, { NULL } },
+        { "(abc)",                      "abc",              success,   2, { NULL } },
+        { "foobar",                     "xxfoobarxx",       success,   1, {"foobar",  NULL } },
+        { "(foo)(bar)",                 "xxfoobarxx",       success,   3, { "foobar", "foo", "bar", NULL } },
+        { "ab*",                        "abc",              success,   1, { "ab", NULL } },
+        { "ab*",                        "abcdefghiabcde",   success,   1, { "ab", NULL } },
+        { "ab.*",                       "xxabcdefghiabcde", success,   1, { "abcdefghiabcde", NULL } },
+        { "(abc|def)",                  "abc",              success,   2, { "abc", "abc", NULL } },
+        { "abc",                        "xabc",             success,   1, { "abc", NULL } },
+        { "abc",                        "abcx",             success,   1, { "abc", NULL } },
+        { "abc",                        "xabcx",            success,   1, { "abc", NULL } },
+        { "abc",                        "abc abc",          success,   1, { "abc", NULL } },
+        { "(abc)",                      "abc abc",          success,   2, { "abc", "abc", NULL } },
+        { "(abc){1,}",                  "abcabcabc",        success,   2, { "abcabcabc", "abc", NULL } },
+        { "(@index\\()([^)]*)\\)",      "@index(foo)",      success,   3, { "@index(foo)", "@index(", "foo", NULL } },
+        { "@(index|xref)(\\([^)]*\\))", "@index(foo)",      success,   3, { "@index(foo)", "index", "(foo)", NULL } },
+        { "@(index|xref)\\([^\\)]*\\)", "@xref(bar)",       success,   2, { "@xref(bar)", "xref" } },
+        { "@(index|xref)\\([^)]*\\)",   "@xref(baz",        success,   0, { NULL } },
     };
     size_t i, n;
     int retcode = 0;
@@ -175,6 +176,24 @@ int main(void)
                 tests[i].re, tests[i].haystack, nfound, tests[i].expected);
             retcode = 77;
             continue;
+        }
+
+        for (int j = 0; j < nfound; j++) {
+            size_t so, eo;
+            char buf[1024];
+
+            memset(buf, 0, sizeof buf);
+            regex_get_match(p, j, &so, &eo);
+            if (so == (size_t)-1 || eo == (size_t)-1) {
+                fprintf(stderr, "Failed to retrieve result for test %zu, elem %d\n", i, j);
+                retcode = 77;
+            }
+                
+            memcpy(buf, &tests[i].haystack[so], eo - so);
+            if (tests[i].matches[j] != NULL && strcmp(tests[i].matches[j], buf) != 0) {
+                printf("test %zu: buf(%d): expected %s, got %s\n", i, j, tests[i].matches[j], buf);
+                retcode = 77;
+            }
         }
     }
 
