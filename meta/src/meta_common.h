@@ -82,15 +82,14 @@ void meta_disable_debug_output(void);
 
 
 /*
- * We want a distinct type to indicate success or failure,
- * instead of fiddling with true/false, 1/0, 0/-1 or
- * other constructs. Therefore we create a silly but useful type
- * named status_t, which is a pointer to a metastatus struct.
- * Since pointers are type-safe and cannot be implicitly converted
- * to integers, it's harder to mix status types(return values)
- * with integers. That's our goal too. We do NOT want to use
- * true/false/stdbool.h because the standard bool type mixes too easily
- * with int.
+ * We want a distinct type to indicate success or failure, instead of fiddling
+ * with true/false, 1/0, 0/-1 or other constructs. Therefore we create a
+ * silly but useful type named status_t, which is a pointer to a metastatus
+ * struct.
+ * Since pointers are type-safe and cannot be implicitly converted to integers,
+ * it's harder to mix status types(return values) with integers. That's our
+ * goal too. We do NOT want to use true/false/stdbool.h because the standard
+ * bool type mixes too easily with int.
  * 20141211 boa
  */
 typedef struct metastatus *status_t;

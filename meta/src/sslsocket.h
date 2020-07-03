@@ -29,7 +29,7 @@ sslsocket sslsocket_accept(sslsocket p, void *ssl_ctx,
 ssize_t  sslsocket_read(sslsocket p, char *buf, size_t count, int timeout, int retries)
     __attribute__((warn_unused_result));
 
-status_t sslsocket_poll_for(sslsocket this, int timeout, int poll_for)
+status_t sslsocket_poll_for(sslsocket this, int timeout, short poll_for)
     __attribute__((warn_unused_result));
 
 status_t sslsocket_wait_for_data(sslsocket p, int timeout)

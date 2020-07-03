@@ -16,13 +16,13 @@ webcached_SOURCES=\
 	statpack.c
 
 webcached_CFLAGS=\
-	-D_GNU_SOURCE -std=gnu99 -D_REENTRANT -pthread\
+	-D_GNU_SOURCE -std=gnu2x -D_REENTRANT -pthread\
 	-I$(srcdir)\
 	-I$(srcdir)/webcache\
 	-I$(top_srcdir)/meta/src\
 	-I$(top_srcdir)/http/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\
-	-O2 -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
+	-O2 -Wextra -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
     -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast\
 	-Wno-deprecated-declarations
 

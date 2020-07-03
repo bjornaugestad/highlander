@@ -55,7 +55,7 @@ static int tcpsocket_set_reuseaddr(tcpsocket this)
  * error occured. It set errno to EAGAIN if a timeout occured, and
  * it maps POLLHUP and POLLERR to EPIPE, and POLLNVAL to EINVAL.
  */
-status_t tcpsocket_poll_for(tcpsocket this, int timeout, int poll_for)
+status_t tcpsocket_poll_for(tcpsocket this, int timeout, short poll_for)
 {
     struct pollfd pfd;
     int rc;

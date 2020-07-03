@@ -3,12 +3,12 @@ LDADD=-lpthread -L.
 #AUTOMAKE_OPTIONS=subdir-objects
 
 AM_CFLAGS=\
-	-D_GNU_SOURCE -std=gnu99 -D_REENTRANT\
+	-D_GNU_SOURCE -std=gnu2x -D_REENTRANT\
 	-I/usr/local/lib\
 	-I$(srcdir)\
 	-I$(top_srcdir)/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\
-	-O2 -ggdb -Wall -pedantic -Wno-long-long  -Wno-inline
+	-O2 -ggdb -Wextra -Wall -pedantic -Wno-long-long  -Wno-inline
 
 # OpenSSL 1.1 is here
 AM_LDFLAGS=-L/usr/local/lib

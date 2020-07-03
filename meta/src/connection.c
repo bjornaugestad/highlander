@@ -106,8 +106,8 @@ static inline status_t fill_read_buffer(connection this)
         errno = EAGAIN;
     }
     else if (nread > 0) {
-        this->incoming_bytes += nread;
-        membuf_set_written(this->readbuf, nread);
+        this->incoming_bytes += (size_t)nread;
+        membuf_set_written(this->readbuf, (size_t)nread);
     }
 
     return nread > 0 ? success : failure;
@@ -373,7 +373,7 @@ static ssize_t read_from_socket(connection this, void *buf, size_t count)
 
     nread = socket_read(this->sock, buf, count, this->timeout_reads, this->retries_reads);
     if (nread > 0)
-        this->incoming_bytes += nread;
+        this->incoming_bytes += (size_t)nread;
 
     return nread;
 }
@@ -393,7 +393,7 @@ ssize_t connection_read(connection this, void *buf, size_t count)
      * Were all bytes copied from buf? If so, return. */
     ncopied = copy_from_readbuf(this, buf, count);
     if (ncopied == count)
-        return ncopied;
+        return (ssize_t)ncopied;
 
     count -= ncopied;
     cbuf += ncopied;
@@ -406,7 +406,7 @@ ssize_t connection_read(connection this, void *buf, size_t count)
             return -1;
 
         /* Return read count */
-        return nread + ncopied;
+        return nread + (ssize_t)ncopied;
     }
 
     /* If we end up here, we must first fill the read buffer

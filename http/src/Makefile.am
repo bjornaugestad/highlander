@@ -40,21 +40,21 @@ libhighlanderd_a_SOURCES=$(libhighlander_a_SOURCES)
 # _SVID_SOURCE will do the same thing.
 
 libhighlander_a_CFLAGS=\
-	-D_GNU_SOURCE -std=gnu99 -pthread\
+	-D_GNU_SOURCE -std=gnu2x -pthread\
 	-DNDEBUG\
 	-I$(srcdir)\
 	-I$(top_srcdir)/meta/src\
 	-ffunction-sections -fdata-sections\
 	-Werror -Wshadow -W -Wmissing-prototypes\
-	-O2 -Wextra -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
+	-O2 -Wextra -Wextra -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
     -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
 
 libhighlanderd_a_CFLAGS=\
-	-D_GNU_SOURCE -std=gnu99 -pthread\
+	-D_GNU_SOURCE -std=gnu2x -pthread\
 	-I$(srcdir)\
 	-I$(top_srcdir)/meta/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\
-	-O0 -Wextra -ggdb -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
+	-O0 -Wextra -ggdb -Wextra -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
     -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
 
 if WITH_VALGRIND

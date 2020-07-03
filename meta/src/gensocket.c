@@ -16,7 +16,7 @@ struct gensocket_tag {
     status_t (*listen)(void *instance, int backlog);
     status_t (*close)(void *instance);
 
-    status_t (*poll_for)(void *instance, int timeout, int polltype);
+    status_t (*poll_for)(void *instance, int timeout, short polltype);
     status_t (*wait_for_data)(void *instance, int timeout);
     status_t (*wait_for_writability)(void *instance, int timeout);
     status_t (*write)(void *instance, const char *s, size_t count, int timeout, int retries);

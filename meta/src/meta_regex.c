@@ -104,8 +104,8 @@ void regex_get_match(regex p, int index, size_t *pso, size_t *peo)
     assert(p->matches[index].rm_so != -1);
     assert(p->matches[index].rm_eo != -1);
 
-    *pso = p->matches[index].rm_so;
-    *peo = p->matches[index].rm_eo;
+    *pso = (size_t)p->matches[index].rm_so;
+    *peo = (size_t)p->matches[index].rm_eo;
 }
 
 #ifdef CHECK_REGEX

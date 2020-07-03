@@ -571,7 +571,8 @@ int cstring_find(cstring s, int c)
     if ((p = strchr(s->data, c)) == NULL)
         return -1;
 
-    return p - s->data;
+    // Maybe return ssize_t or long?
+    return (int)(p - s->data);
 }
 
 int cstring_findstr(cstring s, const char *str)

@@ -77,7 +77,7 @@ libmetad_a_SOURCES=$(libmeta_a_SOURCES)
 # _SVID_SOURCE will do the same thing.
 
 libmeta_a_CFLAGS=\
-	-D_GNU_SOURCE -std=gnu99 -DNDEBUG -pthread\
+	-D_GNU_SOURCE -std=gnu2x -DNDEBUG -pthread\
 	-I$(srcdir)\
 	-I$(top_srcdir)/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\
@@ -87,7 +87,7 @@ libmeta_a_CFLAGS=\
 	-fomit-frame-pointer -msse4.2
 
 libmetad_a_CFLAGS=\
-	-D_GNU_SOURCE -std=gnu99 -pthread\
+	-D_GNU_SOURCE -std=gnu2x -pthread\
 	-I$(srcdir)\
 	-I$(top_srcdir)/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\
@@ -143,7 +143,7 @@ check_PROGRAMS=\
 	tcp_server_check
 
 
-AM_CFLAGS=-Wall --std=gnu99 -Wextra -Werror -O0 -ggdb
+AM_CFLAGS=-Wall --std=gnu2x -Wextra -Werror -O0 -ggdb
 
 tcp_server_check_SOURCES=tcp_server.c threadpool.c meta_membuf.c meta_pool.c\
 	gensocket.c sslsocket.c tcpsocket.c connection.c\
@@ -193,7 +193,7 @@ fifo_check_SOURCES=meta_fifo.c meta_wlock.c meta_common.c
 fifo_check_CFLAGS=-DCHECK_FIFO $(AM_CFLAGS)
 
 wlock_check_SOURCES=meta_wlock.c meta_common.c
-wlock_check_CFLAGS=-DCHECK_WLOCK -O0 -ggdb -D_GNU_SOURCE -std=gnu99 -D_REENTRANT $(AM_CFLAGS)
+wlock_check_CFLAGS=-DCHECK_WLOCK -O0 -ggdb -D_GNU_SOURCE -std=gnu2x -D_REENTRANT $(AM_CFLAGS)
 #wlock_check_CFLAGS=-DCHECK_WLOCK -O0 -ggdb $(AM_CFLAGS)
 
 stack_check_SOURCES=meta_stack.c meta_list.c meta_common.c

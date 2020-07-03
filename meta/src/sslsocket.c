@@ -43,7 +43,7 @@ static status_t sslsocket_set_reuseaddr(sslsocket this)
  * error occured. It set errno to EAGAIN if a timeout occured, and
  * it maps POLLHUP and POLLERR to EPIPE, and POLLNVAL to EINVAL.
  */
-status_t sslsocket_poll_for(sslsocket this, int timeout, int poll_for)
+status_t sslsocket_poll_for(sslsocket this, int timeout, short poll_for)
 {
     status_t status = failure;
 
@@ -54,7 +54,9 @@ status_t sslsocket_poll_for(sslsocket this, int timeout, int poll_for)
     assert(poll_for == POLLIN || poll_for == POLLOUT);
     assert(timeout >= 0);
 
-    pfd.fd = BIO_get_fd(this->bio, NULL);
+    // openssl return long here, so -Wconversion warns about
+    // truncation. Doc says that function returns int, but it returns long.
+    pfd.fd = (int)BIO_get_fd(this->bio, NULL);
     pfd.events = poll_for;
 
     /* NOTE: poll is XPG4, not POSIX */
@@ -104,7 +106,7 @@ status_t sslsocket_wait_for_data(sslsocket this, int timeout)
 
 status_t sslsocket_write(sslsocket this, const char *buf, size_t count, int timeout, int nretries)
 {
-    ssize_t nwritten = 0;
+    size_t nwritten = 0;
 
     assert(this != NULL);
     assert(buf != NULL);
@@ -120,7 +122,7 @@ status_t sslsocket_write(sslsocket this, const char *buf, size_t count, int time
             continue;
         }
 
-        if ((nwritten = SSL_write(this->ssl, buf, count)) == -1)
+        if (SSL_write_ex(this->ssl, buf, count, &nwritten) == 0)
             return failure;
 
         buf += nwritten;
