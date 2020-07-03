@@ -55,7 +55,7 @@ struct membuf_tag {
     size_t size;
     size_t nwritten;
     size_t nread;
-    char *data;
+    char *data __attribute__((nonstring));
 };
 
 // Creates a new membuf buffer. The buffer will have room for size
