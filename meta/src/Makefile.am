@@ -144,73 +144,75 @@ check_PROGRAMS=\
 
 
 AM_CFLAGS=-Wall --std=gnu2x -Wextra -Werror -O0 -ggdb
+# Broken atm, with false positives
+# FANALYZER=-fanalyzer
 
 tcp_server_check_SOURCES=tcp_server.c threadpool.c meta_membuf.c meta_pool.c\
 	gensocket.c sslsocket.c tcpsocket.c connection.c\
 	meta_process.c cstring.c meta_common.c
-tcp_server_check_CFLAGS=-DCHECK_TCP_SERVER $(AM_CFLAGS) 
+tcp_server_check_CFLAGS=-DCHECK_TCP_SERVER $(AM_CFLAGS) $(FANALYZER)
 
 tcp_server_check_LDFLAGS=-L/usr/local/lib
 tcp_server_check_LDADD=-lssl -lcrypto -lpthread
 
 list_check_SOURCES=meta_list.c
-list_check_CFLAGS=-DLIST_CHECK $(AM_CFLAGS) 
+list_check_CFLAGS=-DLIST_CHECK $(AM_CFLAGS) $(FANALYZER)
 
 bitset_check_SOURCES=meta_bitset.c meta_common.c
-bitset_check_CFLAGS=-DBITSET_CHECK $(AM_CFLAGS) 
+bitset_check_CFLAGS=-DBITSET_CHECK $(AM_CFLAGS) $(FANALYZER)
 
 configfile_check_SOURCES=meta_configfile.c meta_common.c
-configfile_check_CFLAGS=-DCHECK_CONFIGFILE $(AM_CFLAGS) 
+configfile_check_CFLAGS=-DCHECK_CONFIGFILE $(AM_CFLAGS)  $(FANALYZER)
 
 cstring_check_SOURCES=cstring.c meta_common.c
 cstring_check_CFLAGS=-DCHECK_CSTRING $(AM_CFLAGS) -p -fprofile-arcs -ftest-coverage
 
 membuf_check_SOURCES=meta_membuf.c meta_common.c
-membuf_check_CFLAGS=-DCHECK_MEMBUF $(AM_CFLAGS)
+membuf_check_CFLAGS=-DCHECK_MEMBUF $(AM_CFLAGS) $(FANALYZER)
 
 pool_check_SOURCES=meta_pool.c meta_array.c meta_common.c
-pool_check_CFLAGS=-DCHECK_POOL $(AM_CFLAGS)
+pool_check_CFLAGS=-DCHECK_POOL $(AM_CFLAGS) $(FANALYZER)
 
 array_check_SOURCES=meta_array.c meta_common.c
-array_check_CFLAGS=-DCHECK_ARRAY $(AM_CFLAGS)
+array_check_CFLAGS=-DCHECK_ARRAY $(AM_CFLAGS) $(FANALYZER)
 
 cache_check_SOURCES=meta_cache.c meta_list.c meta_common.c
-cache_check_CFLAGS=-DCHECK_CACHE $(AM_CFLAGS)
+cache_check_CFLAGS=-DCHECK_CACHE $(AM_CFLAGS) $(FANALYZER)
 
 filecache_check_SOURCES=meta_filecache.c meta_stringmap.c meta_cache.c meta_list.c meta_common.c
-filecache_check_CFLAGS=-DCHECK_FILECACHE $(AM_CFLAGS)
+filecache_check_CFLAGS=-DCHECK_FILECACHE $(AM_CFLAGS) $(FANALYZER)
 
 stringmap_check_SOURCES=meta_stringmap.c meta_list.c meta_common.c
-stringmap_check_CFLAGS=-DCHECK_STRINGMAP $(AM_CFLAGS)
+stringmap_check_CFLAGS=-DCHECK_STRINGMAP $(AM_CFLAGS) $(FANALYZER)
 
 miscfunc_check_SOURCES=meta_misc.c meta_common.c
-miscfunc_check_CFLAGS=-DCHECK_MISCFUNC $(AM_CFLAGS)
+miscfunc_check_CFLAGS=-DCHECK_MISCFUNC $(AM_CFLAGS) $(FANALYZER)
 
 pair_check_SOURCES=meta_pair.c meta_common.c
-pair_check_CFLAGS=-DCHECK_PAIR $(AM_CFLAGS)
+pair_check_CFLAGS=-DCHECK_PAIR $(AM_CFLAGS) $(FANALYZER)
 
 fifo_check_SOURCES=meta_fifo.c meta_wlock.c meta_common.c
-fifo_check_CFLAGS=-DCHECK_FIFO $(AM_CFLAGS)
+fifo_check_CFLAGS=-DCHECK_FIFO $(AM_CFLAGS) $(FANALYZER)
 
 wlock_check_SOURCES=meta_wlock.c meta_common.c
-wlock_check_CFLAGS=-DCHECK_WLOCK -O0 -ggdb -D_GNU_SOURCE -std=gnu2x -D_REENTRANT $(AM_CFLAGS)
+wlock_check_CFLAGS=-DCHECK_WLOCK -O0 -ggdb -D_GNU_SOURCE -std=gnu2x -D_REENTRANT $(AM_CFLAGS) $(FANALYZER)
 #wlock_check_CFLAGS=-DCHECK_WLOCK -O0 -ggdb $(AM_CFLAGS)
 
 stack_check_SOURCES=meta_stack.c meta_list.c meta_common.c
-stack_check_CFLAGS=-DCHECK_STACK -O0 -ggdb $(AM_CFLAGS)
+stack_check_CFLAGS=-DCHECK_STACK -O0 -ggdb $(AM_CFLAGS) $(FANALYZER)
 
 sampler_check_SOURCES=meta_sampler.c meta_common.c
-sampler_check_CFLAGS=-DCHECK_SAMPLER $(AM_CFLAGS)
+sampler_check_CFLAGS=-DCHECK_SAMPLER $(AM_CFLAGS) $(FANALYZER)
 sampler_check_LDADD=-lpthread
 sampler_check_LDFLAGS=-ggdb -O0
 
 slotbuf_check_SOURCES=meta_slotbuf.c  meta_common.c
-slotbuf_check_CFLAGS=-DCHECK_SLOTBUF $(AM_CFLAGS)
+slotbuf_check_CFLAGS=-DCHECK_SLOTBUF $(AM_CFLAGS) $(FANALYZER)
 
 convert_check_SOURCES=meta_convert.c meta_common.c
-convert_check_CFLAGS=-DCHECK_CONVERT $(AM_CFLAGS)
+convert_check_CFLAGS=-DCHECK_CONVERT $(AM_CFLAGS) $(FANALYZER)
 
 regex_check_SOURCES=meta_regex.c meta_common.c
-regex_check_CFLAGS=-DCHECK_REGEX $(AM_CFLAGS) 
+regex_check_CFLAGS=-DCHECK_REGEX $(AM_CFLAGS)  $(FANALYZER)
 
 LDADD=-lpthread

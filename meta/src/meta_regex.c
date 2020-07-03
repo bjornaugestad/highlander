@@ -68,9 +68,7 @@ int regex_exec(regex p, const char *haystack)
     assert(haystack != NULL);
     assert(p->compiled_ok);
 
-    p->result = regexec(&p->re, haystack,
-        maxmatches, p->matches, eflags);
-
+    p->result = regexec(&p->re, haystack, maxmatches, p->matches, eflags);
     if (p->result != 0)
         return p->result == REG_NOMATCH ? 0 : -1;
 
@@ -92,7 +90,7 @@ size_t regex_error(regex p, char *buf, size_t bufsize)
     return regerror(p->result, &p->re, buf, bufsize);
 }
 
-void regex_get_match(regex p, int index, size_t *pso, size_t *peo)
+void regex_get_match_index(regex p, int index, size_t *pso, size_t *peo)
 {
     assert(p != NULL);
     assert(index >= 0);
@@ -106,6 +104,25 @@ void regex_get_match(regex p, int index, size_t *pso, size_t *peo)
 
     *pso = (size_t)p->matches[index].rm_so;
     *peo = (size_t)p->matches[index].rm_eo;
+}
+
+status_t regex_get_match(regex p, int index, const char *src, char *dest, size_t destsize)
+{
+    size_t so, eo;
+
+    assert(p != NULL);
+    assert(index >= 0);
+    assert(src != NULL);
+    assert(dest != NULL);
+    assert(destsize > 0);
+
+    regex_get_match_index(p, index, &so, &eo);
+    if (eo - so > destsize)
+        return fail(ENOSPC);
+
+    memcpy(dest, &src[so], eo - so);
+    dest[eo - so] = '\0';
+    return success;
 }
 
 #ifdef CHECK_REGEX
@@ -181,9 +198,11 @@ int main(void)
         for (int j = 0; j < nfound; j++) {
             size_t so, eo;
             char buf[1024];
+            char buf2[1024];
+            status_t result;
 
             memset(buf, 0, sizeof buf);
-            regex_get_match(p, j, &so, &eo);
+            regex_get_match_index(p, j, &so, &eo);
             if (so == (size_t)-1 || eo == (size_t)-1) {
                 fprintf(stderr, "Failed to retrieve result for test %zu, elem %d\n", i, j);
                 retcode = 77;
@@ -191,7 +210,17 @@ int main(void)
                 
             memcpy(buf, &tests[i].haystack[so], eo - so);
             if (tests[i].matches[j] != NULL && strcmp(tests[i].matches[j], buf) != 0) {
-                printf("test %zu: buf(%d): expected %s, got %s\n", i, j, tests[i].matches[j], buf);
+                fprintf(stderr, "test %zu: buf(%d): expected %s, got %s\n",
+                    i, j, tests[i].matches[j], buf);
+
+                retcode = 77;
+            }
+
+            result = regex_get_match(p, j, tests[i].haystack, buf2, sizeof buf2);
+            if (result == failure)
+                retcode = 77;
+            else if (strcmp(buf, buf2) != 0) {
+                fprintf(stderr, "Expected %s, got %s\n", buf, buf2);
                 retcode = 77;
             }
         }

@@ -37,7 +37,7 @@ slotbuf slotbuf_new(size_t size, int can_overwrite, dtor fn)
 void slotbuf_free(slotbuf p);
 
 status_t slotbuf_set(slotbuf p, size_t i, void *value)
-    __attribute__((nonnull))
+    __attribute__((nonnull(1)))
     __attribute__((warn_unused_result));
 
 void *slotbuf_get(slotbuf p, size_t i)

@@ -38,8 +38,11 @@ int regex_exec(regex p, const char *haystack)
 // Function will barf, loudly, on invalid index values. Should be
 // in the range 0 <= regex_exec()'s return value. index 0 is for
 // the full match and 1..n are for the submatches, if any.
-void regex_get_match(regex p, int index, size_t *pso, size_t *peo)
+void regex_get_match_index(regex p, int index, size_t *pso, size_t *peo)
     __attribute__((nonnull));
+
+status_t regex_get_match(regex p, int index, const char *src, char *dest, size_t destsize)
+    __attribute__((warn_unused_result, nonnull));
 
 // If buf is NULL and bufsize is 0, function returns the
 // required buffer size to store the error message.

@@ -139,17 +139,25 @@ int main(void)
     size_t i, n = 1024;
     slotbuf p = slotbuf_new(10, 1, 0);
     void *v;
+    int retval = 0;
+
+    if (p == NULL)
+        return 77;
 
     for (i = 0; i < n; i++) {
-        if (!slotbuf_set(p, i, (void*)i))
-            return 1;
+        if (!slotbuf_set(p, i, (void*)i)) {
+            retval = 77;
+            break;
+        }
 
         v = slotbuf_get(p, i);
-        if (v != (void*)i)
-            return 1;
+        if (v != (void*)i) {
+            retval = 77;
+            break;
+        }
     }
 
     slotbuf_free(p);
-    return 0;
+    return retval;
 }
 #endif
