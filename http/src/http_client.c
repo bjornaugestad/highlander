@@ -166,7 +166,7 @@ int main(void)
     http_client p;
     http_response resp;
 
-    const char *hostname ="www.vg.no";
+    const char *hostname ="www.augestad.online";
     const char *uri = "/";
     int port = 80;
 
@@ -184,21 +184,27 @@ int main(void)
         exit(1);
     }
 
-    if (!http_client_disconnect(p)) {
-        fprintf(stderr, "Could not disconnect from %s\n", hostname);
-        exit(1);
-    }
+    int status = http_client_http_status(p);
+    printf("Server returned %d\n", status);
 
     resp = http_client_response(p);
     /* Copy some bytes from the response, just to see that we got something */
     {
-        size_t n = 10, cb = response_get_content_length(resp);
+        size_t n = 1000, cb = response_get_content_length(resp);
         const char *s = response_get_entity(resp);
+
+        if (cb == 0)
+            printf("Got zero bytes of content\n");
 
         while (n-- && cb--)
             putchar(*s++);
      }
 
+
+    if (!http_client_disconnect(p)) {
+        fprintf(stderr, "Could not disconnect from %s\n", hostname);
+        exit(1);
+    }
 
     http_client_free(p);
     return 0;
