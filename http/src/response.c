@@ -1567,7 +1567,7 @@ status_t response_receive(http_response response, connection conn,
     general_header gh = response_get_general_header(response);
     entity_header eh = response_get_entity_header(response);
     size_t contentlen;
-    void *content;
+    char *content;
     ssize_t nread;
 
     if (!read_response_status_line(response, conn, e))
@@ -1596,8 +1596,12 @@ status_t response_receive(http_response response, connection conn,
         contentlen = max_contentlen;
     }
 
-    if ((content = malloc(contentlen)) == NULL)
+    if ((content = malloc(contentlen + 1)) == NULL)
         return set_os_error(e, errno);
+
+    // We assume that content is string, so add a string terminator
+    // for convenience.
+    content[contentlen] = '\0';
 
     if ((nread = connection_read(conn, content, contentlen)) == -1) {
         free(content);
