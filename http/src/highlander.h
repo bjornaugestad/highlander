@@ -86,13 +86,23 @@ typedef struct entity_header_tag*	entity_header;
 typedef int (*PAGE_FUNCTION)(http_request, http_response);
 
 // new stuff 20141231: We need a client ADT for better testing of the server
-http_client http_client_new(void);
+http_client http_client_new(int socktype) __attribute__((warn_unused_result));
 void http_client_free(http_client p);
-status_t http_client_connect(http_client this, const char *host, int port);
-status_t http_client_get(http_client this, const char *host, const char *uri);
-status_t http_client_post(http_client this, const char *host, const char *uri);
-int http_client_http_status(http_client this);
-http_response http_client_response(http_client this);
+status_t http_client_connect(http_client this, const char *host, int port)
+    __attribute__((warn_unused_result));
+
+status_t http_client_get(http_client this, const char *host, const char *uri)
+    __attribute__((warn_unused_result));
+
+status_t http_client_post(http_client this, const char *host, const char *uri)
+    __attribute__((warn_unused_result));
+
+int http_client_http_status(http_client this)
+    __attribute__((warn_unused_result));
+
+http_response http_client_response(http_client this)
+    __attribute__((warn_unused_result));
+
 status_t http_client_disconnect(http_client this);
 
 int http_client_get_timeout_write(http_client s)

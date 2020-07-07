@@ -1168,7 +1168,7 @@ static void make_request(void)
     const char *uri = "/";
     int port = 2000;
 
-    if ((p = http_client_new()) == NULL)
+    if ((p = http_client_new(SOCKTYPE_TCP)) == NULL)
         exit(1);
 
     if (!http_client_connect(p, hostname, port)) {

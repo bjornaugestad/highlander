@@ -245,7 +245,7 @@ status_t tcp_server_init(tcp_server this)
         goto err;
 
     for (i = 0; i < count; i++) {
-        connection conn = connection_new(this->timeout_reads, this->timeout_writes,
+        connection conn = connection_new(this->socktype, this->timeout_reads, this->timeout_writes,
             this->retries_reads, this->retries_writes, this->service_arg);
 
         if (conn == NULL)

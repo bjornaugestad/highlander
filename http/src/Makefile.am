@@ -127,6 +127,6 @@ http_client_check_SOURCES=\
 	send_status_code.c\
 	attribute.c
 http_client_check_CFLAGS=-DCHECK_HTTP_CLIENT $(AM_CFLAGS)\
-	-I$(top_srcdir)/meta/src
+	-I$(top_srcdir)/meta/src -O0 -ggdb
 http_client_check_LDADD=-lmetad -lssl -lcrypto -lpthread
-http_client_check_LDFLAGS=-L/usr/local/lib -L$(top_srcdir)/meta/src
+http_client_check_LDFLAGS=-L$(top_srcdir)/meta/src

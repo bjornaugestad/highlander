@@ -104,7 +104,8 @@ status_t sslsocket_wait_for_data(sslsocket this, int timeout)
     return sslsocket_poll_for(this, timeout, POLLIN);
 }
 
-status_t sslsocket_write(sslsocket this, const char *buf, size_t count, int timeout, int nretries)
+status_t sslsocket_write(sslsocket this, const char *buf, size_t count,
+    int timeout, int nretries)
 {
     size_t nwritten = 0;
 
@@ -269,7 +270,7 @@ sslsocket sslsocket_create_client_socket(void *context,
     if (this->bio == NULL)
         goto err;
 
-    // Set nonblock before connecting. Internet Wisdom(tm)
+    // Set nonblock before connecting. See man page for BIO_set_nbio()
     if (!sslsocket_set_nonblock(this))
         goto err;
 
@@ -282,9 +283,8 @@ sslsocket sslsocket_create_client_socket(void *context,
 
     SSL_set_bio(this->ssl, this->bio, this->bio);
     rc = SSL_connect(this->ssl);
-    if (rc <= 0) {
+    if (rc <= 0)
         goto err;
-    }
 
     return this;
 
@@ -329,22 +329,17 @@ status_t sslsocket_close(sslsocket this)
 }
 
 sslsocket sslsocket_accept(sslsocket this, void *context, 
-    struct sockaddr *addr, socklen_t *addrsize)
+    struct sockaddr *addr __attribute__((unused)), socklen_t *addrsize)
 {
     sslsocket new;
-    int rc;
 
-    (void)addr;
     *addrsize = 0; // Mark addr as unused
 
     assert(this != NULL);
-    assert(addr != NULL);
     assert(addrsize != NULL);
 
-    rc = BIO_do_accept(this->bio);
-    if (rc <= 0) {
+    if (BIO_do_accept(this->bio) <= 0)
         return NULL;
-    }
 
     if ((new = malloc(sizeof *new)) == NULL) {
         BIO_free(BIO_pop(this->bio)); // Just guessing here...
@@ -366,8 +361,7 @@ sslsocket sslsocket_accept(sslsocket this, void *context,
 
     SSL_set_accept_state(new->ssl);
     SSL_set_bio(new->ssl, new->bio, new->bio);
-    rc = SSL_accept(new->ssl);
-    if (rc <= 0) {
+    if (SSL_accept(new->ssl) <= 0) {
         sslsocket_close(new);
         errno = EPROTO; // so caller doesn't get a random value
         return NULL;

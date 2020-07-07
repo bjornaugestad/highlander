@@ -4,6 +4,7 @@
 #include <gensocket.h>
 
 #include <highlander.h>
+#include <miscssl.h>
 
 struct http_client_tag {
     http_request request;
@@ -16,9 +17,11 @@ struct http_client_tag {
     int timeout_reads, timeout_writes, nretries_read, nretries_write;
 };
 
-http_client http_client_new(void)
+http_client http_client_new(int socktype)
 {
     http_client new;
+
+    assert(socktype == SOCKTYPE_TCP || socktype == SOCKTYPE_SSL);
 
     if ((new = calloc(1, sizeof *new)) == NULL)
         return NULL;
@@ -41,7 +44,7 @@ http_client http_client_new(void)
     new->timeout_reads = new->timeout_writes = 1000;
     new->nretries_read = new->nretries_write = 5;
 
-    new->conn = connection_new(new->timeout_reads, new->timeout_writes,
+    new->conn = connection_new(socktype, new->timeout_reads, new->timeout_writes,
         new->nretries_read, new->nretries_write, NULL);
     if (new->conn == NULL)
         goto memerr;
@@ -166,11 +169,21 @@ int main(void)
     http_client p;
     http_response resp;
 
+#if 0
     const char *hostname ="www.augestad.online";
-    const char *uri = "/";
     int port = 80;
+    int socktype = SOCKTYPE_TCP;
 
-    if ((p = http_client_new()) == NULL)
+#else
+    int socktype = SOCKTYPE_SSL;
+    const char *hostname = "www.random.org";
+    int port = 443;
+    const char *uri = "/cgi-bin/randbyte?nbytes=32&format=h";
+#endif
+    if (!openssl_init())
+        exit(1);
+
+    if ((p = http_client_new(socktype)) == NULL)
         exit(1);
 
     if (!http_client_connect(p, hostname, port)) {

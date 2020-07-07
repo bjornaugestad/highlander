@@ -7,7 +7,6 @@
 #define SSLSOCKET_H
 
 #include <sys/socket.h>
-#include <meta_membuf.h>
 #include <meta_common.h>
 
 #ifdef __cplusplus

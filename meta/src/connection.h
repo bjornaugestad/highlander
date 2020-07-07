@@ -19,7 +19,7 @@ extern "C" {
 /* Declaration of our connection ADT */
 typedef struct connection_tag* connection;
 
-connection connection_new(int timeout_reads, int timeout_writes,
+connection connection_new(int socktype, int timeout_reads, int timeout_writes,
     int retries_reads, int retries_writes, void *arg2)
     __attribute__((warn_unused_result))
     __attribute__((malloc));

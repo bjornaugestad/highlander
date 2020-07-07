@@ -127,7 +127,7 @@ void* threadfunc(void* arg)
 
     http_request request = request_new();
     http_response response = response_new();
-    connection conn = connection_new(timeout_reads, timeout_writes,
+    connection conn = connection_new(SOCKTYPE_TCP, timeout_reads, timeout_writes,
         nretries_read, nretries_write, NULL);
 
     membuf rb = membuf_new(10000);

@@ -64,6 +64,9 @@ struct connection_tag {
     socket_t sock;
     void *arg2;
 
+    // tcp or ssl
+    int socktype;
+
     /* Client we're connected with */
     struct sockaddr_in addr;
 
@@ -170,6 +173,7 @@ writebuf_has_room_for(connection this, size_t count)
 }
 
 connection connection_new(
+    int socktype,
     int timeout_reads,
     int timeout_writes,
     int retries_reads,
@@ -178,6 +182,7 @@ connection connection_new(
 {
     connection new;
 
+    assert(socktype == SOCKTYPE_TCP || socktype == SOCKTYPE_SSL);
     assert(timeout_reads >= 0);
     assert(timeout_writes >= 0);
     assert(retries_reads >= 0);
@@ -187,6 +192,7 @@ connection connection_new(
     if ((new = calloc(1, sizeof *new)) == NULL)
         return NULL;
 
+    new->socktype = socktype;
     new->readbuf = NULL;
     new->writebuf = NULL;
     new->persistent = 0;
@@ -203,9 +209,16 @@ connection connection_new(
 
 status_t connection_connect(connection this, const char *host, int port)
 {
+
+// bug, we want a SSL_CTX object instead of NULL. Where do we store it?
+// we already have a function named setup_server_ctx() for server side ssl.
+// We need a setup_client_ctx() function too.
+// We probably want just one ssl_ctx and many ssl objects. For clients
+// we probably just want one of each...
+
     assert(this != NULL);
 
-    if ((this->sock = socket_create_client_socket(SOCKTYPE_TCP, NULL, host, port)) == NULL)
+    if ((this->sock = socket_create_client_socket(this->socktype, NULL, host, port)) == NULL)
         return failure;
 
     return success;

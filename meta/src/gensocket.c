@@ -8,7 +8,7 @@
 #include <sslsocket.h>
 
 struct gensocket_tag {
-    int type;
+    int socktype;
     void *instance;
 
     // Some function pointers we need.
@@ -25,19 +25,19 @@ struct gensocket_tag {
     ssize_t  (*read)(void *instance, char *buf, size_t count, int timeout, int retries);
 };
 
-static socket_t create_instance(int type)
+static socket_t create_instance(int socktype)
 {
     socket_t p;
 
-    assert(type == SOCKTYPE_TCP || type ==SOCKTYPE_SSL);
+    assert(socktype == SOCKTYPE_TCP || socktype ==SOCKTYPE_SSL);
 
     if ((p = malloc(sizeof *p)) == NULL)
         return NULL;
 
-    p->type = type;
+    p->socktype = socktype;
 
     // Set up the type-specific function pointers
-    if (type == SOCKTYPE_TCP) {
+    if (socktype == SOCKTYPE_TCP) {
         p->bind = (typeof(p->bind))tcpsocket_bind;
         p->listen = (typeof(p->listen))tcpsocket_listen;
         p->close = (typeof(p->close))tcpsocket_close;
@@ -88,15 +88,15 @@ socket_t socket_create_server_socket(int type, const char *host, int port)
 }
 
 // A ctor function
-socket_t socket_create_client_socket(int type, void *context, 
+socket_t socket_create_client_socket(int socktype, void *context, 
     const char *host, int port)
 {
     socket_t this;
 
-    if ((this = create_instance(type)) == NULL)
+    if ((this = create_instance(socktype)) == NULL)
         return NULL;
 
-    if (type == SOCKTYPE_TCP)
+    if (socktype == SOCKTYPE_TCP)
         this->instance = tcpsocket_create_client_socket(host, port);
     else
         this->instance = sslsocket_create_client_socket(context, host, port);
@@ -110,15 +110,15 @@ socket_t socket_create_client_socket(int type, void *context,
 }
 
 // A ctor function
-socket_t socket_socket(int type)
+socket_t socket_socket(int socktype)
 {
     socket_t this;
 
-    this = create_instance(type);
+    this = create_instance(socktype);
     if (this == NULL)
         return NULL;
 
-    if (type == SOCKTYPE_TCP)
+    if (socktype == SOCKTYPE_TCP)
         this->instance = tcpsocket_socket();
     else
         this->instance = sslsocket_socket();
@@ -137,11 +137,11 @@ socket_t socket_accept(socket_t p, void *context,
 {
     socket_t new;
 
-    new = create_instance(p->type);
+    new = create_instance(p->socktype);
     if (new == NULL)
         return NULL;
 
-    if (p->type == SOCKTYPE_TCP)
+    if (p->socktype == SOCKTYPE_TCP)
         new->instance = tcpsocket_accept(p->instance, addr, addrsize);
     else
         new->instance = sslsocket_accept(p->instance, context, addr, addrsize);
