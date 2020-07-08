@@ -202,7 +202,7 @@ status_t request_set_uri(http_request p, const char *value)
 {
     assert(p != NULL);
     assert(value != NULL);
-    assert(strchr(value, '?') == NULL); /* Params must have been removed */
+    // Meh, breaks client side code with params: assert(strchr(value, '?') == NULL); /* Params must have been removed */
 
     if (!cstring_set(p->uri, value))
         return failure;

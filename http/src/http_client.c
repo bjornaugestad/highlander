@@ -248,6 +248,7 @@ int main(void)
         die("Could not disconnect from %s\n", hostname);
 
     http_client_free(p);
+    SSL_CTX_free(ctx);
     return 0;
 }
 #endif

@@ -541,6 +541,9 @@ void response_free(http_response p)
         cstring_free(p->entity);
         cstring_free(p->path);
 
+        if (p->content_free_when_done)
+            free(p->content_buffer);
+
         free(p);
     }
 }
