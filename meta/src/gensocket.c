@@ -93,6 +93,8 @@ socket_t socket_create_client_socket(int socktype, void *context,
 {
     socket_t this;
 
+    assert(socktype == SOCKTYPE_TCP || context != NULL);
+
     if ((this = create_instance(socktype)) == NULL)
         return NULL;
 

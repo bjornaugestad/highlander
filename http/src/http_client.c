@@ -2,10 +2,25 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <gensocket.h>
+#include <openssl/ssl.h>
 
 #include <highlander.h>
 #include <miscssl.h>
 
+// TODO/NOTE: we may want to introduce a tcp_client ADT, to match
+// the tcp_server ADT. Rationale is that we need a place to store
+// TCP and SSL related stuff, which really isn't part of http.
+// We should move readbuf,writebuf, and conn, along with
+// the read/writes members, to the new ADT, and then have http_client inherit
+// from tcp_client.
+//
+// Do we want a generic client base class? We already have the generic socket_t,
+// which works well for server side stuff. We already use it too, indirectly via
+// the connection ADT. IOW, no need for more socket base classes.(I'm rusty today, it's
+// been years since I looked deeply into this) We still probably want a
+// client base class which holds shared stuff. Kinda like the sslserver vs tcpserver
+//
+// boa@20200708
 struct http_client_tag {
     http_request request;
     http_response response;
@@ -13,11 +28,10 @@ struct http_client_tag {
     membuf readbuf;
     membuf writebuf;
 
-
     int timeout_reads, timeout_writes, nretries_read, nretries_write;
 };
 
-http_client http_client_new(int socktype)
+http_client http_client_new(int socktype, void *context)
 {
     http_client new;
 
@@ -45,7 +59,7 @@ http_client http_client_new(int socktype)
     new->nretries_read = new->nretries_write = 5;
 
     new->conn = connection_new(socktype, new->timeout_reads, new->timeout_writes,
-        new->nretries_read, new->nretries_write, NULL);
+        new->nretries_read, new->nretries_write, context);
     if (new->conn == NULL)
         goto memerr;
 
@@ -164,37 +178,53 @@ void http_client_set_retries_write(http_client this, int count)
 #include <stdio.h>
 #include <stdlib.h>
 
+// Initialize stuff for SSL context
+static SSL_CTX* create_client_context(void)
+{
+    const SSL_METHOD* method = SSLv23_method();
+    if (method == NULL)
+        die("Could not get SSL METHOD pointer\n");
+
+    SSL_CTX *ctx = SSL_CTX_new(method);
+    if (ctx == NULL)
+        die("Unable to create ssl context\n");
+
+    // TODO: This is not good enough
+    SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, NULL);
+    // SSL_CTX_set_verify_depth(ctx, 4);
+
+    const long flags = SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_COMPRESSION;
+    SSL_CTX_set_options(ctx, flags);
+
+    // res = SSL_CTX_load_verify_locations(ctx, "random-org-chain.pem", NULL);
+
+    return ctx;
+}
+
 int main(void)
 {
     http_client p;
     http_response resp;
+    SSL_CTX *ctx;
 
-#if 0
-    const char *hostname ="www.augestad.online";
-    int port = 80;
-    int socktype = SOCKTYPE_TCP;
-
-#else
     int socktype = SOCKTYPE_SSL;
     const char *hostname = "www.random.org";
     int port = 443;
     const char *uri = "/cgi-bin/randbyte?nbytes=32&format=h";
-#endif
     if (!openssl_init())
         exit(1);
 
-    if ((p = http_client_new(socktype)) == NULL)
-        exit(1);
+    ctx = create_client_context();
 
-    if (!http_client_connect(p, hostname, port)) {
-        fprintf(stderr, "Could not connect to %s\n", hostname);
-        exit(1);
-    }
+    if ((p = http_client_new(socktype, ctx)) == NULL)
+        die("http_client_new() returned NULL\n");
+
+    if (!http_client_connect(p, hostname, port))
+        die("Could not connect to %s\n", hostname);
 
     if (!http_client_get(p, hostname, uri)) {
-        fprintf(stderr, "Could not get %s from %s\n", uri, hostname);
         http_client_disconnect(p);
-        exit(1);
+        die("Could not get %s from %s\n", uri, hostname);
     }
 
     int status = http_client_http_status(p);
@@ -214,10 +244,8 @@ int main(void)
      }
 
 
-    if (!http_client_disconnect(p)) {
-        fprintf(stderr, "Could not disconnect from %s\n", hostname);
-        exit(1);
-    }
+    if (!http_client_disconnect(p))
+        die("Could not disconnect from %s\n", hostname);
 
     http_client_free(p);
     return 0;

@@ -210,7 +210,7 @@ connection connection_new(
 status_t connection_connect(connection this, const char *host, int port)
 {
 
-// bug, we want a SSL_CTX object instead of NULL. Where do we store it?
+// bug, we want a SSL_CTX object instead of NULL. Where do we store it? int arg2.
 // we already have a function named setup_server_ctx() for server side ssl.
 // We need a setup_client_ctx() function too.
 // We probably want just one ssl_ctx and many ssl objects. For clients
@@ -218,7 +218,9 @@ status_t connection_connect(connection this, const char *host, int port)
 
     assert(this != NULL);
 
-    if ((this->sock = socket_create_client_socket(this->socktype, NULL, host, port)) == NULL)
+    fprintf(stderr, "%s(): enter\n", __func__);
+
+    if ((this->sock = socket_create_client_socket(this->socktype, this->arg2, host, port)) == NULL)
         return failure;
 
     return success;
