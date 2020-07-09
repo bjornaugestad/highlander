@@ -1157,6 +1157,7 @@ static void * serverthread(void *arg)
     sleep(this->timeout_accept / 1000 + 1);
 
     http_server_free(this);
+    return NULL;
 }
 
 static void make_request(void)

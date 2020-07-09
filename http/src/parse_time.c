@@ -40,7 +40,7 @@ time_t parse_rfc822_date(const char *s)
         return -1;
 
     /* Get index for the day */
-    size = sizeof wkday / sizeof *wkday[0];
+    size = sizeof wkday / sizeof *wkday;
     for (i = 0; i < size; i++) {
         if (!memcmp(s, wkday[i], 3))
             break;
