@@ -409,14 +409,7 @@ status_t sslsocket_close(sslsocket this)
 {
     assert(this != NULL);
     
-    if (this->ssl) {
-        //SSL_shutdown(this->ssl);
-        SSL_free(this->ssl);
-    }
-    else if (this->bio) {
-        BIO_free(this->bio);
-    }
-
+    BIO_free_all(this->bio);
     free(this);
 
     return success;
