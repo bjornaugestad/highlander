@@ -13,10 +13,10 @@
 struct dynamic_page_tag {
     cstring uri;
     page_attribute attr;
-    PAGE_FUNCTION handler;
+    handlerfn handler;
 };
 
-dynamic_page dynamic_new(const char *uri, PAGE_FUNCTION handler, page_attribute a)
+dynamic_page dynamic_new(const char *uri, handlerfn handler, page_attribute a)
 {
     dynamic_page p;
 
@@ -64,7 +64,7 @@ status_t dynamic_set_uri(dynamic_page p, const char *value)
     return cstring_set(p->uri, value);
 }
 
-void dynamic_set_handler(dynamic_page p, PAGE_FUNCTION func)
+void dynamic_set_handler(dynamic_page p, handlerfn func)
 {
     assert(p != NULL);
     assert(func != NULL);

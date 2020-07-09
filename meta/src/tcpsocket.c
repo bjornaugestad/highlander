@@ -209,6 +209,7 @@ static status_t tcpsocket_bind_inet(tcpsocket this, const char *hostname, int po
     assert(this->fd >= 0);
     assert(port > 0);
 
+    // TODO: s/gethostbyname/getaddrinfo/
     if (hostname != NULL) {
         if ((host = gethostbyname(hostname)) ==NULL) {
             errno = h_errno; /* OBSOLETE? */

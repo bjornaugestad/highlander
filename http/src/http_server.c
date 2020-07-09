@@ -84,7 +84,7 @@ struct http_server_tag {
     char documentroot[DOCUMENTROOT_MAX + 1];
 
     /* The default page handler */
-    PAGE_FUNCTION default_handler;
+    handlerfn default_handler;
 
     /* Do we permit the web server to load files from disk or not? */
     int can_read_files;
@@ -270,7 +270,7 @@ static status_t http_server_alloc_page_structs(http_server this)
     return success;
 }
 
-void http_server_set_default_page_handler(http_server this, PAGE_FUNCTION pf)
+void http_server_set_default_page_handler(http_server this, handlerfn pf)
 {
     assert(this != NULL);
     this->default_handler = pf;
@@ -386,7 +386,7 @@ status_t http_server_start(http_server this)
 status_t http_server_add_page(
     http_server this,
     const char *uri,
-    PAGE_FUNCTION func,
+    handlerfn func,
     page_attribute attr)
 {
     dynamic_page dp;

@@ -103,9 +103,9 @@ status_t get_field_name(const char *buf, char *name, size_t cchNameMax);
 status_t get_field_value(const char *buf, char *value, size_t cchValueMax);
 
 
-dynamic_page dynamic_new(const char *uri, PAGE_FUNCTION f, page_attribute a);
+dynamic_page dynamic_new(const char *uri, handlerfn f, page_attribute a);
 void dynamic_free(dynamic_page p);
-void dynamic_set_handler(dynamic_page p, PAGE_FUNCTION func);
+void dynamic_set_handler(dynamic_page p, handlerfn func);
 status_t dynamic_set_uri(dynamic_page p, const char *value);
 int dynamic_run(dynamic_page p, const http_request, http_response);
 status_t dynamic_set_attributes(dynamic_page p, page_attribute a);

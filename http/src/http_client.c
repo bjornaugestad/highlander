@@ -62,6 +62,7 @@ void http_client_free(http_client this)
 
     request_free(this->request);
     response_free(this->response);
+    tcp_client_free(this->sock);
     free(this);
 }
 
@@ -153,6 +154,27 @@ void http_client_set_retries_write(http_client this, int count)
 #include <stdio.h>
 #include <stdlib.h>
 
+// Copied from sample program. (and from tcp_server.c)
+static int verify_callback(int ok, X509_STORE_CTX *store)
+{
+    char data[256];
+
+    if (!ok) {
+        X509 *cert = X509_STORE_CTX_get_current_cert(store);
+        int  depth = X509_STORE_CTX_get_error_depth(store);
+        int  err = X509_STORE_CTX_get_error(store);
+
+        fprintf(stderr, "-Error with certificate at depth: %i\n", depth);
+        X509_NAME_oneline(X509_get_issuer_name(cert), data, 256);
+        fprintf(stderr, "  issuer   = %s\n", data);
+        X509_NAME_oneline(X509_get_subject_name(cert), data, 256);
+        fprintf(stderr, "  subject  = %s\n", data);
+        fprintf(stderr, "  err %i:%s\n", err, X509_verify_cert_error_string(err));
+    }
+
+    return ok;
+}
+
 // Initialize stuff for SSL context
 static SSL_CTX* create_client_context(void)
 {
@@ -165,13 +187,15 @@ static SSL_CTX* create_client_context(void)
         die("Unable to create ssl context\n");
 
     // TODO: This is not good enough
-    SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, NULL);
-    // SSL_CTX_set_verify_depth(ctx, 4);
+    SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, verify_callback);
+    SSL_CTX_set_verify_depth(ctx, 4);
 
     const long flags = SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_COMPRESSION;
     SSL_CTX_set_options(ctx, flags);
 
-    // res = SSL_CTX_load_verify_locations(ctx, "random-org-chain.pem", NULL);
+    long res = SSL_CTX_load_verify_locations(ctx, "random-org-chain.pem", NULL);
+    if (res != 1)
+        die("Could not load verify locations\n");
 
     return ctx;
 }

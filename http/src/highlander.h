@@ -83,7 +83,7 @@ typedef struct page_attribute_tag*	page_attribute;
 typedef struct general_header_tag*	general_header;
 typedef struct entity_header_tag*	entity_header;
 
-typedef int (*PAGE_FUNCTION)(http_request, http_response);
+typedef int (*handlerfn)(http_request, http_response);
 
 // new stuff 20141231: We need a client ADT for better testing of the server
 http_client http_client_new(int socktype, void *ssl_ctx) __attribute__((warn_unused_result));
@@ -105,20 +105,20 @@ http_response http_client_response(http_client this)
 
 status_t http_client_disconnect(http_client this);
 
-int http_client_get_timeout_write(http_client s)
+int http_client_get_timeout_write(http_client p)
     __attribute__((nonnull, warn_unused_result));
 
-int http_client_get_timeout_read(http_client srv)
+int http_client_get_timeout_read(http_client p)
     __attribute__((nonnull, warn_unused_result));
 
-int http_client_get_timeout_read(http_client s)
+int http_client_get_timeout_read(http_client p)
     __attribute__((nonnull, warn_unused_result));
 
 
-void http_client_set_timeout_write(http_client s, int millisec) __attribute__((nonnull));
-void http_client_set_timeout_read(http_client s, int millisec)  __attribute__((nonnull));
-void http_client_set_retries_read(http_client s, int count)     __attribute__((nonnull));
-void http_client_set_retries_write(http_client s, int count)    __attribute__((nonnull));
+void http_client_set_timeout_write(http_client p, int millisec) __attribute__((nonnull));
+void http_client_set_timeout_read(http_client p, int millisec)  __attribute__((nonnull));
+void http_client_set_retries_read(http_client p, int count)     __attribute__((nonnull));
+void http_client_set_retries_write(http_client p, int count)    __attribute__((nonnull));
 
 
 http_server http_server_new(int socktype) __attribute__((warn_unused_result));
@@ -154,7 +154,7 @@ int http_server_shutting_down(http_server s)
 status_t http_server_shutdown(http_server s)
     __attribute__((nonnull, warn_unused_result));
 
-status_t http_server_add_page(http_server s, const char *uri, PAGE_FUNCTION pf, page_attribute attr)
+status_t http_server_add_page(http_server s, const char *uri, handlerfn pf, page_attribute attr)
     __attribute__((nonnull(1,2,3)))
     __attribute__((warn_unused_result));
 
@@ -176,8 +176,7 @@ size_t http_server_get_post_limit(http_server s)
 const char* http_server_get_documentroot(http_server s)
     __attribute__((nonnull, warn_unused_result));
 
-
-void http_server_set_default_page_handler(http_server s, PAGE_FUNCTION pf)
+void http_server_set_default_page_handler(http_server s, handlerfn pf)
     __attribute__((nonnull));
 
 status_t http_server_set_default_page_attributes(http_server s, page_attribute a)
@@ -193,7 +192,6 @@ int http_server_get_timeout_write(http_server s)    __attribute__((nonnull, warn
 int http_server_get_timeout_read(http_server srv)   __attribute__((nonnull, warn_unused_result));
 int http_server_get_timeout_accept(http_server srv) __attribute__((nonnull, warn_unused_result));
 int http_server_get_timeout_read(http_server s)     __attribute__((nonnull, warn_unused_result));
-
 
 void http_server_set_timeout_write(http_server s, int seconds)  __attribute__((nonnull)); 
 void http_server_set_timeout_read(http_server s, int seconds)   __attribute__((nonnull)); 
@@ -258,8 +256,10 @@ size_t request_get_content_length(http_request request)
 /* request arguments */
 int	request_get_parameter_count(http_request request)
     __attribute__((nonnull, warn_unused_result));
+
 const char* request_get_parameter_name (http_request request, size_t i)
     __attribute__((nonnull, warn_unused_result));
+
 const char* request_get_parameter_value(http_request request, const char *name)
     __attribute__((nonnull, warn_unused_result));
 
@@ -282,7 +282,6 @@ status_t request_get_field_value(http_request request, size_t i, char *s, size_t
 status_t request_get_field_value_by_name(http_request request,
     const char *name, char *value, size_t cb)
     __attribute__((nonnull, warn_unused_result));
-
 
 /* request cookies */
 size_t request_get_cookie_count(http_request request)

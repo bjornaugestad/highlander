@@ -379,6 +379,14 @@ sslsocket sslsocket_create_client_socket(void *context,
     if (res != 1)
         goto err;
 
+    // Do we have a cert?
+    X509 *cert = SSL_get_peer_certificate(this->ssl);
+    if (cert == NULL)
+        goto err;
+
+    if (SSL_get_verify_result(this->ssl) != X509_V_OK)
+        die("Meh, could not verify peer\n");
+
     return this;
 
 err:

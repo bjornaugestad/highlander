@@ -836,7 +836,6 @@ status_t request_get_field_name(http_request request, size_t i, char *dest, size
     assert(entity_header_content_length_isset(request->entity_header));
 
     start = get_field_start(request->entity_buf, request_get_content_length(request), i);
-
     if (start == NULL)
         return failure;
 
