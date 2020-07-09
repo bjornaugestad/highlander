@@ -6,11 +6,13 @@
 #ifndef META_MAP_H
 #define META_MAP_H
 
+#include <stdbool.h>
+
+#include <meta_common.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <meta_common.h>
 
 /*
  * @file

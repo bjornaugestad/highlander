@@ -106,3 +106,11 @@ void debugimpl(const char *fmt, ...)
         va_end(ap);
     }
 }
+
+status_t fail(int cause)
+{
+    assert(cause != 0);
+
+    errno = cause;
+    return failure;
+}

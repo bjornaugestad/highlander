@@ -8,6 +8,8 @@
 
 
 #include <stdbool.h>
+#include <stddef.h>
+
 #include <meta_common.h>
 
 #ifdef __cplusplus

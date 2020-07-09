@@ -7,6 +7,7 @@
 #define META_SAMPLER_H
 
 #include <stddef.h>
+#include <time.h>
 
 /*
  * @file meta_sampler.h - Implements a sampling storage ADT

@@ -6,6 +6,8 @@
 #ifndef META_TICKER_H
 #define META_TICKER_H
 
+#include <meta_common.h>
+
 typedef struct ticker_tag* ticker;
 
 ticker ticker_new(int usec);

@@ -6,7 +6,10 @@
 #ifndef META_BITSET_H
 #define META_BITSET_H
 
+#include <assert.h>
 #include <stdlib.h>
+#include <string.h>
+#include <limits.h>
 
 #ifdef __cplusplus
 extern "C" {

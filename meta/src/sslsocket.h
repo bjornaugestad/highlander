@@ -6,7 +6,8 @@
 #ifndef SSLSOCKET_H
 #define SSLSOCKET_H
 
-#include <sys/socket.h>
+#include <sys/socket.h> // for the types
+
 #include <meta_common.h>
 
 #ifdef __cplusplus
@@ -52,6 +53,7 @@ status_t sslsocket_clear_nonblock(sslsocket p)
 sslsocket sslsocket_create_server_socket(const char *host, int port)
     __attribute__((warn_unused_result));
 
+// context should be a valid pointer to an SSL_CTX object.
 sslsocket sslsocket_create_client_socket(void *context, const char *host, int port)
     __attribute__((warn_unused_result));
 

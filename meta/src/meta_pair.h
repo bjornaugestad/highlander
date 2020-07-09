@@ -6,8 +6,10 @@
 #ifndef META_PAIR_H
 #define META_PAIR_H
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <string.h>
 
 #include <meta_common.h>
 

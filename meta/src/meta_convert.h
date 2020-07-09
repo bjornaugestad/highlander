@@ -2,6 +2,8 @@
 #define META_CONVERT_H
 
 #include <stdbool.h>
+#include <stddef.h>
+
 #include <meta_common.h>
 
 /* Conversion of strings to numbers */

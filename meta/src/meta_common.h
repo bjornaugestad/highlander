@@ -6,7 +6,6 @@
 #ifndef META_COMMON_H
 #define META_COMMON_H
 
-#include <assert.h>
 #include <stdarg.h> /* for va_list */
 #include <errno.h>
 
@@ -107,14 +106,7 @@ typedef struct metastatus *status_t;
  *
  * 20160213 boa
  */
-static inline status_t __attribute__((warn_unused_result)) fail(int cause)
-{
-    assert(cause != 0);
-
-    errno = cause;
-    return failure;
-}
-
+status_t fail(int cause)__attribute__((warn_unused_result));
 
 #ifdef __cplusplus
 }

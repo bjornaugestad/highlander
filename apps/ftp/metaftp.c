@@ -8,6 +8,7 @@
 #include <string.h>
 #include <assert.h>
 
+#include <meta_common.h>
 #include <meta_list.h>
 #include <meta_misc.h>
 #include <highlander.h>
