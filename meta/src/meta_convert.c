@@ -1,7 +1,6 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <ctype.h>
 #include <limits.h>
 #include <errno.h>
 

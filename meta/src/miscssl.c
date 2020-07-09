@@ -86,6 +86,8 @@ status_t openssl_thread_setup(void)
 
     // The following three CRYPTO_... functions are the OpenSSL
     // functions for registering the callbacks we implemented above
+    // 20200709: These fuckers expand to nothing. 
+    // TODO: Re-evaluate how ssl does this irl
     CRYPTO_set_dynlock_create_callback(dyn_create_function);
     CRYPTO_set_dynlock_lock_callback(dyn_lock_function);
     CRYPTO_set_dynlock_destroy_callback(dyn_destroy_function);

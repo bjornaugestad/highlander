@@ -4,7 +4,6 @@
  */
 
 #include <stdlib.h>
-#include <string.h>
 #include <assert.h>
 #include <limits.h>
 
@@ -172,7 +171,6 @@ bitset bitset_xor(bitset b, bitset c)
 
 #ifdef BITSET_CHECK
 
-#include <stdio.h>
 
 int main(void)
 {

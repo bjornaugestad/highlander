@@ -10,6 +10,6 @@ httpd_CFLAGS=\
 	-Wshadow\
 	-Wextra -Wall -pedantic -W -Werror -Wno-long-long -pthread -DNDEBUG -O3
 
-httpd_LDFLAGS=-L/usr/local/lib -L$(top_srcdir)/meta/src -L$(top_srcdir)/http/src
+httpd_LDFLAGS=-L$(top_srcdir)/meta/src -L$(top_srcdir)/http/src
 httpd_LDADD=-lhighlander -lmetad -lpthread -lssl -lcrypto
 

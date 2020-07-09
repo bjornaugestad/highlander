@@ -79,14 +79,14 @@ attribute_check_SOURCES=attribute.c
 attribute_check_CFLAGS=-DCHECK_ATTRIBUTE $(AM_CFLAGS)\
 	-I$(top_srcdir)/meta/src
 attribute_check_LDADD=-lmetad -lssl -lcrypto -lpthread
-attribute_check_LDFLAGS=-L/usr/local/lib -L$(top_srcdir)/meta/src
+attribute_check_LDFLAGS=-L$(top_srcdir)/meta/src
 
 cookie_check_SOURCES=cookies.c
 cookie_check_CFLAGS=-DCHECK_COOKIE $(AM_CFLAGS)\
 	-I$(top_srcdir)/meta/src
 
 cookie_check_LDADD=-lhighlander -lmetad -lssl -lcrypto -lpthread
-cookie_check_LDFLAGS=-L/usr/local/lib -L$(top_srcdir)/http/src -L$(top_srcdir)/meta/src
+cookie_check_LDFLAGS=-L$(top_srcdir)/http/src -L$(top_srcdir)/meta/src
 
 rfc1738_check_SOURCES=rfc1738.c
 rfc1738_check_CFLAGS=-DCHECK_RFC1738 $(AM_CFLAGS)
@@ -110,7 +110,7 @@ http_server_check_SOURCES=\
 http_server_check_CFLAGS=-DCHECK_HTTP_SERVER $(AM_CFLAGS)\
 	-I$(top_srcdir)/meta/src -O0 -ggdb
 http_server_check_LDADD=-lmetad -lssl -lcrypto -lpthread
-http_server_check_LDFLAGS=-L/usr/local/lib -L$(top_srcdir)/meta/src
+http_server_check_LDFLAGS=-L$(top_srcdir)/meta/src
 
 http_client_check_SOURCES=\
 	http_client.c\

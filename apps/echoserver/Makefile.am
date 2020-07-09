@@ -10,7 +10,7 @@ echoserver_CFLAGS=\
 	-Wshadow\
 	-Wextra -Wall -pedantic -W -Werror -Wno-long-long -pthread -DNDEBUG -O3
 
-echoserver_LDFLAGS=-L/usr/local/lib -L$(top_srcdir)/meta/src -L$(top_srcdir)/http/src
+echoserver_LDFLAGS=-L$(top_srcdir)/meta/src -L$(top_srcdir)/http/src
 echoserver_LDADD=-lhighlander -lmetad -lpthread -lssl -lcrypto
 
 TESTS=echoserver_check

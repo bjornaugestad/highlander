@@ -3,8 +3,6 @@
  * All Rights Reserved. See COPYING for license details
  */
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 

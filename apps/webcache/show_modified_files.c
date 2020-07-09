@@ -1,4 +1,3 @@
-#include <assert.h>
 
 #include <highlander.h>
 #include <meta_filecache.h>
