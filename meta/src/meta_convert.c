@@ -294,8 +294,6 @@ int main(void)
     status_t rc;
     size_t i, n;
 
-    int ires;
-    unsigned ures;
     size_t zures;
     //float f;
     //double d;
@@ -304,6 +302,8 @@ int main(void)
 
     n = sizeof itests / sizeof *itests;
     for (i = 0; i < n; i++) {
+        int ires = 0;
+
         if (itests[i].expected_result == success) {
             // Check that isint() returns true.
             if (!isint(itests[i].src)) {
@@ -329,6 +329,7 @@ int main(void)
 
     n = sizeof utests / sizeof *utests;
     for (i = 0; i < n; i++) {
+        unsigned ures = 0;
         rc = touint(utests[i].src, &ures);
         if (rc != utests[i].expected_result)  {
             fprintf(stderr, "Conversion error for test %zu, value: %s\n", i, utests[i].src);
