@@ -23,10 +23,13 @@
 #include <meta_pool.h>
 #include <meta_atomic.h>
 #include <threadpool.h>
-#include <tcp_client.h>
 #include <connection.h>
 #include <gensocket.h>
 #include <cstring.h>
+
+#include <tcp_client.h>
+
+#define CIPHER_LIST "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"
 
 /*
  * Implementation of the TCP client ADT.
@@ -37,6 +40,8 @@ struct tcp_client_tag {
     membuf readbuf;
     membuf writebuf;
 
+    // The ciphers member has a default value. The rest are NULL
+    cstring rootcert, private_key, ciphers, cadir;
     SSL_CTX *context;
     int timeout_reads, timeout_writes, nretries_read, nretries_write;
 };
@@ -97,6 +102,12 @@ tcp_client tcp_client_new(int socktype)
     if ((new = calloc(1, sizeof *new)) == NULL)
         return NULL;
 
+    new->ciphers = cstring_dup(CIPHER_LIST);
+    if (new->ciphers == NULL) {
+        free(new);
+        return NULL;
+    }
+
     if (socktype == SOCKTYPE_SSL 
     && (new->context = create_client_context()) == NULL)
         die("Could not create ssl client context\n");
@@ -124,11 +135,7 @@ tcp_client tcp_client_new(int socktype)
     return new;
 
 memerr:
-    membuf_free(new->readbuf);
-    membuf_free(new->writebuf);
-    connection_free(new->conn);
-    SSL_CTX_free(new->context);
-    free(new);
+    tcp_client_free(new);
     return NULL;
 }
 
@@ -140,8 +147,14 @@ void tcp_client_free(tcp_client this)
     membuf_free(this->readbuf);
     membuf_free(this->writebuf);
     connection_free(this->conn);
-
     SSL_CTX_free(this->context);
+
+    cstring_free(this->rootcert);
+    cstring_free(this->private_key);
+    cstring_free(this->ciphers);
+    cstring_free(this->cadir);
+
+
     free(this);
 }
 
@@ -188,7 +201,7 @@ void tcp_client_set_timeout_read(tcp_client this, int millisec)
 void tcp_client_set_retries_read(tcp_client this, int count)
 {
     assert(this != NULL);
-    this->nretries_read = count;;
+    this->nretries_read = count;
 }
 
 void tcp_client_set_retries_write(tcp_client this, int count)
@@ -197,9 +210,108 @@ void tcp_client_set_retries_write(tcp_client this, int count)
     this->nretries_write = count;
 }
 
+int tcp_client_get_retries_write(tcp_client this)
+{
+    assert(this != NULL);
+    return this->nretries_write;
+}
+
+int tcp_client_get_retries_read(tcp_client this)
+{
+    assert(this != NULL);
+    return this->nretries_read;
+}
+
 status_t tcp_client_close(tcp_client p)
 {
     assert(p != NULL);
     return connection_close(p->conn);
 }
 
+status_t tcp_client_set_rootcert(tcp_client this, const char *path)
+{
+    assert(this != NULL);
+    assert(path != NULL);
+    assert(strlen(path) > 0);
+
+    // alloc if first time called.
+    if (this->rootcert == NULL) {
+        this->rootcert = cstring_new();
+        if (this->rootcert == NULL)
+            return failure;
+    }
+
+    return cstring_set(this->rootcert, path);
+}
+
+status_t tcp_client_set_private_key(tcp_client this, const char *path)
+{
+    assert(this != NULL);
+    assert(path != NULL);
+    assert(strlen(path) > 0);
+
+    // alloc if first time called.
+    if (this->private_key == NULL) {
+        this->private_key = cstring_new();
+        if (this->private_key == NULL)
+            return failure;
+    }
+
+    return cstring_set(this->private_key, path);
+}
+
+status_t tcp_client_set_ciphers(tcp_client this, const char *ciphers)
+{
+    assert(this != NULL);
+    assert(ciphers != NULL);
+    assert(this->ciphers != NULL);
+    assert(strlen(ciphers) > 0);
+
+    return cstring_set(this->ciphers, ciphers);
+}
+
+status_t tcp_client_set_ca_directory(tcp_client this, const char *path)
+{
+    assert(this != NULL);
+    assert(path != NULL);
+    assert(strlen(path) > 0);
+
+    // alloc if first time called.
+    if (this->cadir == NULL) {
+        this->cadir = cstring_new();
+        if (this->cadir == NULL)
+            return failure;
+    }
+
+    return cstring_set(this->cadir, path);
+}
+
+
+#ifdef CHECK_TCP_CLIENT
+
+int main(void)
+{
+    tcp_client p = tcp_client_new(SOCKTYPE_TCP);
+    if (p == NULL)
+        return 77;
+
+    tcp_client_set_timeout_write(p, 5);
+    if (tcp_client_get_timeout_write(p) != 5)
+        return 77;
+
+    tcp_client_set_timeout_read(p, 5);
+    if (tcp_client_get_timeout_read(p) != 5)
+        return 77;
+
+    tcp_client_set_retries_write(p, 5);
+    if (tcp_client_get_retries_write(p) != 5)
+        return 77;
+
+    tcp_client_set_retries_read(p, 5);
+    if (tcp_client_get_retries_read(p) != 5)
+        return 77;
+
+    tcp_client_free(p);
+    return 0;
+}
+#endif

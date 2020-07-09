@@ -120,7 +120,8 @@ TESTS=\
 	miscfunc_check\
 	pair_check\
 	slotbuf_check\
-	tcp_server_check
+	tcp_server_check\
+	tcp_client_check
 
 check_PROGRAMS=\
 	convert_check\
@@ -142,7 +143,8 @@ check_PROGRAMS=\
 	stringmap_check\
 	miscfunc_check\
 	pair_check\
-	tcp_server_check
+	tcp_server_check\
+	tcp_client_check
 
 
 AM_CFLAGS=-Wall --std=gnu2x -Wextra -Werror -O0 -ggdb
@@ -156,6 +158,13 @@ tcp_server_check_CFLAGS=-DCHECK_TCP_SERVER $(AM_CFLAGS) $(FANALYZER)
 
 tcp_server_check_LDFLAGS=
 tcp_server_check_LDADD=-lssl -lcrypto -lpthread
+
+tcp_client_check_SOURCES=tcp_client.c threadpool.c meta_membuf.c \
+	gensocket.c sslsocket.c tcpsocket.c connection.c cstring.c meta_common.c
+tcp_client_check_CFLAGS=-DCHECK_TCP_CLIENT $(AM_CFLAGS) $(FANALYZER)
+
+tcp_client_check_LDFLAGS=
+tcp_client_check_LDADD=-lssl -lcrypto -lpthread
 
 list_check_SOURCES=meta_list.c
 list_check_CFLAGS=-DLIST_CHECK $(AM_CFLAGS) $(FANALYZER)

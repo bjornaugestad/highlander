@@ -41,6 +41,8 @@ status_t tcp_client_set_ca_directory(tcp_client p, const char *path);
 connection tcp_client_connection(tcp_client p);
 status_t tcp_client_close(tcp_client p);
 
+int tcp_client_get_retries_write(tcp_client this);
+int tcp_client_get_retries_read(tcp_client this);
 int tcp_client_get_timeout_write(tcp_client this);
 int tcp_client_get_timeout_read(tcp_client this);
 void tcp_client_set_timeout_write(tcp_client this, int millisec);
