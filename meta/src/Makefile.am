@@ -35,6 +35,7 @@ include_HEADERS=\
 	meta_wlock.h\
 	meta_convert.h\
 	tcp_server.h\
+	tcp_client.h\
 	threadpool.h
 
 libmeta_a_SOURCES=\
@@ -53,6 +54,7 @@ libmeta_a_SOURCES=\
 	gensocket.c\
 	meta_error.c\
 	tcp_server.c\
+	tcp_client.c\
 	connection.c\
 	cstring.c\
 	meta_membuf.c\

@@ -6,6 +6,7 @@
 
 #include <highlander.h>
 #include <miscssl.h>
+#include <tcp_client.h>
 
 // TODO/NOTE: we may want to introduce a tcp_client ADT, to match
 // the tcp_server ADT. Rationale is that we need a place to store
@@ -22,13 +23,9 @@
 //
 // boa@20200708
 struct http_client_tag {
+    tcp_client sock;
     http_request request;
     http_response response;
-    connection conn;
-    membuf readbuf;
-    membuf writebuf;
-
-    int timeout_reads, timeout_writes, nretries_read, nretries_write;
 };
 
 http_client http_client_new(int socktype, void *context)
@@ -46,34 +43,14 @@ http_client http_client_new(int socktype, void *context)
     if ((new->response = response_new()) == NULL)
         goto memerr;
 
-    if ((new->readbuf = membuf_new(10 * 1024)) == NULL)
+    if ((new->sock = tcp_client_new(socktype, context)) == NULL)
         goto memerr;
-
-    if ((new->writebuf = membuf_new(10 * 1024)) == NULL)
-        goto memerr;
-
-    // Some default timeout and retry values. Later,
-    // change connection_new() to not accept these. Instead,
-    // use set/get-functions.
-    new->timeout_reads = new->timeout_writes = 1000;
-    new->nretries_read = new->nretries_write = 5;
-
-    new->conn = connection_new(socktype, new->timeout_reads, new->timeout_writes,
-        new->nretries_read, new->nretries_write, context);
-    if (new->conn == NULL)
-        goto memerr;
-
-    connection_assign_read_buffer(new->conn, new->readbuf);
-    connection_assign_write_buffer(new->conn, new->writebuf);
 
     return new;
 
 memerr:
     request_free(new->request);
     response_free(new->response);
-    membuf_free(new->readbuf);
-    membuf_free(new->writebuf);
-    connection_free(new->conn);
     free(new);
     return NULL;
 }
@@ -85,9 +62,6 @@ void http_client_free(http_client this)
 
     request_free(this->request);
     response_free(this->response);
-    membuf_free(this->readbuf);
-    membuf_free(this->writebuf);
-    connection_free(this->conn);
     free(this);
 }
 
@@ -96,7 +70,7 @@ status_t http_client_connect(http_client this, const char *host, int port)
     assert(this != NULL);
     assert(host != NULL);
 
-    return connection_connect(this->conn, host, port);
+    return tcp_client_connect(this->sock, host, port);
 }
 
 status_t http_client_get(http_client this, const char *host, const char *uri)
@@ -105,19 +79,20 @@ status_t http_client_get(http_client this, const char *host, const char *uri)
 
     request_set_method(this->request, METHOD_GET);
     request_set_version(this->request, VERSION_11);
+
     if (!request_set_host(this->request, host)
     || !request_set_uri(this->request, uri)
     || !request_set_user_agent(this->request, "highlander"))
         return failure;
 
-    if (!request_send(this->request, this->conn, NULL))
+    connection c = tcp_client_connection(this->sock);
+    if (!request_send(this->request, c, NULL))
         return failure;
 
-    if (!response_receive(this->response, this->conn, 10*1024*1024, NULL))
+    if (!response_receive(this->response, c, 10*1024*1024, NULL))
         return failure;
 
     return success;
-
 }
 
 int http_client_http_status(http_client this)
@@ -135,43 +110,43 @@ http_response http_client_response(http_client this)
 status_t http_client_disconnect(http_client this)
 {
     assert(this != NULL);
-    return connection_close(this->conn);
+    return tcp_client_close(this->sock);
 }
 
 int http_client_get_timeout_write(http_client this)
 {
     assert(this != NULL);
-    return this->timeout_writes;
+    return tcp_client_get_timeout_write(this->sock); // this->timeout_writes;
 }
 
 int http_client_get_timeout_read(http_client this)
 {
     assert(this != NULL);
-    return this->timeout_reads;
+    return tcp_client_get_timeout_read(this->sock); // this->timeout_reads;
 }
 
 void http_client_set_timeout_write(http_client this, int millisec)
 {
     assert(this != NULL);
-    this->timeout_writes = millisec;
+    tcp_client_set_timeout_write(this->sock, millisec);
 }
 
 void http_client_set_timeout_read(http_client this, int millisec)
 {
     assert(this != NULL);
-    this->timeout_reads = millisec;
+    tcp_client_set_timeout_read(this->sock, millisec);
 }
 
 void http_client_set_retries_read(http_client this, int count)
 {
     assert(this != NULL);
-    this->nretries_read = count;;
+    tcp_client_set_retries_read(this->sock, count);
 }
 
 void http_client_set_retries_write(http_client this, int count)
 {
     assert(this != NULL);
-    this->nretries_write = count;
+    tcp_client_set_retries_write(this->sock, count);
 }
 
 #ifdef CHECK_HTTP_CLIENT
