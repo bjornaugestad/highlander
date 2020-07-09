@@ -28,15 +28,15 @@
 #include <gensocket.h>
 #include <cstring.h>
 
-/*
- * Implementation of the TCP server ADT.
- */
 struct tcp_server_tag {
     /* Hostname, for gethostbyaddr */
     cstring host;
 
     /* Port to listen to */
     int port;
+
+    // SSL or TCP
+    int socktype;
 
     // timeout in seconds
     int timeout_reads, timeout_writes, timeout_accepts;
@@ -47,20 +47,19 @@ struct tcp_server_tag {
     // The size of the connections read/write buffers
     size_t readbuf_size, writebuf_size;
 
-    // Function to call when a new connection is accepted
-    void *(*service_func)(void *arg);
-    void *service_arg;
-
-    // The socket we accept connections from.
-    int socktype;
-    socket_t sock;
-
     // Some SSL related properties we need. They're per
     // SSL_CTX, so for us, per tcp_server and highly optional.
     // Regular servers need none of these.
     // The ciphers member has a default value. The rest are NULL
     cstring rootcert, private_key, ciphers, cadir;
     SSL_CTX *ctx;
+
+    // Function to call when a new connection is accepted
+    void *(*service_func)(void *arg);
+    void *service_arg;
+
+    // The socket we accept connections from.
+    socket_t sock;
 
     /* The work queue */
     threadpool queue;
@@ -81,8 +80,7 @@ struct tcp_server_tag {
     regex_t allowed_clients;
     bool pattern_compiled;
 
-    // The pool of read/write buffers. The pools contain instances of membufs,
-    //
+    // The pool of read/write buffers. The pools contain instances of membuf ADT
     pool read_buffers;
     pool write_buffers;
 
@@ -94,7 +92,6 @@ struct tcp_server_tag {
     atomic_ulong sum_poll_again; /* # of times poll() returned EAGAIN */
     atomic_ulong sum_accept_failed;
     atomic_ulong sum_denied_clients;
-
 };
 
 /*

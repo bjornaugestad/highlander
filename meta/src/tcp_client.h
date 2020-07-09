@@ -49,6 +49,8 @@ void tcp_client_set_timeout_write(tcp_client this, int millisec);
 void tcp_client_set_timeout_read(tcp_client this, int millisec);
 void tcp_client_set_retries_read(tcp_client this, int count);
 void tcp_client_set_retries_write(tcp_client this, int count);
+void tcp_client_set_writebuf_size(tcp_client p, size_t size);
+void tcp_client_set_readbuf_size(tcp_client p, size_t size);
 
 
 #ifdef __cplusplus

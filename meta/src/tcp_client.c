@@ -16,19 +16,21 @@
 
 #define CIPHER_LIST "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"
 
-/*
- * Implementation of the TCP client ADT.
- */
 struct tcp_client_tag {
     cstring host;
-    connection conn;
-    membuf readbuf;
-    membuf writebuf;
+
+    int socktype;
 
     // The ciphers member has a default value. The rest are NULL
     cstring rootcert, private_key, ciphers, cadir;
     SSL_CTX *context;
+
     int timeout_reads, timeout_writes, nretries_read, nretries_write;
+    size_t readbuf_size, writebuf_size;
+
+    connection conn;
+    membuf readbuf;
+    membuf writebuf;
 };
 
 // Copied from sample program. (and from tcp_server.c)
@@ -94,10 +96,12 @@ tcp_client tcp_client_new(int socktype)
     && (new->context = create_client_context()) == NULL)
         die("Could not create ssl client context\n");
 
-    if ((new->readbuf = membuf_new(10 * 1024)) == NULL)
+    new->readbuf_size = new->writebuf_size = 10 * 1024;
+
+    if ((new->readbuf = membuf_new(new->readbuf_size)) == NULL)
         goto memerr;
 
-    if ((new->writebuf = membuf_new(10 * 1024)) == NULL)
+    if ((new->writebuf = membuf_new(new->writebuf_size)) == NULL)
         goto memerr;
 
     // Some default timeout and retry values.
@@ -111,6 +115,7 @@ tcp_client tcp_client_new(int socktype)
 
     connection_assign_read_buffer(new->conn, new->readbuf);
     connection_assign_write_buffer(new->conn, new->writebuf);
+    new->socktype = socktype;
 
     return new;
 
@@ -263,6 +268,22 @@ status_t tcp_client_set_ca_directory(tcp_client this, const char *path)
     }
 
     return cstring_set(this->cadir, path);
+}
+
+void tcp_client_set_readbuf_size(tcp_client p, size_t size)
+{
+    assert(p != NULL);
+    assert(size != 0);
+
+    p->readbuf_size = size;
+}
+
+void tcp_client_set_writebuf_size(tcp_client p, size_t size)
+{
+    assert(p != NULL);
+    assert(size != 0);
+
+    p->writebuf_size = size;
 }
 
 
