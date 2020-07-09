@@ -8,27 +8,13 @@
 #include <miscssl.h>
 #include <tcp_client.h>
 
-// TODO/NOTE: we may want to introduce a tcp_client ADT, to match
-// the tcp_server ADT. Rationale is that we need a place to store
-// TCP and SSL related stuff, which really isn't part of http.
-// We should move readbuf,writebuf, and conn, along with
-// the read/writes members, to the new ADT, and then have http_client inherit
-// from tcp_client.
-//
-// Do we want a generic client base class? We already have the generic socket_t,
-// which works well for server side stuff. We already use it too, indirectly via
-// the connection ADT. IOW, no need for more socket base classes.(I'm rusty today, it's
-// been years since I looked deeply into this) We still probably want a
-// client base class which holds shared stuff. Kinda like the sslserver vs tcpserver
-//
-// boa@20200708
 struct http_client_tag {
     tcp_client sock;
     http_request request;
     http_response response;
 };
 
-http_client http_client_new(int socktype, void *context)
+http_client http_client_new(int socktype)
 {
     http_client new;
 
@@ -43,7 +29,7 @@ http_client http_client_new(int socktype, void *context)
     if ((new->response = response_new()) == NULL)
         goto memerr;
 
-    if ((new->sock = tcp_client_new(socktype, context)) == NULL)
+    if ((new->sock = tcp_client_new(socktype)) == NULL)
         goto memerr;
 
     return new;
@@ -154,57 +140,10 @@ void http_client_set_retries_write(http_client this, int count)
 #include <stdio.h>
 #include <stdlib.h>
 
-// Copied from sample program. (and from tcp_server.c)
-static int verify_callback(int ok, X509_STORE_CTX *store)
-{
-    char data[256];
-
-    if (!ok) {
-        X509 *cert = X509_STORE_CTX_get_current_cert(store);
-        int  depth = X509_STORE_CTX_get_error_depth(store);
-        int  err = X509_STORE_CTX_get_error(store);
-
-        fprintf(stderr, "-Error with certificate at depth: %i\n", depth);
-        X509_NAME_oneline(X509_get_issuer_name(cert), data, 256);
-        fprintf(stderr, "  issuer   = %s\n", data);
-        X509_NAME_oneline(X509_get_subject_name(cert), data, 256);
-        fprintf(stderr, "  subject  = %s\n", data);
-        fprintf(stderr, "  err %i:%s\n", err, X509_verify_cert_error_string(err));
-    }
-
-    return ok;
-}
-
-// Initialize stuff for SSL context
-static SSL_CTX* create_client_context(void)
-{
-    const SSL_METHOD* method = SSLv23_method();
-    if (method == NULL)
-        die("Could not get SSL METHOD pointer\n");
-
-    SSL_CTX *ctx = SSL_CTX_new(method);
-    if (ctx == NULL)
-        die("Unable to create ssl context\n");
-
-    // TODO: This is not good enough
-    SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, verify_callback);
-    SSL_CTX_set_verify_depth(ctx, 4);
-
-    const long flags = SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_COMPRESSION;
-    SSL_CTX_set_options(ctx, flags);
-
-    long res = SSL_CTX_load_verify_locations(ctx, "random-org-chain.pem", NULL);
-    if (res != 1)
-        die("Could not load verify locations\n");
-
-    return ctx;
-}
-
 int main(void)
 {
     http_client p;
     http_response resp;
-    SSL_CTX *ctx;
 
     int socktype = SOCKTYPE_SSL;
     const char *hostname = "www.random.org";
@@ -213,9 +152,7 @@ int main(void)
     if (!openssl_init())
         exit(1);
 
-    ctx = create_client_context();
-
-    if ((p = http_client_new(socktype, ctx)) == NULL)
+    if ((p = http_client_new(socktype)) == NULL)
         die("http_client_new() returned NULL\n");
 
     if (!http_client_connect(p, hostname, port))
@@ -247,7 +184,6 @@ int main(void)
         die("Could not disconnect from %s\n", hostname);
 
     http_client_free(p);
-    SSL_CTX_free(ctx);
     return 0;
 }
 #endif

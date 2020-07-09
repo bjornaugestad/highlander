@@ -11,7 +11,7 @@ extern "C" {
 typedef struct tcp_client_tag* tcp_client;
 
 /* Creation and destruction */
-tcp_client tcp_client_new(int socktype, void *context)
+tcp_client tcp_client_new(int socktype)
     __attribute__((warn_unused_result))
     __attribute__((malloc));
 
