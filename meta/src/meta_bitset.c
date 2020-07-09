@@ -262,7 +262,7 @@ int main(void)
 
     bitset_free(a);
 
-    // b and c still has the 1010 and 0101 patterns. Let's use
+    // b and c still have the 1010 and 0101 patterns. Let's use
     // them to check the new _eq() functions.
     bitset_and_eq(b, c); // b Now is all zero, hopefully
     if (!bitset_allzero(b))
@@ -281,6 +281,7 @@ int main(void)
         return 1;
 
     // Now test the binary ops.
+    bitset_free(c);
     if ((c = bitset_dup(b)) == NULL)
         return 77;
 

@@ -115,17 +115,15 @@ void cache_free(cache c, dtor cleanup)
     for (i = 0; i < c->nelem; i++) {
         list lst = c->hashtable[i];
         if (lst != NULL) {
-            if (cleanup != NULL) {
-                list_iterator li;
+            list_iterator li;
 
-                for (li = list_first(lst); !list_end(li); li = list_next(li)) {
-                    struct cache_entry* entry = list_get(li);
-                    assert(entry != NULL);
-                    assert(entry->data != NULL);
+            for (li = list_first(lst); !list_end(li); li = list_next(li)) {
+                struct cache_entry* entry = list_get(li);
+                assert(entry != NULL);
+                assert(entry->data != NULL);
 
-                    cleanup(entry->data);
-                    entry->data = NULL;
-                }
+                cleanup(entry->data);
+                entry->data = NULL;
             }
 
             list_free(lst, (dtor)cache_entry_free);

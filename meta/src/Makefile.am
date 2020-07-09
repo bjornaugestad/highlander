@@ -176,7 +176,7 @@ configfile_check_SOURCES=meta_configfile.c meta_common.c
 configfile_check_CFLAGS=-DCHECK_CONFIGFILE $(AM_CFLAGS)  $(FANALYZER)
 
 cstring_check_SOURCES=cstring.c meta_common.c
-cstring_check_CFLAGS=-DCHECK_CSTRING $(AM_CFLAGS) -p -fprofile-arcs -ftest-coverage
+cstring_check_CFLAGS=-DCHECK_CSTRING $(AM_CFLAGS) 
 
 membuf_check_SOURCES=meta_membuf.c meta_common.c
 membuf_check_CFLAGS=-DCHECK_MEMBUF $(AM_CFLAGS) $(FANALYZER)

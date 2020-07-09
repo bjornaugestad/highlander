@@ -227,7 +227,7 @@ void sampler_add(sampler s, size_t entity_id, long long value)
  * using 10 values and the letters B-K as examples:
  * 1) The data can be stored as FGHIJKBCDE
  * 2) The letter A is missing since we've added 11 samples
- *	  and A was therefore overwritten with K.
+ *      and A was therefore overwritten with K.
  * 3) index 0 should be for the letter B, which is the oldest entry.
  * 4) Letter B has index 6.
  *
@@ -237,20 +237,20 @@ void sampler_add(sampler s, size_t entity_id, long long value)
  * as index 9 is for the letter K, which has physical index 5.
  * The formula below returns,
  *
- *			idx = (s->idx + i) % s->nvalue;
+ *               idx = (s->idx + i) % s->nvalue;
  *
  * for the different values (0..9), assuming
  * that s->idx == 5, the following values:
- * (0 + 5) % 10 == 5	== K
- * (1 + 5) % 10 == 6	== B
- * (2 + 5) % 10 == 7	== C
- * (3 + 5) % 10 == 8	== D
- * (4 + 5) % 10 == 9	== E
- * (5 + 5) % 10 == 0	== F
- * (6 + 5) % 10 == 1	== G
- * (7 + 5) % 10 == 2	== H
- * (8 + 5) % 10 == 3	== I
- * (9 + 5) % 10 == 4	== J
+ * (0 + 5) % 10 == 5 == K
+ * (1 + 5) % 10 == 6 == B
+ * (2 + 5) % 10 == 7 == C
+ * (3 + 5) % 10 == 8 == D
+ * (4 + 5) % 10 == 9 == E
+ * (5 + 5) % 10 == 0 == F
+ * (6 + 5) % 10 == 1 == G
+ * (7 + 5) % 10 == 2 == H
+ * (8 + 5) % 10 == 3 == I
+ * (9 + 5) % 10 == 4 == J
  *
  * This formula is off by one, which means that we must add 1, but before
  * or after the modulus? Does it even matter? :-) Yes, of course it
@@ -329,7 +329,7 @@ int sampler_avg(sampler s, size_t eid, size_t from, size_t to, long long* pval)
     }
 
     if (valid_nelem > 0) {
-        *pval = sum	 / valid_nelem;
+        *pval = sum  / valid_nelem;
         return 1;
     }
     else
@@ -614,7 +614,7 @@ int main(void)
         sleep(1);
         for (i = 0; i < sampler_samplecount(hour); i++) {
             if (sampler_get(hour, 0, i, &val))
-                fprintf(stderr, "Hour: %zu:	 Value: %lld\n", i, val);
+                fprintf(stderr, "Hour: %zu:  Value: %lld\n", i, val);
             else
                 fprintf(stderr, "Hour: %zu: No value found\n", i);
         }
@@ -646,6 +646,8 @@ int main(void)
         shutting_down = 1;
 
         pthread_join(writerthread, NULL);
+        pthread_join(reader1, NULL);
+        pthread_join(reader2, NULL);
         sampler_free(sampled_data);
     }
 

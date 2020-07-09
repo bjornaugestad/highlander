@@ -32,13 +32,8 @@ fileinfo fileinfo_new(void)
 {
     fileinfo p;
 
-    if ((p = malloc(sizeof *p)) == NULL)
+    if ((p = calloc(1, sizeof *p)) == NULL)
         return NULL;
-
-    p->mimetype = NULL;
-    p->name = NULL;
-    p->alias = NULL;
-    p->contents = NULL;
 
     return p;
 }
@@ -428,7 +423,7 @@ int main(void)
             }
 
             if (st.st_size == 0)
-                ; /* Do not add empty files */
+                fileinfo_free(fi); /* Do not add empty files */
             else if (!filecache_add(fc, fi, 0, &id)) {
                 perror(de->d_name);
                 exit(EXIT_FAILURE);
