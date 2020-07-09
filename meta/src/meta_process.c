@@ -69,24 +69,24 @@ process process_new(const char *appname)
 {
     process new;
 
-    if ((new = calloc(1, sizeof *new)) == NULL)
-        ;
-    else if ((new->rootdir = cstring_new()) == NULL
-    || (new->appname = cstring_new()) == NULL
-    || (new->username = cstring_new()) == NULL
-    || !cstring_set(new->appname, appname)) {
-        cstring_free(new->appname);
-        cstring_free(new->username);
-        cstring_free(new->rootdir);
-        free(new);
-        new = NULL;
-    }
-    else {
-        new->objects_used = 0;
-        new->shutting_down = 0;
-    }
+    assert(appname != NULL);
+    assert(strlen(appname) > 0);
 
+    if ((new = calloc(1, sizeof *new)) == NULL)
+        goto memerr;
+
+    if ((new->rootdir = cstring_new()) == NULL
+    || (new->appname = cstring_dup(appname)) == NULL
+    || (new->username = cstring_new()) == NULL)
+        goto memerr;
+    
+    new->objects_used = 0;
+    new->shutting_down = 0;
     return new;
+
+memerr:
+    process_free(new);
+    return NULL;
 }
 
 void process_free(process this)

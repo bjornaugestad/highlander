@@ -152,18 +152,12 @@ tcp_server tcp_server_new(int socktype)
         new->timeout_reads = 5000;
         new->timeout_writes = 1000;
         new->timeout_accepts = 800;
-        new->retries_reads = 0;
         new->retries_writes = 10;
-        new->block_when_full = 0;
 
         new->queue_size = 100;
         new->nthreads = 10;
         new->port = 2000;
         new->socktype = socktype;
-        new->sock = NULL;
-        new->rootcert = NULL;
-        new->private_key = NULL;
-        new->cadir = NULL;
 
         new->ciphers = cstring_dup(CIPHER_LIST);
         if (new->ciphers == NULL) {
@@ -172,14 +166,9 @@ tcp_server tcp_server_new(int socktype)
         }
 
         new->pattern_compiled = false;
-        new->host = NULL;
 
-        new->queue = NULL;
-        new->connections = NULL;
         new->readbuf_size =  (1024 * 4);
         new->writebuf_size = (1024 *64);
-        new->read_buffers = NULL;
-        new->write_buffers = NULL;
         new->shutting_down = 0;
 
         atomic_ulong_init(&new->sum_poll_intr);
@@ -207,6 +196,12 @@ void tcp_server_free(tcp_server this)
         pool_free(this->write_buffers, (dtor)membuf_free);
 
         cstring_free(this->host);
+        cstring_free(this->rootcert);
+        cstring_free(this->private_key);
+        cstring_free(this->ciphers);
+        cstring_free(this->cadir);
+
+        SSL_CTX_free(this->ctx);
 
         /* Free the regex struct */
         if (this->pattern_compiled) {

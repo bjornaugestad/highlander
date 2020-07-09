@@ -60,32 +60,30 @@ sampler sampler_new(size_t entities, size_t values)
     /* IMPORTANT: entities MUST be calloc()ed for error handling to work . */
     if ((s = calloc(1, sizeof *s)) == NULL
     || (s->times = malloc(sizeof *s->times * values)) == NULL
-    || (s->entities = calloc(entities, sizeof *s->entities)) == NULL) {
+    || (s->entities = calloc(entities, sizeof *s->entities)) == NULL)
         goto err;
-    }
-    else {
-        size_t j, cb;
 
-        s->nentity = entities;
-        s->nvalue = values;
-        s->samplecount = 0;
+    size_t j, cb;
 
-        /* A little 'trick': sampler_start_update() will increment idx,
-         * so to be able to add data in slot 0, we initialize it to
-         * nvalue-1. That way sampler_start_update() will wrap to 0.
-         */
-        s->idx = s->nvalue - 1;
+    s->nentity = entities;
+    s->nvalue = values;
+    s->samplecount = 0;
 
-        cb = values * sizeof *s->entities[0].data;
-        for (i = 0; i < entities; i++) {
-            if ((s->entities[i].data = malloc(cb)) == NULL)
-                goto err;
+    /* A little 'trick': sampler_start_update() will increment idx,
+     * so to be able to add data in slot 0, we initialize it to
+     * nvalue-1. That way sampler_start_update() will wrap to 0.
+     */
+    s->idx = s->nvalue - 1;
 
-            /* Set all values to 'invalid' */
-            for (j = 0; j < values; j++) {
-                s->times[j] = (time_t)-1;
-                s->entities[i].data[j] = LLONG_MIN;
-            }
+    cb = values * sizeof *s->entities[0].data;
+    for (i = 0; i < entities; i++) {
+        if ((s->entities[i].data = malloc(cb)) == NULL)
+            goto err;
+
+        /* Set all values to 'invalid' */
+        for (j = 0; j < values; j++) {
+            s->times[j] = (time_t)-1;
+            s->entities[i].data[j] = LLONG_MIN;
         }
     }
 
@@ -109,7 +107,6 @@ err:
         pthread_rwlock_destroy(&s->lock);
         free(s);
     }
-    assert(0);
     return NULL;
 }
 

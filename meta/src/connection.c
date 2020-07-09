@@ -53,10 +53,6 @@
  * Then is is easier to switch protocols.
  */
 
-/*
- * Implementation of the connection ADT.
- */
-
 struct connection_tag {
     int timeout_reads, timeout_writes;
     int retries_reads, retries_writes;
@@ -188,20 +184,15 @@ connection connection_new(
     assert(retries_reads >= 0);
     assert(retries_writes >= 0);
 
-    /* Allocate memory needed */
     if ((new = calloc(1, sizeof *new)) == NULL)
         return NULL;
 
     new->socktype = socktype;
-    new->readbuf = NULL;
-    new->writebuf = NULL;
-    new->persistent = 0;
     new->timeout_reads = timeout_reads;
     new->timeout_writes = timeout_writes;
     new->retries_reads = retries_reads;
     new->retries_writes = retries_writes;
     new->arg2 = arg2;
-    new->sock = NULL;
     reset_counters(new);
 
     return new;

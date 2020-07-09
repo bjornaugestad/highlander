@@ -3,26 +3,11 @@
  * All Rights Reserved. See COPYING for license details
  */
 
-#include <unistd.h>
-#include <stdbool.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <assert.h>
-#include <errno.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <regex.h>
-#include <poll.h>   // for POLLIN
 
 #include <openssl/ssl.h>
 #include <openssl/err.h>
-#include <openssl/dh.h>
 
-#include <meta_pool.h>
-#include <meta_atomic.h>
-#include <threadpool.h>
 #include <connection.h>
 #include <gensocket.h>
 #include <cstring.h>
@@ -102,11 +87,8 @@ tcp_client tcp_client_new(int socktype)
     if ((new = calloc(1, sizeof *new)) == NULL)
         return NULL;
 
-    new->ciphers = cstring_dup(CIPHER_LIST);
-    if (new->ciphers == NULL) {
-        free(new);
-        return NULL;
-    }
+    if ((new->ciphers = cstring_dup(CIPHER_LIST)) == NULL)
+        goto memerr;
 
     if (socktype == SOCKTYPE_SSL 
     && (new->context = create_client_context()) == NULL)
@@ -118,9 +100,7 @@ tcp_client tcp_client_new(int socktype)
     if ((new->writebuf = membuf_new(10 * 1024)) == NULL)
         goto memerr;
 
-    // Some default timeout and retry values. Later,
-    // change connection_new() to not accept these. Instead,
-    // use set/get-functions.
+    // Some default timeout and retry values.
     new->timeout_reads = new->timeout_writes = 1000;
     new->nretries_read = new->nretries_write = 5;
 
@@ -153,7 +133,6 @@ void tcp_client_free(tcp_client this)
     cstring_free(this->private_key);
     cstring_free(this->ciphers);
     cstring_free(this->cadir);
-
 
     free(this);
 }

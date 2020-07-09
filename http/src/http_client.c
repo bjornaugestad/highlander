@@ -35,9 +35,7 @@ http_client http_client_new(int socktype)
     return new;
 
 memerr:
-    request_free(new->request);
-    response_free(new->response);
-    free(new);
+    http_client_free(new);
     return NULL;
 }
 
