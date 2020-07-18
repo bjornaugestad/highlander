@@ -147,7 +147,8 @@ check_PROGRAMS=\
 	tcp_client_check
 
 
-AM_CFLAGS=-Wall --std=gnu2x -Wextra -Werror -O0 -ggdb
+AM_CFLAGS=-Wall --std=gnu2x -Wextra -Werror -O0 -ggdb\
+	-Wformat-overflow=2 -Woverflow -Wshift-overflow=2 -Wstrict-overflow=5
 # Broken atm, with false positives
 # FANALYZER=-fanalyzer
 
