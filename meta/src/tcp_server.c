@@ -565,6 +565,7 @@ static DH *get_dh2048(void)
 	return dh;
 }
 
+// Beware: We may want only one context per process
 static status_t setup_server_ctx(tcp_server this)
 {
     int verifyflags = 0; // SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT;

@@ -55,6 +55,7 @@ static int verify_callback(int ok, X509_STORE_CTX *store)
 }
 
 // Initialize stuff for SSL context
+// Beware: We may want only one context per process
 static SSL_CTX* create_client_context(void)
 {
     const SSL_METHOD* method = SSLv23_method();
@@ -65,7 +66,6 @@ static SSL_CTX* create_client_context(void)
     if (ctx == NULL)
         die("Unable to create ssl context\n");
 
-    // TODO: This is not good enough
     SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, verify_callback);
     SSL_CTX_set_verify_depth(ctx, 4);
 
