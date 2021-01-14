@@ -64,7 +64,14 @@ struct buffer {
     size_t nread, size;
 
     enum tokentype token;
-    char bf_value[2048];
+    char meh_bf_value[2048];
+
+    // We don't want to copy values from the source to a temp
+    // buffer, as we don't want to allocate memory, and we don't
+    // want a fixed size buffer either. So we just point to
+    // the start(first char) and end(last char) of the value we
+    // found in the source memory(the mem pointer above)
+    const char *value_start, *value_end;
 
     char *savedvalue;
 
@@ -130,6 +137,12 @@ static struct object* object_new(const char *name, struct value *value)
     }
 
     return p;
+}
+
+static inline const char* buffer_currpos(struct buffer *p)
+{
+    assert(p != NULL);
+    return p->mem + p->nread;
 }
 
 static inline int buffer_getc(struct buffer *p)
@@ -239,22 +252,18 @@ static const char *maptoken(enum tokentype value)
 // string and place it in value. 
 int get_qstring(struct buffer *src)
 {
-    size_t i = 0;
     int c, prev = 0;
 
     assert(src != NULL);
+    src->value_start = src->value_end = buffer_currpos(src);
 
-    while (i < sizeof src->bf_value && (c = buffer_getc(src)) != EOF) {
+    while ((c = buffer_getc(src)) != EOF) {
         if (c == '"' && prev != '\\')
             break;
 
-        prev = src->bf_value[i++] = c;
+        src->value_end++;
+        prev = c;
     }
-
-    if (i == sizeof src->bf_value)
-        return TOK_ERROR;
-
-    src->bf_value[i] = '\0';
 
     return TOK_QSTRING;
 }
@@ -320,21 +329,21 @@ int get_boolean(struct buffer *src)
 // so we can read it the next time.
 int get_integer(struct buffer *src)
 {
-    size_t nread = 0;
     int c;
 
     assert(src != NULL);
+    src->value_start = src->value_end = buffer_currpos(src);
 
-    while (nread < sizeof src->bf_value && (c = buffer_getc(src)) != EOF) {
+    while ((c = buffer_getc(src)) != EOF) {
         if (isdigit(c)) {
-            if (nread < sizeof src->bf_value)
-                src->bf_value[nread++] = c;
-            else
-                die("%s(): Buffer too small.\n", __func__);
+            src->value_end++;
         }
         else {
-            src->bf_value[nread] = '\0';
+            src->value_end--;
             buffer_ungetc(src);
+
+            if(1) printf("start:%p end %p\n", src->value_start, src->value_end);
+            assert(src->value_end >= src->value_start);
             return TOK_INTEGER;
         }
     }
@@ -361,7 +370,7 @@ void get_token(struct buffer *src)
 {
     int c;
 
-    src->bf_value[0] = '\0';
+    src->value_start =src->value_end = NULL;
     src->token = TOK_UNKNOWN;
 
     // skip ws
@@ -404,10 +413,7 @@ void get_token(struct buffer *src)
             src->token = TOK_UNKNOWN;
     }
 
-    if (hasvalue(src->token))
-        fprintf(stderr, "Read token with value from buf:%s(%s)\n", maptoken(src->token), src->bf_value);
-    else
-        fprintf(stderr, "Read token from buf:%s\n", maptoken(src->token));
+    fprintf(stderr, "Read token from buf:%s\n", maptoken(src->token));
 }
 
 static void nextsym(struct buffer *p)
@@ -418,9 +424,19 @@ static void nextsym(struct buffer *p)
 
 static void savevalue(struct buffer *p)
 {
+    assert(p != NULL);
+    assert(p->value_start != NULL);
+    assert(p->value_end != NULL);
+    assert(p->value_end >= p->value_start); // At least one char makes sense
+
     free(p->savedvalue);
-    if ((p->savedvalue = strdup(p->bf_value)) == NULL)
+
+    size_t n = p->value_end - p->value_start + 1;
+    if ((p->savedvalue = malloc(n)) == NULL)
         die("Out of memory\n");
+
+    memcpy(p->savedvalue, p->value_start, n - 1);
+    p->savedvalue[n - 1] = '\0'; // terminate the new string
 }
 
 static bool accept(struct buffer *src, enum tokentype tok)
