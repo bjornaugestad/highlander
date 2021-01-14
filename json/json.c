@@ -67,6 +67,8 @@ struct buffer {
     char bf_value[2048];
 
     char *savedvalue;
+
+    unsigned long lineno;
 };
 
 struct object {
@@ -363,8 +365,10 @@ void get_token(struct buffer *src)
     src->token = TOK_UNKNOWN;
 
     // skip ws
-    while ((c = buffer_getc(src)) != EOF && isspace(c))
-        ;
+    while ((c = buffer_getc(src)) != EOF && isspace(c)) {
+        if (c == '\n')
+            src->lineno++;
+    }
 
     switch (c) {
         case EOF: src->token = TOK_EOF; break;
@@ -437,8 +441,8 @@ static bool expect(struct buffer *p, enum tokentype tok)
     if (accept(p, tok))
         return true;
 
-    die("%s(): expected token '%s', but unexpected token found: %s\n",
-        __func__, maptoken(tok), maptoken(p->token));
+    die("%s(): expected token '%s', but unexpected token found around line %lu: %s\n",
+        __func__, maptoken(tok), p->lineno, maptoken(p->token));
     return false;
 }
 
@@ -541,7 +545,7 @@ static list accept_objects(struct buffer *src)
 }
 
 #ifdef JSON_CHECK
-static list parse(struct buffer *src)
+static list json_parse(struct buffer *src)
 {
     list result;
     nextsym(src);
@@ -555,9 +559,8 @@ static list parse(struct buffer *src)
     return result;
 }
 
-
 static void print_value(struct value *p);
-static void traverse(list objects)
+static void json_traverse(list objects)
 {
     list_iterator i;
 
@@ -685,6 +688,12 @@ static void print_value(struct value *p)
     }
 }
 
+static void buffer_init(struct buffer *p)
+{
+    memset(p, 0, sizeof *p);
+    p->lineno = 1;
+}
+
 static void testfile(const char *filename)
 {
     int fd;
@@ -692,7 +701,7 @@ static void testfile(const char *filename)
     struct buffer buf;
     list objects;
 
-    memset(&buf, 0, sizeof buf);
+    buffer_init(&buf);
     fd = open(filename, O_RDONLY);
     if (fd == -1)
         die_perror(filename);
@@ -704,8 +713,8 @@ static void testfile(const char *filename)
     if (buf.mem == MAP_FAILED)
         die_perror(filename);
 
-    objects = parse(&buf);
-    if (0) traverse(objects);
+    objects = json_parse(&buf);
+    if (0) json_traverse(objects);
     if (0) list_free(objects, (dtor)object_free);
 
     close(fd);
