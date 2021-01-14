@@ -732,7 +732,8 @@ static void testfile(const char *filename)
 
     objects = json_parse(&buf);
     if (0) json_traverse(objects);
-    if (0) list_free(objects, (dtor)object_free);
+    if (1) list_free(objects, (dtor)object_free);
+    free(buf.savedvalue);
 
     close(fd);
 }
@@ -757,7 +758,7 @@ int main(int argc, char *argv[])
         for (i = 0; i < n; i++) {
             fprintf(stderr, "Testing contents of file %s\n", filenames[i]);
             testfile(filenames[i]);
-            fprintf(stderr, "\n\n");
+            fprintf(stderr, "\n");
         }
     }
 
