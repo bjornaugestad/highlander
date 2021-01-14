@@ -453,25 +453,29 @@ static bool accept(struct buffer *src, enum tokentype tok)
     return false;
 }
 
+__attribute__((warn_unused_result))
 static bool expect(struct buffer *p, enum tokentype tok)
 {
     if (accept(p, tok))
         return true;
 
-    die("%s(): expected token '%s', but unexpected token found around line %lu: %s\n",
+    printf("%s(): expected token '%s', but unexpected token found around line %lu: %s\n",
         __func__, maptoken(tok), p->lineno, maptoken(p->token));
     return false;
 }
 
-// Note that array handling is buggy atm boa@20210114
-//
+__attribute__((warn_unused_result))
 static struct value* accept_value(struct buffer *src)
 {
     assert(src != NULL);
 
     if (accept(src, TOK_OBJECTSTART)) {
         list lst = accept_objects(src);
-        expect(src, TOK_OBJECTEND);
+        if (!expect(src, TOK_OBJECTEND)) {
+            list_free(lst, (dtor)object_free);
+            return NULL;
+        }
+
         return value_new(VAL_OBJECT, lst);
     }
     else if (accept(src, TOK_ARRAYSTART)) {
@@ -484,7 +488,10 @@ static struct value* accept_value(struct buffer *src)
         } while (accept(src, TOK_COMMA));
 
         // Note that we do need to be at token ARRAY END 
-        expect(src, TOK_ARRAYEND);
+        if (!expect(src, TOK_ARRAYEND)) {
+            list_free(lst, (dtor)object_free);
+            return NULL;
+        }
 
         return value_new(VAL_ARRAY, lst);
     }
@@ -519,6 +526,7 @@ static struct value* accept_value(struct buffer *src)
 
 // Accept one object, i.e., a name:value pair. Opening brace HAS been read already
 // Value may be null, as in { "foo" : { } }
+__attribute__((warn_unused_result))
 static struct object* accept_object(struct buffer *src)
 {
     // Look for a name
@@ -529,7 +537,8 @@ static struct object* accept_object(struct buffer *src)
     struct object *obj = object_new(src->savedvalue, NULL);
 
     // We need the : which separates name and value
-    expect(src, TOK_COLON);
+    if (!expect(src, TOK_COLON))
+        goto error;
 
     // Now get the value
     obj->value = accept_value(src);
@@ -538,30 +547,41 @@ static struct object* accept_object(struct buffer *src)
     // This is not really JSON, but maybe it's OAS compliant?
 
     return obj;
+
+error:
+    object_free(obj);
+    return NULL;
 }
 
+__attribute__((warn_unused_result))
 static list accept_objects(struct buffer *src)
 {
     list result;
+    struct object *obj = NULL;
  
     if ((result = list_new()) == NULL)
-        die("Out of memory");
+        return NULL;
 
     do {
-        struct object *obj;
-
         if ((obj = accept_object(src)) == NULL)
             break;
 
         if (list_add(result, obj) == NULL)
-            die("Out of memory");
+            goto enomem;
 
     } while (accept(src, TOK_COMMA));
 
     return result;
+
+enomem:
+    list_free(result, (dtor)object_free);
+    object_free(obj);
+    return NULL;
 }
 
 #ifdef JSON_CHECK
+
+__attribute__((warn_unused_result))
 static list json_parse(struct buffer *src)
 {
     list result;
@@ -571,9 +591,14 @@ static list json_parse(struct buffer *src)
         die("Input must start with a {\n");
 
     result = accept_objects(src);
-    expect(src, TOK_OBJECTEND);
-    expect(src, TOK_EOF);
+    if (!expect(src, TOK_OBJECTEND) && !expect(src, TOK_EOF))
+        goto error;
+
     return result;
+
+error:
+    list_free(result, (dtor)object_free);
+    return NULL;
 }
 
 static void print_value(struct value *p);
@@ -729,13 +754,18 @@ static void testfile(const char *filename)
     buf.mem = mmap(NULL, buf.size = st.st_size, PROT_READ, MAP_SHARED, fd, 0);
     if (buf.mem == MAP_FAILED)
         die_perror(filename);
+    close(fd);
 
     objects = json_parse(&buf);
-    if (0) json_traverse(objects);
-    if (1) list_free(objects, (dtor)object_free);
-    free(buf.savedvalue);
+    if (objects == NULL) {
+        fprintf(stderr, "Unable to parse %s\n", filename);
+        exit(1); // so make check notices
+    }
 
-    close(fd);
+    if (0) json_traverse(objects);
+
+    list_free(objects, (dtor)object_free);
+    free(buf.savedvalue);
 }
 
 int main(int argc, char *argv[])
@@ -762,7 +792,6 @@ int main(int argc, char *argv[])
         }
     }
 
-    
     return 0;
 }
 
