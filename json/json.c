@@ -1,5 +1,6 @@
 /* Simple JSON parser written by me. */
 #include <ctype.h>
+#include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
 #include <fcntl.h>
@@ -199,25 +200,25 @@ static struct value * value_new(enum valuetype type, void *value)
 
 static const struct {
     enum tokentype value;
-    int hasvalue;
+    bool hasvalue;
     const char *text;
 } tokens[] = {
-    { TOK_ERROR       , 0, "error" },
-    { TOK_UNKNOWN     , 0, "unknown" },
-    { TOK_QSTRING     , 1, "qstring" },
-    { TOK_TRUE        , 0, "true" },
-    { TOK_FALSE       , 0, "false" },
-    { TOK_COLON       , 0, "colon" },
-    { TOK_COMMA       , 0, "comma" },
-    { TOK_OBJECTSTART , 0, "objectstart" },
-    { TOK_OBJECTEND   , 0, "objectend" },
-    { TOK_ARRAYSTART  , 0, "arraystart" },
-    { TOK_ARRAYEND    , 0, "arrayend" },
-    { TOK_INTEGER     , 1, "integer" },
-    { TOK_DOUBLE      , 1, "double" },
-    { TOK_NULL        , 0, "null" },
-    { TOK_EOF         , 0, "eof" },
-    { TOK_STRING      , 0, "string" },
+    { TOK_ERROR       , false, "error" },
+    { TOK_UNKNOWN     , false, "unknown" },
+    { TOK_QSTRING     , true,  "qstring" },
+    { TOK_TRUE        , false, "true" },
+    { TOK_FALSE       , false, "false" },
+    { TOK_COLON       , false, "colon" },
+    { TOK_COMMA       , false, "comma" },
+    { TOK_OBJECTSTART , false, "objectstart" },
+    { TOK_OBJECTEND   , false, "objectend" },
+    { TOK_ARRAYSTART  , false, "arraystart" },
+    { TOK_ARRAYEND    , false, "arrayend" },
+    { TOK_INTEGER     , true,  "integer" },
+    { TOK_DOUBLE      , true,  "double" },
+    { TOK_NULL        , false, "null" },
+    { TOK_EOF         , false, "eof" },
+    { TOK_STRING      , false, "string" },
 };
 
 static const char *maptoken(enum tokentype value)
@@ -342,7 +343,7 @@ int get_integer(struct buffer *src)
     return TOK_EOF;
 }
 
-static int hasvalue(enum tokentype tok)
+static bool hasvalue(enum tokentype tok)
 {
     size_t i, n = sizeof tokens / sizeof *tokens;
 
@@ -395,12 +396,12 @@ void get_token(struct buffer *src)
             break;
 
         default:
-            fprintf(stderr, "c==%d\n", c);
+            fprintf(stderr, "%s(): unexpected: c==%d\n", __func__, c);
             src->token = TOK_UNKNOWN;
     }
 
     if (hasvalue(src->token))
-        fprintf(stderr, "Read token from buf:%s(%s)\n", maptoken(src->token), src->bf_value);
+        fprintf(stderr, "Read token with value from buf:%s(%s)\n", maptoken(src->token), src->bf_value);
     else
         fprintf(stderr, "Read token from buf:%s\n", maptoken(src->token));
 }
@@ -411,7 +412,6 @@ static void nextsym(struct buffer *p)
         get_token(p);
 }
 
-
 static void savevalue(struct buffer *p)
 {
     free(p->savedvalue);
@@ -419,30 +419,31 @@ static void savevalue(struct buffer *p)
         die("Out of memory\n");
 }
 
-static int accept(struct buffer *src, enum tokentype tok)
+static bool accept(struct buffer *src, enum tokentype tok)
 {
     if (src->token == tok) {
         if (hasvalue(tok))
             savevalue(src);
+
         nextsym(src);
-        return 1;
+        return true;
     }
 
-    return 0;
+    return false;
 }
 
-static int expect(struct buffer *p, enum tokentype tok)
+static bool expect(struct buffer *p, enum tokentype tok)
 {
     if (accept(p, tok))
-        return 1;
+        return true;
 
-    
-    die("expected %s, but unexpected token found: %s\n",
-        maptoken(tok), maptoken(p->token));
-    return 0;
+    die("%s(): expected token '%s', but unexpected token found: %s\n",
+        __func__, maptoken(tok), maptoken(p->token));
+    return false;
 }
 
-// Wrap array list in a struct value object before returning 
+// Note that array handling is buggy atm boa@20210114
+//
 static struct value* accept_value(struct buffer *src)
 {
     assert(src != NULL);
@@ -453,17 +454,17 @@ static struct value* accept_value(struct buffer *src)
         return value_new(VAL_OBJECT, lst);
     }
     else if (accept(src, TOK_ARRAYSTART)) {
-        // BUG : JSON allows for empty arrays, we require at
-        // least one element. This complicates the parsing a bit,
-        // but I guess I can figure it out.
-        // boa@20210114
+        // Wrap array list in a struct value object before returning 
         list lst = NULL;
         do {
             struct value *p = accept_value(src);
-            lst = list_add(lst, p);
+            if (p != NULL)
+                lst = list_add(lst, p);
         } while (accept(src, TOK_COMMA));
 
+        // Note that we do need to be at token ARRAY END 
         expect(src, TOK_ARRAYEND);
+
         return value_new(VAL_ARRAY, lst);
     }
     else if (accept(src, TOK_TRUE)) {
@@ -490,10 +491,8 @@ static struct value* accept_value(struct buffer *src)
     else if (accept(src, TOK_BOOLEAN)) {
         return value_new(VAL_BOOLEAN, NULL);
     }
-    else {
-        die("%s(): Meh, shouldn't be here. Token intval==%d(%s)\n", __func__, (int)src->token,
-            maptoken(src->token));
-    }
+
+    return NULL;
 }
 
 
@@ -501,20 +500,21 @@ static struct value* accept_value(struct buffer *src)
 // Value may be null, as in { "foo" : { } }
 static struct object* accept_object(struct buffer *src)
 {
-    struct object *obj = NULL;
+    // Look for a name
+    if (!accept(src, TOK_QSTRING))
+        return NULL;
 
-    // Did we get a name?
-    if (accept(src, TOK_QSTRING)) {
-        obj = object_new(src->savedvalue, NULL);
-        expect(src, TOK_COLON);
+    // Name is now in the buffer's saved value. Create an object
+    struct object *obj = object_new(src->savedvalue, NULL);
 
-        obj->value = accept_value(src);
-    }
+    // We need the : which separates name and value
+    expect(src, TOK_COLON);
+
+    // Now get the value
+    obj->value = accept_value(src);
 
     // It turns out that e.g. Google uses (key) as name, but without quotes.
     // This is not really JSON, but maybe it's OAS compliant?
-
-
 
     return obj;
 }
@@ -581,6 +581,11 @@ static void traverse(list objects)
 static void print_array(list lst)
 {
     list_iterator i;
+
+    if (lst == NULL) {
+        printf("[ ]\n");
+        return;
+    }
 
     printf("[\n");
 
@@ -700,7 +705,7 @@ static void testfile(const char *filename)
         die_perror(filename);
 
     objects = parse(&buf);
-    if (1) traverse(objects);
+    if (0) traverse(objects);
     if (0) list_free(objects, (dtor)object_free);
 
     close(fd);
@@ -709,6 +714,8 @@ static void testfile(const char *filename)
 int main(int argc, char *argv[])
 {
     const char *filenames[] = {
+        "./array_with_no_entries.json",
+        "./array_with_one_entry.json",
         "./schema.json",
         "./github/ghes-3.0.json"
     };
@@ -721,8 +728,11 @@ int main(int argc, char *argv[])
         size_t i, n;
 
         n = sizeof filenames / sizeof *filenames;
-        for (i = 0; i < n; i++)
+        for (i = 0; i < n; i++) {
+            fprintf(stderr, "Testing contents of file %s\n", filenames[i]);
             testfile(filenames[i]);
+            fprintf(stderr, "\n\n");
+        }
     }
 
     
