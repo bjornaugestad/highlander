@@ -411,11 +411,10 @@ void get_token(struct buffer *src)
             break;
 
         default:
-            fprintf(stderr, "%s(): unexpected: c==%d\n", __func__, c);
+            fprintf(stderr, "%s():%lu: unexpected token: c==%d\n",
+                __func__, src->lineno, c);
             src->token = TOK_UNKNOWN;
     }
-
-    fprintf(stderr, "Read token from buf:%s\n", maptoken(src->token));
 }
 
 static void nextsym(struct buffer *p)
