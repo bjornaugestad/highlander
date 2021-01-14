@@ -149,7 +149,6 @@ static inline void buffer_ungetc(struct buffer *p)
 static struct object* accept_object(struct buffer *src);
 static list accept_objects(struct buffer *src);
 
-#ifdef JSON_CHECK
 // some member functions
 static struct value * value_new(enum valuetype type, void *value)
 {
@@ -454,6 +453,10 @@ static struct value* accept_value(struct buffer *src)
         return value_new(VAL_OBJECT, lst);
     }
     else if (accept(src, TOK_ARRAYSTART)) {
+        // BUG : JSON allows for empty arrays, we require at
+        // least one element. This complicates the parsing a bit,
+        // but I guess I can figure it out.
+        // boa@20210114
         list lst = NULL;
         do {
             struct value *p = accept_value(src);
@@ -537,6 +540,7 @@ static list accept_objects(struct buffer *src)
     return result;
 }
 
+#ifdef JSON_CHECK
 static list parse(struct buffer *src)
 {
     list result;
@@ -676,18 +680,12 @@ static void print_value(struct value *p)
     }
 }
 
-int main(int argc, char *argv[])
+static void testfile(const char *filename)
 {
-    const char *filename = "./schema.json";
-    // const char *filename = "./xxx";
     int fd;
     struct stat st;
     struct buffer buf;
     list objects;
-
-    if (argc > 1) {
-        filename = argv[1];
-    }
 
     memset(&buf, 0, sizeof buf);
     fd = open(filename, O_RDONLY);
@@ -706,6 +704,28 @@ int main(int argc, char *argv[])
     if (0) list_free(objects, (dtor)object_free);
 
     close(fd);
+}
+
+int main(int argc, char *argv[])
+{
+    const char *filenames[] = {
+        "./schema.json",
+        "./github/ghes-3.0.json"
+    };
+
+    if (argc > 1) {
+        while (*++argv != NULL)
+            testfile(*argv);
+    }
+    else {
+        size_t i, n;
+
+        n = sizeof filenames / sizeof *filenames;
+        for (i = 0; i < n; i++)
+            testfile(filenames[i]);
+    }
+
+    
     return 0;
 }
 

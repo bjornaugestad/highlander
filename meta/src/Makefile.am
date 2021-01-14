@@ -148,7 +148,7 @@ check_PROGRAMS=\
 
 
 AM_CFLAGS=-Wall --std=gnu2x -Wextra -Werror -O0 -ggdb\
-	-Wformat-overflow=2 -Woverflow -Wshift-overflow=2 -Wstrict-overflow=5
+	-Wformat-overflow=2 -Woverflow -Wshift-overflow=2 -Wstrict-overflow=2
 # Broken atm, with false positives
 # FANALYZER=-fanalyzer
 
