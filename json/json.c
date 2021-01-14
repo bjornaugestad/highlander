@@ -335,14 +335,14 @@ int get_integer(struct buffer *src)
     src->value_start = src->value_end = buffer_currpos(src);
 
     while ((c = buffer_getc(src)) != EOF) {
-        if (isdigit(c)) {
+        if (isdigit(c) || c == '-') {
             src->value_end++;
         }
         else {
             src->value_end--;
             buffer_ungetc(src);
 
-            if(1) printf("start:%p end %p\n", src->value_start, src->value_end);
+            if(0) printf("start:%p end %p\n", src->value_start, src->value_end);
             assert(src->value_end >= src->value_start);
             return TOK_INTEGER;
         }
@@ -394,6 +394,8 @@ void get_token(struct buffer *src)
         case 's': src->token = get_string(src); break;
         case 'b': src->token = get_boolean(src); break;
 
+        case '-':
+        case '+':
         case '0':
         case '1':
         case '2':
