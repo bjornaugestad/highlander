@@ -7,6 +7,7 @@
 #define META_COMMON_H
 
 #include <stdarg.h> /* for va_list */
+#include <stddef.h>
 #include <errno.h>
 
 #ifdef __cplusplus
@@ -34,9 +35,9 @@ typedef void(*dtor)(void*);
 extern int meta_verbose_level;
 extern int meta_indent_level;
 
-void verbose(int level, const char *fmt, ...)
-    __attribute__((nonnull))
-    __attribute__((format(printf,2,3)));
+void verbose(int level, const char *fmt, ...);
+    //__attribute__((nonnull))
+    //__attribute__((format(printf,2,3)));
 
 /* Write a warning to the syslog */
 void warning(const char *fmt, ...);
@@ -107,6 +108,14 @@ typedef struct metastatus *status_t;
  * 20160213 boa
  */
 status_t fail(int cause)__attribute__((warn_unused_result));
+
+/*
+ * We have our own x*alloc() version to avoid error checking
+ */
+void *xmalloc(size_t size) __attribute__((malloc, returns_nonnull));
+void *xcalloc(size_t nmemb, size_t size) __attribute__((malloc, returns_nonnull));
+void *xrealloc(void *mem, size_t size);
+char *xstrdup(const char *src) __attribute__((malloc, returns_nonnull));
 
 #ifdef __cplusplus
 }

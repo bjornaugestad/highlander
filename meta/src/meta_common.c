@@ -113,3 +113,56 @@ status_t fail(int cause)
     errno = cause;
     return failure;
 }
+
+void *xmalloc(size_t size)
+{
+    void *result;
+
+    assert(size > 0);
+
+    result = malloc(size);
+    if (result == NULL)
+        die("Out of memory\n");
+
+    return result;
+}
+
+void *xcalloc(size_t nmemb, size_t size)
+{
+    void *result;
+
+    assert(nmemb > 0);
+    assert(size > 0);
+
+    result = calloc(nmemb, size);
+    if (result == NULL)
+        die("Out of memory\n");
+
+    return result;
+}
+
+void *xrealloc(void *mem, size_t size)
+{
+    void *result;
+
+    assert(size > 0);
+
+    result = realloc(mem, size);
+    if (result == NULL)
+        die("Out of memory\n");
+
+    return result;
+}
+
+char *xstrdup(const char *src)
+{
+    char *result;
+
+    assert(src != NULL);
+
+    result = strdup(src);
+    if (result == NULL)
+        die("Out of memory\n");
+
+    return result;
+}
