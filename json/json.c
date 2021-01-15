@@ -183,6 +183,7 @@ static list accept_objects(struct buffer *src);
 // https://www.json.org/img/number.png
 // It can be "0", "-0", "[1-9][0-9]*"
 // It cannot contain ., e, or anything else.
+// Leading zeroes are uncool
 static bool isinteger(const char *s)
 {
     assert(s != NULL);
@@ -231,6 +232,10 @@ static bool isreal(const char *s)
     if (isinteger(s))
         return false;
 
+    // If it ain't an integer, it must contain a .
+    if (strchr(s, '.') == NULL)
+        return false;
+
     bool result;
     char *endp;
     int olderrno = errno;
@@ -249,6 +254,19 @@ static bool isreal(const char *s)
     (void)val;
     errno = olderrno;
     return result;
+}
+
+static bool isnumber(const char *s, size_t nchars)
+{
+    char str[512];
+
+    if (nchars >= sizeof str)
+        return false;
+
+    memcpy(str, s, nchars);
+    str[nchars] = '\0';
+
+    return isinteger(str) || isreal(str);
 }
 
 // some member functions
@@ -436,32 +454,38 @@ int get_boolean(struct buffer *src)
 // want to distinguish between integers and doubles at this point?
 // I guess not. We can't fucking introduce new tokens here, right? What
 // was I thinking?
-static int get_number(struct buffer *src)
+static bool get_number(struct buffer *src)
 {
     int c;
+    const char *legal = "0123456789-,eE+";
+    size_t nchars = 0;
 
     assert(src != NULL);
     src->value_start = src->value_end = buffer_currpos(src);
 
     while ((c = buffer_getc(src)) != EOF) {
-        if (isdigit(c) || c == '-' || c == '.' || c == 'e' || c == 'E' || c == '+') {
+        if (strchr(legal, c)) {
             src->value_end++;
-            if(0) printf("%c", c);
+            nchars++;
         }
         else {
             src->value_end--;
             buffer_ungetc(src);
-
-            if(0) printf(" start:%p end %p\n", src->value_start, src->value_end);
-            assert(src->value_end >= src->value_start);
-            return TOK_NUMBER;
+            break;
         }
     }
 
-    // we get here on eof. That doesn't mean that we didn't read a number,
-    // e.g. if the last token is this number.  Not very likely due 
-    // to syntax requirements, so we EOF here always.
-    return TOK_EOF;
+    // Now we have a sequence of numbers and characters. Do they
+    // constitue a legal number? "+++---123eeee123" is not a legal
+    // number, so we must check. ATM we don't have a string, only a buffer,
+    // so some extra consideration is needed.
+    if (!isnumber(src->value_start, nchars)) {
+        src->token = TOK_UNKNOWN;
+        return false;
+    }
+
+    src->token = TOK_NUMBER;
+    return true;
 }
 
 static bool hasvalue(enum tokentype tok)
@@ -473,13 +497,16 @@ static bool hasvalue(enum tokentype tok)
             return tokens[i].hasvalue;
     }
 
-    die("Unknown token %d\n", (int)tok);
+    die("Internal error. Unknown token %d\n", (int)tok);
 }
 
 __attribute__((warn_unused_result))
-static bool get_token(struct buffer *src)
+static bool nextsym(struct buffer *src)
 {
     int c;
+
+    if (src->token == TOK_EOF)
+        return false;
 
     src->value_start =src->value_end = NULL;
     src->token = TOK_UNKNOWN;
@@ -517,8 +544,7 @@ static bool get_token(struct buffer *src)
         case '8':
         case '9':
             buffer_ungetc(src);
-            src->token = get_number(src);
-            break;
+            return get_number(src);
 
         default:
             fprintf(stderr, "%s(), around line %lu: unexpected token: char's int value == %d.",
@@ -531,15 +557,6 @@ static bool get_token(struct buffer *src)
 
     // Did we actually get a legal token?
     return src->token != TOK_UNKNOWN;
-}
-
-__attribute__((warn_unused_result))
-static bool nextsym(struct buffer *p)
-{
-    if (p->token == TOK_EOF)
-        return false;
-
-    return get_token(p);
 }
 
 static void savevalue(struct buffer *p)
@@ -579,7 +596,7 @@ static bool expect(struct buffer *p, enum tokentype tok)
     if (accept(p, tok))
         return true;
 
-    printf("%s(): expected token '%s', but unexpected token found around line %lu: %s\n",
+    printf("%s(): expected token '%s', but found token around line %lu: %s\n",
         __func__, maptoken(tok), p->lineno, maptoken(p->token));
     return false;
 }
@@ -737,13 +754,6 @@ struct value* json_parse(const void *src, size_t srclen)
     struct value *val = accept_value(&buf);
     if (val == NULL)
         goto error;
-
-    // For things to make sense, val's value should be either an
-    // array or an object list. Do we want to go this way or 
-    // should we add accept_array() just like accept_objects()?
-    // Let's put that decision on hold until we parse the pass*.json
-    // files correctly. Still lots of work to do on e.g. numbers.
-
 
     free(buf.savedvalue);
     return val;
