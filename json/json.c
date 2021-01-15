@@ -15,8 +15,6 @@
 #include "json.h"
 
 
-// Been almost a year since I looked at this. Gotta start fresh...
-// Some base rules
 // * Objects start with { and end with }
 // * Arrays start with [ and end with ]
 // * stuff is name : value pairs, where name is a quoted string,
@@ -50,8 +48,7 @@ enum tokentype {
     TOK_OBJECTEND,
     TOK_ARRAYSTART,
     TOK_ARRAYEND,
-    TOK_INTEGER,
-    TOK_DOUBLE,
+    TOK_NUMBER,
     TOK_NULL,
     TOK_EOF,
     TOK_STRING, // This is not a quoted string, but the string keyword from oas 3.0.3
@@ -166,6 +163,79 @@ static inline void buffer_ungetc(struct buffer *p)
 static struct object* accept_object(struct buffer *src);
 static list accept_objects(struct buffer *src);
 
+
+// Is the value of s an integer number, as specified by
+// https://www.json.org/img/number.png
+// It can be "0", "-0", "[1-9][0-9]*"
+// It cannot contain ., e, or anything else.
+static bool isinteger(const char *s)
+{
+    assert(s != NULL);
+
+    // Skip leading -, if any.
+    if (*s == '-')
+        s++;
+
+    // From now on, it's digits only, with a special
+    // test for "0". If 0 is found, then it cannot have trailing digits.
+    if (*s == '0') {
+        if (*(s + 1) == '\0')
+            return true;
+
+        // If we get here, then we have a zero followed by something.
+        // It's not a legal integer. Is it a legal number? Do we care?
+        return false;
+    }
+
+    // if first digit is 1..9 and the rest of the string is 0..9,
+    // then we have a legal integer number.
+    if (*s >= '1' && *s <= '9') {
+        // Now the rest of the string must be digits too.
+        while (*++s != '\0')
+            if (!isdigit(*s))
+                return false;
+
+        // Got to the end of the string, all digits. Yay.
+        return true;
+    }
+
+    // Not an integer if we got to this point
+    return false;
+}
+
+
+// Is the value in s a real number, with fractions(.n) and/or an exponent?
+// It's not a real if it's an integer. Imma be lazy here and use 
+// strtod to test if it's a real number. If strtod() consumes all chars,
+// it a real number. 
+static bool isreal(const char *s)
+{
+    assert(s != NULL);
+    assert(*s != '\0'); // Empty strings? Nah, meaningless
+
+    if (isinteger(s))
+        return false;
+
+    bool result;
+    char *endp;
+    int olderrno = errno;
+    errno = 0;
+    size_t len = strlen(s);
+
+
+    double val = strtod(s, &endp);
+    if (errno != 0)
+        result = false;
+    else if (endp != s + len) // We didn't consume all chars
+        result = false;
+    else
+        result = true;
+
+    (void)val;
+    errno = olderrno;
+    return result;
+}
+
 // some member functions
 static struct value * value_new(enum valuetype type, void *value)
 {
@@ -174,6 +244,19 @@ static struct value * value_new(enum valuetype type, void *value)
     if ((p = calloc(1, sizeof *p)) == NULL)
         return NULL;
 
+    if (1) {
+        switch (type) {
+            case VAL_QSTRING:
+            case VAL_DOUBLE:
+            case VAL_INTEGER:
+                fprintf(stderr, "%s\n", (const char *)value);
+                break;
+            default:
+                ;
+        }
+    }
+        
+
     p->type = type;
     switch (type) {
         case VAL_QSTRING:
@@ -181,10 +264,12 @@ static struct value * value_new(enum valuetype type, void *value)
             break;
 
         case VAL_DOUBLE:
+            assert(isreal(value));
             p->v.dval = strtod(value, NULL);
             break;
 
         case VAL_INTEGER:
+            assert(isinteger(value));
             p->v.lval = strtol(value, NULL, 10);
             break;
 
@@ -230,8 +315,7 @@ static const struct {
     { TOK_OBJECTEND   , false, "objectend" },
     { TOK_ARRAYSTART  , false, "arraystart" },
     { TOK_ARRAYEND    , false, "arrayend" },
-    { TOK_INTEGER     , true,  "integer" },
-    { TOK_DOUBLE      , true,  "double" },
+    { TOK_NUMBER      , true,  "number" },
     { TOK_NULL        , false, "null" },
     { TOK_EOF         , false, "eof" },
     { TOK_STRING      , false, "string" },
@@ -250,7 +334,9 @@ static const char *maptoken(enum tokentype value)
 }
 
 // We have a ", which is start of quoted string. Read the rest of the
-// string and place it in value. 
+// string and place it in value. Remember that escapes, \, may be
+// escaped too, like \\. If so, read them as one backslash so "\\" results
+// in a string with just one backslash.
 int get_qstring(struct buffer *src)
 {
     int c, prev = 0;
@@ -259,11 +345,14 @@ int get_qstring(struct buffer *src)
     src->value_start = src->value_end = buffer_currpos(src);
 
     while ((c = buffer_getc(src)) != EOF) {
-        if (c == '"' && prev != '\\')
+        if (c == '\\' && prev == '\\') 
+            prev = 0;
+        else if (c == '"' && prev != '\\')
             break;
+        else
+            prev = c;
 
         src->value_end++;
-        prev = c;
     }
 
     return TOK_QSTRING;
@@ -328,7 +417,13 @@ int get_boolean(struct buffer *src)
 
 // Read digits and place them in buffer, ungetc() the first non-digit
 // so we can read it the next time.
-int get_integer(struct buffer *src)
+//
+// The value may be an integer or a real number, with or without
+// an exponent part. The BNF just mentions numbers. Do we really
+// want to distinguish between integers and doubles at this point?
+// I guess not. We can't fucking introduce new tokens here, right? What
+// was I thinking?
+static int get_number(struct buffer *src)
 {
     int c;
 
@@ -336,16 +431,17 @@ int get_integer(struct buffer *src)
     src->value_start = src->value_end = buffer_currpos(src);
 
     while ((c = buffer_getc(src)) != EOF) {
-        if (isdigit(c) || c == '-') {
+        if (isdigit(c) || c == '-' || c == '.' || c == 'e' || c == 'E' || c == '+') {
             src->value_end++;
+            if(0) printf("%c", c);
         }
         else {
             src->value_end--;
             buffer_ungetc(src);
 
-            if(0) printf("start:%p end %p\n", src->value_start, src->value_end);
+            if(0) printf(" start:%p end %p\n", src->value_start, src->value_end);
             assert(src->value_end >= src->value_start);
-            return TOK_INTEGER;
+            return TOK_NUMBER;
         }
     }
 
@@ -396,7 +492,6 @@ void get_token(struct buffer *src)
         case 'b': src->token = get_boolean(src); break;
 
         case '-':
-        case '+':
         case '0':
         case '1':
         case '2':
@@ -408,12 +503,15 @@ void get_token(struct buffer *src)
         case '8':
         case '9':
             buffer_ungetc(src);
-            src->token = get_integer(src);
+            src->token = get_number(src);
             break;
 
         default:
-            fprintf(stderr, "%s():%lu: unexpected token: c==%d\n",
+            fprintf(stderr, "%s(), around line %lu: unexpected token: char's int value == %d.",
                 __func__, src->lineno, c);
+            if (isprint(c))
+                fprintf(stderr, " char value: '%c'", c);
+            fprintf(stderr, "\n");
             src->token = TOK_UNKNOWN;
     }
 }
@@ -433,7 +531,7 @@ static void savevalue(struct buffer *p)
 
     free(p->savedvalue);
 
-    size_t n = p->value_end - p->value_start + 1;
+    size_t n = p->value_end - p->value_start + 2;
     if ((p->savedvalue = malloc(n)) == NULL)
         die("Out of memory\n");
 
@@ -473,7 +571,7 @@ static struct value* accept_value(struct buffer *src)
     if (accept(src, TOK_OBJECTSTART)) {
         list lst = accept_objects(src);
         if (!expect(src, TOK_OBJECTEND)) {
-            list_free(lst, (dtor)object_free);
+            if (0) list_free(lst, (dtor)object_free);
             return NULL;
         }
 
@@ -490,7 +588,7 @@ static struct value* accept_value(struct buffer *src)
 
         // Note that we do need to be at token ARRAY END 
         if (!expect(src, TOK_ARRAYEND)) {
-            list_free(lst, (dtor)object_free);
+            if (0) list_free(lst, (dtor)object_free);
             return NULL;
         }
 
@@ -505,11 +603,13 @@ static struct value* accept_value(struct buffer *src)
     else if (accept(src, TOK_NULL)) {
         return value_new(VAL_NULL, NULL);
     }
-    else if (accept(src, TOK_INTEGER)) {
-        return value_new(VAL_INTEGER, src->savedvalue);
-    }
-    else if (accept(src, TOK_DOUBLE)) {
-        return value_new(VAL_DOUBLE, src->savedvalue);
+    else if (accept(src, TOK_NUMBER)) {
+        if (isinteger(src->savedvalue))
+            return value_new(VAL_INTEGER, src->savedvalue);
+        else if (isreal(src->savedvalue))
+            return value_new(VAL_DOUBLE, src->savedvalue);
+        else
+            die("Internal error. Unhandled number from tokenizer");
     }
     else if (accept(src, TOK_QSTRING)) {
         return value_new(VAL_QSTRING, src->savedvalue);
@@ -575,7 +675,7 @@ static list accept_objects(struct buffer *src)
     return result;
 
 enomem:
-    list_free(result, (dtor)object_free);
+    if (0) list_free(result, (dtor)object_free);
     object_free(obj);
     return NULL;
 }
@@ -589,19 +689,26 @@ static void buffer_init(struct buffer *p, const void *src, size_t srclen)
 }
 
 
+// BUG/TODO: JSON can apperantly start with either and object, {}, 
+// or an array, []. I misread the bnf, which is fucking broken, at least
+// it is broken on json.org. (json -> element? nah, elements)
+//
+// So we need to accept TOK_ARRAYSTART as first token, and then
+// accept TOK_ARRAYEND as last token.
 list json_parse(const void *src, size_t srclen)
 {
     struct buffer buf;
     list result = NULL;
 
     assert(src != NULL);
-    assert(srclen > 1); // Minumum is {}, as in nothing(object start and end).
+    assert(srclen > 1); // Minimum is {}, as in nothing(object start and end).
 
     buffer_init(&buf, src, srclen);
 
     // Load first symbol
     nextsym(&buf);
 
+#if 1
     if (!accept(&buf, TOK_OBJECTSTART))
         goto error;
 
@@ -609,11 +716,24 @@ list json_parse(const void *src, size_t srclen)
     if (!expect(&buf, TOK_OBJECTEND) && !expect(&buf, TOK_EOF))
         goto error;
 
+#else
+    struct value *val = accept_value(&buf);
+    if (val == NULL)
+        goto error;
+
+    // For things to make sense, val's value should be either an
+    // array or an object list. Do we want to go this way or 
+    // should we add accept_array() just like accept_objects()?
+    // Let's put that decision on hold until we parse the pass*.json
+    // files correctly. Still lots of work to do on e.g. numbers.
+
+#endif
+
     free(buf.savedvalue);
     return result;
 
 error:
-    list_free(result, (dtor)object_free);
+    if (0) list_free(result, (dtor)object_free);
     free(buf.savedvalue);
     return NULL;
 }
@@ -751,7 +871,7 @@ static void print_value(struct value *p)
 
 void json_free(list objects)
 {
-    list_free(objects, (dtor)object_free);
+    if (0) list_free(objects, (dtor)object_free);
 }
 
 static void testfile(const char *filename)
@@ -782,15 +902,70 @@ static void testfile(const char *filename)
 
     json_free(objects);
 }
+static void test_isinteger(void)
+{
+    static const struct {
+        const char *value;
+        bool result;
+    } tests[] = {
+        { "0" , true },
+        { "-0" , true },
+        { "-01" , false },
+        { "-10" , true },
+        { "1" , true },
+        { "0123" , false },
+        { "1000" , true },
+        { "1X" , false },
+        { "1.2" , false },
+        { "-0.5" , false },
+    };
+
+    size_t i, n = sizeof tests / sizeof *tests;
+    for (i = 0; i < n; i++) {
+        bool result = isinteger(tests[i].value);
+        if (result != tests[i].result)
+            die("isinteger() failed on %s.\n", tests[i].value);
+    }
+}
+
+static void test_isreal(void)
+{
+    static const struct {
+        const char *value;
+        bool result;
+    } tests[] = {
+        { "1.2" , true },
+        { "1.2e2" , true },
+        { "1.2E2" , true },
+        { "-0.5" , true },
+        { "-0.5" , true },
+    };
+
+    size_t i, n = sizeof tests / sizeof *tests;
+    for (i = 0; i < n; i++) {
+        bool result = isreal(tests[i].value);
+        if (result != tests[i].result)
+            die("isreal() failed on %s.\n", tests[i].value);
+    }
+}
+
+static void test_internal_functions(void)
+{
+    test_isinteger();
+    test_isreal();
+}
 
 int main(int argc, char *argv[])
 {
     const char *filenames[] = {
+        "./array_at_start.json",
         "./array_with_no_entries.json",
         "./array_with_one_entry.json",
         "./schema.json",
         "./github/ghes-3.0.json"
     };
+
+    test_internal_functions();
 
     if (argc > 1) {
         while (*++argv != NULL)
