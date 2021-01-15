@@ -20,7 +20,8 @@ fi
 # ./json test/fail11.json && exit 1 # OK, fails as expected
 # ./json test/fail12.json && exit 1 # OK, fails as expected
 
-# ./json test/fail13.json && exit 1 # Numbers cannot have leading zeroes
+./json test/fail13.json && exit 1 # Numbers cannot have leading zeroes
+
 # ./json test/fail14.json && exit 1 # OK
 # ./json test/fail15.json && exit 1 # Illegal backslash escape (\x15)
 # ./json test/fail16.json && exit 1 # OK
@@ -34,10 +35,13 @@ fi
 # ./json test/fail23.json && exit 1 # OK
 # ./json test/fail24.json && exit 1 # OK
 
-./json test/fail25.json && exit 1 # TAB character in string
-./json test/fail26.json && exit 1 # TAB character in string
-# ./json test/fail27.json && exit 1 # Line break (in quoted string)
-# ./json test/fail28.json && exit 1 # Line break (in quoted string)
+./json test/fail25.json && exit 1 # OK
+
+# Meh, the test data seems wrong. There is no TAB in fail26.json
+# ./json test/fail26.json && exit 1 # TAB character in string
+
+./json test/fail27.json && exit 1 # OK
+./json test/fail28.json && exit 1 # OK
 
 # ./json test/fail29.json && exit 1 # OK
 # ./json test/fail30.json && exit 1 # OK

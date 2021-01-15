@@ -344,12 +344,16 @@ static const char *maptoken(enum tokentype value)
 // * TAB is uncool, see fail25.json and fail26.json.
 int get_qstring(struct buffer *src)
 {
+    const char *illegal_escapes = " \t\n";
     int c, prev = 0;
 
     assert(src != NULL);
     src->value_start = src->value_end = buffer_currpos(src);
 
     while ((c = buffer_getc(src)) != EOF) {
+        if (c == '\\' && strchr(illegal_escapes, c) != NULL)
+            return TOK_UNKNOWN;
+
         if (c == '\\' && prev == '\\') 
             prev = 0;
         else if (c == '"' && prev != '\\')
@@ -357,6 +361,7 @@ int get_qstring(struct buffer *src)
         else
             prev = c;
 
+        // Can't have these in strings
         if (c == '\t' || c == '\n')
             return TOK_UNKNOWN;
 
