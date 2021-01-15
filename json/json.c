@@ -339,6 +339,9 @@ static const char *maptoken(enum tokentype value)
 // string and place it in value. Remember that escapes, \, may be
 // escaped too, like \\. If so, read them as one backslash so "\\" results
 // in a string with just one backslash.
+//
+// There seems to be some rules in JSON regarding illegal characters.
+// * TAB is uncool, see fail25.json and fail26.json.
 int get_qstring(struct buffer *src)
 {
     int c, prev = 0;
@@ -353,6 +356,9 @@ int get_qstring(struct buffer *src)
             break;
         else
             prev = c;
+
+        if (c == '\t' || c == '\n')
+            return TOK_UNKNOWN;
 
         src->value_end++;
     }
@@ -465,7 +471,8 @@ static bool hasvalue(enum tokentype tok)
     die("Unknown token %d\n", (int)tok);
 }
 
-void get_token(struct buffer *src)
+__attribute__((warn_unused_result))
+static bool get_token(struct buffer *src)
 {
     int c;
 
@@ -516,12 +523,18 @@ void get_token(struct buffer *src)
             fprintf(stderr, "\n");
             src->token = TOK_UNKNOWN;
     }
+
+    // Did we actually get a legal token?
+    return src->token != TOK_UNKNOWN;
 }
 
-static void nextsym(struct buffer *p)
+__attribute__((warn_unused_result))
+static bool nextsym(struct buffer *p)
 {
-    if (p->token != TOK_EOF)
-        get_token(p);
+    if (p->token == TOK_EOF)
+        return false;
+
+    return get_token(p);
 }
 
 static void savevalue(struct buffer *p)
@@ -541,14 +554,15 @@ static void savevalue(struct buffer *p)
     p->savedvalue[n - 1] = '\0'; // terminate the new string
 }
 
+__attribute__((warn_unused_result))
 static bool accept(struct buffer *src, enum tokentype tok)
 {
     if (src->token == tok) {
         if (hasvalue(tok))
             savevalue(src);
 
-        nextsym(src);
-        return true;
+        if (nextsym(src))
+            return true;
     }
 
     return false;
@@ -708,7 +722,8 @@ struct value* json_parse(const void *src, size_t srclen)
     buffer_init(&buf, src, srclen);
 
     // Load first symbol
-    nextsym(&buf);
+    if (!nextsym(&buf))
+        goto error;
 
     // First symbol must be either array start or object start.
     if (buf.token != TOK_ARRAYSTART && buf.token != TOK_OBJECTSTART)

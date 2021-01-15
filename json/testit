@@ -34,8 +34,8 @@ fi
 # ./json test/fail23.json && exit 1 # OK
 # ./json test/fail24.json && exit 1 # OK
 
-# ./json test/fail25.json && exit 1 # TAB character in string
-# ./json test/fail26.json && exit 1 # TAB character in string
+./json test/fail25.json && exit 1 # TAB character in string
+./json test/fail26.json && exit 1 # TAB character in string
 # ./json test/fail27.json && exit 1 # Line break (in quoted string)
 # ./json test/fail28.json && exit 1 # Line break (in quoted string)
 
