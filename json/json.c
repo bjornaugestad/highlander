@@ -32,8 +32,8 @@ enum valuetype {
     VAL_FALSE,
     VAL_NULL,
     VAL_DOUBLE,
-    VAL_STRING, // This is not a quoted string, but the string keyword from oas 3.0.3
-    VAL_BOOLEAN, // This is the boolean keyword from oas 3.0.3
+    VAL_STRING, // Not a quoted string, but the string keyword from oas 3.0.3
+    VAL_BOOLEAN, // The boolean keyword from oas 3.0.3
 };
 
 enum tokentype {
@@ -120,13 +120,28 @@ static void value_free(struct value *p)
     free(p);
 }
 
+static char *dupstr(const char *src)
+{
+    char *result;
+    size_t n;
+
+    assert(src != NULL);
+
+    n = strlen(src) + 1;
+    result = malloc(n);
+    if (result != NULL)
+        memcpy(result, src, n);
+
+    return result;
+}
+
 // name and value may be NULL
 static struct object* object_new(const char *name, struct value *value)
 {
     struct object *p;
 
     if ((p = calloc(1, sizeof *p)) != NULL) {
-        if (name != NULL && (p->name = strdup(name)) == NULL) {
+        if (name != NULL && (p->name = dupstr(name)) == NULL) {
             free(p);
             return NULL;
         }
@@ -247,7 +262,7 @@ static struct value * value_new(enum valuetype type, void *value)
     p->type = type;
     switch (type) {
         case VAL_QSTRING:
-            p->v.sval = strdup(value);
+            p->v.sval = dupstr(value);
             break;
 
         case VAL_DOUBLE:
@@ -695,6 +710,10 @@ struct value* json_parse(const void *src, size_t srclen)
     // Load first symbol
     nextsym(&buf);
 
+    // First symbol must be either array start or object start.
+    if (buf.token != TOK_ARRAYSTART && buf.token != TOK_OBJECTSTART)
+        goto error;
+
     struct value *val = accept_value(&buf);
     if (val == NULL)
         goto error;
@@ -949,8 +968,10 @@ int main(int argc, char *argv[])
     test_internal_functions();
 
     if (argc > 1) {
-        while (*++argv != NULL)
+        while (*++argv != NULL) {
+            fprintf(stderr, "Testing contents of file %s\n", *argv);
             testfile(*argv);
+        }
     }
     else {
         size_t i, n;

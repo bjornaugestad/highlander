@@ -1,0 +1,39 @@
+#!/bin/bash
+gcc -o json -DJSON_CHECK -Wall -Wextra -pedantic -std=c99 json.c -lmeta
+if test $? -ne 0; then
+    exit 1
+fi
+
+./json test/fail1.json && exit 1
+./json test/fail2.json && exit 1
+./json test/fail3.json && exit 1
+./json test/fail4.json && exit 1
+./json test/fail5.json && exit 1
+./json test/fail6.json && exit 1
+./json test/fail7.json && exit 1
+./json test/fail8.json && exit 1
+./json test/fail9.json && exit 1
+./json test/fail10.json && exit 1
+./json test/fail11.json && exit 1
+./json test/fail12.json && exit 1
+./json test/fail13.json && exit 1
+./json test/fail14.json && exit 1
+./json test/fail15.json && exit 1
+./json test/fail16.json && exit 1
+./json test/fail17.json && exit 1
+./json test/fail18.json && exit 1
+./json test/fail19.json && exit 1
+./json test/fail20.json && exit 1
+./json test/fail21.json && exit 1
+./json test/fail22.json && exit 1
+./json test/fail23.json && exit 1
+./json test/fail24.json && exit 1
+./json test/fail25.json && exit 1
+./json test/fail26.json && exit 1
+./json test/fail27.json && exit 1
+./json test/fail28.json && exit 1
+./json test/fail29.json && exit 1
+./json test/fail30.json && exit 1
+./json test/fail31.json && exit 1
+./json test/fail32.json && exit 1
+./json test/fail33.json && exit 1
