@@ -12,6 +12,8 @@
 #include "meta_common.h"
 #include "meta_list.h"
 
+#include "json.h"
+
 
 // Been almost a year since I looked at this. Gotta start fresh...
 // Some base rules
@@ -64,7 +66,6 @@ struct buffer {
     size_t nread, size;
 
     enum tokentype token;
-    char meh_bf_value[2048];
 
     // We don't want to copy values from the source to a temp
     // buffer, as we don't want to allocate memory, and we don't
@@ -579,27 +580,45 @@ enomem:
     return NULL;
 }
 
-#ifdef JSON_CHECK
-
-__attribute__((warn_unused_result))
-static list json_parse(struct buffer *src)
+static void buffer_init(struct buffer *p, const void *src, size_t srclen)
 {
-    list result;
-    nextsym(src);
+    memset(p, 0, sizeof *p);
+    p->mem = src;
+    p->size = srclen;
+    p->lineno = 1;
+}
 
-    if (!accept(src, TOK_OBJECTSTART))
-        die("Input must start with a {\n");
 
-    result = accept_objects(src);
-    if (!expect(src, TOK_OBJECTEND) && !expect(src, TOK_EOF))
+list json_parse(const void *src, size_t srclen)
+{
+    struct buffer buf;
+    list result = NULL;
+
+    assert(src != NULL);
+    assert(srclen > 1); // Minumum is {}, as in nothing(object start and end).
+
+    buffer_init(&buf, src, srclen);
+
+    // Load first symbol
+    nextsym(&buf);
+
+    if (!accept(&buf, TOK_OBJECTSTART))
         goto error;
 
+    result = accept_objects(&buf);
+    if (!expect(&buf, TOK_OBJECTEND) && !expect(&buf, TOK_EOF))
+        goto error;
+
+    free(buf.savedvalue);
     return result;
 
 error:
     list_free(result, (dtor)object_free);
+    free(buf.savedvalue);
     return NULL;
 }
+
+#ifdef JSON_CHECK
 
 static void print_value(struct value *p);
 static void json_traverse(list objects)
@@ -730,20 +749,17 @@ static void print_value(struct value *p)
     }
 }
 
-static void buffer_init(struct buffer *p)
+void json_free(list objects)
 {
-    memset(p, 0, sizeof *p);
-    p->lineno = 1;
+    list_free(objects, (dtor)object_free);
 }
 
 static void testfile(const char *filename)
 {
     int fd;
     struct stat st;
-    struct buffer buf;
     list objects;
 
-    buffer_init(&buf);
     fd = open(filename, O_RDONLY);
     if (fd == -1)
         die_perror(filename);
@@ -751,12 +767,12 @@ static void testfile(const char *filename)
     if (fstat(fd, &st))
         die_perror(filename);
 
-    buf.mem = mmap(NULL, buf.size = st.st_size, PROT_READ, MAP_SHARED, fd, 0);
-    if (buf.mem == MAP_FAILED)
+    const void *mem = mmap(NULL, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
+    if (mem == MAP_FAILED)
         die_perror(filename);
     close(fd);
 
-    objects = json_parse(&buf);
+    objects = json_parse(mem, st.st_size);
     if (objects == NULL) {
         fprintf(stderr, "Unable to parse %s\n", filename);
         exit(1); // so make check notices
@@ -764,8 +780,7 @@ static void testfile(const char *filename)
 
     if (0) json_traverse(objects);
 
-    list_free(objects, (dtor)object_free);
-    free(buf.savedvalue);
+    json_free(objects);
 }
 
 int main(int argc, char *argv[])
