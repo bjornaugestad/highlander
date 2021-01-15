@@ -360,16 +360,19 @@ static const char *maptoken(enum tokentype value)
 //
 // There seems to be some rules in JSON regarding illegal characters.
 // * TAB is uncool, see fail25.json and fail26.json.
+// * Only some chars can be escaped:
+//      "\/bfnrt as well as u, followed by four hex digits
+//
 int get_qstring(struct buffer *src)
 {
-    const char *illegal_escapes = " \t\n";
+    const char *legal_escapes = "\\\"/bfnrtu";
     int c, prev = 0;
 
     assert(src != NULL);
     src->value_start = src->value_end = buffer_currpos(src);
 
     while ((c = buffer_getc(src)) != EOF) {
-        if (c == '\\' && strchr(illegal_escapes, c) != NULL)
+        if (prev == '\\' && strchr(legal_escapes, c) == NULL)
             return TOK_UNKNOWN;
 
         if (c == '\\' && prev == '\\') 

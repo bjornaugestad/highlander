@@ -23,9 +23,9 @@ fi
 # ./json test/fail13.json && exit 1 # OK, but not gracefully. Numbers cannot have leading zeroes
 
 # ./json test/fail14.json && exit 1 # OK
-# ./json test/fail15.json && exit 1 # Illegal backslash escape (\x15)
+# ./json test/fail15.json && exit 1 # OK. Illegal backslash escape (\x15)
 # ./json test/fail16.json && exit 1 # OK
-# ./json test/fail17.json && exit 1 # Illegal backslash escape (\017)
+# ./json test/fail17.json && exit 1 # OK. Illegal backslash escape (\017)
 # ./json test/fail18.json && exit 1 # Too deep (as in [[[[[[[[[[["too deep"]]]]]]]]
 
 # ./json test/fail19.json && exit 1 # OK
