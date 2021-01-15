@@ -9,12 +9,11 @@
 // to use meta_error.h? Not sure, really. It's been a life time since
 // I looked at it.
 
-// Parse a memory buffer and return a list of JSON objects.
-// A JSON object has a name and a value.
-list json_parse(const void *src, size_t srclen) __attribute__((warn_unused_result));
+struct value;
+struct value* json_parse(const void *src, size_t srclen) __attribute__((warn_unused_result));
 
 // Free memory used by the list returned from json_parse().
-void json_free(list objects);
+void json_free(struct value *objects);
 
 #endif
 

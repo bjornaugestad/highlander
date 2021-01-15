@@ -244,19 +244,6 @@ static struct value * value_new(enum valuetype type, void *value)
     if ((p = calloc(1, sizeof *p)) == NULL)
         return NULL;
 
-    if (1) {
-        switch (type) {
-            case VAL_QSTRING:
-            case VAL_DOUBLE:
-            case VAL_INTEGER:
-                fprintf(stderr, "%s\n", (const char *)value);
-                break;
-            default:
-                ;
-        }
-    }
-        
-
     p->type = type;
     switch (type) {
         case VAL_QSTRING:
@@ -695,7 +682,7 @@ static void buffer_init(struct buffer *p, const void *src, size_t srclen)
 //
 // So we need to accept TOK_ARRAYSTART as first token, and then
 // accept TOK_ARRAYEND as last token.
-list json_parse(const void *src, size_t srclen)
+struct value* json_parse(const void *src, size_t srclen)
 {
     struct buffer buf;
     list result = NULL;
@@ -708,15 +695,6 @@ list json_parse(const void *src, size_t srclen)
     // Load first symbol
     nextsym(&buf);
 
-#if 1
-    if (!accept(&buf, TOK_OBJECTSTART))
-        goto error;
-
-    result = accept_objects(&buf);
-    if (!expect(&buf, TOK_OBJECTEND) && !expect(&buf, TOK_EOF))
-        goto error;
-
-#else
     struct value *val = accept_value(&buf);
     if (val == NULL)
         goto error;
@@ -727,10 +705,9 @@ list json_parse(const void *src, size_t srclen)
     // Let's put that decision on hold until we parse the pass*.json
     // files correctly. Still lots of work to do on e.g. numbers.
 
-#endif
 
     free(buf.savedvalue);
-    return result;
+    return val;
 
 error:
     if (0) list_free(result, (dtor)object_free);
@@ -741,8 +718,9 @@ error:
 #ifdef JSON_CHECK
 
 static void print_value(struct value *p);
-static void json_traverse(list objects)
+static void json_traverse(struct value *objects)
 {
+#if 0
     list_iterator i;
 
     for (i = list_first(objects); !list_end(i); i = list_next(i)) {
@@ -760,6 +738,9 @@ static void json_traverse(list objects)
 
         printf("\n");
     }
+#else
+    (void)objects;
+#endif
 }
 
 static void print_array(list lst)
@@ -869,16 +850,16 @@ static void print_value(struct value *p)
     }
 }
 
-void json_free(list objects)
+void json_free(struct value *objects)
 {
-    if (0) list_free(objects, (dtor)object_free);
+    (void)objects;
+    // if (0) list_free(objects, (dtor)object_free);
 }
 
 static void testfile(const char *filename)
 {
     int fd;
     struct stat st;
-    list objects;
 
     fd = open(filename, O_RDONLY);
     if (fd == -1)
@@ -892,7 +873,7 @@ static void testfile(const char *filename)
         die_perror(filename);
     close(fd);
 
-    objects = json_parse(mem, st.st_size);
+    struct value *objects = json_parse(mem, st.st_size);
     if (objects == NULL) {
         fprintf(stderr, "Unable to parse %s\n", filename);
         exit(1); // so make check notices
