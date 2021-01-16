@@ -72,6 +72,7 @@ struct buffer {
     const char *value_start, *value_end;
 
     char *savedvalue;
+    size_t valuesize;
 
     unsigned long lineno;
 };
@@ -314,7 +315,7 @@ static struct value * value_new(enum valuetype type, void *value)
             break;
 
         default:
-            die("Dude, wtf?\n");
+            die("Dude, wtf? Handle all values, please\n");
     }
 
     return p;
@@ -569,12 +570,20 @@ static void savevalue(struct buffer *p)
     assert(p->value_start != NULL);
     assert(p->value_end != NULL);
     assert(p->value_end >= p->value_start); // At least one char makes sense
+    assert(p->savedvalue != NULL);
+    assert(p->valuesize != 0);
 
-    free(p->savedvalue);
-
+    // How many bytes do we need?
     size_t n = p->value_end - p->value_start + 1;
-    if ((p->savedvalue = malloc(n)) == NULL)
-        die("Out of memory\n");
+
+    // reallocate on demand
+    if (n > p->valuesize) {
+        free(p->savedvalue);
+        if ((p->savedvalue = malloc(n)) == NULL)
+            die("Out of memory\n");
+
+        p->valuesize = n;
+    }
 
     memcpy(p->savedvalue, p->value_start, n - 1);
     p->savedvalue[n - 1] = '\0'; // terminate the new string
@@ -723,12 +732,33 @@ enomem:
     return NULL;
 }
 
-static void buffer_init(struct buffer *p, const void *src, size_t srclen)
+__attribute__((warn_unused_result))
+static bool buffer_init(struct buffer *p, const void *src, size_t srclen)
 {
+    assert(p != NULL);
+    assert(src != NULL);
+    assert(srclen > 0);
+
     memset(p, 0, sizeof *p);
     p->mem = src;
     p->size = srclen;
     p->lineno = 1;
+
+    // pre-allocate the value buffer to avoid too many malloc/free cycles
+    p->valuesize = 1024;
+    if ((p->savedvalue = malloc(p->valuesize)) == NULL)
+        return false;
+
+    return true;
+}
+
+static void buffer_cleanup(struct buffer *p)
+{
+    assert(p != NULL);
+
+    free(p->savedvalue);
+    p->savedvalue = NULL;
+    p->valuesize = 0;
 }
 
 struct value* json_parse(const void *src, size_t srclen)
@@ -739,7 +769,8 @@ struct value* json_parse(const void *src, size_t srclen)
     assert(src != NULL);
     assert(srclen > 1); // Minimum is {}, as in nothing(object start and end).
 
-    buffer_init(&buf, src, srclen);
+    if (!buffer_init(&buf, src, srclen))
+        return false;
 
     // Load first symbol
     if (!nextsym(&buf))
@@ -753,12 +784,12 @@ struct value* json_parse(const void *src, size_t srclen)
     if (val == NULL)
         goto error;
 
-    free(buf.savedvalue);
+    buffer_cleanup(&buf);
     return val;
 
 error:
     if (0) list_free(result, (dtor)object_free);
-    free(buf.savedvalue);
+    buffer_cleanup(&buf);
     return NULL;
 }
 
@@ -989,7 +1020,8 @@ static void test_get_qstring(void)
     size_t i, n = sizeof tests / sizeof *tests;
     for (i = 0; i < n; i++) {
         struct buffer buf;
-        buffer_init(&buf, tests[i].src, strlen(tests[i].src));
+        if (!buffer_init(&buf, tests[i].src, strlen(tests[i].src)))
+            die("Unable to initialize buffer\n");
 
         int result = get_qstring(&buf);
         if (result != tests[i].result)
