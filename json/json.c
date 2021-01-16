@@ -127,6 +127,7 @@ static char *dupstr(const char *src)
 
     assert(src != NULL);
 
+
     n = strlen(src) + 1;
     result = malloc(n);
     if (result != NULL)
@@ -571,7 +572,7 @@ static void savevalue(struct buffer *p)
 
     free(p->savedvalue);
 
-    size_t n = p->value_end - p->value_start + 2;
+    size_t n = p->value_end - p->value_start + 1;
     if ((p->savedvalue = malloc(n)) == NULL)
         die("Out of memory\n");
 
@@ -666,7 +667,8 @@ static struct value* accept_value(struct buffer *src)
 }
 
 
-// Accept one object, i.e., a name:value pair. Opening brace HAS been read already
+// Accept one object, i.e., a name:value pair. 
+// Opening brace HAS been read already
 // Value may be null, as in { "foo" : { } }
 __attribute__((warn_unused_result))
 static struct object* accept_object(struct buffer *src)
@@ -975,10 +977,44 @@ static void test_isreal(void)
     }
 }
 
+static void test_get_qstring(void)
+{
+    static const struct {
+        const char *src, *str;
+        int result;
+    } tests[] = {
+        { "hello\"", "hello", TOK_QSTRING }
+    };
+
+    size_t i, n = sizeof tests / sizeof *tests;
+    for (i = 0; i < n; i++) {
+        struct buffer buf;
+        buffer_init(&buf, tests[i].src, strlen(tests[i].src));
+
+        int result = get_qstring(&buf);
+        if (result != tests[i].result)
+            die("%s(): src: <%s>: expected %s, got %s\n",
+                __func__, tests[i].src, maptoken(tests[i].result),
+                maptoken(result));
+
+        ptrdiff_t blen = buf.value_end - buf.value_start;
+        size_t reslen = strlen(tests[i].str);
+        if ((size_t)blen != reslen)
+            die("%s(): expected %lu bytes, got %ld\n",
+                __func__, reslen, blen);
+
+        int d = memcmp(tests[i].str, buf.value_start, reslen);
+        if (d != 0)
+            die("%s(): Something's really odd\n", __func__);
+
+    }
+}
+    
 static void test_internal_functions(void)
 {
     test_isinteger();
     test_isreal();
+    test_get_qstring();
 }
 
 int main(int argc, char *argv[])
