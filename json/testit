@@ -9,7 +9,7 @@ fi
 # ./json test/fail2.json && exit 1 # OK, fails as expected
 # ./json test/fail3.json && exit 1 # OK, fails as expected
 
-# ./json test/fail4.json && exit 1 # extra comma
+./json test/fail4.json && exit 1 # extra comma
 # ./json test/fail5.json && exit 1 # double extra comma
 # ./json test/fail6.json && exit 1 # Missing value (name actually)
 # ./json test/fail7.json && exit 1 # Comma after the close (as in [],)

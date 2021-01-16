@@ -363,7 +363,7 @@ static const char *maptoken(enum tokentype value)
 // * Only some chars can be escaped:
 //      "\/bfnrt as well as u, followed by four hex digits
 //
-int get_qstring(struct buffer *src)
+static int get_qstring(struct buffer *src)
 {
     const char *legal_escapes = "\\\"/bfnrtu";
     int c, prev = 0;
@@ -393,7 +393,7 @@ int get_qstring(struct buffer *src)
 }
 
 // We've read a t. Are the next characters rue, as in true?
-int get_true(struct buffer *src)
+static int get_true(struct buffer *src)
 {
     if (buffer_getc(src) == 'r' 
     && buffer_getc(src) == 'u' 
@@ -403,7 +403,7 @@ int get_true(struct buffer *src)
     return TOK_UNKNOWN;
 }
 
-int get_false(struct buffer *src)
+static int get_false(struct buffer *src)
 {
     if (buffer_getc(src) == 'a' 
     && buffer_getc(src) == 'l' 
@@ -414,7 +414,7 @@ int get_false(struct buffer *src)
     return TOK_UNKNOWN;
 }
 
-int get_null(struct buffer *src)
+static int get_null(struct buffer *src)
 {
     if (buffer_getc(src) == 'u' 
     && buffer_getc(src) == 'l' 
@@ -424,7 +424,7 @@ int get_null(struct buffer *src)
     return TOK_UNKNOWN;
 }
 
-int get_string(struct buffer *src)
+static int get_string(struct buffer *src)
 {
     if (buffer_getc(src) == 't' 
     && buffer_getc(src) == 'r' 
@@ -436,7 +436,7 @@ int get_string(struct buffer *src)
     return TOK_UNKNOWN;
 }
 
-int get_boolean(struct buffer *src)
+static int get_boolean(struct buffer *src)
 {
     if (buffer_getc(src) == 'o' 
     && buffer_getc(src) == 'o' 
@@ -729,13 +729,6 @@ static void buffer_init(struct buffer *p, const void *src, size_t srclen)
     p->lineno = 1;
 }
 
-
-// BUG/TODO: JSON can apperantly start with either and object, {}, 
-// or an array, []. I misread the bnf, which is fucking broken, at least
-// it is broken on json.org. (json -> element? nah, elements)
-//
-// So we need to accept TOK_ARRAYSTART as first token, and then
-// accept TOK_ARRAYEND as last token.
 struct value* json_parse(const void *src, size_t srclen)
 {
     struct buffer buf;
