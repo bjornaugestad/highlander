@@ -1,0 +1,26 @@
+Thu Jan 14 07:03:20 AM CET 2021
+So, things move slowly in the age of Corona. It's 2021 now,
+but I'm still interested :)
+
+Playing with github's api, as documented on https://docs.github.com/en/free-pro-team@latest/rest/overview/resources-in-the-rest-api
+
+Notes: 
+* When I request e.g. a list of repos, the returned data
+is an array. Each entry in the array is a JSON description of
+one repo. Makes, sense, but not quite what I expected. I was
+assuming that the array, [ repo1, repo2, ...] was wrapped in
+JSON, which must start with a {. Is this a github thing or a
+general way of returning data sets in OAS?
+
+* api.github.com/meta seems to list server ip addrs.
+* user-agent is required in the request header
+
+* I was able to get a personal access token to use(somehow).
+  The token is  0695167544ecb45ad31f8049b63467fade661ed7
+  It can be used as a password,e.g. in the command
+    curl -u myusername:token https://api.github.com/users
+
+  that command returns a list of users btw, ordered by id.
+  It's JSON, but in an array, like the repos result. Hmm,
+  what to do about that? 
+
