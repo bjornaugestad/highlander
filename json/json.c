@@ -614,6 +614,10 @@ static bool expect(struct buffer *p, enum tokentype tok)
     return false;
 }
 
+// Notes on fail4.json: 
+// * When we read arrays, we loop until there are no more commas to be read.
+//   That's incorrect since it allows for trailing commas: [ "foo", ]
+//
 __attribute__((warn_unused_result))
 static struct value* accept_value(struct buffer *src)
 {
@@ -629,7 +633,6 @@ static struct value* accept_value(struct buffer *src)
         return value_new(VAL_OBJECT, lst);
     }
     else if (accept(src, TOK_ARRAYSTART)) {
-        // Wrap array list in a struct value object before returning 
         list lst = NULL;
         do {
             struct value *p = accept_value(src);
@@ -643,6 +646,7 @@ static struct value* accept_value(struct buffer *src)
             return NULL;
         }
 
+        // Wrap array list in a struct value object before returning 
         return value_new(VAL_ARRAY, lst);
     }
     else if (accept(src, TOK_TRUE)) {
