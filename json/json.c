@@ -234,10 +234,6 @@ static bool isreal(const char *s)
     if (isinteger(s))
         return false;
 
-    // If it ain't an integer, it must contain a .
-    if (strchr(s, '.') == NULL)
-        return false;
-
     bool result;
     char *endp;
     int olderrno = errno;
@@ -462,7 +458,7 @@ static int get_boolean(struct buffer *src)
 static bool get_number(struct buffer *src)
 {
     int c;
-    const char *legal = "0123456789-,eE+";
+    const char *legal = "0123456789-.eE+";
     size_t nchars = 0;
 
     assert(src != NULL);
@@ -474,7 +470,6 @@ static bool get_number(struct buffer *src)
             nchars++;
         }
         else {
-            src->value_end--;
             buffer_ungetc(src);
             break;
         }
@@ -612,6 +607,7 @@ static bool expect(struct buffer *p, enum tokentype tok)
 
     printf("%s(): expected token '%s', but found token around line %lu: %s\n",
         __func__, maptoken(tok), p->lineno, maptoken(p->token));
+    printf("%s(): %s\n", __func__, p->savedvalue);
     return false;
 }
 
@@ -624,6 +620,7 @@ static struct value* accept_value(struct buffer *src)
 {
     assert(src != NULL);
 
+    if (0) warning("accept_value");
     if (accept(src, TOK_OBJECTSTART)) {
         list lst = accept_objects(src);
         if (!expect(src, TOK_OBJECTEND)) {
@@ -631,6 +628,7 @@ static struct value* accept_value(struct buffer *src)
             return NULL;
         }
 
+        if (0) warning("object");
         return value_new(VAL_OBJECT, lst);
     }
 
@@ -647,24 +645,33 @@ static struct value* accept_value(struct buffer *src)
 
         // Note that we do need to be at token ARRAY END 
         if (!expect(src, TOK_ARRAYEND)) {
+            if (0) warning("Meh");
             if (0) list_free(lst, (dtor)object_free);
             return NULL;
         }
 
         // Wrap array list in a struct value object before returning 
+        if (0) warning("array");
         return value_new(VAL_ARRAY, lst);
     }
     
-    if (accept(src, TOK_TRUE))
+    if (accept(src, TOK_TRUE)) {
+        if (0) warning("true");
         return value_new(VAL_TRUE, NULL);
+    }
     
-    if (accept(src, TOK_FALSE))
+    if (accept(src, TOK_FALSE)) {
+        if (0) warning("false");
         return value_new(VAL_FALSE, NULL);
+    }
     
-    if (accept(src, TOK_NULL))
+    if (accept(src, TOK_NULL)) {
+        if (0) warning("null");
         return value_new(VAL_NULL, NULL);
+    }
     
     if (accept(src, TOK_NUMBER)) {
+        if (0) warning("number:%s", src->savedvalue);
         if (isinteger(src->savedvalue))
             return value_new(VAL_INTEGER, src->savedvalue);
 
@@ -674,15 +681,22 @@ static struct value* accept_value(struct buffer *src)
         die("Internal error. Unhandled number from tokenizer");
     }
     
-    if (accept(src, TOK_QSTRING))
+    if (accept(src, TOK_QSTRING)) {
+        if (0) warning("qstring:%s", src->savedvalue);
         return value_new(VAL_QSTRING, src->savedvalue);
+    }
     
-    if (accept(src, TOK_STRING))
+    if (accept(src, TOK_STRING)) {
+        if (0) warning("string");
         return value_new(VAL_STRING, NULL);
+    }
     
-    if (accept(src, TOK_BOOLEAN))
+    if (accept(src, TOK_BOOLEAN)) {
+        if (0) warning("boolean");
         return value_new(VAL_BOOLEAN, NULL);
+    }
 
+    if (0) warning("returning NULL");
     return NULL;
 }
 
