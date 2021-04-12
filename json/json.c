@@ -123,14 +123,10 @@ static void value_free(struct value *p)
 
 static char *dupstr(const char *src)
 {
-    char *result;
-    size_t n;
-
     assert(src != NULL);
 
-
-    n = strlen(src) + 1;
-    result = malloc(n);
+    size_t n = strlen(src) + 1;
+    char *result = malloc(n);
     if (result != NULL)
         memcpy(result, src, n);
 
@@ -278,7 +274,8 @@ static struct value * value_new(enum valuetype type, void *value)
     p->type = type;
     switch (type) {
         case VAL_QSTRING:
-            p->v.sval = dupstr(value);
+            if ((p->v.sval = dupstr(value)) == NULL)
+                goto memerr;
             break;
 
         case VAL_DOUBLE:
@@ -315,6 +312,10 @@ static struct value * value_new(enum valuetype type, void *value)
     }
 
     return p;
+
+memerr:
+    free(p);
+    return NULL;
 }
 
 static const struct {
@@ -339,6 +340,7 @@ static const struct {
     { TOK_STRING      , false, "string" },
 };
 
+#if 1
 static const char *maptoken(enum tokentype value)
 {
     size_t i, n;
@@ -350,6 +352,7 @@ static const char *maptoken(enum tokentype value)
 
     return "unknown token value";
 }
+#endif
 
 // We have a ", which is start of quoted string. Read the rest of the
 // string and place it in value. Remember that escapes, \, may be
@@ -548,19 +551,21 @@ static bool nextsym(struct buffer *src)
             return get_number(src);
 
         default:
-            fprintf(stderr, "%s(), around line %lu: unexpected token: char's int value == %d.",
-                __func__, src->lineno, c);
-            if (isprint(c))
-                fprintf(stderr, " char value: '%c'", c);
-            fprintf(stderr, "\n");
+            // fprintf(stderr, "%s(), around line %lu: unexpected token: char's int value == %d.",
+                // __func__, src->lineno, c);
+            // if (isprint(c))
+                // fprintf(stderr, " char value: '%c'", c);
+            // fprintf(stderr, "\n");
             src->token = TOK_UNKNOWN;
+            break;
     }
 
     // Did we actually get a legal token?
     return src->token != TOK_UNKNOWN;
 }
 
-static void savevalue(struct buffer *p)
+__attribute__((warn_unused_result))
+static status_t savevalue(struct buffer *p)
 {
     assert(p != NULL);
     assert(p->value_start != NULL);
@@ -576,21 +581,22 @@ static void savevalue(struct buffer *p)
     if (n > p->valuesize) {
         free(p->savedvalue);
         if ((p->savedvalue = malloc(n)) == NULL)
-            die("Out of memory\n");
+            return failure;
 
         p->valuesize = n;
     }
 
     memcpy(p->savedvalue, p->value_start, n - 1);
     p->savedvalue[n - 1] = '\0'; // terminate the new string
+    return success;
 }
 
 __attribute__((warn_unused_result))
 static bool accept(struct buffer *src, enum tokentype tok)
 {
     if (src->token == tok) {
-        if (hasvalue(tok))
-            savevalue(src);
+        if (hasvalue(tok) && !savevalue(src))
+            return false;
 
         if (nextsym(src))
             return true;
@@ -605,9 +611,9 @@ static bool expect(struct buffer *p, enum tokentype tok)
     if (accept(p, tok))
         return true;
 
-    printf("%s(): expected token '%s', but found token around line %lu: %s\n",
-        __func__, maptoken(tok), p->lineno, maptoken(p->token));
-    printf("%s(): %s\n", __func__, p->savedvalue);
+    // printf("%s(): expected token '%s', but found token around line %lu: %s\n",
+    // __func__, maptoken(tok), p->lineno, maptoken(p->token));
+    // printf("%s(): %s\n", __func__, p->savedvalue);
     return false;
 }
 
@@ -615,12 +621,15 @@ static bool expect(struct buffer *p, enum tokentype tok)
 // * When we read arrays, we loop until there are no more commas to be read.
 //   That's incorrect since it allows for trailing commas: [ "foo", ]
 //
+// Notes on fail6.json:
+// * Issue is when array entries start off with a comma. 
+//
+//
 __attribute__((warn_unused_result))
 static struct value* accept_value(struct buffer *src)
 {
     assert(src != NULL);
 
-    if (0) warning("accept_value");
     if (accept(src, TOK_OBJECTSTART)) {
         list lst = accept_objects(src);
         if (!expect(src, TOK_OBJECTEND)) {
@@ -628,7 +637,6 @@ static struct value* accept_value(struct buffer *src)
             return NULL;
         }
 
-        if (0) warning("object");
         return value_new(VAL_OBJECT, lst);
     }
 
@@ -636,42 +644,38 @@ static struct value* accept_value(struct buffer *src)
         list lst = NULL;
         do {
             struct value *p = accept_value(src);
+
+            // corner case: First element in array is missing. See fail6.json
+            if (lst == NULL && p == NULL)
+                break;
+
             if (p != NULL) {
                 lst = list_add(lst, p);
                 if (lst == NULL)
-                    die("Out of memory");
+                    return NULL;
             }
         } while (accept(src, TOK_COMMA));
 
         // Note that we do need to be at token ARRAY END 
         if (!expect(src, TOK_ARRAYEND)) {
-            if (0) warning("Meh");
             if (0) list_free(lst, (dtor)object_free);
             return NULL;
         }
 
         // Wrap array list in a struct value object before returning 
-        if (0) warning("array");
         return value_new(VAL_ARRAY, lst);
     }
     
-    if (accept(src, TOK_TRUE)) {
-        if (0) warning("true");
+    if (accept(src, TOK_TRUE))
         return value_new(VAL_TRUE, NULL);
-    }
     
-    if (accept(src, TOK_FALSE)) {
-        if (0) warning("false");
+    if (accept(src, TOK_FALSE))
         return value_new(VAL_FALSE, NULL);
-    }
     
-    if (accept(src, TOK_NULL)) {
-        if (0) warning("null");
+    if (accept(src, TOK_NULL))
         return value_new(VAL_NULL, NULL);
-    }
     
     if (accept(src, TOK_NUMBER)) {
-        if (0) warning("number:%s", src->savedvalue);
         if (isinteger(src->savedvalue))
             return value_new(VAL_INTEGER, src->savedvalue);
 
@@ -681,22 +685,15 @@ static struct value* accept_value(struct buffer *src)
         die("Internal error. Unhandled number from tokenizer");
     }
     
-    if (accept(src, TOK_QSTRING)) {
-        if (0) warning("qstring:%s", src->savedvalue);
+    if (accept(src, TOK_QSTRING))
         return value_new(VAL_QSTRING, src->savedvalue);
-    }
     
-    if (accept(src, TOK_STRING)) {
-        if (0) warning("string");
+    if (accept(src, TOK_STRING))
         return value_new(VAL_STRING, NULL);
-    }
     
-    if (accept(src, TOK_BOOLEAN)) {
-        if (0) warning("boolean");
+    if (accept(src, TOK_BOOLEAN))
         return value_new(VAL_BOOLEAN, NULL);
-    }
 
-    if (0) warning("returning NULL");
     return NULL;
 }
 
@@ -966,6 +963,7 @@ void json_free(struct value *objects)
     // if (0) list_free(objects, (dtor)object_free);
 }
 
+static int exitcode = 0;
 static void testfile(const char *filename)
 {
     int fd;
@@ -986,7 +984,7 @@ static void testfile(const char *filename)
     struct value *objects = json_parse(mem, st.st_size);
     if (objects == NULL) {
         fprintf(stderr, "Unable to parse %s\n", filename);
-        exit(1); // so make check notices
+        exitcode = 1;
     }
 
     if (0) json_traverse(objects);
@@ -1111,7 +1109,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    return 0;
+    return exitcode;
 }
 
 #endif
