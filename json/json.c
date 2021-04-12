@@ -965,6 +965,7 @@ static void testfile(const char *filename)
 
     json_free(objects);
 }
+
 static void test_isinteger(void)
 {
     static const struct {
