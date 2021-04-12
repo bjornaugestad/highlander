@@ -530,6 +530,7 @@ static bool nextsym(struct buffer *src)
         case '}': src->token = TOK_OBJECTEND; break;
         case ':': src->token = TOK_COLON; break;
         case ',': src->token = TOK_COMMA; break;
+
         case '"': src->token = get_qstring(src); break;
         case 't': src->token = get_true(src); break;
         case 'f': src->token = get_false(src); break;
@@ -632,12 +633,16 @@ static struct value* accept_value(struct buffer *src)
 
         return value_new(VAL_OBJECT, lst);
     }
-    else if (accept(src, TOK_ARRAYSTART)) {
+
+    if (accept(src, TOK_ARRAYSTART)) {
         list lst = NULL;
         do {
             struct value *p = accept_value(src);
-            if (p != NULL)
+            if (p != NULL) {
                 lst = list_add(lst, p);
+                if (lst == NULL)
+                    die("Out of memory");
+            }
         } while (accept(src, TOK_COMMA));
 
         // Note that we do need to be at token ARRAY END 
@@ -649,32 +654,34 @@ static struct value* accept_value(struct buffer *src)
         // Wrap array list in a struct value object before returning 
         return value_new(VAL_ARRAY, lst);
     }
-    else if (accept(src, TOK_TRUE)) {
+    
+    if (accept(src, TOK_TRUE))
         return value_new(VAL_TRUE, NULL);
-    }
-    else if (accept(src, TOK_FALSE)) {
+    
+    if (accept(src, TOK_FALSE))
         return value_new(VAL_FALSE, NULL);
-    }
-    else if (accept(src, TOK_NULL)) {
+    
+    if (accept(src, TOK_NULL))
         return value_new(VAL_NULL, NULL);
-    }
-    else if (accept(src, TOK_NUMBER)) {
+    
+    if (accept(src, TOK_NUMBER)) {
         if (isinteger(src->savedvalue))
             return value_new(VAL_INTEGER, src->savedvalue);
-        else if (isreal(src->savedvalue))
+
+        if (isreal(src->savedvalue))
             return value_new(VAL_DOUBLE, src->savedvalue);
-        else
-            die("Internal error. Unhandled number from tokenizer");
+
+        die("Internal error. Unhandled number from tokenizer");
     }
-    else if (accept(src, TOK_QSTRING)) {
+    
+    if (accept(src, TOK_QSTRING))
         return value_new(VAL_QSTRING, src->savedvalue);
-    }
-    else if (accept(src, TOK_STRING)) {
+    
+    if (accept(src, TOK_STRING))
         return value_new(VAL_STRING, NULL);
-    }
-    else if (accept(src, TOK_BOOLEAN)) {
+    
+    if (accept(src, TOK_BOOLEAN))
         return value_new(VAL_BOOLEAN, NULL);
-    }
 
     return NULL;
 }
@@ -788,12 +795,19 @@ struct value* json_parse(const void *src, size_t srclen)
     if (val == NULL)
         goto error;
 
+    // Something's fucked if we still have tokens. See fail8.json
+    // This is syntax error in input, not our error. We just need
+    // to deal with it.
+    if (nextsym(&buf))
+        goto error;
+
     buffer_cleanup(&buf);
     return val;
 
 error:
     if (0) list_free(result, (dtor)object_free);
     buffer_cleanup(&buf);
+
     return NULL;
 }
 
