@@ -837,6 +837,7 @@ struct value* json_parse(const void *src, size_t srclen)
 
 error:
     buffer_cleanup(&buf);
+    value_free(val);
 
     return NULL;
 }
