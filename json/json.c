@@ -182,6 +182,7 @@ static list accept_objects(struct buffer *src);
 // It can be "0", "-0", "[1-9][0-9]*"
 // It cannot contain ., e, or anything else.
 // Leading zeroes are uncool
+// Update: Should we treat 10E10 as integer or real?
 static bool isinteger(const char *s)
 {
     assert(s != NULL);
@@ -340,19 +341,6 @@ static const struct {
     { TOK_STRING      , false, "string" },
 };
 
-#if 1
-static const char *maptoken(enum tokentype value)
-{
-    size_t i, n;
-
-    n = sizeof tokens / sizeof *tokens;
-    for (i = 0; i < n; i++)
-        if (tokens[i].value == value)
-            return tokens[i].text;
-
-    return "unknown token value";
-}
-#endif
 
 // We have a ", which is start of quoted string. Read the rest of the
 // string and place it in value. Remember that escapes, \, may be
@@ -1029,6 +1017,7 @@ static void test_isreal(void)
         { "1.2E2" , true },
         { "-0.5" , true },
         { "-0.5" , true },
+        { "1000E10" , true },
     };
 
     size_t i, n = sizeof tests / sizeof *tests;
@@ -1037,6 +1026,18 @@ static void test_isreal(void)
         if (result != tests[i].result)
             die("isreal() failed on %s.\n", tests[i].value);
     }
+}
+
+static const char *maptoken(enum tokentype value)
+{
+    size_t i, n;
+
+    n = sizeof tokens / sizeof *tokens;
+    for (i = 0; i < n; i++)
+        if (tokens[i].value == value)
+            return tokens[i].text;
+
+    return "unknown token value";
 }
 
 static void test_get_qstring(void)
