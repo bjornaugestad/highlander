@@ -635,6 +635,10 @@ static bool nextsym(struct buffer *src)
 
     // skip ws
     while ((c = buffer_getc(src)) != EOF && isspace(c)) {
+        // Form feeds aren't legal. Applies to many other control chars too?
+        if (c == '\f')
+            return TOK_UNKNOWN;
+
         if (c == '\n')
             src->lineno++;
     }
