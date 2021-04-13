@@ -182,6 +182,12 @@ static inline void buffer_ungetc(struct buffer *p)
     p->nread--;
 }
 
+static inline const char* buffer_cstr(struct buffer *p)
+{
+    assert(p != NULL);
+    return p->mem + p->nread;
+}
+
 // forward declarations because of recursive calls
 static struct object* accept_object(struct buffer *src);
 static list accept_objects(struct buffer *src);
@@ -196,7 +202,7 @@ static bool is_zero(const char *s)
 // 0123 is illegal, so is -0123. Leading zeros are illegal.
 static bool has_leading_zero(const char *s)
 {
-    while(isspace(*s))
+    while (isspace(*s))
         s++;
 
     if (*s == '\0')
@@ -431,6 +437,21 @@ static const struct {
     [ TOK_STRING      ] = { false, "string" },
 };
 
+static inline bool four_hex_digits(struct buffer *src)
+{
+    assert(src != NULL);
+
+    const char *s = buffer_cstr(src);
+    size_t len = strlen(s);
+
+    // we need four characters
+    if (len < 4)
+        return false;
+
+    // they must all be hex digits
+    return isxdigit(s[0]) && isxdigit(s[1]) && isxdigit(s[2]) & isxdigit(s[3]);
+}
+
 
 // We have a ", which is start of quoted string. Read the rest of the
 // string and place it in value. Remember that escapes, \, may be
@@ -451,6 +472,21 @@ static int get_qstring(struct buffer *src)
     src->value_start = src->value_end = buffer_currpos(src);
 
     while ((c = buffer_getc(src)) != EOF) {
+        // If escape char is u, four hex digits MUST follow
+        if (prev == '\\' && (c == 'u' || c == 'U')) {
+            if (!four_hex_digits(src))
+                return TOK_UNKNOWN;
+        }
+
+        // Don't escape the NIL character
+        if (prev == '\\' && c == '\0')
+            return TOK_UNKNOWN;
+
+        // Don't even pass the NIL character, regardless of escapes
+        if (c == '\0')
+            return TOK_UNKNOWN;
+
+        // Check for legal escape sequence
         if (prev == '\\' && strchr(legal_escapes, c) == NULL)
             return TOK_UNKNOWN;
 
@@ -460,6 +496,7 @@ static int get_qstring(struct buffer *src)
             break;
         else
             prev = c;
+
 
         // Can't have these in strings
         if (c == '\t' || c == '\n')
