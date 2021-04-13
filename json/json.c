@@ -252,6 +252,18 @@ static bool isinteger(const char *s)
     return false;
 }
 
+// return true if last char is '.'
+static bool has_trailing_dots(const char *s)
+{
+    assert(s != NULL);
+
+    size_t len = strlen(s);
+    if (len == 0)
+        return false;
+
+    return s[len - 1] == '.';
+}
+
 
 // Is the value in s a real number, with fractions(.n) and/or an exponent?
 // It's not a real if it's an integer. Imma be lazy here and use
@@ -259,6 +271,12 @@ static bool isinteger(const char *s)
 // it a real number.
 // Note that leading zeroes are uncool here too. We may want to
 // merge parts of this function with parts of isinteger().
+//
+// update 2021013: JSONTestSuite is stricter than strtod(), so we must
+// do more testing ourselves. Here's one example of an illegal number:
+//      [-2.]
+// Trailing dots are not acceptable. We must detect them ourselves.
+//
 static bool isreal(const char *s)
 {
     assert(s != NULL);
@@ -283,6 +301,24 @@ static bool isreal(const char *s)
     // Leading zeros are illegal in JSON
     if (has_leading_zero(s))
         return false;
+
+    // Trailing dots, "2." are illegal in JSON
+    if (has_trailing_dots(s))
+        return false;
+
+    // A fraction is required if we have a dot. "0.e1" is illegal in JSON
+    const char *p = strchr(s, '.');
+    if (p != NULL && !isdigit(*(p + 1)))
+        return false;
+
+    // If we have a fraction, we also need an integer part. ".1" is illegal
+    if (p != NULL) {
+        if (p == s)
+            return false;
+
+        if (!isdigit(*(p - 1)))
+            return false;
+    }
 
     bool result;
     char *endp;
@@ -313,6 +349,8 @@ static bool isnumber(const char *s, size_t nchars)
 
     memcpy(str, s, nchars);
     str[nchars] = '\0';
+
+    // printf("src:%s\n", str);
 
     return isinteger(str) || isreal(str);
 }
@@ -1064,7 +1102,7 @@ static void testfile(const char *filename)
 
     struct value *objects = json_parse(mem, st.st_size);
     if (objects == NULL) {
-        fprintf(stderr, "Unable to parse %s\n", filename);
+        // fprintf(stderr, "Unable to parse %s\n", filename);
         exitcode = 1;
     }
 
