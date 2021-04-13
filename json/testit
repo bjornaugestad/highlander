@@ -47,8 +47,7 @@ fi
 
 ./json test/fail25.json && exit 1 # OK
 
-# Meh, the test data seems wrong. There is no TAB in fail26.json
-./json test/fail26.json && exit 26 # TAB character in string
+./json test/fail26.json && exit 26 # OK. TAB character in string
 
 ./json test/fail27.json && exit 1 # OK
 ./json test/fail28.json && exit 1 # OK

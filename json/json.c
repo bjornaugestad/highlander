@@ -649,11 +649,62 @@ static bool expect(struct buffer *p, enum tokentype tok)
     return false;
 }
 
+static struct value* accept_value(struct buffer *src)
+    __attribute__((warn_unused_result));
+
 // Notes on fail18.json:
 // * Issue is when arrays nest too deep. Not sure why json has this
 // limitation. (Maybe to avoid exploits trying to DOS the parser?)
 // Anyway, we impose some limit. Test data indicates that 19 is max.
 #define MAX_ARRAY_NESTING 19
+
+static struct value *accept_array_elements(struct buffer *src)
+{
+    list lst = NULL;
+    struct value *p;
+    int ncommas = -1, nvalues = 0;
+
+    // fail18: Can't nest too deep.
+    src->narrays++;
+    if (src->narrays > MAX_ARRAY_NESTING) {
+        list_free(lst, (dtor)value_free);
+        return NULL;
+    }
+
+    do {
+        p = accept_value(src);
+
+        // corner case: First element in array is missing. See fail6.json
+        if (lst == NULL && p == NULL)
+            break;
+
+        if (p != NULL) {
+            lst = list_add(lst, p);
+            if (lst == NULL)
+                return NULL;
+
+            nvalues++;
+        }
+        ncommas++;
+    } while (accept(src, TOK_COMMA));
+
+    // Note that we do need to be at token ARRAY END 
+    if (!expect(src, TOK_ARRAYEND)) {
+        list_free(lst, (dtor)value_free);
+        return NULL;
+    }
+    src->narrays--;
+
+    // handle fail4.json: The number of commas should equal
+    // the number of values minus one.
+    if (nvalues > 0 && nvalues - ncommas != 1) {
+        list_free(lst, (dtor)value_free);
+        return NULL;
+    }
+
+    // Wrap array list in a struct value object before returning 
+    return value_new(VAL_ARRAY, lst);
+}
 
 __attribute__((warn_unused_result))
 static struct value* accept_value(struct buffer *src)
@@ -662,60 +713,14 @@ static struct value* accept_value(struct buffer *src)
 
     if (accept(src, TOK_OBJECTSTART)) {
         list lst = accept_objects(src);
-        if (!expect(src, TOK_OBJECTEND)) {
-            list_free(lst, (dtor)object_free);
+        if (lst == NULL)
             return NULL;
-        }
 
         return value_new(VAL_OBJECT, lst);
     }
 
-    if (accept(src, TOK_ARRAYSTART)) {
-        list lst = NULL;
-        struct value *p;
-        int ncommas = -1, nvalues = 0;
-
-        // fail18: Can't nest too deep.
-        src->narrays++;
-        if (src->narrays > MAX_ARRAY_NESTING) {
-            list_free(lst, (dtor)value_free);
-            return NULL;
-        }
-
-        do {
-            p = accept_value(src);
-
-            // corner case: First element in array is missing. See fail6.json
-            if (lst == NULL && p == NULL)
-                break;
-
-            if (p != NULL) {
-                lst = list_add(lst, p);
-                if (lst == NULL)
-                    return NULL;
-
-                nvalues++;
-            }
-            ncommas++;
-        } while (accept(src, TOK_COMMA));
-
-        // Note that we do need to be at token ARRAY END 
-        if (!expect(src, TOK_ARRAYEND)) {
-            list_free(lst, (dtor)value_free);
-            return NULL;
-        }
-        src->narrays--;
-
-        // handle fail4.json: The number of commas should equal
-        // the number of values minus one.
-        if (nvalues > 0 && nvalues - ncommas != 1) {
-            list_free(lst, (dtor)value_free);
-            return NULL;
-        }
-
-        // Wrap array list in a struct value object before returning 
-        return value_new(VAL_ARRAY, lst);
-    }
+    if (accept(src, TOK_ARRAYSTART))
+        return accept_array_elements(src);
     
     if (accept(src, TOK_TRUE))
         return value_new(VAL_TRUE, NULL);
@@ -768,6 +773,8 @@ static struct object* accept_object(struct buffer *src)
 
     // Now get the value
     obj->value = accept_value(src);
+    if (obj->value == NULL)
+        goto error;
 
     // It turns out that e.g. Google uses (key) as name, but without quotes.
     // This is not really JSON, but maybe it's OAS compliant?
@@ -796,6 +803,11 @@ static list accept_objects(struct buffer *src)
             goto enomem;
 
     } while (accept(src, TOK_COMMA));
+
+    if (!expect(src, TOK_OBJECTEND)) {
+        list_free(result, (dtor)object_free);
+        return NULL;
+    }
 
     return result;
 
@@ -911,12 +923,16 @@ static void print_object(const struct object *p)
     }
 }
 
+
+// object lists can be NULL, in case input is "{}"
 static void print_objects(list lst)
 {
     list_iterator i;
 
-    assert(lst != NULL);
     printf("{\n");
+
+    if (lst == NULL) 
+        goto end;
 
     for (i = list_first(lst); !list_end(i); i = list_next(i)) {
         struct object *obj = list_get(i);
@@ -929,6 +945,7 @@ static void print_objects(list lst)
             printf(",\n");
     }
 
+end:
     printf("\n}");
 }
 
