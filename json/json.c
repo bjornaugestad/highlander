@@ -21,7 +21,7 @@
 //   and value is one of: quoted string, number, true, false, null, array, object
 // * array entries are also value, see above list of alternatives. No name in arrays though.
 // OK, so we need some generic data structure to store everything in. We store
-// one of the following: string, number, array, object, true|false|null. 
+// one of the following: string, number, array, object, true|false|null.
 enum valuetype {
     VAL_UNKNOWN,
     VAL_QSTRING,
@@ -56,7 +56,7 @@ enum tokentype {
 };
 
 
-// We store our input buffer in one of these, to make it easier to 
+// We store our input buffer in one of these, to make it easier to
 // handle offset positions when we read from functions.
 struct buffer {
     const char *mem;
@@ -97,7 +97,7 @@ struct value {
         long lval;  // long integers
         double dval; // floating point numbers
         list aval; // array value, all struct value-pointers.
-        list oval; // object value. 
+        list oval; // object value.
     } v;
 };
 
@@ -170,7 +170,7 @@ static inline int buffer_getc(struct buffer *p)
 {
     if (p->nread == p->size)
         return EOF;
-    
+
     return p->mem[p->nread++];
 }
 
@@ -193,9 +193,24 @@ static bool is_zero(const char *s)
     return *s == '0' && *(s + 1) == '\0';
 }
 
+// 0123 is illegal, so is -0123. Leading zeros are illegal.
 static bool has_leading_zero(const char *s)
 {
-    return *s == '0' && isdigit(*(s + 1));
+    while(isspace(*s))
+        s++;
+
+    if (*s == '\0')
+        return false;
+
+    // Skip negative sign, if present
+    if (*s == '-')
+        s++;
+
+    if (*s != '0')
+        return false;
+
+    // Is next character a digit? If so, we have leading zero
+    return isdigit(*(s + 1));
 }
 
 // Is the value of s an integer number, as specified by
@@ -239,10 +254,10 @@ static bool isinteger(const char *s)
 
 
 // Is the value in s a real number, with fractions(.n) and/or an exponent?
-// It's not a real if it's an integer. Imma be lazy here and use 
+// It's not a real if it's an integer. Imma be lazy here and use
 // strtod to test if it's a real number. If strtod() consumes all chars,
-// it a real number. 
-// Note that leading zeroes are uncool here too. We may want to 
+// it a real number.
+// Note that leading zeroes are uncool here too. We may want to
 // merge parts of this function with parts of isinteger().
 static bool isreal(const char *s)
 {
@@ -250,7 +265,7 @@ static bool isreal(const char *s)
     assert(*s != '\0'); // Empty strings? Nah, meaningless
 
     // Remove leading ws
-    while(isspace(*s))
+    while (isspace(*s))
         s++;
 
     // Was the string all ws? If so, it's not a real number.
@@ -401,7 +416,7 @@ static int get_qstring(struct buffer *src)
         if (prev == '\\' && strchr(legal_escapes, c) == NULL)
             return TOK_UNKNOWN;
 
-        if (c == '\\' && prev == '\\') 
+        if (c == '\\' && prev == '\\')
             prev = 0;
         else if (c == '"' && prev != '\\')
             break;
@@ -423,8 +438,8 @@ static int get_true(struct buffer *src)
 {
     assert(src != NULL);
 
-    if (buffer_getc(src) == 'r' 
-    && buffer_getc(src) == 'u' 
+    if (buffer_getc(src) == 'r'
+    && buffer_getc(src) == 'u'
     && buffer_getc(src) == 'e')
         return TOK_TRUE;
 
@@ -435,9 +450,9 @@ static int get_false(struct buffer *src)
 {
     assert(src != NULL);
 
-    if (buffer_getc(src) == 'a' 
-    && buffer_getc(src) == 'l' 
-    && buffer_getc(src) == 's' 
+    if (buffer_getc(src) == 'a'
+    && buffer_getc(src) == 'l'
+    && buffer_getc(src) == 's'
     && buffer_getc(src) == 'e')
         return TOK_FALSE;
 
@@ -448,8 +463,8 @@ static int get_null(struct buffer *src)
 {
     assert(src != NULL);
 
-    if (buffer_getc(src) == 'u' 
-    && buffer_getc(src) == 'l' 
+    if (buffer_getc(src) == 'u'
+    && buffer_getc(src) == 'l'
     && buffer_getc(src) == 'l')
         return TOK_NULL;
 
@@ -460,8 +475,8 @@ static int get_string(struct buffer *src)
 {
     assert(src != NULL);
 
-    if (buffer_getc(src) == 't' 
-    && buffer_getc(src) == 'r' 
+    if (buffer_getc(src) == 't'
+    && buffer_getc(src) == 'r'
     && buffer_getc(src) == 'i'
     && buffer_getc(src) == 'n'
     && buffer_getc(src) == 'g')
@@ -474,8 +489,8 @@ static int get_boolean(struct buffer *src)
 {
     assert(src != NULL);
 
-    if (buffer_getc(src) == 'o' 
-    && buffer_getc(src) == 'o' 
+    if (buffer_getc(src) == 'o'
+    && buffer_getc(src) == 'o'
     && buffer_getc(src) == 'l'
     && buffer_getc(src) == 'e'
     && buffer_getc(src) == 'a'
@@ -688,7 +703,7 @@ static struct value *accept_array_elements(struct buffer *src)
         ncommas++;
     } while (accept(src, TOK_COMMA));
 
-    // Note that we do need to be at token ARRAY END 
+    // Note that we do need to be at token ARRAY END
     if (!expect(src, TOK_ARRAYEND)) {
         list_free(lst, (dtor)value_free);
         return NULL;
@@ -702,7 +717,7 @@ static struct value *accept_array_elements(struct buffer *src)
         return NULL;
     }
 
-    // Wrap array list in a struct value object before returning 
+    // Wrap array list in a struct value object before returning
     return value_new(VAL_ARRAY, lst);
 }
 
@@ -721,16 +736,16 @@ static struct value* accept_value(struct buffer *src)
 
     if (accept(src, TOK_ARRAYSTART))
         return accept_array_elements(src);
-    
+
     if (accept(src, TOK_TRUE))
         return value_new(VAL_TRUE, NULL);
-    
+
     if (accept(src, TOK_FALSE))
         return value_new(VAL_FALSE, NULL);
-    
+
     if (accept(src, TOK_NULL))
         return value_new(VAL_NULL, NULL);
-    
+
     if (accept(src, TOK_NUMBER)) {
         if (isinteger(src->savedvalue))
             return value_new(VAL_INTEGER, src->savedvalue);
@@ -740,13 +755,13 @@ static struct value* accept_value(struct buffer *src)
 
         die("Internal error. Unhandled number from tokenizer");
     }
-    
+
     if (accept(src, TOK_QSTRING))
         return value_new(VAL_QSTRING, src->savedvalue);
-    
+
     if (accept(src, TOK_STRING))
         return value_new(VAL_STRING, NULL);
-    
+
     if (accept(src, TOK_BOOLEAN))
         return value_new(VAL_BOOLEAN, NULL);
 
@@ -754,7 +769,7 @@ static struct value* accept_value(struct buffer *src)
 }
 
 
-// Accept one object, i.e., a name:value pair. 
+// Accept one object, i.e., a name:value pair.
 // Opening brace HAS been read already
 // Value may be null, as in { "foo" : { } }
 __attribute__((warn_unused_result))
@@ -794,14 +809,14 @@ static list accept_objects(struct buffer *src)
     list result;
     struct object *obj = NULL;
     int ncommas = -1, nobjects = 0;
- 
+
     if ((result = list_new()) == NULL)
         return NULL;
 
     do {
         if ((obj = accept_object(src)) != NULL) {
             if (list_add(result, obj) == NULL)
-                goto error;
+                goto enomem;
 
             nobjects++;
         }
@@ -810,9 +825,10 @@ static list accept_objects(struct buffer *src)
     } while (accept(src, TOK_COMMA));
 
     if (ncommas > 0 && nobjects - ncommas != 1) {
-        // fail9, too many commas. 
+        // fail9, too many commas.
         // fprintf(stderr, "fail9 around line %ld?\n", src->lineno);
-        goto error;
+        list_free(result, (dtor)object_free);
+        return NULL;
     }
 
     if (!expect(src, TOK_OBJECTEND)) {
@@ -822,7 +838,7 @@ static list accept_objects(struct buffer *src)
 
     return result;
 
-error:
+enomem:
     list_free(result, (dtor)object_free);
     object_free(obj);
     return NULL;
@@ -912,7 +928,7 @@ static void print_array(list lst)
 
     for (i = list_first(lst); !list_end(i); i = list_next(i)) {
         struct value *v = list_get(i);
-        if (v == NULL) 
+        if (v == NULL)
             printf("(no val in lst)");
         else
             print_value(v);
@@ -942,12 +958,12 @@ static void print_objects(list lst)
 
     printf("{\n");
 
-    if (lst == NULL) 
+    if (lst == NULL)
         goto end;
 
     for (i = list_first(lst); !list_end(i); i = list_next(i)) {
         struct object *obj = list_get(i);
-        if (obj == NULL) 
+        if (obj == NULL)
             printf("(no object in lst)");
         else
             print_object(obj);
@@ -1033,6 +1049,13 @@ static void testfile(const char *filename)
 
     if (fstat(fd, &st))
         die_perror(filename);
+
+    if (st.st_size < 2) {
+        // File too small to bother with
+        close(fd);
+        exitcode = 1;
+        return;
+    }
 
     const void *mem = mmap(NULL, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
     if (mem == MAP_FAILED)
@@ -1139,7 +1162,7 @@ static void test_get_qstring(void)
 
     }
 }
-    
+
 static void test_internal_functions(void)
 {
     test_isinteger();
@@ -1180,4 +1203,3 @@ int main(int argc, char *argv[])
 }
 
 #endif
-
