@@ -854,30 +854,44 @@ static void json_traverse(struct value *value)
 
     assert(value != NULL);
 
-    if (value->type != VAL_OBJECT)
-        return;
+    if (value->type == VAL_OBJECT) {
+        objects = value->v.oval;
+        if (objects == NULL)
+            return; // null arrays, like [], are legal.
 
-    objects = value->v.oval;
-    if (objects == NULL)
-        return; // null arrays, like [], are legal.
+        puts("{ ");
+        for (i = list_first(objects); !list_end(i); i = list_next(i)) {
+            struct object *obj = list_get(i);
+            if (obj->name != NULL) {
+                printf("\"%s\" : ", obj->name);
+                if (obj->value == NULL)
+                    printf("(nullval)");
+                else
+                    print_value(obj->value);
 
-    puts("{ ");
-    for (i = list_first(objects); !list_end(i); i = list_next(i)) {
-        struct object *obj = list_get(i);
-        if (obj->name != NULL) {
-            printf("\"%s\" : ", obj->name);
-            if (obj->value == NULL)
-                printf("(nullval)");
-            else
-                print_value(obj->value);
+                if (!list_last(i))
+                    printf(",\n");
+            }
 
+            printf("\n");
+        }
+        puts(" }");
+    }
+    else if (value->type == VAL_ARRAY) {
+        objects = value->v.aval;
+        if (objects == NULL)
+            return;
+
+        puts("[ ");
+        for (i = list_first(objects); !list_end(i); i = list_next(i)) {
+            struct value *v = list_get(i);
+            print_value(v);
             if (!list_last(i))
                 printf(",\n");
         }
-
-        printf("\n");
+        puts(" ]");
     }
-    puts(" }");
+
 #else
     (void)objects;
 #endif
