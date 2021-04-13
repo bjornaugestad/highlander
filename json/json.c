@@ -786,23 +786,34 @@ error:
     return NULL;
 }
 
+// Read objects, which are name:value pairs separated by commas.
+// The opening { has been read already. We read the closing }.
 __attribute__((warn_unused_result))
 static list accept_objects(struct buffer *src)
 {
     list result;
     struct object *obj = NULL;
+    int ncommas = -1, nobjects = 0;
  
     if ((result = list_new()) == NULL)
         return NULL;
 
     do {
-        if ((obj = accept_object(src)) == NULL)
-            break;
+        if ((obj = accept_object(src)) != NULL) {
+            if (list_add(result, obj) == NULL)
+                goto error;
 
-        if (list_add(result, obj) == NULL)
-            goto enomem;
+            nobjects++;
+        }
 
+        ncommas++;
     } while (accept(src, TOK_COMMA));
+
+    if (ncommas > 0 && nobjects - ncommas != 1) {
+        // fail9, too many commas. 
+        // fprintf(stderr, "fail9 around line %ld?\n", src->lineno);
+        goto error;
+    }
 
     if (!expect(src, TOK_OBJECTEND)) {
         list_free(result, (dtor)object_free);
@@ -811,7 +822,7 @@ static list accept_objects(struct buffer *src)
 
     return result;
 
-enomem:
+error:
     list_free(result, (dtor)object_free);
     object_free(obj);
     return NULL;

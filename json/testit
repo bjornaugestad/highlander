@@ -24,7 +24,7 @@ fi
 ./json test/fail6.json && exit 6 # OK, Missing value (i.e., list starts with a comma)
 ./json test/fail7.json && exit 7 # OK, Comma after the close (as in [],)
 ./json test/fail8.json && exit 8 # OK, extra close ([]])
-# ./json test/fail9.json && exit 9 # OK, Extra comma (after value and before })
+./json test/fail9.json && exit 9 # OK, Extra comma (after value and before })
 
 ./json test/fail10.json && exit 10 # OK, extra value after close
 ./json test/fail11.json && exit 11 # OK, fails as expected
