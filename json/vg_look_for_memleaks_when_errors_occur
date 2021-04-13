@@ -1,47 +1,47 @@
 #!/bin/bash
 
-gcc -O0 -ggdb -o json -I../meta/src  -DJSON_CHECK -Wall -Wextra -pedantic -std=c99 json.c -lmeta
+gcc -fsanitize=bounds -O0 -ggdb -o json -I../meta/src  -DJSON_CHECK -Wall -Wextra -pedantic -std=c99 json.c -lmeta
 if test $? -ne 0; then
     exit 1
 fi
 
 echo "These must pass"
-valgrind --leak-check=full ./json test/pass[123].json || exit 1 # 
+valgrind -q --leak-check=full ./json test/pass[123].json || exit 1 # 
 
 echo "These must fail"
-valgrind --leak-check=full ./json test/fail1.json 
+valgrind -q --leak-check=full ./json test/fail1.json 
 
-valgrind --leak-check=full ./json test/fail2.json 
-valgrind --leak-check=full ./json test/fail3.json 
+valgrind -q --leak-check=full ./json test/fail2.json 
+valgrind -q --leak-check=full ./json test/fail3.json 
 
-valgrind --leak-check=full ./json test/fail4.json 
-valgrind --leak-check=full ./json test/fail5.json 
-valgrind --leak-check=full ./json test/fail6.json 
-valgrind --leak-check=full ./json test/fail7.json 
-valgrind --leak-check=full ./json test/fail8.json 
-valgrind --leak-check=full ./json test/fail9.json 
+valgrind -q --leak-check=full ./json test/fail4.json 
+valgrind -q --leak-check=full ./json test/fail5.json 
+valgrind -q --leak-check=full ./json test/fail6.json 
+valgrind -q --leak-check=full ./json test/fail7.json 
+valgrind -q --leak-check=full ./json test/fail8.json 
+valgrind -q --leak-check=full ./json test/fail9.json 
 
-valgrind --leak-check=full ./json test/fail10.json 
-valgrind --leak-check=full ./json test/fail11.json 
-valgrind --leak-check=full ./json test/fail12.json 
-valgrind --leak-check=full ./json test/fail13.json 
-valgrind --leak-check=full ./json test/fail14.json 
-valgrind --leak-check=full ./json test/fail15.json 
-valgrind --leak-check=full ./json test/fail16.json 
-valgrind --leak-check=full ./json test/fail17.json 
-valgrind --leak-check=full ./json test/fail18.json 
-valgrind --leak-check=full ./json test/fail19.json 
-valgrind --leak-check=full ./json test/fail20.json 
-valgrind --leak-check=full ./json test/fail21.json 
-valgrind --leak-check=full ./json test/fail22.json 
-valgrind --leak-check=full ./json test/fail23.json 
-valgrind --leak-check=full ./json test/fail24.json 
-valgrind --leak-check=full ./json test/fail25.json 
-valgrind --leak-check=full ./json test/fail26.json 
-valgrind --leak-check=full ./json test/fail27.json 
-valgrind --leak-check=full ./json test/fail28.json 
-valgrind --leak-check=full ./json test/fail29.json 
-valgrind --leak-check=full ./json test/fail30.json 
-valgrind --leak-check=full ./json test/fail31.json 
-valgrind --leak-check=full ./json test/fail32.json 
-valgrind --leak-check=full ./json test/fail33.json 
+valgrind -q --leak-check=full ./json test/fail10.json 
+valgrind -q --leak-check=full ./json test/fail11.json 
+valgrind -q --leak-check=full ./json test/fail12.json 
+valgrind -q --leak-check=full ./json test/fail13.json 
+valgrind -q --leak-check=full ./json test/fail14.json 
+valgrind -q --leak-check=full ./json test/fail15.json 
+valgrind -q --leak-check=full ./json test/fail16.json 
+valgrind -q --leak-check=full ./json test/fail17.json 
+valgrind -q --leak-check=full ./json test/fail18.json 
+valgrind -q --leak-check=full ./json test/fail19.json 
+valgrind -q --leak-check=full ./json test/fail20.json 
+valgrind -q --leak-check=full ./json test/fail21.json 
+valgrind -q --leak-check=full ./json test/fail22.json 
+valgrind -q --leak-check=full ./json test/fail23.json 
+valgrind -q --leak-check=full ./json test/fail24.json 
+valgrind -q --leak-check=full ./json test/fail25.json 
+valgrind -q --leak-check=full ./json test/fail26.json 
+valgrind -q --leak-check=full ./json test/fail27.json 
+valgrind -q --leak-check=full ./json test/fail28.json 
+valgrind -q --leak-check=full ./json test/fail29.json 
+valgrind -q --leak-check=full ./json test/fail30.json 
+valgrind -q --leak-check=full ./json test/fail31.json 
+valgrind -q --leak-check=full ./json test/fail32.json 
+valgrind -q --leak-check=full ./json test/fail33.json 

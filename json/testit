@@ -1,11 +1,11 @@
 #!/bin/bash
 
-gcc -pg --coverage -O0 -ggdb -o json -I../meta/src  -DJSON_CHECK -Wall -Wextra -pedantic -std=c99 json.c -lmeta
+gcc -fsanitize=undefined -pg --coverage -O0 -ggdb -o json -I../meta/src  -DJSON_CHECK -Wall -Wextra -pedantic -std=c99 json.c -lmeta
 if test $? -ne 0; then
     exit 1
 fi
 
-gcc -pg --coverage -DNDEBUG -O3 -march=native -mtune=native -o fastjson -I../meta/src  -DJSON_CHECK -Wall -Wextra -pedantic -std=c99 json.c -lmeta
+gcc -DNDEBUG -O3 -march=native -mtune=native -o fastjson -I../meta/src  -DJSON_CHECK -Wall -Wextra -pedantic -std=c99 json.c -lmeta
 if test $? -ne 0; then
     exit 1
 fi

@@ -807,6 +807,7 @@ static void buffer_cleanup(struct buffer *p)
 struct value* json_parse(const void *src, size_t srclen)
 {
     struct buffer buf;
+    struct value *val = NULL;
 
     assert(src != NULL);
     assert(srclen > 1); // Minimum is {}, as in nothing(object start and end).
@@ -822,7 +823,7 @@ struct value* json_parse(const void *src, size_t srclen)
     if (buf.token != TOK_ARRAYSTART && buf.token != TOK_OBJECTSTART)
         goto error;
 
-    struct value *val = accept_value(&buf);
+    val = accept_value(&buf);
     if (val == NULL)
         goto error;
 
