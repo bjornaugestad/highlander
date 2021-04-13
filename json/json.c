@@ -605,10 +605,6 @@ static bool expect(struct buffer *p, enum tokentype tok)
     return false;
 }
 
-// Notes on fail4.json: 
-// * When we read arrays, we loop until there are no more commas to be read.
-//   That's incorrect since it allows for trailing commas: [ "foo", ]
-//
 // Notes on fail6.json:
 // * Issue is when array entries start off with a comma. 
 //
@@ -630,8 +626,11 @@ static struct value* accept_value(struct buffer *src)
 
     if (accept(src, TOK_ARRAYSTART)) {
         list lst = NULL;
+        struct value *p;
+        int ncommas = -1, nvalues = 0;
+
         do {
-            struct value *p = accept_value(src);
+            p = accept_value(src);
 
             // corner case: First element in array is missing. See fail6.json
             if (lst == NULL && p == NULL)
@@ -641,12 +640,22 @@ static struct value* accept_value(struct buffer *src)
                 lst = list_add(lst, p);
                 if (lst == NULL)
                     return NULL;
+
+                nvalues++;
             }
+            ncommas++;
         } while (accept(src, TOK_COMMA));
 
         // Note that we do need to be at token ARRAY END 
         if (!expect(src, TOK_ARRAYEND)) {
-            if (0) list_free(lst, (dtor)object_free);
+            list_free(lst, (dtor)value_free);
+            return NULL;
+        }
+
+        // handle fail4.json: The number of commas should equal
+        // the number of values minus one.
+        if (nvalues > 0 && nvalues - ncommas != 1) {
+            list_free(lst, (dtor)value_free);
             return NULL;
         }
 
