@@ -580,10 +580,11 @@ static status_t savevalue(struct buffer *p)
 
     // reallocate on demand
     if (n > p->valuesize) {
-        free(p->savedvalue);
-        if ((p->savedvalue = malloc(n)) == NULL)
+        char *tmp = realloc(p->savedvalue, n);
+        if (tmp == NULL)
             return failure;
 
+        p->savedvalue = tmp;
         p->valuesize = n;
     }
 
@@ -775,7 +776,7 @@ enomem:
 }
 
 __attribute__((warn_unused_result))
-static bool buffer_init(struct buffer *p, const void *src, size_t srclen)
+static status_t buffer_init(struct buffer *p, const void *src, size_t srclen)
 {
     assert(p != NULL);
     assert(src != NULL);
@@ -788,11 +789,11 @@ static bool buffer_init(struct buffer *p, const void *src, size_t srclen)
     p->narrays = 0;
 
     // pre-allocate the value buffer to avoid too many malloc/free cycles
-    p->valuesize = 1024;
+    p->valuesize = 4096;
     if ((p->savedvalue = malloc(p->valuesize)) == NULL)
-        return false;
+        return failure;
 
-    return true;
+    return success;
 }
 
 static void buffer_cleanup(struct buffer *p)
@@ -813,7 +814,7 @@ struct value* json_parse(const void *src, size_t srclen)
     assert(srclen > 1); // Minimum is {}, as in nothing(object start and end).
 
     if (!buffer_init(&buf, src, srclen))
-        return false;
+        return NULL;
 
     // Load first symbol
     if (!nextsym(&buf))
@@ -839,18 +840,28 @@ struct value* json_parse(const void *src, size_t srclen)
 error:
     buffer_cleanup(&buf);
     value_free(val);
-
     return NULL;
 }
 
 #ifdef JSON_CHECK
 
 static void print_value(struct value *p);
-static void json_traverse(struct value *objects)
+static void json_traverse(struct value *value)
 {
-#if 0
+#if 1
     list_iterator i;
+    list objects;
 
+    assert(value != NULL);
+
+    if (value->type != VAL_OBJECT)
+        return;
+
+    objects = value->v.oval;
+    if (objects == NULL)
+        return; // null arrays, like [], are legal.
+
+    puts("{ ");
     for (i = list_first(objects); !list_end(i); i = list_next(i)) {
         struct object *obj = list_get(i);
         if (obj->name != NULL) {
@@ -866,6 +877,7 @@ static void json_traverse(struct value *objects)
 
         printf("\n");
     }
+    puts(" }");
 #else
     (void)objects;
 #endif
@@ -1007,7 +1019,7 @@ static void testfile(const char *filename)
         exitcode = 1;
     }
 
-    if (0) json_traverse(objects);
+    if (1 && objects != NULL) json_traverse(objects);
 
     json_free(objects);
 }
