@@ -1,21 +1,28 @@
 #!/bin/bash
 
-gcc -o json -DJSON_CHECK -Wall -Wextra -pedantic -std=c99 json.c -lmeta
+gcc -O0 -ggdb -o json -I../meta/src  -DJSON_CHECK -Wall -Wextra -pedantic -std=c99 json.c -lmeta
 if test $? -ne 0; then
     exit 1
 fi
+gcc -DNDEBUG -O3 -march=native -mtune=native -o fastjson -I../meta/src  -DJSON_CHECK -Wall -Wextra -pedantic -std=c99 json.c -lmeta
+
+# These must pass
+# ./json test/pass1.json || exit 1 # 
+# ./json test/pass2.json || exit 1 # 
+# ./json test/pass3.json || exit 1 #
 
 # ./json test/fail1.json && exit 1 # OK, fails as expected
 # ./json test/fail2.json && exit 1 # OK, fails as expected
 # ./json test/fail3.json && exit 1 # OK, fails as expected
 
-./json test/fail4.json && exit 1 # extra comma
-# ./json test/fail5.json && exit 1 # double extra comma
-# ./json test/fail6.json && exit 1 # Missing value (name actually)
-# ./json test/fail7.json && exit 1 # Comma after the close (as in [],)
-# ./json test/fail8.json && exit 1 # extra close ([]])
-# ./json test/fail9.json && exit 1 # Extra comma (after value and before })
-# ./json test/fail10.json && exit 1 # extra value after close
+./json test/fail4.json && exit 4 # OK, extra comma
+./json test/fail5.json && exit 5 # OK, double extra comma
+./json test/fail6.json && exit 6 # OK, Missing value (i.e., list starts with a comma)
+# ./json test/fail7.json && exit 1 # OK, Comma after the close (as in [],)
+# ./json test/fail8.json && exit 1 # OK, extra close ([]])
+# ./json test/fail9.json && exit 1 # OK, Extra comma (after value and before })
+
+# ./json test/fail10.json && exit 1 # OK, extra value after close
 
 # ./json test/fail11.json && exit 1 # OK, fails as expected
 # ./json test/fail12.json && exit 1 # OK, fails as expected
@@ -26,7 +33,7 @@ fi
 # ./json test/fail15.json && exit 1 # OK. Illegal backslash escape (\x15)
 # ./json test/fail16.json && exit 1 # OK
 # ./json test/fail17.json && exit 1 # OK. Illegal backslash escape (\017)
-# ./json test/fail18.json && exit 1 # Too deep (as in [[[[[[[[[[["too deep"]]]]]]]]
+./json test/fail18.json && exit 1 # Too deep (as in [[[[[[[[[[["too deep"]]]]]]]]
 
 # ./json test/fail19.json && exit 1 # OK
 # ./json test/fail20.json && exit 1 # OK
