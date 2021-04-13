@@ -75,6 +75,12 @@ struct buffer {
     size_t valuesize;
 
     unsigned long lineno;
+
+    // We need to trace the nesting of arrays somewhere, and we
+    // want to be thread safe too. So this is the place. We just
+    // add 1 for '[' and subtract 1 for ']'. We barf on "[]]".
+    // We may also want to barf if narrays > 0 at end of input.
+    int narrays;
 };
 
 struct object {
@@ -605,10 +611,12 @@ static bool expect(struct buffer *p, enum tokentype tok)
     return false;
 }
 
-// Notes on fail6.json:
-// * Issue is when array entries start off with a comma. 
-//
-//
+// Notes on fail18.json:
+// * Issue is when arrays nest too deep. Not sure why json has this
+// limitation. (Maybe to avoid exploits trying to DOS the parser?)
+// Anyway, we impose some limit. Test data indicates that 19 is max.
+#define MAX_ARRAY_NESTING 19
+
 __attribute__((warn_unused_result))
 static struct value* accept_value(struct buffer *src)
 {
@@ -628,6 +636,13 @@ static struct value* accept_value(struct buffer *src)
         list lst = NULL;
         struct value *p;
         int ncommas = -1, nvalues = 0;
+
+        // fail18: Can't nest too deep.
+        src->narrays++;
+        if (src->narrays > MAX_ARRAY_NESTING) {
+            list_free(lst, (dtor)value_free);
+            return NULL;
+        }
 
         do {
             p = accept_value(src);
@@ -651,6 +666,7 @@ static struct value* accept_value(struct buffer *src)
             list_free(lst, (dtor)value_free);
             return NULL;
         }
+        src->narrays--;
 
         // handle fail4.json: The number of commas should equal
         // the number of values minus one.
@@ -762,6 +778,7 @@ static bool buffer_init(struct buffer *p, const void *src, size_t srclen)
     p->mem = src;
     p->size = srclen;
     p->lineno = 1;
+    p->narrays = 0;
 
     // pre-allocate the value buffer to avoid too many malloc/free cycles
     p->valuesize = 1024;
