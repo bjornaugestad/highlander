@@ -127,6 +127,7 @@ static void value_free(struct value *p)
     free(p);
 }
 
+__attribute__((warn_unused_result))
 static char *dupstr(const char *src)
 {
     assert(src != NULL);
@@ -140,6 +141,7 @@ static char *dupstr(const char *src)
 }
 
 // name and value may be NULL
+__attribute__((warn_unused_result))
 static struct object* object_new(const char *name, struct value *value)
 {
     struct object *p;
@@ -156,12 +158,14 @@ static struct object* object_new(const char *name, struct value *value)
     return p;
 }
 
+__attribute__((warn_unused_result))
 static inline const char* buffer_currpos(struct buffer *p)
 {
     assert(p != NULL);
     return p->mem + p->nread;
 }
 
+__attribute__((warn_unused_result))
 static inline int buffer_getc(struct buffer *p)
 {
     if (p->nread == p->size)
@@ -326,25 +330,24 @@ memerr:
 }
 
 static const struct {
-    enum tokentype value;
     bool hasvalue;
     const char *text;
 } tokens[] = {
-    { TOK_ERROR       , false, "error" },
-    { TOK_UNKNOWN     , false, "unknown" },
-    { TOK_QSTRING     , true,  "qstring" },
-    { TOK_TRUE        , false, "true" },
-    { TOK_FALSE       , false, "false" },
-    { TOK_COLON       , false, "colon" },
-    { TOK_COMMA       , false, "comma" },
-    { TOK_OBJECTSTART , false, "objectstart" },
-    { TOK_OBJECTEND   , false, "objectend" },
-    { TOK_ARRAYSTART  , false, "arraystart" },
-    { TOK_ARRAYEND    , false, "arrayend" },
-    { TOK_NUMBER      , true,  "number" },
-    { TOK_NULL        , false, "null" },
-    { TOK_EOF         , false, "eof" },
-    { TOK_STRING      , false, "string" },
+    [ TOK_ERROR       ] = { false, "error" },
+    [ TOK_UNKNOWN     ] = { false, "unknown" },
+    [ TOK_QSTRING     ] = { true,  "qstring" },
+    [ TOK_TRUE        ] = { false, "true" },
+    [ TOK_FALSE       ] = { false, "false" },
+    [ TOK_COLON       ] = { false, "colon" },
+    [ TOK_COMMA       ] = { false, "comma" },
+    [ TOK_OBJECTSTART ] = { false, "objectstart" },
+    [ TOK_OBJECTEND   ] = { false, "objectend" },
+    [ TOK_ARRAYSTART  ] = { false, "arraystart" },
+    [ TOK_ARRAYEND    ] = { false, "arrayend" },
+    [ TOK_NUMBER      ] = { true,  "number" },
+    [ TOK_NULL        ] = { false, "null" },
+    [ TOK_EOF         ] = { false, "eof" },
+    [ TOK_STRING      ] = { false, "string" },
 };
 
 
@@ -390,6 +393,8 @@ static int get_qstring(struct buffer *src)
 // We've read a t. Are the next characters rue, as in true?
 static int get_true(struct buffer *src)
 {
+    assert(src != NULL);
+
     if (buffer_getc(src) == 'r' 
     && buffer_getc(src) == 'u' 
     && buffer_getc(src) == 'e')
@@ -400,6 +405,8 @@ static int get_true(struct buffer *src)
 
 static int get_false(struct buffer *src)
 {
+    assert(src != NULL);
+
     if (buffer_getc(src) == 'a' 
     && buffer_getc(src) == 'l' 
     && buffer_getc(src) == 's' 
@@ -411,6 +418,8 @@ static int get_false(struct buffer *src)
 
 static int get_null(struct buffer *src)
 {
+    assert(src != NULL);
+
     if (buffer_getc(src) == 'u' 
     && buffer_getc(src) == 'l' 
     && buffer_getc(src) == 'l')
@@ -421,6 +430,8 @@ static int get_null(struct buffer *src)
 
 static int get_string(struct buffer *src)
 {
+    assert(src != NULL);
+
     if (buffer_getc(src) == 't' 
     && buffer_getc(src) == 'r' 
     && buffer_getc(src) == 'i'
@@ -433,6 +444,8 @@ static int get_string(struct buffer *src)
 
 static int get_boolean(struct buffer *src)
 {
+    assert(src != NULL);
+
     if (buffer_getc(src) == 'o' 
     && buffer_getc(src) == 'o' 
     && buffer_getc(src) == 'l'
@@ -485,16 +498,10 @@ static bool get_number(struct buffer *src)
     return true;
 }
 
-static bool hasvalue(enum tokentype tok)
+static inline bool hasvalue(enum tokentype tok)
 {
-    size_t i, n = sizeof tokens / sizeof *tokens;
-
-    for (i = 0; i < n; i++) {
-        if (tokens[i].value == tok)
-            return tokens[i].hasvalue;
-    }
-
-    die("Internal error. Unknown token %d\n", (int)tok);
+    assert(tok < sizeof tokens / sizeof *tokens);
+    return tokens[tok].hasvalue;
 }
 
 __attribute__((warn_unused_result))
@@ -625,7 +632,7 @@ static struct value* accept_value(struct buffer *src)
     if (accept(src, TOK_OBJECTSTART)) {
         list lst = accept_objects(src);
         if (!expect(src, TOK_OBJECTEND)) {
-            if (0) list_free(lst, (dtor)object_free);
+            list_free(lst, (dtor)object_free);
             return NULL;
         }
 
@@ -762,7 +769,7 @@ static list accept_objects(struct buffer *src)
     return result;
 
 enomem:
-    if (0) list_free(result, (dtor)object_free);
+    list_free(result, (dtor)object_free);
     object_free(obj);
     return NULL;
 }
@@ -800,7 +807,6 @@ static void buffer_cleanup(struct buffer *p)
 struct value* json_parse(const void *src, size_t srclen)
 {
     struct buffer buf;
-    list result = NULL;
 
     assert(src != NULL);
     assert(srclen > 1); // Minimum is {}, as in nothing(object start and end).
@@ -830,7 +836,6 @@ struct value* json_parse(const void *src, size_t srclen)
     return val;
 
 error:
-    if (0) list_free(result, (dtor)object_free);
     buffer_cleanup(&buf);
 
     return NULL;
@@ -973,8 +978,7 @@ static void print_value(struct value *p)
 
 void json_free(struct value *objects)
 {
-    (void)objects;
-    // if (0) list_free(objects, (dtor)object_free);
+    value_free(objects);
 }
 
 static int exitcode = 0;
@@ -1054,16 +1058,10 @@ static void test_isreal(void)
     }
 }
 
-static const char *maptoken(enum tokentype value)
+static inline const char *maptoken(enum tokentype tok)
 {
-    size_t i, n;
-
-    n = sizeof tokens / sizeof *tokens;
-    for (i = 0; i < n; i++)
-        if (tokens[i].value == value)
-            return tokens[i].text;
-
-    return "unknown token value";
+    assert(tok < sizeof tokens / sizeof *tokens);
+    return tokens[tok].text;
 }
 
 static void test_get_qstring(void)
@@ -1096,6 +1094,8 @@ static void test_get_qstring(void)
         int d = memcmp(tests[i].str, buf.value_start, reslen);
         if (d != 0)
             die("%s(): Something's really odd\n", __func__);
+
+        buffer_cleanup(&buf);
 
     }
 }
