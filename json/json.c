@@ -187,6 +187,17 @@ static struct object* accept_object(struct buffer *src);
 static list accept_objects(struct buffer *src);
 
 
+// Is the value equal to "0"?
+static bool is_zero(const char *s)
+{
+    return *s == '0' && *(s + 1) == '\0';
+}
+
+static bool has_leading_zero(const char *s)
+{
+    return *s == '0' && isdigit(*(s + 1));
+}
+
 // Is the value of s an integer number, as specified by
 // https://www.json.org/img/number.png
 // It can be "0", "-0", "[1-9][0-9]*"
@@ -203,14 +214,12 @@ static bool isinteger(const char *s)
 
     // From now on, it's digits only, with a special
     // test for "0". If 0 is found, then it cannot have trailing digits.
-    if (*s == '0') {
-        if (*(s + 1) == '\0')
-            return true;
+    if (is_zero(s))
+        return true;
 
-        // If we get here, then we have a zero followed by something.
-        // It's not a legal integer. Is it a legal number? Do we care?
+    // Leading zeros are illegal in JSON
+    if (has_leading_zero(s))
         return false;
-    }
 
     // if first digit is 1..9 and the rest of the string is 0..9,
     // then we have a legal integer number.
@@ -233,12 +242,31 @@ static bool isinteger(const char *s)
 // It's not a real if it's an integer. Imma be lazy here and use 
 // strtod to test if it's a real number. If strtod() consumes all chars,
 // it a real number. 
+// Note that leading zeroes are uncool here too. We may want to 
+// merge parts of this function with parts of isinteger().
 static bool isreal(const char *s)
 {
     assert(s != NULL);
     assert(*s != '\0'); // Empty strings? Nah, meaningless
 
+    // Remove leading ws
+    while(isspace(*s))
+        s++;
+
+    // Was the string all ws? If so, it's not a real number.
+    if (*s == '\0')
+        return false;
+
     if (isinteger(s))
+        return false;
+
+    // From now on, it's digits only, with a special
+    // test for "0". If 0 is found, then it cannot have trailing digits.
+    if (is_zero(s))
+        return true;
+
+    // Leading zeros are illegal in JSON
+    if (has_leading_zero(s))
         return false;
 
     bool result;
@@ -552,11 +580,13 @@ static bool nextsym(struct buffer *src)
             return get_number(src);
 
         default:
-            // fprintf(stderr, "%s(), around line %lu: unexpected token: char's int value == %d.",
-                // __func__, src->lineno, c);
-            // if (isprint(c))
-                // fprintf(stderr, " char value: '%c'", c);
-            // fprintf(stderr, "\n");
+#if 0
+            fprintf(stderr, "%s(), around line %lu: unexpected token: char's int value == %d.",
+                __func__, src->lineno, c);
+            if (isprint(c))
+                fprintf(stderr, " char value: '%c'", c);
+            fprintf(stderr, "\n");
+#endif
             src->token = TOK_UNKNOWN;
             break;
     }
@@ -846,57 +876,6 @@ error:
 #ifdef JSON_CHECK
 
 static void print_value(struct value *p);
-static void json_traverse(struct value *value)
-{
-#if 1
-    list_iterator i;
-    list objects;
-
-    assert(value != NULL);
-
-    if (value->type == VAL_OBJECT) {
-        objects = value->v.oval;
-        if (objects == NULL)
-            return; // null arrays, like [], are legal.
-
-        puts("{ ");
-        for (i = list_first(objects); !list_end(i); i = list_next(i)) {
-            struct object *obj = list_get(i);
-            if (obj->name != NULL) {
-                printf("\"%s\" : ", obj->name);
-                if (obj->value == NULL)
-                    printf("(nullval)");
-                else
-                    print_value(obj->value);
-
-                if (!list_last(i))
-                    printf(",\n");
-            }
-
-            printf("\n");
-        }
-        puts(" }");
-    }
-    else if (value->type == VAL_ARRAY) {
-        objects = value->v.aval;
-        if (objects == NULL)
-            return;
-
-        puts("[ ");
-        for (i = list_first(objects); !list_end(i); i = list_next(i)) {
-            struct value *v = list_get(i);
-            print_value(v);
-            if (!list_last(i))
-                printf(",\n");
-        }
-        puts(" ]");
-    }
-
-#else
-    (void)objects;
-#endif
-}
-
 static void print_array(list lst)
 {
     list_iterator i;
@@ -1009,6 +988,11 @@ void json_free(struct value *objects)
     value_free(objects);
 }
 
+static void json_traverse(struct value *value)
+{
+    print_value(value);
+}
+
 static int exitcode = 0;
 static void testfile(const char *filename)
 {
@@ -1033,7 +1017,7 @@ static void testfile(const char *filename)
         exitcode = 1;
     }
 
-    if (1 && objects != NULL) json_traverse(objects);
+    if (0 && objects != NULL) json_traverse(objects);
 
     json_free(objects);
 }
@@ -1044,16 +1028,16 @@ static void test_isinteger(void)
         const char *value;
         bool result;
     } tests[] = {
-        { "0" , true },
-        { "-0" , true },
-        { "-01" , false },
-        { "-10" , true },
-        { "1" , true },
-        { "0123" , false },
-        { "1000" , true },
-        { "1X" , false },
-        { "1.2" , false },
-        { "-0.5" , false },
+        { "0",    true  },
+        { "-0",   true  },
+        { "-01",  false },
+        { "-10",  true  },
+        { "1",    true  },
+        { "0123", false },
+        { "1000", true  },
+        { "1X",   false },
+        { "1.2",  false },
+        { "-0.5", false },
     };
 
     size_t i, n = sizeof tests / sizeof *tests;
@@ -1070,12 +1054,12 @@ static void test_isreal(void)
         const char *value;
         bool result;
     } tests[] = {
-        { "1.2" , true },
-        { "1.2e2" , true },
-        { "1.2E2" , true },
-        { "-0.5" , true },
-        { "-0.5" , true },
-        { "1000E10" , true },
+        { "1.2",     true },
+        { "1.2e2",   true },
+        { "1.2E2",   true },
+        { "-0.5",    true },
+        { "-0.5",    true },
+        { "1000E10", true },
     };
 
     size_t i, n = sizeof tests / sizeof *tests;
