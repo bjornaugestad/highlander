@@ -10,3 +10,39 @@ if test $? -ne 0; then
     exit 1
 fi
 
+exitcode=0
+# Test all the y_files, which all must succeed with exit code 0
+FILES=$(cat y_files)
+for i in $FILES; do
+    ./json $i
+    if test $? -ne 0; then
+        echo "fail: $i"
+        exitcode=1
+    fi
+done
+
+# Test all the n_files, which all must succeed with exit code <> 0
+FILES=$(cat n_files)
+for i in $FILES; do
+    ./json $i
+    if test $? -eq 0; then
+        echo "should've failed: $i"
+        exitcode=1
+    fi
+done
+
+
+# Test all the i_files, which are open to interpretation
+# Let's just see how they fare
+FILES=$(cat i_files)
+for i in $FILES; do
+    ./json $i
+    if test $? -eq 0; then
+        echo "interpret succ: $i"
+    else
+        echo "interpret fail: $i"
+    fi
+done
+
+
+exit $exitcode

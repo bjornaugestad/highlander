@@ -1276,7 +1276,7 @@ int main(int argc, char *argv[])
 
     if (argc > 1) {
         while (*++argv != NULL) {
-            fprintf(stderr, "Testing contents of file %s\n", *argv);
+            if (0) fprintf(stderr, "Testing contents of file %s\n", *argv);
             testfile(*argv);
         }
     }
@@ -1285,9 +1285,9 @@ int main(int argc, char *argv[])
 
         n = sizeof filenames / sizeof *filenames;
         for (i = 0; i < n; i++) {
-            fprintf(stderr, "Testing contents of file %s\n", filenames[i]);
+            if (0) fprintf(stderr, "Testing contents of file %s\n", filenames[i]);
             testfile(filenames[i]);
-            fprintf(stderr, "\n");
+            if (0) fprintf(stderr, "\n");
         }
     }
 
