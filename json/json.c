@@ -463,15 +463,21 @@ static inline bool four_hex_digits(struct buffer *src)
 // * Only some chars can be escaped:
 //      "\/bfnrt as well as u, followed by four hex digits
 //
+// Beware of quoted strings like "\"" (one quote is all we got). In that case,
+// the \" has already been consumed and we will have zero data here. Detect
+// that corner case.
 static int get_qstring(struct buffer *src)
 {
     const char *legal_escapes = "\\\"/bfnrtu";
     int c, prev = 0;
+    size_t nread = 0;
 
     assert(src != NULL);
     src->value_start = src->value_end = buffer_currpos(src);
 
     while ((c = buffer_getc(src)) != EOF) {
+        nread++;
+
         // If escape char is u, four hex digits MUST follow
         if (prev == '\\' && (c == 'u' || c == 'U')) {
             if (!four_hex_digits(src))
@@ -504,6 +510,9 @@ static int get_qstring(struct buffer *src)
 
         src->value_end++;
     }
+
+    if (nread == 0)
+        return TOK_UNKNOWN;
 
     return TOK_QSTRING;
 }
