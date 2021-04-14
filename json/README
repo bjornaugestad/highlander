@@ -8,3 +8,8 @@ Why not simply start off with OpenAPI's JSON definition?
 
 The JSON definition is from https://www.json.org/. Looks simple enough,
 but beware of snags.
+
+Wed Apr 14 08:17:45 AM CEST 2021
+Excellent progress after a long break. I've misunderstood things a bit,
+and used an outdated set of test data. So there are many corner cases
+to be fixed. 

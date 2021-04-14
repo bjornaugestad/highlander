@@ -636,6 +636,7 @@ static bool nextsym(struct buffer *src)
     // skip ws
     while ((c = buffer_getc(src)) != EOF && isspace(c)) {
         // Form feeds aren't legal. Applies to many other control chars too?
+        // TODO: But form feeds can be escaped. Fix this.
         if (c == '\f')
             return TOK_UNKNOWN;
 
@@ -953,6 +954,18 @@ static void buffer_cleanup(struct buffer *p)
     p->valuesize = 0;
 }
 
+// TODO/NOTE: 20210413: It turns out that I've misunderstood the standard
+// a bit. A JSON value can be more than just arrays or object(s), IOW
+// stuff starting with [ or {. A single string seems to be fine, 
+// judging from the test data,
+//      ../../JSONTestSuite/parsers/test_ccan_json/json/_test/nst_files/y_105.json
+// and judging from the ECMA-404 standard, Section 5: JSON Values.
+//
+// OTOH, some test data, like fail1.json, explicitly says that JSON payload
+// must be objects or arrays.
+//
+// What are the consequences for me? Not much, I guess. We need to remove
+// a test below ("First symbol must be..."), and then just accept the value.
 struct value* json_parse(const void *src, size_t srclen)
 {
     struct buffer buf;
