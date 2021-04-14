@@ -95,7 +95,7 @@ struct value {
     union {
         char *sval; // string
         long lval;  // long integers
-        double dval; // floating point numbers
+        long double ldval; // floating point numbers
         list aval; // array value, all struct value-pointers.
         list oval; // object value.
     } v;
@@ -333,7 +333,7 @@ static bool isreal(const char *s)
     size_t len = strlen(s);
 
 
-    double val = strtod(s, &endp);
+    long double val = strtold(s, &endp);
     if (errno != 0)
         result = false;
     else if (endp != s + len) // We didn't consume all chars
@@ -378,7 +378,7 @@ static struct value * value_new(enum valuetype type, void *value)
 
         case VAL_DOUBLE:
             assert(isreal(value));
-            p->v.dval = strtod(value, NULL);
+            p->v.ldval = strtold(value, NULL);
             break;
 
         case VAL_INTEGER:
@@ -1128,7 +1128,7 @@ static void print_value(struct value *p)
             break;
 
         case VAL_DOUBLE:
-            printf("%g", p->v.dval);
+            printf("%Lg", p->v.ldval);
             break;
     }
 }
