@@ -514,6 +514,10 @@ static int get_qstring(struct buffer *src)
     if (nread == 0)
         return TOK_UNKNOWN;
 
+    // The string must end with a quote
+    if (c != '"')
+        return TOK_UNKNOWN;
+
     return TOK_QSTRING;
 }
 
