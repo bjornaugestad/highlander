@@ -981,10 +981,6 @@ struct value* json_parse(const void *src, size_t srclen)
     if (!nextsym(&buf))
         goto error;
 
-    // First symbol must be either array start or object start.
-    if (buf.token != TOK_ARRAYSTART && buf.token != TOK_OBJECTSTART)
-        goto error;
-
     val = accept_value(&buf);
     if (val == NULL)
         goto error;
