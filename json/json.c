@@ -972,7 +972,7 @@ struct value* json_parse(const void *src, size_t srclen)
     struct value *val = NULL;
 
     assert(src != NULL);
-    assert(srclen > 1); // Minimum is {}, as in nothing(object start and end).
+    assert(srclen > 0); // Minimum is one digit
 
     if (!buffer_init(&buf, src, srclen))
         return NULL;
@@ -1138,7 +1138,7 @@ static void testfile(const char *filename)
     if (fstat(fd, &st))
         die_perror(filename);
 
-    if (st.st_size < 2) {
+    if (st.st_size < 1) {
         // File too small to bother with
         close(fd);
         exitcode = 1;
