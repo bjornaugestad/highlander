@@ -606,6 +606,11 @@ static bool get_number(struct buffer *src)
     src->value_start = src->value_end = buffer_currpos(src);
 
     while ((c = buffer_getc(src)) != EOF) {
+        if (c == '\0') {
+            src->token = TOK_UNKNOWN;
+            return false;
+        }
+
         if (strchr(legal, c)) {
             src->value_end++;
             nchars++;
