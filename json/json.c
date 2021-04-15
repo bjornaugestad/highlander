@@ -75,8 +75,6 @@ struct buffer {
     char *savedvalue;
     size_t valuesize;
 
-    unsigned long lineno;
-
     // We need to trace the nesting of arrays somewhere, and we
     // want to be thread safe too. So this is the place. We just
     // add 1 for '[' and subtract 1 for ']'. We barf on "[]]".
@@ -105,7 +103,7 @@ struct value {
 struct json_parser {
     struct value *jp_value;
     unsigned jp_errno;
-    unsigned long jp_lineno;
+    unsigned long lineno;
     struct buffer jp_buf;
 };
 
@@ -135,6 +133,7 @@ static void value_free(struct value *p)
     free(p);
 }
 
+__attribute__((malloc))
 __attribute__((warn_unused_result))
 static char *dupstr(const char *src)
 {
@@ -461,11 +460,10 @@ static inline bool four_hex_digits(struct buffer *src)
 }
 
 
-static inline status_t retfail(struct json_parser *p, int err, unsigned long lineno)
+static inline status_t retfail(struct json_parser *p, int err)
 {
     assert(p != NULL);
     p->jp_errno = err;
-    p->jp_lineno = lineno;
     return failure;
 }
 
@@ -628,7 +626,7 @@ static status_t get_number(struct json_parser *parser)
     while ((c = buffer_getc(src)) != EOF) {
         if (c == '\0') {
             src->token = TOK_UNKNOWN;
-            return retfail(parser, EINVAL, src->lineno);
+            return retfail(parser, EINVAL);
         }
 
         if (strchr(legal, c)) {
@@ -647,7 +645,7 @@ static status_t get_number(struct json_parser *parser)
     // so some extra consideration is needed.
     if (!isnumber(src->value_start, nchars)) {
         src->token = TOK_UNKNOWN;
-        return retfail(parser, EINVAL, src->lineno);
+        return retfail(parser, EINVAL);
     }
 
     src->token = TOK_NUMBER;
@@ -666,7 +664,7 @@ static status_t nextsym(struct json_parser *p)
     int c;
 
     if (p->jp_buf.token == TOK_EOF)
-        return retfail(p, ENOENT, p->jp_buf.lineno);
+        return retfail(p, ENOENT);
 
     p->jp_buf.value_start =p->jp_buf.value_end = NULL;
     p->jp_buf.token = TOK_UNKNOWN;
@@ -676,10 +674,10 @@ static status_t nextsym(struct json_parser *p)
         // Form feeds aren't legal. Applies to many other control chars too?
         // TODO: But form feeds can be escaped. Fix this.
         if (c == '\f')
-            return retfail(p, EINVAL, p->jp_buf.lineno);
+            return retfail(p, EINVAL);
 
         if (c == '\n')
-            p->jp_buf.lineno++;
+            p->lineno++;
     }
 
     switch (c) {
@@ -715,7 +713,7 @@ static status_t nextsym(struct json_parser *p)
         default:
 #if 0
             fprintf(stderr, "%s(), around line %lu: unexpected token: char's int value == %d.",
-                __func__, p->jp_buf.lineno, c);
+                __func__, p->lineno, c);
             if (isprint(c))
                 fprintf(stderr, " char value: '%c'", c);
             fprintf(stderr, "\n");
@@ -749,7 +747,7 @@ static status_t savevalue(struct json_parser *parser)
     if (n > p->valuesize) {
         char *tmp = realloc(p->savedvalue, n);
         if (tmp == NULL)
-            return retfail(parser, errno, p->lineno);
+            return retfail(parser, errno);
 
         p->savedvalue = tmp;
         p->valuesize = n;
@@ -765,13 +763,13 @@ static status_t accept(struct json_parser *p, enum tokentype tok)
 {
     if (p->jp_buf.token == tok) {
         if (hasvalue(tok) && !savevalue(p))
-            return retfail(p, EINVAL, p->jp_buf.lineno);
+            return retfail(p, EINVAL);
 
         if (nextsym(p))
             return success;
     }
 
-    return retfail(p, EINVAL, p->jp_buf.lineno);
+    return retfail(p, EINVAL);
 }
 
 static struct value* accept_value(struct json_parser *p)
@@ -961,13 +959,12 @@ static status_t buffer_init(struct json_parser *parser, const void *src, size_t 
     memset(p, 0, sizeof *p);
     p->mem = src;
     p->size = srclen;
-    p->lineno = 1;
     p->narrays = 0;
 
     // pre-allocate the value buffer to avoid too many malloc/free cycles
     p->valuesize = 4096;
     if ((p->savedvalue = malloc(p->valuesize)) == NULL)
-        return retfail(parser, errno, 0);
+        return retfail(parser, errno);
 
     return success;
 }
@@ -987,16 +984,16 @@ status_t json_parse(struct json_parser *p)
 
     // Load first symbol
     if (!nextsym(p))
-        return retfail(p, ENOENT, 0);
+        return retfail(p, ENOENT);
 
     p->jp_value = accept_value(p);
     if (p->jp_value == NULL)
-        return retfail(p, EINVAL, p->jp_buf.lineno);
+        return retfail(p, EINVAL);
 
     // Something's fucked if we still have tokens. This is syntax error 
     // in input, not our error. We just need to deal with it.
     if (nextsym(p))
-        return retfail(p, E2BIG, p->jp_buf.lineno);
+        return retfail(p, E2BIG);
 
     return success;
 }
@@ -1012,6 +1009,7 @@ struct json_parser *json_parser_new(const void *src, size_t srclen)
     if (p == NULL)
         return NULL;
 
+    p->lineno = 1;
     if (!buffer_init(p, src, srclen)) {
         free(p);
         return NULL;
@@ -1223,7 +1221,7 @@ static status_t testfile(const char *filename)
         if (res != 0)
             strcpy(text, "unknown error");
 
-        fprintf(stderr, "%s(%ld):%s\n", filename, parser->jp_lineno, text);
+        fprintf(stderr, "%s(%ld):%s\n", filename, parser->lineno, text);
     }
 
     json_parser_free(parser);
