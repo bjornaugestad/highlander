@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
@@ -195,8 +196,8 @@ static inline const char* buffer_cstr(struct buffer *p)
 }
 
 // forward declarations because of recursive calls
-static struct object* accept_object(struct buffer *src);
-static list accept_objects(struct buffer *src);
+static struct object* accept_object(struct json_parser *src);
+static list accept_objects(struct json_parser *src);
 
 
 // Is the value equal to "0"?
@@ -472,21 +473,21 @@ static inline bool four_hex_digits(struct buffer *src)
 // Beware of quoted strings like "\"" (one quote is all we got). In that case,
 // the \" has already been consumed and we will have zero data here. Detect
 // that corner case.
-static int get_qstring(struct buffer *src)
+static int get_qstring(struct json_parser *p)
 {
     const char *legal_escapes = "\\\"/bfnrtu";
     int c, prev = 0;
     size_t nread = 0;
 
-    assert(src != NULL);
-    src->value_start = src->value_end = buffer_currpos(src);
+    assert(p != NULL);
+    p->buf.value_start = p->buf.value_end = buffer_currpos(&p->buf);
 
-    while ((c = buffer_getc(src)) != EOF) {
+    while ((c = buffer_getc(&p->buf)) != EOF) {
         nread++;
 
         // If escape char is u, four hex digits MUST follow
         if (prev == '\\' && (c == 'u' || c == 'U')) {
-            if (!four_hex_digits(src))
+            if (!four_hex_digits(&p->buf))
                 return TOK_UNKNOWN;
         }
 
@@ -514,7 +515,7 @@ static int get_qstring(struct buffer *src)
         if (c == '\t' || c == '\n')
             return TOK_UNKNOWN;
 
-        src->value_end++;
+        p->buf.value_end++;
     }
 
     if (nread == 0)
@@ -647,42 +648,42 @@ static inline bool hasvalue(enum tokentype tok)
 }
 
 __attribute__((warn_unused_result))
-static bool nextsym(struct buffer *src)
+static bool nextsym(struct json_parser *p)
 {
     int c;
 
-    if (src->token == TOK_EOF)
+    if (p->buf.token == TOK_EOF)
         return false;
 
-    src->value_start =src->value_end = NULL;
-    src->token = TOK_UNKNOWN;
+    p->buf.value_start =p->buf.value_end = NULL;
+    p->buf.token = TOK_UNKNOWN;
 
     // skip ws
-    while ((c = buffer_getc(src)) != EOF && isspace(c)) {
+    while ((c = buffer_getc(&p->buf)) != EOF && isspace(c)) {
         // Form feeds aren't legal. Applies to many other control chars too?
         // TODO: But form feeds can be escaped. Fix this.
         if (c == '\f')
             return TOK_UNKNOWN;
 
         if (c == '\n')
-            src->lineno++;
+            p->buf.lineno++;
     }
 
     switch (c) {
-        case EOF: src->token = TOK_EOF; break;
-        case '[': src->token = TOK_ARRAYSTART; break;
-        case ']': src->token = TOK_ARRAYEND; break;
-        case '{': src->token = TOK_OBJECTSTART; break;
-        case '}': src->token = TOK_OBJECTEND; break;
-        case ':': src->token = TOK_COLON; break;
-        case ',': src->token = TOK_COMMA; break;
+        case EOF: p->buf.token = TOK_EOF; break;
+        case '[': p->buf.token = TOK_ARRAYSTART; break;
+        case ']': p->buf.token = TOK_ARRAYEND; break;
+        case '{': p->buf.token = TOK_OBJECTSTART; break;
+        case '}': p->buf.token = TOK_OBJECTEND; break;
+        case ':': p->buf.token = TOK_COLON; break;
+        case ',': p->buf.token = TOK_COMMA; break;
 
-        case '"': src->token = get_qstring(src); break;
-        case 't': src->token = get_true(src); break;
-        case 'f': src->token = get_false(src); break;
-        case 'n': src->token = get_null(src); break;
-        case 's': src->token = get_string(src); break;
-        case 'b': src->token = get_boolean(src); break;
+        case '"': p->buf.token = get_qstring(p); break;
+        case 't': p->buf.token = get_true(&p->buf); break;
+        case 'f': p->buf.token = get_false(&p->buf); break;
+        case 'n': p->buf.token = get_null(&p->buf); break;
+        case 's': p->buf.token = get_string(&p->buf); break;
+        case 'b': p->buf.token = get_boolean(&p->buf); break;
 
         case '-':
         case '0':
@@ -695,23 +696,23 @@ static bool nextsym(struct buffer *src)
         case '7':
         case '8':
         case '9':
-            buffer_ungetc(src);
-            return get_number(src);
+            buffer_ungetc(&p->buf);
+            return get_number(&p->buf);
 
         default:
 #if 0
             fprintf(stderr, "%s(), around line %lu: unexpected token: char's int value == %d.",
-                __func__, src->lineno, c);
+                __func__, p->buf.lineno, c);
             if (isprint(c))
                 fprintf(stderr, " char value: '%c'", c);
             fprintf(stderr, "\n");
 #endif
-            src->token = TOK_UNKNOWN;
+            p->buf.token = TOK_UNKNOWN;
             break;
     }
 
     // Did we actually get a legal token?
-    return src->token != TOK_UNKNOWN;
+    return p->buf.token != TOK_UNKNOWN;
 }
 
 __attribute__((warn_unused_result))
@@ -743,32 +744,20 @@ static status_t savevalue(struct buffer *p)
 }
 
 __attribute__((warn_unused_result))
-static bool accept(struct buffer *src, enum tokentype tok)
+static bool accept(struct json_parser *p, enum tokentype tok)
 {
-    if (src->token == tok) {
-        if (hasvalue(tok) && !savevalue(src))
+    if (p->buf.token == tok) {
+        if (hasvalue(tok) && !savevalue(&p->buf))
             return false;
 
-        if (nextsym(src))
+        if (nextsym(p))
             return true;
     }
 
     return false;
 }
 
-__attribute__((warn_unused_result))
-static bool expect(struct buffer *p, enum tokentype tok)
-{
-    if (accept(p, tok))
-        return true;
-
-    // printf("%s(): expected token '%s', but found token around line %lu: %s\n",
-    // __func__, maptoken(tok), p->lineno, maptoken(p->token));
-    // printf("%s(): %s\n", __func__, p->savedvalue);
-    return false;
-}
-
-static struct value* accept_value(struct buffer *src)
+static struct value* accept_value(struct json_parser *p)
     __attribute__((warn_unused_result));
 
 // Notes on fail18.json:
@@ -777,42 +766,42 @@ static struct value* accept_value(struct buffer *src)
 // Anyway, we impose some limit. Test data indicates that 19 is max.
 #define MAX_ARRAY_NESTING 19
 
-static struct value *accept_array_elements(struct buffer *src)
+static struct value *accept_array_elements(struct json_parser *p)
 {
     list lst = NULL;
-    struct value *p;
+    struct value *value;
     int ncommas = -1, nvalues = 0;
 
     // fail18: Can't nest too deep.
-    src->narrays++;
-    if (src->narrays > MAX_ARRAY_NESTING) {
+    p->buf.narrays++;
+    if (p->buf.narrays > MAX_ARRAY_NESTING) {
         list_free(lst, (dtor)value_free);
         return NULL;
     }
 
     do {
-        p = accept_value(src);
+        value = accept_value(p);
 
         // corner case: First element in array is missing. See fail6.json
-        if (lst == NULL && p == NULL)
+        if (lst == NULL && value == NULL)
             break;
 
-        if (p != NULL) {
-            lst = list_add(lst, p);
+        if (value != NULL) {
+            lst = list_add(lst, value);
             if (lst == NULL)
                 return NULL;
 
             nvalues++;
         }
         ncommas++;
-    } while (accept(src, TOK_COMMA));
+    } while (accept(p, TOK_COMMA));
 
     // Note that we do need to be at token ARRAY END
-    if (!expect(src, TOK_ARRAYEND)) {
+    if (!accept(p, TOK_ARRAYEND)) {
         list_free(lst, (dtor)value_free);
         return NULL;
     }
-    src->narrays--;
+    p->buf.narrays--;
 
     // handle fail4.json: The number of commas should equal
     // the number of values minus one.
@@ -826,47 +815,47 @@ static struct value *accept_array_elements(struct buffer *src)
 }
 
 __attribute__((warn_unused_result))
-static struct value* accept_value(struct buffer *src)
+static struct value* accept_value(struct json_parser *p)
 {
-    assert(src != NULL);
+    assert(p != NULL);
 
-    if (accept(src, TOK_OBJECTSTART)) {
-        list lst = accept_objects(src);
+    if (accept(p, TOK_OBJECTSTART)) {
+        list lst = accept_objects(p);
         if (lst == NULL)
             return NULL;
 
         return value_new(VAL_OBJECT, lst);
     }
 
-    if (accept(src, TOK_ARRAYSTART))
-        return accept_array_elements(src);
+    if (accept(p, TOK_ARRAYSTART))
+        return accept_array_elements(p);
 
-    if (accept(src, TOK_TRUE))
+    if (accept(p, TOK_TRUE))
         return value_new(VAL_TRUE, NULL);
 
-    if (accept(src, TOK_FALSE))
+    if (accept(p, TOK_FALSE))
         return value_new(VAL_FALSE, NULL);
 
-    if (accept(src, TOK_NULL))
+    if (accept(p, TOK_NULL))
         return value_new(VAL_NULL, NULL);
 
-    if (accept(src, TOK_NUMBER)) {
-        if (isinteger(src->savedvalue))
-            return value_new(VAL_INTEGER, src->savedvalue);
+    if (accept(p, TOK_NUMBER)) {
+        if (isinteger(p->buf.savedvalue))
+            return value_new(VAL_INTEGER, p->buf.savedvalue);
 
-        if (isreal(src->savedvalue))
-            return value_new(VAL_DOUBLE, src->savedvalue);
+        if (isreal(p->buf.savedvalue))
+            return value_new(VAL_DOUBLE, p->buf.savedvalue);
 
         die("Internal error. Unhandled number from tokenizer");
     }
 
-    if (accept(src, TOK_QSTRING))
-        return value_new(VAL_QSTRING, src->savedvalue);
+    if (accept(p, TOK_QSTRING))
+        return value_new(VAL_QSTRING, p->buf.savedvalue);
 
-    if (accept(src, TOK_STRING))
+    if (accept(p, TOK_STRING))
         return value_new(VAL_STRING, NULL);
 
-    if (accept(src, TOK_BOOLEAN))
+    if (accept(p, TOK_BOOLEAN))
         return value_new(VAL_BOOLEAN, NULL);
 
     return NULL;
@@ -877,28 +866,23 @@ static struct value* accept_value(struct buffer *src)
 // Opening brace HAS been read already
 // Value may be null, as in { "foo" : { } }
 __attribute__((warn_unused_result))
-static struct object* accept_object(struct buffer *src)
+static struct object* accept_object(struct json_parser *p)
 {
     // Look for a name
-    if (!accept(src, TOK_QSTRING))
+    if (!accept(p, TOK_QSTRING))
         return NULL;
 
     // Name is now in the buffer's saved value. Create an object
-    struct object *obj = object_new(src->savedvalue, NULL);
+    struct object *obj = object_new(p->buf.savedvalue, NULL);
 
     // We need the : which separates name and value
-    if (!expect(src, TOK_COLON))
+    if (!accept(p, TOK_COLON))
         goto error;
 
     // Now get the value
-    obj->value = accept_value(src);
-    if (obj->value == NULL)
-        goto error;
-
-    // It turns out that e.g. Google uses (key) as name, but without quotes.
-    // This is not really JSON, but maybe it's OAS compliant?
-
-    return obj;
+    obj->value = accept_value(p);
+    if (obj->value != NULL)
+        return obj;
 
 error:
     object_free(obj);
@@ -908,7 +892,7 @@ error:
 // Read objects, which are name:value pairs separated by commas.
 // The opening { has been read already. We read the closing }.
 __attribute__((warn_unused_result))
-static list accept_objects(struct buffer *src)
+static list accept_objects(struct json_parser *src)
 {
     list result;
     struct object *obj = NULL;
@@ -929,13 +913,12 @@ static list accept_objects(struct buffer *src)
     } while (accept(src, TOK_COMMA));
 
     if (ncommas > 0 && nobjects - ncommas != 1) {
-        // fail9, too many commas.
-        // fprintf(stderr, "fail9 around line %ld?\n", src->lineno);
+        // too many commas.
         list_free(result, (dtor)object_free);
         return NULL;
     }
 
-    if (!expect(src, TOK_OBJECTEND)) {
+    if (!accept(src, TOK_OBJECTEND)) {
         list_free(result, (dtor)object_free);
         return NULL;
     }
@@ -983,17 +966,16 @@ status_t json_parse(struct json_parser *p)
     assert(p != NULL);
 
     // Load first symbol
-    if (!nextsym(&p->buf))
+    if (!nextsym(p))
         return failure;
 
-    p->value = accept_value(&p->buf);
+    p->value = accept_value(p);
     if (p->value == NULL)
         return failure;
 
-    // Something's fucked if we still have tokens. See fail8.json
-    // This is syntax error in input, not our error. We just need
-    // to deal with it.
-    if (nextsym(&p->buf))
+    // Something's fucked if we still have tokens. This is syntax error 
+    // in input, not our error. We just need to deal with it.
+    if (nextsym(p))
         return failure;
 
     return success;
@@ -1286,28 +1268,27 @@ static void test_get_qstring(void)
 
     size_t i, n = sizeof tests / sizeof *tests;
     for (i = 0; i < n; i++) {
-        struct buffer buf;
-        if (!buffer_init(&buf, tests[i].src, strlen(tests[i].src)))
-            die("Unable to initialize buffer\n");
+        struct json_parser *parser = json_parser_new(tests[i].src, strlen(tests[i].src));
+        if (parser == NULL)
+            die("Unable to init parser\n");
 
-        int result = get_qstring(&buf);
+        int result = get_qstring(parser);
         if (result != tests[i].result)
             die("%s(): src: <%s>: expected %s, got %s\n",
                 __func__, tests[i].src, maptoken(tests[i].result),
                 maptoken(result));
 
-        ptrdiff_t blen = buf.value_end - buf.value_start;
+        ptrdiff_t blen = parser->buf.value_end - parser->buf.value_start;
         size_t reslen = strlen(tests[i].str);
         if ((size_t)blen != reslen)
             die("%s(): expected %lu bytes, got %ld\n",
                 __func__, reslen, blen);
 
-        int d = memcmp(tests[i].str, buf.value_start, reslen);
+        int d = memcmp(tests[i].str, parser->buf.value_start, reslen);
         if (d != 0)
             die("%s(): Something's really odd\n", __func__);
 
-        buffer_cleanup(&buf);
-
+        json_parser_free(parser);
     }
 }
 
