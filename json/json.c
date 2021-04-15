@@ -56,6 +56,24 @@ enum tokentype {
     TOK_BOOLEAN, // This is the boolean keyword from oas 3.0.3
 };
 
+// Contains any legal JSON value, including arrays and objects.
+struct value {
+    // Which value type are we storing here?
+    enum valuetype type;
+
+    union {
+        char *sval; // string
+        long lval;  // long integers
+        long double ldval; // floating point numbers
+        list aval; // array value, all struct value-pointers.
+        list oval; // object value.
+    } v;
+};
+
+struct object {
+    char *name;
+    struct value *value;
+};
 
 // We store our input buffer in one of these, to make it easier to
 // handle offset positions when we read from functions.
@@ -82,27 +100,9 @@ struct buffer {
     int narrays;
 };
 
-struct object {
-    char *name;
-    struct value *value;
-};
-
-struct value {
-    // Which value type are we storing here?
-    enum valuetype type;
-
-    union {
-        char *sval; // string
-        long lval;  // long integers
-        long double ldval; // floating point numbers
-        list aval; // array value, all struct value-pointers.
-        list oval; // object value.
-    } v;
-};
-
 struct json_parser {
-    struct value *jp_value;
-    unsigned jp_errno;
+    struct value *value;
+    int jp_errno;
     unsigned long lineno;
     struct buffer jp_buf;
 };
@@ -111,36 +111,36 @@ static void value_free(struct value *p);
 
 static void object_free(struct object *p)
 {
-    if (p != NULL) {
-        free(p->name);
-        value_free(p->value);
-        free(p);
-    }
+if (p != NULL) {
+    free(p->name);
+    value_free(p->value);
+    free(p);
+}
 }
 
 static void value_free(struct value *p)
 {
-    if (p == NULL)
-        return;
+if (p == NULL)
+    return;
 
-    if (p->type == VAL_ARRAY)
-        list_free(p->v.aval, (dtor)value_free);
-    else if (p->type == VAL_QSTRING)
-        free(p->v.sval);
-    else if (p->type == VAL_OBJECT)
-        list_free(p->v.oval, (dtor)object_free);
+if (p->type == VAL_ARRAY)
+    list_free(p->v.aval, (dtor)value_free);
+else if (p->type == VAL_QSTRING)
+    free(p->v.sval);
+else if (p->type == VAL_OBJECT)
+    list_free(p->v.oval, (dtor)object_free);
 
-    free(p);
+free(p);
 }
 
 __attribute__((malloc))
 __attribute__((warn_unused_result))
 static char *dupstr(const char *src)
 {
-    assert(src != NULL);
+assert(src != NULL);
 
-    size_t n = strlen(src) + 1;
-    char *result = malloc(n);
+size_t n = strlen(src) + 1;
+char *result = malloc(n);
     if (result != NULL)
         memcpy(result, src, n);
 
@@ -192,6 +192,10 @@ static inline void buffer_ungetc(struct buffer *p)
 static inline const char* buffer_cstr(struct buffer *p)
 {
     assert(p != NULL);
+
+    if (p->mem == NULL)
+        return "no source";
+
     return p->mem + p->nread;
 }
 
@@ -277,7 +281,6 @@ static bool has_trailing_dots(const char *s)
     return s[len - 1] == '.';
 }
 
-
 // Is the value in s a real number, with fractions(.n) and/or an exponent?
 // It's not a real if it's an integer. Imma be lazy here and use
 // strtod to test if it's a real number. If strtod() consumes all chars,
@@ -338,7 +341,6 @@ static bool isreal(const char *s)
     int olderrno = errno;
     errno = 0;
     size_t len = strlen(s);
-
 
     long double val = strtold(s, &endp);
     if (errno != 0)
@@ -652,6 +654,8 @@ static status_t get_number(struct json_parser *parser)
     return success;
 }
 
+__attribute__((warn_unused_result))
+__attribute__((pure))
 static inline bool hasvalue(enum tokentype tok)
 {
     assert(tok < sizeof tokens / sizeof *tokens);
@@ -711,13 +715,6 @@ static status_t nextsym(struct json_parser *p)
             return get_number(p);
 
         default:
-#if 0
-            fprintf(stderr, "%s(), around line %lu: unexpected token: char's int value == %d.",
-                __func__, p->lineno, c);
-            if (isprint(c))
-                fprintf(stderr, " char value: '%c'", c);
-            fprintf(stderr, "\n");
-#endif
             p->jp_buf.token = TOK_UNKNOWN;
             break;
     }
@@ -986,8 +983,8 @@ status_t json_parse(struct json_parser *p)
     if (!nextsym(p))
         return retfail(p, ENOENT);
 
-    p->jp_value = accept_value(p);
-    if (p->jp_value == NULL)
+    p->value = accept_value(p);
+    if (p->value == NULL)
         return retfail(p, EINVAL);
 
     // Something's fucked if we still have tokens. This is syntax error 
@@ -1021,7 +1018,7 @@ struct json_parser *json_parser_new(const void *src, size_t srclen)
 void json_parser_free(struct json_parser *p)
 {
     if (p != NULL) {
-        value_free(p->jp_value);
+        value_free(p->value);
         buffer_cleanup(&p->jp_buf);
         free(p);
     }
@@ -1030,7 +1027,7 @@ void json_parser_free(struct json_parser *p)
 struct value* json_parser_values(struct json_parser *p)
 {
     assert(p != NULL);
-    return p->jp_value;
+    return p->value;
 }
 
 int json_parser_errno(const struct json_parser *p)
@@ -1090,18 +1087,16 @@ static void print_object(const struct object *p)
     }
 }
 
-
 // object lists can be NULL, in case input is "{}"
 static void print_objects(list lst)
 {
-    list_iterator i;
+    if (lst == NULL) {
+        printf("{}\n");
+        return;
+    }
 
     printf("{\n");
-
-    if (lst == NULL)
-        goto end;
-
-    for (i = list_first(lst); !list_end(i); i = list_next(i)) {
+    for (list_iterator i = list_first(lst); !list_end(i); i = list_next(i)) {
         struct object *obj = list_get(i);
         if (obj == NULL)
             printf("(no object in lst)");
@@ -1112,7 +1107,6 @@ static void print_objects(list lst)
             printf(",\n");
     }
 
-end:
     printf("\n}");
 }
 
@@ -1121,48 +1115,20 @@ static void print_value(struct value *p)
     assert(p != NULL);
 
     switch (p->type) {
-        case VAL_UNKNOWN:
-            printf("unknown");
-            break;
+        case VAL_QSTRING: printf("\"%s\"", p->v.sval); break;
+        case VAL_DOUBLE:  printf("%Lg", p->v.ldval);   break;
+        case VAL_INTEGER: printf("%ld", p->v.lval);    break;
+        case VAL_ARRAY:   print_array(p->v.aval);      break;
+        case VAL_OBJECT:  print_objects(p->v.oval);    break;
+        case VAL_STRING:  printf("string");            break;
+        case VAL_TRUE:    printf("true");              break;
+        case VAL_FALSE:   printf("false");             break;
+        case VAL_BOOLEAN: printf("boolean");           break;
+        case VAL_NULL:    printf("null");              break;
+        case VAL_UNKNOWN: printf("unknown");           break;
 
-        case VAL_QSTRING:
-            printf("\"%s\"", p->v.sval);
-            break;
-
-        case VAL_INTEGER:
-            printf("%ld", p->v.lval);
-            break;
-
-        case VAL_ARRAY:
-            print_array(p->v.aval);
-            break;
-
-        case VAL_OBJECT:
-            print_objects(p->v.oval);
-            break;
-
-        case VAL_STRING:
-            printf("string");
-            break;
-
-        case VAL_TRUE:
-            printf("true");
-            break;
-
-        case VAL_FALSE:
-            printf("false");
-            break;
-
-        case VAL_BOOLEAN:
-            printf("boolean");
-            break;
-
-        case VAL_NULL:
-            printf("null");
-            break;
-
-        case VAL_DOUBLE:
-            printf("%Lg", p->v.ldval);
+        default:
+            printf("Internal error. Unhandled value type %d\n", p->type);
             break;
     }
 }
@@ -1177,17 +1143,13 @@ void json_traverse(struct value *value)
     print_value(value);
 }
 
-
 static status_t testfile(const char *filename)
 {
-    int fd = -1;
-    struct stat st;
-
-
-    fd = open(filename, O_RDONLY);
+    int fd = open(filename, O_RDONLY);
     if (fd == -1)
         return failure;
 
+    struct stat st;
     if (fstat(fd, &st)) {
         close(fd);
         return failure;
@@ -1210,21 +1172,24 @@ static status_t testfile(const char *filename)
         return failure;
 
     status_t status = json_parse(parser);
-    munmap(mem, st.st_size);
 
     // Print error message, if any.
     if (status == failure) {
         int err = json_parser_errno(parser);
         char text[1024] = {0};
+        const char *src = buffer_cstr(&parser->jp_buf);
+        if (src == NULL)
+            src = "";
 
         int res = strerror_r(err, text, sizeof text);
         if (res != 0)
             strcpy(text, "unknown error");
 
-        fprintf(stderr, "%s(%ld):%s\n", filename, parser->lineno, text);
+        fprintf(stderr, "%s(%ld):%s:%s\n", filename, parser->lineno, src, text);
     }
 
     json_parser_free(parser);
+    munmap(mem, st.st_size);
 
     return status;
 }

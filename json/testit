@@ -1,11 +1,11 @@
 #!/bin/bash
 
-gcc -D_POSIX_C_SOURCE=200112L -fsanitize=undefined -O0 -ggdb -o json -I../meta/src  -DJSON_CHECK -Werror -Wshadow -Wall -Wextra -pedantic -std=c11 json.c -lmeta
+gcc -D_POSIX_C_SOURCE=200112L -fsanitize=undefined -O0 -ggdb -o json -I../meta/src  -DJSON_CHECK -Werror -Wshadow -Wall -Wextra -pedantic -std=gnu11 json.c -lmeta
 if test $? -ne 0; then
     exit 1
 fi
 
-gcc -D_POSIX_C_SOURCE=200112L -DNDEBUG -O3 -march=native -mtune=native -o fastjson -I../meta/src  -DJSON_CHECK -Wall -Wextra -pedantic -std=c11 json.c -lmeta
+gcc -D_POSIX_C_SOURCE=200112L -DNDEBUG -O3 -march=native -mtune=native -o fastjson -I../meta/src  -DJSON_CHECK -Wall -Wextra -pedantic -std=gnu11 json.c -lmeta
 if test $? -ne 0; then
     exit 1
 fi
@@ -24,7 +24,7 @@ done
 # Test all the n_files, which all must succeed with exit code <> 0
 FILES=$(cat n_files)
 for i in $FILES; do
-    $VG ./json $i
+    $VG ./json $i >& /dev/null 
     if test $? -eq 0; then
         echo "should've failed: $i"
         exitcode=1
@@ -36,7 +36,7 @@ done
 # Let's just see how they fare
 FILES=$(cat i_files)
 for i in $FILES; do
-    $VG ./json $i
+    $VG ./json $i >& /dev/null 
     #if test $? -eq 0; then
         #echo "interpret succ: $i"
     #else
