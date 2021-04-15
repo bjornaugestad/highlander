@@ -15,7 +15,7 @@ struct json_parser *json_parser_new(const void *src, size_t srclen)
 void json_parser_free(struct json_parser *p);
 struct value* json_parser_values(struct json_parser *p);
 
-int json_parser_errcode(const struct json_parser *p);
+int json_parser_errno(const struct json_parser *p);
 const char* json_parser_errtext(const struct json_parser *p);
 
 status_t json_parse(struct json_parser *p)

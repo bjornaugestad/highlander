@@ -1,11 +1,11 @@
 #!/bin/bash
 
-gcc -fsanitize=undefined -O0 -ggdb -o json -I../meta/src  -DJSON_CHECK -Werror -Wshadow -Wall -Wextra -pedantic -std=c99 json.c -lmeta
+gcc -D_POSIX_C_SOURCE=200112L -fsanitize=undefined -O0 -ggdb -o json -I../meta/src  -DJSON_CHECK -Werror -Wshadow -Wall -Wextra -pedantic -std=c11 json.c -lmeta
 if test $? -ne 0; then
     exit 1
 fi
 
-gcc -DNDEBUG -O3 -march=native -mtune=native -o fastjson -I../meta/src  -DJSON_CHECK -Wall -Wextra -pedantic -std=c99 json.c -lmeta
+gcc -D_POSIX_C_SOURCE=200112L -DNDEBUG -O3 -march=native -mtune=native -o fastjson -I../meta/src  -DJSON_CHECK -Wall -Wextra -pedantic -std=c11 json.c -lmeta
 if test $? -ne 0; then
     exit 1
 fi
@@ -37,11 +37,11 @@ done
 FILES=$(cat i_files)
 for i in $FILES; do
     $VG ./json $i
-    if test $? -eq 0; then
-        echo "interpret succ: $i"
-    else
-        echo "interpret fail: $i"
-    fi
+    #if test $? -eq 0; then
+        #echo "interpret succ: $i"
+    #else
+        #echo "interpret fail: $i"
+    #fi
 done
 
 
