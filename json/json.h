@@ -5,12 +5,21 @@
 
 #include "meta_list.h"
 
-// TODO: Figure out a way to return meaningful errors. Do we want
-// to use meta_error.h? Not sure, really. It's been a life time since
-// I looked at it.
-
+struct json_parser;
 struct value;
-struct value* json_parse(const void *src, size_t srclen) __attribute__((warn_unused_result));
+
+struct json_parser *json_parser_new(const void *src, size_t srclen)
+    __attribute__((malloc))
+    __attribute__((warn_unused_result));
+
+void json_parser_free(struct json_parser *p);
+struct value* json_parser_values(struct json_parser *p);
+
+int json_parser_errcode(const struct json_parser *p);
+const char* json_parser_errtext(const struct json_parser *p);
+
+status_t json_parse(struct json_parser *p)
+    __attribute__((warn_unused_result));
 
 // Free memory used by the list returned from json_parse().
 void json_free(struct value *objects);

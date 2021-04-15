@@ -101,6 +101,12 @@ struct value {
     } v;
 };
 
+struct json_parser {
+    struct value *value;
+    unsigned errcode;
+    struct buffer buf;
+};
+
 static void value_free(struct value *p);
 
 static void object_free(struct object *p)
@@ -972,50 +978,77 @@ static void buffer_cleanup(struct buffer *p)
     p->valuesize = 0;
 }
 
-// TODO/NOTE: 20210413: It turns out that I've misunderstood the standard
-// a bit. A JSON value can be more than just arrays or object(s), IOW
-// stuff starting with [ or {. A single string seems to be fine, 
-// judging from the test data,
-//      ../../JSONTestSuite/parsers/test_ccan_json/json/_test/nst_files/y_105.json
-// and judging from the ECMA-404 standard, Section 5: JSON Values.
-//
-// OTOH, some test data, like fail1.json, explicitly says that JSON payload
-// must be objects or arrays.
-//
-// What are the consequences for me? Not much, I guess. We need to remove
-// a test below ("First symbol must be..."), and then just accept the value.
-struct value* json_parse(const void *src, size_t srclen)
+status_t json_parse(struct json_parser *p)
 {
-    struct buffer buf;
-    struct value *val = NULL;
-
-    assert(src != NULL);
-    assert(srclen > 0); // Minimum is one digit
-
-    if (!buffer_init(&buf, src, srclen))
-        return NULL;
+    assert(p != NULL);
 
     // Load first symbol
-    if (!nextsym(&buf))
-        goto error;
+    if (!nextsym(&p->buf))
+        return failure;
 
-    val = accept_value(&buf);
-    if (val == NULL)
-        goto error;
+    p->value = accept_value(&p->buf);
+    if (p->value == NULL)
+        return failure;
 
     // Something's fucked if we still have tokens. See fail8.json
     // This is syntax error in input, not our error. We just need
     // to deal with it.
-    if (nextsym(&buf))
-        goto error;
+    if (nextsym(&p->buf))
+        return failure;
 
-    buffer_cleanup(&buf);
-    return val;
+    return success;
+}
 
-error:
-    buffer_cleanup(&buf);
-    value_free(val);
-    return NULL;
+struct json_parser *json_parser_new(const void *src, size_t srclen)
+{
+    struct json_parser *p;
+
+    assert(src != NULL);
+    assert(srclen > 0);
+
+    p = calloc(1, sizeof *p);
+    if (p == NULL)
+        return NULL;
+
+    if (!buffer_init(&p->buf, src, srclen)) {
+        free(p);
+        return NULL;
+    }
+
+    return p;
+}
+
+void json_parser_free(struct json_parser *p)
+{
+    if (p != NULL) {
+        value_free(p->value);
+        buffer_cleanup(&p->buf);
+        free(p);
+    }
+}
+
+struct value* json_parser_values(struct json_parser *p)
+{
+    assert(p != NULL);
+    return p->value;
+}
+int json_parser_errcode(const struct json_parser *p)
+{
+    assert(p != NULL);
+    return p->errcode;
+}
+
+const char* json_parser_errtext(const struct json_parser *p)
+{
+    static const char *text[] = {
+        [0] = "no error",
+    };
+
+    assert(p != NULL);
+    if ((size_t)p->errcode < sizeof text / sizeof *text)
+        return text[p->errcode];
+
+    return "unknown error";
 }
 
 #ifdef JSON_CHECK
@@ -1138,45 +1171,54 @@ void json_free(struct value *objects)
     value_free(objects);
 }
 
-static void json_traverse(struct value *value)
+void json_traverse(struct value *value)
 {
     print_value(value);
 }
 
-static int exitcode = 0;
-static void testfile(const char *filename)
+static inline status_t retfail(struct json_parser *p, int err)
 {
-    int fd;
+    assert(p != NULL);
+    p->errcode = err;
+    return failure;
+}
+
+
+static status_t testfile(const char *filename)
+{
+    int fd = -1;
     struct stat st;
+
 
     fd = open(filename, O_RDONLY);
     if (fd == -1)
-        die_perror(filename);
+        return failure;
 
-    if (fstat(fd, &st))
-        die_perror(filename);
+    if (fstat(fd, &st)) {
+        close(fd);
+        return failure;
+    }
 
     if (st.st_size < 1) {
         // File too small to bother with
         close(fd);
-        exitcode = 1;
-        return;
+        errno = EINVAL;
+        return failure;
     }
 
-    const void *mem = mmap(NULL, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
-    if (mem == MAP_FAILED)
-        die_perror(filename);
+    void *mem = mmap(NULL, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
     close(fd);
+    if (mem == MAP_FAILED)
+        return failure;
 
-    struct value *objects = json_parse(mem, st.st_size);
-    if (objects == NULL) {
-        // fprintf(stderr, "Unable to parse %s\n", filename);
-        exitcode = 1;
-    }
+    struct json_parser *parser = json_parser_new(mem, st.st_size);
+    if (parser == NULL)
+        return failure;
+    status_t status = json_parse(parser);
+    munmap(mem, st.st_size);
+    json_parser_free(parser);
 
-    if (0 && objects != NULL) json_traverse(objects);
-
-    json_free(objects);
+    return status;
 }
 
 static void test_isinteger(void)
@@ -1278,6 +1320,8 @@ static void test_internal_functions(void)
 
 int main(int argc, char *argv[])
 {
+    int exitcode = 0;
+
     const char *filenames[] = {
         "./array_at_start.json",
         "./array_with_no_entries.json",
@@ -1291,7 +1335,8 @@ int main(int argc, char *argv[])
     if (argc > 1) {
         while (*++argv != NULL) {
             if (0) fprintf(stderr, "Testing contents of file %s\n", *argv);
-            testfile(*argv);
+            if (!testfile(*argv))
+                exitcode = 1;
         }
     }
     else {
@@ -1300,7 +1345,9 @@ int main(int argc, char *argv[])
         n = sizeof filenames / sizeof *filenames;
         for (i = 0; i < n; i++) {
             if (0) fprintf(stderr, "Testing contents of file %s\n", filenames[i]);
-            testfile(filenames[i]);
+            if (!testfile(filenames[i]))
+                exitcode = 1;
+
             if (0) fprintf(stderr, "\n");
         }
     }
