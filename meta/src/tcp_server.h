@@ -9,6 +9,7 @@
 #include <stddef.h>
 
 #include <meta_process.h>
+#include <gensocket.h>      // for SOCKTYPE_
 
 #ifdef __cplusplus
 extern "C" {
