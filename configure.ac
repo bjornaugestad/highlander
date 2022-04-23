@@ -1,5 +1,5 @@
 AC_PREREQ(2.61)
-AC_INIT(highlander, 0.9.99, bjorn@augestad.online)
+AC_INIT(highlander, 0.9.99, bjorn.augestad@gmail.com)
 AC_CONFIG_AUX_DIR([extras])
 AC_CONFIG_MACRO_DIR([m4])
 AM_INIT_AUTOMAKE

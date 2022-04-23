@@ -108,4 +108,4 @@ user supplied service function for the tcp_server.
 That service function implements the higher level protocol and 
 functionality the server implements.
 .Sh AUTHOR
-.An B. Augestad, bjorn@augestad.online
+.An B. Augestad, bjorn.augestad@gmail.com

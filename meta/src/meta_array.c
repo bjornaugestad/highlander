@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2017 Bjorn Augestad, bjorn@augestad.online
+ * Copyright (C) 2001-2022 Bjorn Augestad, bjorn.augestad@gmail.com
  * All Rights Reserved. See COPYING for license details
  */
 
