@@ -17,7 +17,7 @@ just joins the shutdown thread.
 process p = process_new();
 \&...
 process_start(p, 1);
-process_wait_for_shutdown();
+process_wait_for_shutdown(p);
 process_free(p);
 .nf
 .in
