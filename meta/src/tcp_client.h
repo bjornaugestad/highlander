@@ -15,10 +15,6 @@ tcp_client tcp_client_new(int socktype)
     __attribute__((warn_unused_result))
     __attribute__((malloc));
 
-status_t tcp_client_init(tcp_client srv)
-    __attribute__((warn_unused_result))
-    __attribute__((nonnull));
-
 void tcp_client_free(tcp_client srv);
 
 status_t tcp_client_set_hostname(tcp_client srv, const char *host)
