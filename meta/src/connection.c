@@ -19,6 +19,7 @@
 #include <meta_membuf.h>
 #include <connection.h>
 #include <gensocket.h>
+#include <cstring.h>
 
 /*
  * NOTE: Security
@@ -495,6 +496,25 @@ int data_on_socket(connection this)
     assert(this != NULL);
 
     return socket_wait_for_data(this->sock, this->timeout_reads) == success;
+}
+
+status_t connection_printf(connection conn, const char *fmt, ...)
+{
+    status_t status;
+    va_list ap;
+    cstring s = cstring_new();
+
+    assert(conn != NULL);
+    assert(fmt != NULL);
+
+    va_start(ap, fmt);
+    status = cstring_vprintf(s, fmt, ap);
+    va_end(ap);
+
+    if (status == success)
+        status = connection_write(conn, c_str(s), cstring_length(s));
+    cstring_free(s);
+    return status;
 }
 
 status_t connection_putc(connection this, int ch)

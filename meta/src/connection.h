@@ -36,6 +36,10 @@ void *connection_arg2(connection conn)
 status_t connection_connect(connection c, const char *host, int port)
     __attribute__((nonnull, warn_unused_result));
 
+status_t connection_printf(connection conn, const char *format, ...)
+    __attribute__ ((format(printf, 2, 3)))
+    __attribute__((nonnull, warn_unused_result));
+
 status_t connection_putc(connection conn, int ch)
     __attribute__((nonnull, warn_unused_result));
 
