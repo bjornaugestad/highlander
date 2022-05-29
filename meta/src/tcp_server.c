@@ -38,7 +38,7 @@ struct tcp_server_tag {
     // SSL or TCP
     int socktype;
 
-    // timeout in seconds
+    // timeout in milliseconds
     int timeout_reads, timeout_writes, timeout_accepts;
 
     // How many times should we try to read/write before we disconnect?
