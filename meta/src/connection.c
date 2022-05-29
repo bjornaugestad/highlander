@@ -529,7 +529,10 @@ status_t connection_puts(connection this, const char *s)
 {
     assert(this != NULL);
     assert(s != NULL);
-    return connection_write(this, s, strlen(s));
+    if (connection_write(this, s, strlen(s)) && connection_flush(this))
+        return success;
+    else
+        return failure;
 }
 
 status_t connection_gets(connection this, char *dest, size_t destsize)
