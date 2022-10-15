@@ -135,6 +135,7 @@ unsigned long tcp_server_sum_denied_clients(tcp_server srv)
 // which is the function creating an SSL server socket.
 status_t tcp_server_set_rootcert(tcp_server p, const char *path);
 status_t tcp_server_set_private_key(tcp_server p, const char *path);
+status_t tcp_server_set_cert_chain_file(tcp_server p, const char *path);
 status_t tcp_server_set_ciphers(tcp_server p, const char *ciphers);
 status_t tcp_server_set_ca_directory(tcp_server p, const char *path);
 

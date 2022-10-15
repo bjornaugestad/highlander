@@ -51,7 +51,7 @@ struct tcp_server_tag {
     // SSL_CTX, so for us, per tcp_server and highly optional.
     // Regular servers need none of these.
     // The ciphers member has a default value. The rest are NULL
-    cstring rootcert, private_key, ciphers, cadir;
+    cstring rootcert, private_key, ciphers, cadir, cert_chain_file;
     SSL_CTX *ctx;
 
     // Function to call when a new connection is accepted
@@ -195,6 +195,7 @@ void tcp_server_free(tcp_server this)
         cstring_free(this->host);
         cstring_free(this->rootcert);
         cstring_free(this->private_key);
+        cstring_free(this->cert_chain_file);
         cstring_free(this->ciphers);
         cstring_free(this->cadir);
 
@@ -516,66 +517,31 @@ static int verify_callback(int ok, X509_STORE_CTX *store)
     return ok;
 }
 
-static DH *get_dh2048(void)
-{
-	static const unsigned char dh2048_p[]={
-		0x9D,0xFC,0x9A,0xE3,0xC2,0xE0,0x67,0xDF,0xDD,0x87,0xC9,0x88,
-		0x1A,0xFA,0xB9,0x0F,0x4D,0xD8,0x0C,0xF1,0x91,0x51,0x61,0xEC,
-		0x39,0x13,0x0D,0x9B,0xCA,0x0A,0x67,0x3A,0x3B,0xE1,0x86,0xB6,
-		0xE0,0x0A,0xAA,0xE3,0xDC,0x02,0xA0,0x10,0x10,0x25,0xAD,0x90,
-		0xFD,0x86,0x1B,0x0F,0xA6,0xDF,0x47,0x84,0x33,0x6D,0x13,0x64,
-		0x78,0xAA,0xDD,0x69,0x39,0x67,0x94,0x85,0x8A,0xD7,0x9C,0x95,
-		0x32,0x32,0x92,0x2A,0x33,0xAE,0xFC,0xB8,0xA7,0xC9,0x49,0x91,
-		0x57,0x51,0x38,0xD7,0xCA,0xC7,0x12,0x9B,0x5C,0x8C,0xBD,0x81,
-		0x4D,0x92,0xB4,0xD5,0x6A,0x0E,0x28,0x30,0x49,0x35,0x14,0x56,
-		0x97,0x69,0x5B,0xBE,0xA5,0x96,0x5E,0xA6,0xCC,0x2B,0xAD,0xD9,
-		0x00,0x65,0x0A,0x7A,0x74,0x40,0x36,0x3D,0x1A,0x08,0x09,0x6B,
-		0x99,0xC2,0xDA,0x75,0xA4,0x45,0x09,0xFA,0xC3,0x57,0x99,0x1F,
-		0xF5,0x59,0x0A,0xD2,0x4C,0x97,0x41,0xDB,0x6E,0x3A,0x7E,0x5D,
-		0x0E,0x7F,0xC6,0x9A,0x07,0xA7,0x6D,0xFC,0x3E,0xDC,0xB4,0x45,
-		0x0D,0x61,0x9E,0x42,0x1F,0x8E,0x18,0x9D,0x9C,0xEB,0x34,0x67,
-		0x11,0x6F,0xF7,0x72,0x2B,0x1F,0x46,0xFC,0x4F,0xFC,0x38,0x29,
-		0xFF,0x9F,0x57,0x2F,0xA2,0x8E,0xBE,0x14,0x3D,0xF8,0xAB,0x15,
-		0xF4,0x27,0x45,0xCE,0x94,0xE6,0x86,0x75,0x9A,0x33,0x35,0x57,
-		0x6C,0xA1,0x00,0x5B,0x6F,0x0C,0x74,0x8C,0x85,0x1B,0x62,0x3D,
-		0x4A,0x98,0x20,0xC0,0x81,0x33,0x02,0xEE,0x9A,0x45,0xF2,0xC9,
-		0x11,0x65,0x9E,0xB3,0x02,0xA0,0x13,0x85,0xAC,0xCF,0x73,0x01,
-		0x46,0x00,0xEC,0x83,
-		};
-	static const unsigned char dh2048_g[]={
-		0x02,
-		};
-	DH *dh;
-    BIGNUM *p, *g;
-
-	if ((dh=DH_new()) == NULL)
-        return(NULL);
-
-	p = BN_bin2bn(dh2048_p, sizeof dh2048_p, NULL);
-	g = BN_bin2bn(dh2048_g, sizeof dh2048_g, NULL);
-
-	if (p == NULL || g == NULL) {
-        BN_free(p);
-        BN_free(g);
-        DH_free(dh);
-        return(NULL);
-    }
-
-    DH_set0_pqg(dh, p, NULL, g);
-	return dh;
-}
-
 // Beware: We may want only one context per process
+// Notes by boa@20221015: 
+// We now have OpenSSL 3.0 and lots of stuff have been deprecated.
+// We must therefore fix the DH code a bit, but I'm not sure how.
+// https://wiki.openssl.org/index.php/Diffie_Hellman seems to be a good guide.
+// It states: 
+// 1. Always use Ephemal DH for perfect forward secrecy, so let's do that.
+//    Relevant functions may be: EVP_PKEY_new(), EVP_PKEY_assign()
+//    EVP_PKEY_CTX_new(), EVP_PKEY_keygen_init(), EVP_PKEY_keygen(),
+//
 static status_t setup_server_ctx(tcp_server this)
 {
     int verifyflags = 0; // SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
     int options = SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_SINGLE_DH_USE;
     int rc;
+    const SSL_METHOD *method;
 
     assert(this != NULL);
     assert(this->ctx == NULL);
 
-    this->ctx = SSL_CTX_new(TLS_server_method());
+    method = TLS_server_method();
+    if (method == NULL)
+        goto err;
+
+    this->ctx = SSL_CTX_new(method);
     if (this->ctx == NULL)
         goto err;
 
@@ -596,7 +562,9 @@ static status_t setup_server_ctx(tcp_server this)
 
     // Load private key/certfile from disk
     const char *private_key = c_str(this->private_key);
-    rc = SSL_CTX_use_certificate_chain_file(this->ctx, private_key);
+
+    const char *cert_chain_file = c_str(this->cert_chain_file);
+    rc = SSL_CTX_use_certificate_chain_file(this->ctx, cert_chain_file);
     if (rc != 1)
         goto err;
 
@@ -608,7 +576,8 @@ static status_t setup_server_ctx(tcp_server this)
     SSL_CTX_set_verify_depth(this->ctx, 4);
     SSL_CTX_set_options(this->ctx, options);
 
-    SSL_CTX_set_tmp_dh(this->ctx, get_dh2048());
+    if (!SSL_CTX_set_dh_auto(this->ctx, 1))
+        goto err;
 
     const char *ciphers = c_str(this->ciphers);
     rc = SSL_CTX_set_cipher_list(this->ctx, ciphers);
@@ -841,6 +810,22 @@ status_t tcp_server_set_private_key(tcp_server this, const char *path)
     }
 
     return cstring_set(this->private_key, path);
+}
+
+status_t tcp_server_set_cert_chain_file(tcp_server this, const char *path)
+{
+    assert(this != NULL);
+    assert(path != NULL);
+    assert(strlen(path) > 0);
+
+    // alloc if first time called.
+    if (this->cert_chain_file == NULL) {
+        this->cert_chain_file = cstring_new();
+        if (this->cert_chain_file == NULL)
+            return failure;
+    }
+
+    return cstring_set(this->cert_chain_file, path);
 }
 
 status_t tcp_server_set_ciphers(tcp_server this, const char *ciphers)

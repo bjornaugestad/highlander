@@ -107,8 +107,9 @@ static status_t send_disk_file(
     if (i >= sizeof filename)
         return set_http_error(e, HTTP_400_BAD_REQUEST);
 
-    /* Create the path */
-    sprintf(filename, "%s/%s", docroot, uri);
+    strcpy(filename, docroot);
+    strcat(filename, "/");
+    strcat(filename, uri);
 
     /* Does the file exist? */
     if (stat(filename, &st))
