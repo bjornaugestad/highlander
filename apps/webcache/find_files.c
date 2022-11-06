@@ -224,39 +224,6 @@ status_t walk_all_directories(const char *directories, cstring* patterns, size_t
     return rc;
 }
 
-static void get_basename(const char *name, const char *suffix, char *dest, size_t destsize)
-{
-    char *s;
-    size_t i;
-
-    assert(name != NULL);
-    assert(dest != NULL);
-    assert(destsize > 1);
-
-    /* Locate the rightmost / to remove the directory part */
-    if ((s = strrchr(name, '/')) != NULL)
-        s++;    /* Skip the slash */
-    else
-        s = (char*)name; /* The cast is OK. :-) */
-
-    /* Now copy the filename part. */
-    strncpy(dest, s, destsize);
-    dest[destsize - 1] = '\0';
-
-    /* Locate the suffix, if any */
-    if (suffix == NULL || (s = strstr(dest, suffix)) == NULL)
-        return;
-
-    /* Be sure that the suffix actually is a suffix.
-     * We do not want to remove .tar.gz from foo.tar.gz
-     * if the suffix is .tar, so the suffix must be
-     * at the end of the string.
-     */
-    i = strlen(suffix);
-    if (s[i] == '\0')
-        *s = '\0';
-}
-
 /*
  * Our caller has decided that it has found a file. This function
  * checks to see if that file matches the patterns we want to cache.

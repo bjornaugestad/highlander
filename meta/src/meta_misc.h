@@ -63,6 +63,8 @@ status_t get_word_from_string(const char *src, char *dest,
 status_t copy_word(const char *src, char *dest, int separator, size_t destsize)
     __attribute__((warn_unused_result));
 
+void get_basename(const char *name, const char *suffix, char *dest, size_t destsize);
+
 #if !defined(min) && !defined(max)
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #define max(a, b) ((a) > (b) ? (a) : (b))
