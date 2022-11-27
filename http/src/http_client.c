@@ -50,15 +50,16 @@ void http_client_free(http_client this)
     free(this);
 }
 
-status_t http_client_connect(http_client this, const char *host, int port)
+status_t http_client_connect(http_client this, const char *host, int port, error e)
 {
+    (void)e;
     assert(this != NULL);
     assert(host != NULL);
 
     return tcp_client_connect(this->sock, host, port);
 }
 
-status_t http_client_get(http_client this, const char *host, const char *uri)
+status_t http_client_get(http_client this, const char *host, const char *uri, error e)
 {
     assert(this != NULL);
 
@@ -71,10 +72,10 @@ status_t http_client_get(http_client this, const char *host, const char *uri)
         return failure;
 
     connection c = tcp_client_connection(this->sock);
-    if (!request_send(this->request, c, NULL))
+    if (!request_send(this->request, c, e))
         return failure;
 
-    if (!response_receive(this->response, c, 10*1024*1024, NULL))
+    if (!response_receive(this->response, c, 10*1024*1024, e))
         return failure;
 
     return success;

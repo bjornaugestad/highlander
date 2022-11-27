@@ -72,7 +72,8 @@ static SSL_CTX* create_client_context(void)
     const long flags = SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_COMPRESSION;
     SSL_CTX_set_options(ctx, flags);
 
-    long res = SSL_CTX_load_verify_locations(ctx, "random-org-chain.pem", NULL);
+    // TODO boa@20221125: This can't be hardcoded
+    long res = SSL_CTX_load_verify_locations(ctx, "/etc/pki/tls/certs/ca-bundle.trust.crt", NULL);
     if (res != 1)
         die("Could not load verify locations\n");
 

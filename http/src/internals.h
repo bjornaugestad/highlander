@@ -177,7 +177,7 @@ bool general_header_get_must_revalidate(general_header gh);
 bool general_header_get_proxy_revalidate(general_header gh);
 
 
-time_t general_header_get_date(general_header gh);
+time_t      general_header_get_date(general_header gh);
 const char* general_header_get_connection(general_header gh);
 const char* general_header_get_trailer(general_header gh);
 const char* general_header_get_transfer_encoding(general_header gh);

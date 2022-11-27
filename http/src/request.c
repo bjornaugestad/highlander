@@ -1957,6 +1957,13 @@ int find_request_header(const char *name)
             return i;
     }
 
+    // TODO boa@20221127: The world has moved on quite a bit since
+    // I wrote this code 20 years ago. Now everyone use fields in both
+    // request headers and response headers. My code supports the *standard*
+    // header fields. In addition, apps use "X-whatever" for ... stuff.
+    // The TODO here is to support non-standard header fields. Not hard,
+    // just add a hash table for name/value pairs, here as well as in response.c .
+
     fprintf(stderr, "Could not find name: <%s>\n", name);
     return -1;
 }
