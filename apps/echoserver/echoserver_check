@@ -7,7 +7,7 @@ killall -qw echoserver >/dev/null 2>&1
 pid=$!
 sleep 0.5s
 
-X=$(echo "hello" | nc localhost 2000)
+X=$(echo "hello" | nc localhost 3000)
 if test "x$X" != "xhello"; then
     exit 1
 fi
@@ -17,7 +17,7 @@ killall -qw echoserver >/dev/null 2>&1
 ./echoserver >/dev/null 2>&1 &
 pid=$!
 sleep 0.5s
-X=$(echo "hellossl" | nc --ssl localhost 2000)
+X=$(echo "hellossl" | nc --ssl localhost 3000)
 if test "x$X" != "xhellossl"; then
     exit 1
 fi

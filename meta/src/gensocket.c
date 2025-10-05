@@ -110,28 +110,6 @@ socket_t socket_create_client_socket(int socktype, void *context,
     return this;
 }
 
-// A ctor function
-socket_t socket_socket(int socktype)
-{
-    socket_t this;
-
-    this = create_instance(socktype);
-    if (this == NULL)
-        return NULL;
-
-    if (socktype == SOCKTYPE_TCP)
-        this->instance = tcpsocket_socket();
-    else
-        this->instance = sslsocket_socket();
-
-    if (this->instance == NULL) {
-        free(this);
-        return NULL;
-    }
-
-    return this;
-}
-
 // Accept is special and is also a ctor like function.
 socket_t socket_accept(socket_t p, void *context, 
     struct sockaddr *addr, socklen_t *addrsize)
@@ -179,7 +157,9 @@ status_t socket_close(socket_t p)
     assert(p != NULL);
     assert(p->instance != NULL);
 
-    return p->close(p->instance);
+    status_t rc = p->close(p->instance);
+    free(p);
+    return rc;
 }
 
 status_t socket_poll_for(socket_t p, int timeout, int polltype)

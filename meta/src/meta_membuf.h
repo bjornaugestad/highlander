@@ -58,8 +58,7 @@ struct membuf_tag {
     char *data __attribute__((nonstring));
 };
 
-// Creates a new membuf buffer. The buffer will have room for size
-// bytes.
+// Creates a new membuf buffer. The buffer will have room for size bytes.
 membuf membuf_new(size_t size) __attribute__((malloc, warn_unused_result));
 
 // Frees a membuf buffer.

@@ -36,7 +36,7 @@ static status_t sslsocket_set_reuseaddr(sslsocket this)
 }
 
 /*
- * This is a local helper function. It polls for some kind of event,
+ * This is a helper function. It polls for some kind of event,
  * which normally is POLLIN or POLLOUT.
  * The function returns 1 if the event has occured, and 0 if an
  * error occured. It set errno to EAGAIN if a timeout occured, and
@@ -44,42 +44,31 @@ static status_t sslsocket_set_reuseaddr(sslsocket this)
  */
 status_t sslsocket_poll_for(sslsocket this, int timeout, short poll_for)
 {
-    status_t status = failure;
-
-    struct pollfd pfd;
-    int rc;
-
     assert(this != NULL);
     assert(poll_for == POLLIN || poll_for == POLLOUT);
     assert(timeout >= 0);
 
-    // openssl return long here, so -Wconversion warns about
-    // truncation. Doc says that function returns int, but it returns long.
-    pfd.fd = (int)BIO_get_fd(this->bio, NULL);
+    struct pollfd pfd;
+    pfd.fd = BIO_get_fd(this->bio, NULL);
     pfd.events = poll_for;
 
     /* NOTE: poll is XPG4, not POSIX */
-    rc = poll(&pfd, 1, timeout);
+    int rc = poll(&pfd, 1, timeout);
+    status_t status = failure;
+
     if (rc == 1) {
         /* We have info in pfd */
-        if (pfd.revents & POLLHUP) {
+        if (pfd.revents & POLLHUP)
             errno = EPIPE;
-        }
-        else if (pfd.revents & POLLERR) {
+        else if (pfd.revents & POLLERR)
             errno = EPIPE;
-        }
-        else if (pfd.revents & POLLNVAL) {
+        else if (pfd.revents & POLLNVAL)
             errno = EINVAL;
-        }
-        else if ((pfd.revents & poll_for)  == poll_for) {
+        else if ((pfd.revents & poll_for)  == poll_for)
             status = success;
-        }
     }
-    else if (rc == 0) {
+    else if (rc == 0)
         errno = EAGAIN;
-    }
-    else if (rc == -1) {
-    }
 
     return status;
 }
@@ -103,6 +92,8 @@ status_t sslsocket_wait_for_data(sslsocket this, int timeout)
     return sslsocket_poll_for(this, timeout, POLLIN);
 }
 
+// 20251005: TODO: Rewrite to handle SSL requests for read/write, 
+// just like we do in the read function below.
 status_t sslsocket_write(sslsocket this, const char *buf, size_t count,
     int timeout, int nretries)
 {
@@ -114,7 +105,7 @@ status_t sslsocket_write(sslsocket this, const char *buf, size_t count,
     assert(nretries >= 0);
 
     do {
-        if (!sslsocket_wait_for_writability(this, timeout)) {
+        if (!sslsocket_poll_for(this, timeout, POLLOUT)) {
             if (errno != EAGAIN)
                 return failure;
 
@@ -140,6 +131,7 @@ ssize_t sslsocket_read(sslsocket this, char *dest, size_t count,
     int timeout, int nretries)
 {
     ssize_t nread;
+    status_t status;
 
     assert(this != NULL);
     assert(this->ssl != NULL);
@@ -148,7 +140,7 @@ ssize_t sslsocket_read(sslsocket this, char *dest, size_t count,
     assert(dest != NULL);
 
     do {
-        if (!sslsocket_wait_for_data(this, timeout)) {
+        if (!sslsocket_poll_for(this, timeout, POLLIN)) {
             if (errno == EAGAIN)
                 continue; // Try again.
 
@@ -156,12 +148,37 @@ ssize_t sslsocket_read(sslsocket this, char *dest, size_t count,
         }
 
         // Return data asap, even if partial
-        if ((nread = SSL_read(this->ssl, dest, count)) > 0)
+        if ((nread = SSL_read(this->ssl, dest, count)) > 0) {
             return nread;
+        }
 
-        if (nread == -1 && errno != EAGAIN) {
-            /* An error occured. Uncool. */
-            return -1;
+        int err = SSL_get_error(this->ssl, nread);
+        switch (err) {
+            case SSL_ERROR_WANT_READ:
+                status = sslsocket_poll_for(this, timeout, POLLIN);
+                if (status == failure)
+                    return -1;
+                break;
+
+            case SSL_ERROR_WANT_WRITE:
+                status = sslsocket_poll_for(this, timeout, POLLOUT);
+                if (status == failure)
+                    return -1;
+                break;
+
+            case SSL_ERROR_ZERO_RETURN:
+                // peer sent close_notify. Time to quit
+                return -1;
+
+            case SSL_ERROR_SYSCALL:
+                if (errno == 0)
+                    break; // We retry
+
+                return -1;
+
+            default:
+                errno = EIO;
+                return -1;
         }
     } while (nretries--);
 
@@ -328,8 +345,22 @@ status_t sslsocket_clear_nonblock(sslsocket this)
 status_t sslsocket_close(sslsocket this)
 {
     assert(this != NULL);
-    
-    BIO_free_all(this->bio);
+    assert(this->ssl != NULL);
+    assert(this->bio != NULL);
+
+    int ret = SSL_shutdown(this->ssl);
+    if (ret == 0)
+        ret = SSL_shutdown(this->ssl);
+
+
+    int fd = BIO_get_fd(this->bio, NULL);
+    if (fd > 0) {
+        shutdown(fd, SHUT_RDWR);
+        close(fd);
+    }
+
+    SSL_free(this->ssl);
+    // BIO_free_all(this->bio);
     free(this);
 
     return success;

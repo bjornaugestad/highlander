@@ -282,8 +282,6 @@ status_t connection_close(connection this)
 
     flush_success = connection_flush(this);
     close_success = socket_close(this->sock);
-    free(this->sock);
-    this->sock = NULL;
 
     if (!flush_success || !close_success)
         return failure;

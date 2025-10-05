@@ -53,11 +53,12 @@ int main(int argc, char *argv[])
 
     p = process_new("echoserver");
     srv = tcp_server_new(m_servertype);
+    tcp_server_set_port(srv, 3000);
 
     if (!tcp_server_init(srv))
         exit(2);
 
-    tcp_server_set_rootcert(srv, "./rootcert.pem");
+    tcp_server_set_server_cert(srv, "./rootcert.pem");
     tcp_server_set_private_key(srv, "./server.pem");
     tcp_server_set_service_function(srv, fn, NULL);
     tcp_server_start_via_process(p, srv);

@@ -50,8 +50,7 @@ struct tcp_server_tag {
     // Some SSL related properties we need. They're per
     // SSL_CTX, so for us, per tcp_server and highly optional.
     // Regular servers need none of these.
-    // The ciphers member has a default value. The rest are NULL
-    cstring rootcert, private_key, ciphers, cadir, cert_chain_file;
+    cstring server_cert, private_key, cadir, cert_chain_file;
     SSL_CTX *ctx;
 
     // Function to call when a new connection is accepted
@@ -138,8 +137,6 @@ static bool client_can_connect(tcp_server srv, struct sockaddr_in* addr)
     return true;
 }
 
-// Default cipherlist. Probably needs updating/tightening.
-#define CIPHER_LIST "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH"
 tcp_server tcp_server_new(int socktype)
 {
     tcp_server new;
@@ -155,12 +152,6 @@ tcp_server tcp_server_new(int socktype)
         new->nthreads = 10;
         new->port = 2000;
         new->socktype = socktype;
-
-        new->ciphers = cstring_dup(CIPHER_LIST);
-        if (new->ciphers == NULL) {
-            free(new);
-            return NULL;
-        }
 
         new->pattern_compiled = false;
 
@@ -193,10 +184,9 @@ void tcp_server_free(tcp_server this)
         pool_free(this->write_buffers, (dtor)membuf_free);
 
         cstring_free(this->host);
-        cstring_free(this->rootcert);
+        cstring_free(this->server_cert);
         cstring_free(this->private_key);
         cstring_free(this->cert_chain_file);
-        cstring_free(this->ciphers);
         cstring_free(this->cadir);
 
         SSL_CTX_free(this->ctx);
@@ -530,12 +520,14 @@ static int verify_callback(int ok, X509_STORE_CTX *store)
 static status_t setup_server_ctx(tcp_server this)
 {
     int verifyflags = 0; // SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
-    int options = SSL_OP_ALL | SSL_OP_NO_SSLv2 | SSL_OP_SINGLE_DH_USE;
+    int options = SSL_OP_NO_COMPRESSION | SSL_OP_CIPHER_SERVER_PREFERENCE;
     int rc;
     const SSL_METHOD *method;
 
     assert(this != NULL);
     assert(this->ctx == NULL);
+    assert(this->server_cert != NULL);
+    assert(this->private_key != NULL);
 
     method = TLS_server_method();
     if (method == NULL)
@@ -546,13 +538,13 @@ static status_t setup_server_ctx(tcp_server this)
         goto err;
 
     // Tell SSL where to find trusted CA certificates
-    const char *rootcert = c_str(this->rootcert);
+    const char *server_cert = c_str(this->server_cert);
 
     const char *cadir = NULL;
     if (this->cadir != NULL)
         cadir = c_str(this->cadir);
         
-    rc = SSL_CTX_load_verify_locations(this->ctx, rootcert, cadir);
+    rc = SSL_CTX_load_verify_locations(this->ctx, server_cert, cadir);
     if (rc != 1)
         goto err;
 
@@ -560,14 +552,20 @@ static status_t setup_server_ctx(tcp_server this)
     if (rc != 1)
         goto err;
 
-    // Load private key/certfile from disk
-    const char *private_key = c_str(this->private_key);
+    // Load certfile from disk. chained certs are optional.
+    if (this->cert_chain_file != NULL) {
+        const char *cert_chain_file = c_str(this->cert_chain_file);
+        rc = SSL_CTX_use_certificate_chain_file(this->ctx, cert_chain_file);
+    }
+    else // Just use server cert directly
+        rc = SSL_CTX_use_certificate_file(this->ctx, server_cert, SSL_FILETYPE_PEM);
 
-    const char *cert_chain_file = c_str(this->cert_chain_file);
-    rc = SSL_CTX_use_certificate_chain_file(this->ctx, cert_chain_file);
     if (rc != 1)
         goto err;
 
+
+    // Private key goes here.
+    const char *private_key = c_str(this->private_key);
     rc = SSL_CTX_use_PrivateKey_file(this->ctx, private_key, SSL_FILETYPE_PEM);
     if (rc != 1)
         goto err;
@@ -575,14 +573,9 @@ static status_t setup_server_ctx(tcp_server this)
     SSL_CTX_set_verify(this->ctx, verifyflags, verify_callback);
     SSL_CTX_set_verify_depth(this->ctx, 4);
     SSL_CTX_set_options(this->ctx, options);
-
-    if (!SSL_CTX_set_dh_auto(this->ctx, 1))
-        goto err;
-
-    const char *ciphers = c_str(this->ciphers);
-    rc = SSL_CTX_set_cipher_list(this->ctx, ciphers);
-    if (rc != 1)
-        goto err;
+    SSL_CTX_clear_options(this->ctx, SSL_OP_NO_TLSv1_3);
+    SSL_CTX_set_min_proto_version(this->ctx, TLS1_3_VERSION);
+    SSL_CTX_set_max_proto_version(this->ctx, TLS1_3_VERSION);
 
     return success;
 
@@ -600,6 +593,7 @@ err:
 
     return failure;
 }
+
 status_t tcp_server_get_root_resources(tcp_server this)
 {
     const char *hostname = "localhost";
@@ -780,20 +774,20 @@ unsigned long tcp_server_sum_denied_clients(tcp_server this)
     return atomic_ulong_get(&this->sum_denied_clients);
 }
 
-status_t tcp_server_set_rootcert(tcp_server this, const char *path)
+status_t tcp_server_set_server_cert(tcp_server this, const char *path)
 {
     assert(this != NULL);
     assert(path != NULL);
     assert(strlen(path) > 0);
 
     // alloc if first time called.
-    if (this->rootcert == NULL) {
-        this->rootcert = cstring_new();
-        if (this->rootcert == NULL)
+    if (this->server_cert == NULL) {
+        this->server_cert = cstring_new();
+        if (this->server_cert == NULL)
             return failure;
     }
 
-    return cstring_set(this->rootcert, path);
+    return cstring_set(this->server_cert, path);
 }
 
 status_t tcp_server_set_private_key(tcp_server this, const char *path)
@@ -826,16 +820,6 @@ status_t tcp_server_set_cert_chain_file(tcp_server this, const char *path)
     }
 
     return cstring_set(this->cert_chain_file, path);
-}
-
-status_t tcp_server_set_ciphers(tcp_server this, const char *ciphers)
-{
-    assert(this != NULL);
-    assert(this->ciphers != NULL);
-    assert(ciphers != NULL);
-    assert(strlen(ciphers) > 0);
-
-    return cstring_set(this->ciphers, ciphers);
 }
 
 status_t tcp_server_set_ca_directory(tcp_server this, const char *path)
