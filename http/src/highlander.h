@@ -88,7 +88,7 @@ typedef int (*handlerfn)(http_request, http_response);
 // new stuff 20141231: We need a client ADT for better testing of the server
 http_client http_client_new(int socktype) __attribute__((warn_unused_result));
 void http_client_free(http_client p);
-status_t http_client_connect(http_client this, const char *host, int port, error e)
+status_t http_client_connect(http_client this, const char *host, int port)
     __attribute__((warn_unused_result));
 
 status_t http_client_get(http_client this, const char *host, const char *uri, error e)

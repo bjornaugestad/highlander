@@ -50,9 +50,8 @@ void http_client_free(http_client this)
     free(this);
 }
 
-status_t http_client_connect(http_client this, const char *host, int port, error e)
+status_t http_client_connect(http_client this, const char *host, int port)
 {
-    (void)e;
     assert(this != NULL);
     assert(host != NULL);
 
@@ -143,6 +142,7 @@ int main(void)
 {
     http_client p;
     http_response resp;
+    error e = error_new();
 
     int socktype = SOCKTYPE_SSL;
     const char *hostname = "www.random.org";
@@ -157,7 +157,7 @@ int main(void)
     if (!http_client_connect(p, hostname, port))
         die("Could not connect to %s\n", hostname);
 
-    if (!http_client_get(p, hostname, uri)) {
+    if (!http_client_get(p, hostname, uri, e)) {
         http_client_disconnect(p);
         die("Could not get %s from %s\n", uri, hostname);
     }
@@ -183,6 +183,7 @@ int main(void)
         die("Could not disconnect from %s\n", hostname);
 
     http_client_free(p);
+    error_free(e);
     return 0;
 }
 #endif

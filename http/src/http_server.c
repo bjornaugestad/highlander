@@ -1164,6 +1164,7 @@ static void make_request(void)
 {
     http_client p;
     http_response resp;
+    error e = error_new();
 
     const char *hostname ="localhost";
     const char *uri = "/";
@@ -1177,7 +1178,7 @@ static void make_request(void)
         exit(1);
     }
 
-    if (!http_client_get(p, hostname, uri)) {
+    if (!http_client_get(p, hostname, uri, e)) {
         fprintf(stderr, "Could not get %s from %s\n", uri, hostname);
         http_client_disconnect(p);
         exit(1);
@@ -1195,6 +1196,7 @@ static void make_request(void)
     }
 
     http_client_free(p);
+    error_free(e);
 }
 
 static void check_response_time(void)
