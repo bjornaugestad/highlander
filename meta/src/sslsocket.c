@@ -113,11 +113,45 @@ status_t sslsocket_write(sslsocket this, const char *buf, size_t count,
             continue;
         }
 
-        if (SSL_write_ex(this->ssl, buf, count, &nwritten) == 0)
-            return failure;
+        int rc = SSL_write_ex(this->ssl, buf, count, &nwritten);
+        if (rc == 1 && nwritten == count) {
+            // Yay, we wrote everything in one go
+            return success;
+        }
 
-        buf += nwritten;
-        count -= nwritten;
+        if (rc == 1 && nwritten < count) {
+            // Partial write, so we must try agan
+            buf += nwritten;
+            count -= nwritten;
+            continue;
+        }
+
+        // At this point, rc == 0. Interpret SSL_get_error()
+        int err = SSL_get_error(this->ssl, rc);
+        switch (err) {
+            case SSL_ERROR_WANT_READ:
+                if (!sslsocket_poll_for(this, timeout, POLLIN))
+                    return failure;
+                break;
+
+            case SSL_ERROR_WANT_WRITE:
+                if (!sslsocket_poll_for(this, timeout, POLLOUT))
+                    return failure;
+                break;
+
+            case SSL_ERROR_ZERO_RETURN:
+                // Time to quit
+                return failure;
+
+            case SSL_ERROR_SYSCALL:
+                if (errno == 0)
+                    break; // retry
+                return failure;
+
+            default:
+                errno = EIO;
+                return failure;
+        }
     } while(count > 0 && nretries--);
 
     /* If not able to write and no errors detected, we have a timeout */
