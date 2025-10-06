@@ -507,16 +507,17 @@ static int verify_callback(int ok, X509_STORE_CTX *store)
     return ok;
 }
 
-// Beware: We may want only one context per process
-// Notes by boa@20221015: 
-// We now have OpenSSL 3.0 and lots of stuff have been deprecated.
-// We must therefore fix the DH code a bit, but I'm not sure how.
-// https://wiki.openssl.org/index.php/Diffie_Hellman seems to be a good guide.
-// It states: 
-// 1. Always use Ephemal DH for perfect forward secrecy, so let's do that.
-//    Relevant functions may be: EVP_PKEY_new(), EVP_PKEY_assign()
-//    EVP_PKEY_CTX_new(), EVP_PKEY_keygen_init(), EVP_PKEY_keygen(),
-//
+static status_t destroy_server_ctx(tcp_server this)
+{
+    assert(this != NULL);
+
+    printf("%s(): I'm here\n", __func__);
+    if (this->ctx != NULL)
+        SSL_CTX_free(this->ctx);
+
+    return success;
+}
+
 static status_t setup_server_ctx(tcp_server this)
 {
     int verifyflags = 0; // SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
@@ -708,8 +709,16 @@ status_t tcp_server_start_via_process(process p, tcp_server s)
         (status_t(*)(void*))tcp_server_shutdown);
 }
 
+// 20251006: Something's fucked with SSL teardown. Also, are SSL resources
+// root resources? Hmm, we should probably move things around a bit,
+// probably to a dtor. For testing purposes, we use the (get|free)_root_resources
+// until teardown is correct. 
 status_t tcp_server_free_root_resources(tcp_server s)
 {
+    printf("%s(): I'm here\n", __func__);
+    if (s->socktype == SOCKTYPE_SSL)
+        destroy_server_ctx(s);
+
     /* NOTE: 2005-11-27: Check out why we don't close the socket here. */
     // NOTE: 2017-05-17: Maybe because it's the accept-socket? We should still close it, though
     // NOTE: 2025-10-06: socket_close() now closes *and* frees the generic socket.
