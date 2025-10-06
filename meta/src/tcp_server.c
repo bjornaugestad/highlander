@@ -686,8 +686,7 @@ status_t tcp_server_set_hostname(tcp_server this, const char *host)
 {
     assert(this != NULL);
 
-    if (this->host != NULL)
-        cstring_free(this->host);
+    cstring_free(this->host);
 
     if (host == NULL) {
         this->host = NULL;
@@ -713,9 +712,11 @@ status_t tcp_server_free_root_resources(tcp_server s)
 {
     /* NOTE: 2005-11-27: Check out why we don't close the socket here. */
     // NOTE: 2017-05-17: Maybe because it's the accept-socket? We should still close it, though
+    // NOTE: 2025-10-06: socket_close() now closes *and* frees the generic socket.
     assert(s != NULL);
     if (s->sock != NULL)
         return socket_close(s->sock);
+
     return success;
 }
 
