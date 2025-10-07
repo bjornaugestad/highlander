@@ -369,8 +369,6 @@ static status_t process_start_services(process this)
     return success;
 }
 
-
-
 static status_t process_change_rootdir(process this)
 {
     assert(this != NULL);
@@ -509,8 +507,106 @@ int process_get_exitcode(process this, void *object)
 
 
 #ifdef CHECK_META_PROCESS
+
+// 20251007: Time to test this fucker. It's a tricky one, so let's start as
+// simple as we can.
+// 1. Create a dummy object to start and stop. We want to test that 
+//    semantics are fine and that SIGTERM works as expected!
+//
+// 2. Test invariants with usernames and chroot, both successful and broken.
+//
+
+struct test1 {
+    int placeholder;
+};
+
+static status_t test1_do(void *vthis)
+{
+    struct test1 *this = vthis;
+
+    this->placeholder = 0;
+    printf("%s()\n", __func__);
+    return success;
+}
+
+static status_t test1_undo(void *vthis)
+{
+    struct test1 *this = vthis;
+
+    this->placeholder = 1;
+    printf("%s()\n", __func__);
+    return success;
+}
+
+static status_t test1_run(void *vthis)
+{
+    struct test1 *this = vthis;
+
+    this->placeholder = 2;
+    printf("%s()\n", __func__);
+    return success;
+}
+
+static status_t test1_shutdown(void *vthis)
+{
+    struct test1 *this = vthis;
+
+    this->placeholder = 3;
+    printf("%s()\n", __func__);
+    return success;
+}
+
+static status_t run_test1(void)
+{
+    status_t rc;
+
+    process proc = process_new("test1");
+    struct test1 *t1 = malloc(sizeof *t1);
+
+    rc = process_add_object_to_start(proc, t1, test1_do, test1_undo,
+        test1_run, test1_shutdown);
+
+    if (rc == failure)
+        exit(1);
+
+    rc = process_start(proc, 0);
+    if (rc == failure)
+        exit(2);
+
+    // If we're here, the process is running and has a shutdown thread
+    // waiting for SIGTERM. We can call stop_shutdown_thread() which
+    // will send SIGTERM to the right tid, but let's sleep for a sec
+    // before we do that. This is a lazy way to do things, but it makes
+    // it possible to send the signal from within the process and doesn't
+    // require the test framework to kill it.
+    // (A thought: Do we really kill the correct tid/pid? We write this
+    // because killing by the shutdown_thread()'s pid doesn't seem to
+    // work as it used to. There are very old comments in the code about
+    // Linux specifics, and our error may be that tid == pid in 2025?
+    // Speculations, but let's find out.)
+    sleep(1);
+    stop_shutdown_thread(proc);
+
+    // Now we need to wait for the shutdown process to finish.
+    // This may take a long time IRL. This function will join
+    // the process' shutdown thread and then join other services' threads.
+    // Let's hope our laziness above doesn't mess things up as we perhaps
+    // should've been in a separate thread when calling stop_shutdown_thread()
+    rc = process_wait_for_shutdown(proc);
+    if (rc == failure)
+        exit(3);
+
+    // We can now either inspect exit codes or just free mem
+    free(t1);
+    process_free(proc);
+
+    return success;
+}
+
+
 int main(void)
 {
+    run_test1();
     return 0;
 }
 
