@@ -47,9 +47,10 @@ int main(int argc, char *argv[])
     process p;
     tcp_server srv;
 
-    if (!openssl_init())
-        exit(1);
     parse_command_line(argc, argv);
+
+    if (m_servertype == SOCKTYPE_SSL && !openssl_init())
+        exit(1);
 
     p = process_new("echoserver");
     srv = tcp_server_new(m_servertype);
