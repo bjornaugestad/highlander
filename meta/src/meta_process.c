@@ -19,7 +19,14 @@
 
 #include <meta_process.h>
 
-// This small struct stores service objects we handle.
+// This small struct stores services we handle. A service is basically
+// a thread doing whatever. It has a this pointer, a tid, and four
+// functions: do/undo is used pre-start, run is to start running, and
+// shutdown is for shutting it down.
+// The idea is to be able to plug in different types of services
+// into a common process-object and manage them all at the same time.
+// For example: A process may run two http(s) services and a management
+// console as three different main threads.
 struct service {
     void *object;
     status_t (*do_func)(void *object);
@@ -36,8 +43,8 @@ struct service {
     intptr_t exitcode;
 };
 
-// Max number of objects a process can start
-#define MAX_OBJECTS 200
+// Max number of services a process can start
+#define MAX_SERVICES 200
 
 
 // Implementation of our process ADT.
@@ -46,8 +53,8 @@ struct process_tag {
     cstring rootdir;
     cstring username;
 
-    struct service objects[MAX_OBJECTS];
-    size_t objects_used;
+    struct service services[MAX_SERVICES];
+    size_t nservices;
 
     int shutting_down;
 
@@ -70,7 +77,7 @@ process process_new(const char *appname)
     || (new->username = cstring_new()) == NULL)
         goto memerr;
     
-    new->objects_used = 0;
+    new->nservices = 0;
     new->shutting_down = 0;
     return new;
 
@@ -116,23 +123,24 @@ status_t process_add_object_to_start(
     assert(this != NULL);
     assert(object != NULL);
 
-    /* We need either both the do/undo functions or none */
+    // We need either both the do/undo functions or none
     assert(do_func != NULL || undo_func == NULL);
     assert(undo_func != NULL || do_func == NULL);
 
     assert(run_func != NULL);
     assert(shutdown_func != NULL);
 
-    if (this->objects_used == MAX_OBJECTS)
+    if (this->nservices == MAX_SERVICES)
         return fail(ENOSPC);
 
-    this->objects[this->objects_used].object = object;
-    this->objects[this->objects_used].do_func = do_func;
-    this->objects[this->objects_used].undo_func = undo_func;
-    this->objects[this->objects_used].run_func = run_func;
-    this->objects[this->objects_used].shutdown_func = shutdown_func;
-    this->objects[this->objects_used].exitcode = -1;
-    this->objects_used++;
+    this->services[this->nservices].object = object;
+    this->services[this->nservices].do_func = do_func;
+    this->services[this->nservices].undo_func = undo_func;
+    this->services[this->nservices].run_func = run_func;
+    this->services[this->nservices].shutdown_func = shutdown_func;
+    this->services[this->nservices].exitcode = -1;
+    this->nservices++;
+
     return success;
 }
 
@@ -167,36 +175,35 @@ int process_shutting_down(process this)
     return this->shutting_down;
 }
 
-/*
- * Write the pid to /var/run/appname.pid
- * Return 1 on success, 0 on error.
- */
-static int write_pid(process this, pid_t pid)
+// Write the pid to /var/run/appname.pid
+static status_t write_pid(process this, pid_t pid)
 {
     FILE *f;
     char filename[1024];
 
     assert(this != NULL);
 
-    /* NOTE: Try to find a portable way of identifying the proper
-     * directory to write this file in. AIX 4.3.3 has no /var/run.
-     */
     snprintf(filename, sizeof filename, "/var/run/%s.pid", c_str(this->appname));
 
     if ((f = fopen(filename, "w")) == NULL)
-        return 0;
+        return failure;
 
     if (fprintf(f, "%lu", (unsigned long)pid) <= 0) {
         fclose(f);
-        return 0;
+        return failure;
     }
 
     if (fclose(f))
-        return 0;
+        return failure;
 
-    return 1;
+    return success;
 }
 
+// This thread waits for SIGTERM. When received, this function will
+// call the shutdown function for the services we manage.
+//
+// Note that we write this thread's pid to /var/run/appname.pid so
+// we know which pid to terminate.
 static void *shutdown_thread(void *arg)
 {
     sigset_t catch;
@@ -222,9 +229,9 @@ static void *shutdown_thread(void *arg)
     sigwait(&catch, &caught);
     proc->shutting_down = 1;
 
-    /* Shut down all objects we handle */
-    for (i = 0; i < proc->objects_used; i++) {
-        struct service *s = &proc->objects[i];
+    /* Shut down all services we handle */
+    for (i = 0; i < proc->nservices; i++) {
+        struct service *s = &proc->services[i];
         s->shutdown_func(s->object);
     }
 
@@ -251,37 +258,45 @@ static status_t handle_shutdown(process this)
     return success;
 }
 
+// If we fail after the shutdown thread has started, we have to kill it.
+// That's done here.
+static void stop_shutdown_thread(process this)
+{
+    pthread_kill(this->sdt, SIGTERM);
+}
+
 static void *launcher(void *args)
 {
-    status_t exitcode;
+    assert(args != NULL);
+
     struct service *s = args;
 
-    exitcode = s->run_func(s->object);
+    status_t exitcode = s->run_func(s->object);
     return (void*)(intptr_t)exitcode;
 }
 
 // Handle the thread creation needed to create a thread 
-// which starts the actual server.
-static status_t start_one_object(struct service *s)
+// which starts the actual service.
+static status_t start_one_service(struct service *s)
 {
     assert(s != NULL);
 
     return pthread_create(&s->tid, NULL, launcher, s) == 0 ? success : failure;
 }
 
-// Calls the undo() function for all objects for which the do()
+// Calls the undo() function for all services for which the do()
 // function has been called. Used if we encounter an error during start up
-// and want to undo the startup for objects already started.
+// and want to undo the startup for services already started.
 //
 // The pointer to the failed object, failed, may be NULL. This
-// value means that the undo() function should be called for all objects.
-static void undo(process this, struct service *failed)
+// value means that the undo() function should be called for all services.
+static void process_run_undo_functions(process this, struct service *failed)
 {
     size_t i;
     struct service *s;
 
-    for (i = 0; i < this->objects_used; i++) {
-        s = &this->objects[i];
+    for (i = 0; i < this->nservices; i++) {
+        s = &this->services[i];
         if (s == failed)
             return;
 
@@ -290,36 +305,93 @@ static void undo(process this, struct service *failed)
     }
 }
 
-static void shutdown_started_objects(process this, struct service *failed)
+
+// Run the services do functions. Undo all functions if one fails.
+static status_t process_run_do_functions(process this)
+{
+    size_t i;
+    struct service *s;
+    status_t rc = success;
+
+    for (i = 0; i < this->nservices; i++) {
+        s = &this->services[i];
+        if (s->do_func != NULL && !s->do_func(s->object)) {
+            rc = failure;
+            break;
+        }
+    }
+
+    // s points to failed service so we undo any service prior to s.
+    if (rc == failure)
+        process_run_undo_functions(this, s);
+
+    return rc;
+}
+
+static void process_stop_services(process this, struct service *failed)
 {
     size_t i;
     struct service *s;
 
-    for (i = 0; i < this->objects_used; i++) {
-        s = &this->objects[i];
+    for (i = 0; i < this->nservices; i++) {
+        s = &this->services[i];
         if (s == failed)
             return;
 
-        /* Shut down the object and wait to get the exitcode */
+        // Shut down the object and wait to get the exitcode
         s->shutdown_func(s->object);
         assert(s->tid);
         pthread_join(s->tid, NULL);
     }
 }
 
-// If we fail after the shutdown thread has started, we have to kill it.
-// That's done here.
-static void stop_shutdown_thread(process this)
-{
-    pthread_kill(this->sdt, SIGTERM);
-}
-
-
-status_t process_start(process this, int fork_and_close)
+static status_t process_start_services(process this)
 {
     size_t i;
     struct service *s;
 
+    assert(this != NULL);
+
+    // Now start the services
+    for (i = 0; i < this->nservices; i++) {
+        s = &this->services[i];
+
+        if (!start_one_service(s)) {
+            // we failed to start one object. Do not start the rest of the
+            // services. Call the shutdown function for each object to tell
+            // it to stop running.
+            process_stop_services(this, s);
+            stop_shutdown_thread(this);
+            return failure;
+        }
+    }
+
+    return success;
+}
+
+
+
+static status_t process_change_rootdir(process this)
+{
+    assert(this != NULL);
+
+    if (cstring_length(this->rootdir) > 0) {
+        const char *rootdir = c_str(this->rootdir);
+
+        if (chdir(rootdir) || chroot(rootdir)) {
+            // Unable to change directory.
+            stop_shutdown_thread(this);
+            process_run_undo_functions(this, NULL);
+            debug("Could not change root directory\n");
+            return failure;
+        }
+    }
+
+    return success;
+}
+
+status_t process_start(process this, int fork_and_close)
+{
     assert(this != NULL);
 
     if (fork_and_close) {
@@ -335,18 +407,13 @@ status_t process_start(process this, int fork_and_close)
         fclose(stderr);
     }
 
-    for (i = 0; i < this->objects_used; i++) {
-        s = &this->objects[i];
-        if (s->do_func != NULL && !s->do_func(s->object)) {
-            undo(this, s);
-            return failure;
-        }
-    }
+    if (!process_run_do_functions(this))
+        return failure;
 
     // Start shutdown thread before we do setuid() or chroot() to
     // be able to write to /var/run.
     if (!handle_shutdown(this)) {
-        undo(this, NULL);
+        process_run_undo_functions(this, NULL);
         return failure;
     }
 
@@ -356,7 +423,7 @@ status_t process_start(process this, int fork_and_close)
         errno = 0; // TODO: Save old value of errno
         if ((pw = getpwnam(c_str(this->username))) == NULL) {
             stop_shutdown_thread(this);
-            undo(this, NULL);
+            process_run_undo_functions(this, NULL);
 
             // Hmm, either the user didn't exist in /etc/passwd or we didn't
             // have permission to read it or we ran out of memory. The Linux
@@ -369,64 +436,31 @@ status_t process_start(process this, int fork_and_close)
             return failure;
         }
 
-        // We must chroot before setuid() to be allowed to chroot.
-        if (cstring_length(this->rootdir) > 0) {
-            const char *rootdir = c_str(this->rootdir);
-
-            if (chdir(rootdir) || chroot(rootdir)) {
-                // Unable to change directory.
-                stop_shutdown_thread(this);
-                undo(this, NULL);
-                debug("Could not change root directory\n");
-                return failure;
-            }
-        }
+        if (!process_change_rootdir(this))
+            return failure;
 
         if (setuid(pw->pw_uid)) {
             // Oops, unable to change user id. This is serious since the
             // process may continue running as e.g. root. The safest thing
             // to do is therefore to stop the process.
-            undo(this, NULL);
+            process_run_undo_functions(this, NULL);
             stop_shutdown_thread(this);
             debug("Could not set uid\n");
             return failure;
         }
     }
-    else {
-        /* Don't chroot() twice */
-        if (cstring_length(this->rootdir) > 0) {
-            const char *rootdir = c_str(this->rootdir);
+    else if (!process_change_rootdir(this))
+        return failure;
 
-            if (chdir(rootdir) || chroot(rootdir)) {
-                // Hmm, unable to change directory.
-                undo(this, NULL);
-                stop_shutdown_thread(this);
-                return failure;
-            }
-        }
-    }
 
-    // Now start the server objects
-    for (i = 0; i < this->objects_used; i++) {
-        s = &this->objects[i];
-
-        if (!start_one_object(s)) {
-            // we failed to start one object. Do not start the rest of the
-            // objects. Call the shutdown function for each object to tell
-            // it to stop running.
-            shutdown_started_objects(this, s);
-            stop_shutdown_thread(this);
-            return failure;
-        }
-    }
-
-    return success;
+    // Now we should be good to go. Start all services.
+    return process_start_services(this);
 }
 
 // Wait for shutdown thread to finish. That function calls shutdown_func
-// for managed objects. Our job is to wait for those to finish,
+// for managed services. Our job is to wait for those to finish,
 // but the threads themselves must finish too. The semantics are tricky
-// as the objects run in individual threads so we can call their dtors,
+// as the services run in individual threads so we can call their dtors,
 // but we must let them finish before we join the thread. IOW, pthread_join()
 // will be our sync point.
 //
@@ -444,9 +478,9 @@ status_t process_wait_for_shutdown(process this)
     if ((err = pthread_join(this->sdt, NULL)))
         return fail(err);
 
-    // Wait for the started objects to finish.
-    for (i = 0; i < this->objects_used; i++) {
-        struct service *s = &this->objects[i];
+    // Wait for the started services to finish.
+    for (i = 0; i < this->nservices; i++) {
+        struct service *s = &this->services[i];
         void *pfoo = &s->exitcode;
         assert(s->tid);
 
@@ -464,11 +498,12 @@ int process_get_exitcode(process this, void *object)
     assert(this != NULL);
     assert(object != NULL);
 
-    for (i = 0; i < this->objects_used; i++) {
-        struct service *s = &this->objects[i];
+    for (i = 0; i < this->nservices; i++) {
+        struct service *s = &this->services[i];
         if (s->object == object)
             return s->exitcode;
     }
 
     return -1;
 }
+
