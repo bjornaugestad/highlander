@@ -101,6 +101,7 @@ libmeta_a_CFLAGS+=-DWITH_VALGRIND=1
 endif
 
 TESTS=\
+	meta_process_check\
 	convert_check\
 	sampler_check\
 	bitset_check\
@@ -124,6 +125,7 @@ TESTS=\
 	tcp_client_check
 
 check_PROGRAMS=\
+	meta_process_check\
 	convert_check\
 	slotbuf_check\
 	sampler_check\
@@ -151,6 +153,10 @@ AM_CFLAGS=-Wall --std=gnu2x -Wextra -Werror -O0 -ggdb\
 	-Wformat-overflow=2 -Woverflow -Wshift-overflow=2 -Wstrict-overflow=2
 # Broken atm, with false positives
 # FANALYZER=-fanalyzer
+
+meta_process_check_SOURCES=\
+	meta_process.c cstring.c meta_common.c
+meta_process_check_CFLAGS=-DCHECK_META_PROCESS $(AM_CFLAGS) $(FANALYZER)
 
 tcp_server_check_SOURCES=tcp_server.c threadpool.c meta_membuf.c meta_pool.c\
 	gensocket.c sslsocket.c tcpsocket.c connection.c\

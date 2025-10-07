@@ -507,3 +507,12 @@ int process_get_exitcode(process this, void *object)
     return -1;
 }
 
+
+#ifdef CHECK_META_PROCESS
+int main(void)
+{
+    return 0;
+}
+
+#endif
+
