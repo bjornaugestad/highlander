@@ -3,15 +3,17 @@
  * All Rights Reserved. See COPYING for license details
  */
 
-#include <sys/types.h>
-#include <pwd.h>
+#define _GNU_SOURCE
 #include <unistd.h>
+
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
 #include <signal.h>
 #include <pthread.h>
+#include <sys/types.h>
+#include <pwd.h>
 
 #include <meta_common.h>
 #include <cstring.h>
@@ -216,7 +218,10 @@ static void *shutdown_thread(void *arg)
 
     // Since this is the thread to receive the signal, we save its pid.
     // This is important under Linux, as each thread has its own pid.
-    my_pid = getpid();
+    // 20251007 update: This is no longer true. We now have gettid() which
+    // should do the same. Let's see if that's correct, shall we?
+    // "man gettid" for details and kernel versions. Start with "man getpid"
+    my_pid = gettid();
     if (!write_pid(proc, my_pid)) {
         warning("Unable to write pid %lu to the pid file.",
             (unsigned long)my_pid);
@@ -563,6 +568,7 @@ static status_t run_test1(void)
     process proc = process_new("test1");
     struct test1 *t1 = malloc(sizeof *t1);
 
+    printf("%s(): tid:%lu pid:%lu\n", __func__, (unsigned long)pthread_self(), (unsigned long)gettid());
     rc = process_add_object_to_start(proc, t1, test1_do, test1_undo,
         test1_run, test1_shutdown);
 
@@ -579,11 +585,18 @@ static status_t run_test1(void)
     // before we do that. This is a lazy way to do things, but it makes
     // it possible to send the signal from within the process and doesn't
     // require the test framework to kill it.
-    // (A thought: Do we really kill the correct tid/pid? We write this
+    //
+    // A thought: Do we really kill the correct tid/pid? We write this
     // because killing by the shutdown_thread()'s pid doesn't seem to
     // work as it used to. There are very old comments in the code about
     // Linux specifics, and our error may be that tid == pid in 2025?
-    // Speculations, but let's find out.)
+    // Speculations, but let's find out.
+    //
+    // Finding out: getpid() returns the same pid for both threads. WTF?
+    // my shutdown thread has the same pid as any other thread. Kinda
+    // makes sense, but it's a change. When and why did it change? Let's 
+    // find out.
+    //
     sleep(1);
     stop_shutdown_thread(proc);
 

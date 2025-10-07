@@ -79,7 +79,7 @@ libmetad_a_SOURCES=$(libmeta_a_SOURCES)
 # _SVID_SOURCE will do the same thing.
 
 libmeta_a_CFLAGS=\
-	-D_GNU_SOURCE -std=gnu2x -DNDEBUG -pthread\
+	-std=gnu2x -DNDEBUG -pthread\
 	-I$(srcdir)\
 	-I$(top_srcdir)/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\
@@ -89,7 +89,7 @@ libmeta_a_CFLAGS=\
 	-fomit-frame-pointer -msse4.2
 
 libmetad_a_CFLAGS=\
-	-D_GNU_SOURCE -std=gnu2x -pthread\
+	-std=gnu2x -pthread\
 	-I$(srcdir)\
 	-I$(top_srcdir)/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\
@@ -213,7 +213,7 @@ fifo_check_SOURCES=meta_fifo.c meta_wlock.c meta_common.c
 fifo_check_CFLAGS=-DCHECK_FIFO $(AM_CFLAGS) $(FANALYZER)
 
 wlock_check_SOURCES=meta_wlock.c meta_common.c
-wlock_check_CFLAGS=-DCHECK_WLOCK -O0 -ggdb -D_GNU_SOURCE -std=gnu2x -D_REENTRANT $(AM_CFLAGS) $(FANALYZER)
+wlock_check_CFLAGS=-DCHECK_WLOCK -O0 -ggdb -std=gnu2x -D_REENTRANT $(AM_CFLAGS) $(FANALYZER)
 #wlock_check_CFLAGS=-DCHECK_WLOCK -O0 -ggdb $(AM_CFLAGS)
 
 stack_check_SOURCES=meta_stack.c meta_list.c meta_common.c
