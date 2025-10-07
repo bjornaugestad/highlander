@@ -8,7 +8,7 @@ AM_CPPFLAGS=-I$(top_srcdir)/meta/src -I$(top_srcdir)/http/src
 AM_CFLAGS=-p -pg -Werror
 
 metaftpd_CFLAGS=\
-	-Winline -Wshadow -std=gnu2x -D_GNU_SOURCE\
+	-Winline -Wshadow -std=gnu2x \
 	-Wshadow\
 	-Wextra -Wall -pedantic -W -Werror -Wno-long-long -pthread -DNDEBUG -O3\
 	-Wformat-overflow=2 -Woverflow -Wshift-overflow=2 -Wstrict-overflow=5\

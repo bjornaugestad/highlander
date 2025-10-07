@@ -6,7 +6,7 @@ AM_CPPFLAGS=-I$(top_distdir)/http/src -I$(top_distdir)/meta/src
 AM_CFLAGS=-p -pg
 
 webclient_CFLAGS=\
-	-Winline -Wshadow -std=gnu2x -D_GNU_SOURCE\
+	-Winline -Wshadow -std=gnu2x \
 	-Wshadow\
 	-I$(top_srcdir)/http/src\
 	-I$(top_srcdir)/meta/src\

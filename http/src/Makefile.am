@@ -40,7 +40,7 @@ libhighlanderd_a_SOURCES=$(libhighlander_a_SOURCES)
 # _SVID_SOURCE will do the same thing.
 
 libhighlander_a_CFLAGS=\
-	-D_GNU_SOURCE -std=gnu2x -pthread\
+	 -std=gnu2x -pthread\
 	-DNDEBUG\
 	-I$(srcdir)\
 	-I$(top_srcdir)/meta/src\
@@ -50,7 +50,7 @@ libhighlander_a_CFLAGS=\
     -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
 
 libhighlanderd_a_CFLAGS=\
-	-D_GNU_SOURCE -std=gnu2x -pthread\
+	 -std=gnu2x -pthread\
 	-I$(srcdir)\
 	-I$(top_srcdir)/meta/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\

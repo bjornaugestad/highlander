@@ -16,7 +16,7 @@ webcached_SOURCES=\
 	statpack.c
 
 webcached_CFLAGS=\
-	-D_GNU_SOURCE -std=gnu2x -D_REENTRANT -pthread\
+	 -std=gnu2x -D_REENTRANT -pthread\
 	-I$(srcdir)\
 	-I$(srcdir)/webcache\
 	-I$(top_srcdir)/meta/src\
