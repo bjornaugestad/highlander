@@ -110,9 +110,12 @@ socket_t socket_create_client_socket(int socktype, void *context,
     return this;
 }
 
-// Accept is special and is also a ctor like function.
-socket_t socket_accept(socket_t p, void *context, 
-    struct sockaddr *addr, socklen_t *addrsize)
+// Accept is special and is also a ctor like function. This function is called from
+// tcp_server's accept_new_connections() and deals with TLS specific cruft.
+//
+// Fun fact: Now that BIO is out, ssl_socket_accept() is borderline equal to tcp_socket_accept().
+// Let's see if we can reuse code. 
+socket_t socket_accept(socket_t p, void *context, struct sockaddr *addr, socklen_t *addrsize)
 {
     socket_t new;
 

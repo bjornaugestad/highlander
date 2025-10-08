@@ -512,7 +512,6 @@ static status_t destroy_server_ctx(tcp_server this)
 {
     assert(this != NULL);
 
-    printf("%s(): I'm here\n", __func__);
     if (this->ctx != NULL)
         SSL_CTX_free(this->ctx);
 
@@ -716,8 +715,6 @@ status_t tcp_server_start_via_process(process p, tcp_server s)
 // until teardown is correct. 
 status_t tcp_server_free_root_resources(tcp_server this)
 {
-    printf("%s(): I'm here\n", __func__);
-
     /* NOTE: 2005-11-27: Check out why we don't close the socket here. */
     // NOTE: 2017-05-17: Maybe because it's the accept-socket? We should still close it, though
     // NOTE: 2025-10-06: socket_close() now closes *and* frees the generic socket.

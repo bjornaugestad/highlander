@@ -30,7 +30,7 @@ struct tcpsocket_tag {
  * Sets the socket options we want on the main socket
  * Suitable for server sockets only.
  */
-static int tcpsocket_set_reuseaddr(tcpsocket this)
+static status_t tcpsocket_set_reuseaddr(tcpsocket this)
 {
     int optval;
     socklen_t optlen;
@@ -41,9 +41,9 @@ static int tcpsocket_set_reuseaddr(tcpsocket this)
     optval = 1;
     optlen = (socklen_t)sizeof optval;
     if (setsockopt(this->fd, SOL_SOCKET, SO_REUSEADDR, &optval, optlen) == -1)
-        return 0;
+        return failure;
 
-    return 1;
+    return success;
 }
 
 
@@ -271,17 +271,17 @@ status_t tcpsocket_listen(tcpsocket this, int backlog)
 
 tcpsocket tcpsocket_create_server_socket(const char *host, int port)
 {
-    tcpsocket this;
+    tcpsocket new;
 
-    if ((this = tcpsocket_socket()) == NULL)
+    if ((new = tcpsocket_socket()) == NULL)
         return NULL;
 
-    if (tcpsocket_set_reuseaddr(this)
-    && tcpsocket_bind(this, host, port)
-    && tcpsocket_listen(this, 100))
-        return this;
+    if (tcpsocket_set_reuseaddr(new)
+    && tcpsocket_bind(new, host, port)
+    && tcpsocket_listen(new, 100))
+        return new;
 
-    tcpsocket_close(this);
+    tcpsocket_close(new);
     return NULL;
 }
 

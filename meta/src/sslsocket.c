@@ -20,18 +20,26 @@
 #include <sslsocket.h>
 
 struct sslsocket_tag {
+    // fd is -1 if it's never been opened.
+    int fd;
     SSL *ssl;
-    BIO *bio;
 };
 
 // Sets the socket options we want on the main socket
 // Suitable for server sockets only.
 static status_t sslsocket_set_reuseaddr(sslsocket this)
 {
-    assert(this != NULL);
-    assert(this->bio != NULL);
+    int optval;
+    socklen_t optlen;
 
-    BIO_set_bind_mode(this->bio, BIO_BIND_REUSEADDR);
+    assert(this != NULL);
+    assert(this->fd >= 0);
+
+    optval = 1;
+    optlen = (socklen_t)sizeof optval;
+    if (setsockopt(this->fd, SOL_SOCKET, SO_REUSEADDR, &optval, optlen) == -1)
+        return failure;
+
     return success;
 }
 
@@ -49,7 +57,7 @@ status_t sslsocket_poll_for(sslsocket this, int timeout, short poll_for)
     assert(timeout >= 0);
 
     struct pollfd pfd;
-    pfd.fd = BIO_get_fd(this->bio, NULL);
+    pfd.fd = this->fd;
     pfd.events = poll_for;
 
     /* NOTE: poll is XPG4, not POSIX */
@@ -168,6 +176,7 @@ ssize_t sslsocket_read(sslsocket this, char *dest, size_t count,
     status_t status;
 
     assert(this != NULL);
+    assert(this->fd > -1);
     assert(this->ssl != NULL);
     assert(timeout >= 0);
     assert(nretries >= 0);
@@ -225,83 +234,74 @@ ssize_t sslsocket_read(sslsocket this, char *dest, size_t count,
  * created a socket with a specific protocol family,
  * and here we bind it to the PF specified in the services...
  */
-status_t
-sslsocket_bind(sslsocket this, const char *hostname, int port)
+status_t sslsocket_bind(sslsocket this, const char *hostname, int port)
 {
-    int rc;
+    // Avoid duplicating code. TODO: Unify common TCP/TLS code
+    struct tcpsocket_tag;
+    status_t tcpsocket_bind(struct tcpsocket_tag *, const char *hostname, int port);
 
-    (void)hostname;
-    (void)port;
+    status_t rc = tcpsocket_bind((struct tcpsocket_tag *)this, hostname, port);
 
-    // Binds at first call
-    rc = BIO_do_accept(this->bio);
-    if (rc <= 0) {
-        return failure;
-    }
-
-    return success;
+    return rc;
 }
 
 sslsocket sslsocket_socket(void)
 {
     sslsocket this;
+    int af = AF_INET;
 
     if ((this = malloc(sizeof *this)) == NULL)
         return NULL;
+
+    this->ssl = NULL;
+
+    if ((this->fd = socket(af, SOCK_STREAM, 0)) == -1) {
+        free(this);
+        return NULL;
+    }
 
     return this;
 }
 
 status_t sslsocket_listen(sslsocket this, int backlog)
 {
-#if 0
     assert(this != NULL);
     assert(this->fd >= 0);
 
     if (listen(this->fd, backlog) == -1)
         return failure;
-#else
-    (void)this; 
-    (void)backlog;
-#endif
 
     return success;
 }
 
 sslsocket sslsocket_create_server_socket(const char *host, int port)
 {
-    sslsocket this;
-    char hostport[1024];
-    size_t n;
+    sslsocket new;
 
     if (host == NULL)
         host = "localhost";
 
-    n = snprintf(hostport, sizeof hostport, "%s:%d", host, port);
-    if (n >= sizeof hostport)
+    // Create the socket, including calling socket().
+    if ((new = sslsocket_socket()) == NULL)
         return NULL;
 
-    if ((this = sslsocket_socket()) == NULL)
-        return NULL;
-
-    // Now create the server socket
-    if ((this->bio = BIO_new_accept(hostport)) == NULL) {
-        free(this);
-        return NULL;
+    // Configure it.
+    if (sslsocket_set_reuseaddr(new)
+    && sslsocket_bind(new, host, port)
+    && sslsocket_listen(new, 100)) {
+        return new;
     }
 
-    if (sslsocket_set_reuseaddr(this)
-    && sslsocket_bind(this, host, port)
-    && sslsocket_listen(this, 100))
-        return this;
-
-    sslsocket_close(this);
+    sslsocket_close(new);
     return NULL;
 }
 
 sslsocket sslsocket_create_client_socket(void *context,
     const char *host, int port)
 {
+// It's a PITA to get rid of BIO, so we disable shit for a while boa@20251008
+(void)context; (void)host;(void)port;
+#if 0
     sslsocket this;
     char hostport[1024];
     size_t n;
@@ -356,85 +356,114 @@ sslsocket sslsocket_create_client_socket(void *context,
 err:
     sslsocket_close(this);
     return NULL;
+#else
+    return NULL;
+#endif
 }
 
 status_t sslsocket_set_nonblock(sslsocket this)
 {
-    assert(this != NULL);
-    assert(this->bio != NULL);
+    int flags;
 
-    BIO_set_nbio(this->bio, 1);
+    assert(this != NULL);
+    assert(this->fd >= 0);
+
+    flags = fcntl(this->fd, F_GETFL);
+    if (flags == -1)
+        return failure;
+
+    flags |= O_NONBLOCK;
+    if (fcntl(this->fd, F_SETFL, flags) == -1)
+        return failure;
+
     return success;
 }
 
 status_t sslsocket_clear_nonblock(sslsocket this)
 {
-    assert(this != NULL);
-    assert(this->bio != NULL);
+    int flags;
 
-    BIO_set_nbio(this->bio, 0);
+    assert(this != NULL);
+    assert(this->fd >= 0);
+
+    flags = fcntl(this->fd, F_GETFL);
+    if (flags == -1)
+        return failure;
+
+    flags -= (flags & O_NONBLOCK);
+    if (fcntl(this->fd, F_SETFL, flags) == -1)
+        return failure;
+
     return success;
 }
 
+// This function can be called in various states. Think of it as a dtor.
 status_t sslsocket_close(sslsocket this)
 {
-    assert(this != NULL);
-    assert(this->ssl != NULL);
-    assert(this->bio != NULL);
+    // No object or no fd
+    if (this == NULL || this->fd == -1)
+        return success;
 
-    int ret = SSL_shutdown(this->ssl);
-    if (ret == 0)
-        ret = SSL_shutdown(this->ssl);
-
-    int fd = BIO_get_fd(this->bio, NULL);
-    if (fd > 0) {
-        shutdown(fd, SHUT_RDWR);
-        close(fd);
+    if (this->ssl != NULL) {
+        int ret = SSL_shutdown(this->ssl);
+        if (ret == 0)
+            ret = SSL_shutdown(this->ssl);
     }
 
-    SSL_free(this->ssl);
-    // BIO_free_all(this->bio);
+    if (this->fd != -1) {
+        shutdown(this->fd, SHUT_RDWR);
+        close(this->fd);
+    }
+
+    if (this->ssl != NULL) {
+        // We free after shitting down the fd
+        SSL_free(this->ssl);
+    }
+
     free(this);
 
     return success;
 }
 
+// Accept a new TLS connection, similar to accept().
 sslsocket sslsocket_accept(sslsocket this, void *context, 
     struct sockaddr *addr __attribute__((unused)), socklen_t *addrsize)
 {
     sslsocket new;
-
-    *addrsize = 0; // Mark addr as unused
+    int clientfd;
 
     assert(this != NULL);
+    assert(addr != NULL);
     assert(addrsize != NULL);
 
-    if (BIO_do_accept(this->bio) <= 0)
+    clientfd = accept(this->fd, addr, addrsize);
+    if (clientfd == -1)
         return NULL;
 
     if ((new = malloc(sizeof *new)) == NULL) {
-        BIO_free(BIO_pop(this->bio)); // Just guessing here...
+        close(clientfd);
         return NULL;
     }
 
-    new->bio = BIO_pop(this->bio);
-    if (new->bio == NULL) {
-        free(new);
-        return NULL;
-    }
+    new->fd = clientfd;
 
+    // TLS stuff
     new->ssl = SSL_new(context);
     if (new->ssl == NULL) {
-        BIO_free(new->bio);
-        free(new);
+        sslsocket_close(new);
         return NULL;
     }
 
-    SSL_set_accept_state(new->ssl);
-    SSL_set_bio(new->ssl, new->bio, new->bio);
+    SSL_set_fd(new->ssl, clientfd);
     if (SSL_accept(new->ssl) <= 0) {
         sslsocket_close(new);
-        errno = EPROTO; // so caller doesn't get a random value
+        return NULL;
+    }
+
+    // We set the nonblock flag here, since SSL prefers to set this
+    // early and we want tcp_server to treat sockets uniformly.
+    if (!sslsocket_set_nonblock(new)) {
+        sslsocket_close(new);
         return NULL;
     }
 
