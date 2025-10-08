@@ -101,13 +101,13 @@ status_t http_client_disconnect(http_client this)
 int http_client_get_timeout_write(http_client this)
 {
     assert(this != NULL);
-    return tcp_client_get_timeout_write(this->sock); // this->timeout_writes;
+    return tcp_client_get_timeout_write(this->sock);
 }
 
 int http_client_get_timeout_read(http_client this)
 {
     assert(this != NULL);
-    return tcp_client_get_timeout_read(this->sock); // this->timeout_reads;
+    return tcp_client_get_timeout_read(this->sock);
 }
 
 void http_client_set_timeout_write(http_client this, int millisec)
@@ -144,9 +144,9 @@ int main(void)
     http_response resp;
     error e = error_new();
 
-    int socktype = SOCKTYPE_SSL;
+    int socktype = SOCKTYPE_TCP;
     const char *hostname = "www.random.org";
-    int port = 443;
+    int port = 80;
     const char *uri = "/cgi-bin/randbyte?nbytes=32&format=h";
     if (!openssl_init())
         exit(1);
@@ -177,7 +177,6 @@ int main(void)
         while (n-- && cb--)
             putchar(*s++);
      }
-
 
     if (!http_client_disconnect(p))
         die("Could not disconnect from %s\n", hostname);

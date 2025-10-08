@@ -133,7 +133,11 @@ void tcp_client_free(tcp_client this)
     membuf_free(this->readbuf);
     membuf_free(this->writebuf);
     connection_free(this->conn);
-    SSL_CTX_free(this->context);
+
+    if (this->socktype == SOCKTYPE_SSL) {
+        if (this->context != NULL)
+            SSL_CTX_free(this->context);
+    }
 
     cstring_free(this->rootcert);
     cstring_free(this->private_key);
