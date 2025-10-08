@@ -170,39 +170,41 @@ tcp_server tcp_server_new(int socktype)
 
 void tcp_server_free(tcp_server this)
 {
-    if (this != NULL) {
-        /* Terminate the session */
-        if (this->queue != NULL) {
-            if (!threadpool_destroy(this->queue, 1))
-                warning("Unable to destroy thread pool\n");
+    if (this == NULL)
+        return;
 
-            this->queue = NULL;
-        }
+    /* Terminate the session */
+    if (this->queue != NULL) {
+        if (!threadpool_destroy(this->queue, 1))
+            warning("Unable to destroy thread pool\n");
 
-        pool_free(this->connections, (dtor)connection_free);
-        pool_free(this->read_buffers, (dtor)membuf_free);
-        pool_free(this->write_buffers, (dtor)membuf_free);
+        this->queue = NULL;
+    }
 
-        cstring_free(this->host);
-        cstring_free(this->server_cert);
-        cstring_free(this->private_key);
-        cstring_free(this->cert_chain_file);
-        cstring_free(this->cadir);
+    pool_free(this->connections, (dtor)connection_free);
+    pool_free(this->read_buffers, (dtor)membuf_free);
+    pool_free(this->write_buffers, (dtor)membuf_free);
 
+    cstring_free(this->host);
+    cstring_free(this->server_cert);
+    cstring_free(this->private_key);
+    cstring_free(this->cert_chain_file);
+    cstring_free(this->cadir);
+
+    if (this->socktype == SOCKTYPE_SSL)
         SSL_CTX_free(this->ctx);
 
-        /* Free the regex struct */
-        if (this->pattern_compiled) {
-            regfree(&this->allowed_clients);
-            this->pattern_compiled = false;
-        }
-
-        atomic_ulong_destroy(&this->sum_poll_intr);
-        atomic_ulong_destroy(&this->sum_poll_again);
-        atomic_ulong_destroy(&this->sum_accept_failed);
-        atomic_ulong_destroy(&this->sum_denied_clients);
-        free(this);
+    /* Free the regex struct */
+    if (this->pattern_compiled) {
+        regfree(&this->allowed_clients);
+        this->pattern_compiled = false;
     }
+
+    atomic_ulong_destroy(&this->sum_poll_intr);
+    atomic_ulong_destroy(&this->sum_poll_again);
+    atomic_ulong_destroy(&this->sum_accept_failed);
+    atomic_ulong_destroy(&this->sum_denied_clients);
+    free(this);
 }
 
 status_t tcp_server_init(tcp_server this)
@@ -315,8 +317,7 @@ void tcp_server_clear_client_filter(tcp_server this)
     }
 }
 
-static void
-tcp_server_recycle_connection(void *vsrv, void *vconn)
+static void tcp_server_recycle_connection(void *vsrv, void *vconn)
 {
     membuf rb, wb;
 

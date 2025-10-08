@@ -178,6 +178,14 @@ int process_shutting_down(process this)
 }
 
 // Write the pid to /var/run/appname.pid
+// 20251008: Fuck Lennart. /var/run -> /run and we don't have perms there.
+// pid-files are supposed to go to /run/appname/%d.pid, but appname is
+// wiped after boot and we need root to create the directory. IOW, we're fucked.
+//
+// Unit tests need the pid to be able to kill the process. If the pid is part
+// of the file's name, we have no deterministic way of finding the pid, so
+// we go with process.name + pid in current directory if we can't write it to
+// /run/highlander/name+pid.
 static status_t write_pid(process this, pid_t pid)
 {
     FILE *f;
@@ -185,10 +193,15 @@ static status_t write_pid(process this, pid_t pid)
 
     assert(this != NULL);
 
-    snprintf(filename, sizeof filename, "/var/run/%s.pid", c_str(this->appname));
+    snprintf(filename, sizeof filename, "/var/run/highlander/%s.pid", c_str(this->appname));
 
-    if ((f = fopen(filename, "w")) == NULL)
-        return failure;
+    if ((f = fopen(filename, "w")) == NULL) {
+        // Open local version
+        snprintf(filename, sizeof filename, "./%s.pid", c_str(this->appname));
+
+        if ((f = fopen(filename, "w")) == NULL)
+            return failure;
+    }
 
     if (fprintf(f, "%lu", (unsigned long)pid) <= 0) {
         fclose(f);
