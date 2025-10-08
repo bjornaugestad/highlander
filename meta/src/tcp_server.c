@@ -392,7 +392,7 @@ static status_t tcp_server_get_connection(tcp_server srv, connection *pconn)
 //	EHOSTUNREACH, EOPNOTSUPP and ENETUNREACH.
 // These errors should, on Linux, be treated as EAGAIN acc. to the man page.
 
-static status_t accept_new_connections(tcp_server this, socket_t sock)
+static status_t accept_new_connections(tcp_server this)
 {
     status_t rc;
     socket_t newsock;
@@ -401,10 +401,10 @@ static status_t accept_new_connections(tcp_server this, socket_t sock)
     connection conn;
 
     assert(this != NULL);
-    assert(sock != NULL);
+    assert(this->listener != NULL);
 
     while (!this->shutting_down) {
-        if (!socket_poll_for(sock, this->timeout_accepts, POLLIN)) {
+        if (!socket_poll_for(this->listener, this->timeout_accepts, POLLIN)) {
             if (errno == EINTR)
                 atomic_ulong_inc(&this->sum_poll_intr);
             else if (errno == EAGAIN)
@@ -415,7 +415,7 @@ static status_t accept_new_connections(tcp_server this, socket_t sock)
             continue; // retry
         }
 
-        newsock = socket_accept(sock, this->ctx, (struct sockaddr*)&addr, &addrsize);
+        newsock = socket_accept(this->listener, this->ctx, (struct sockaddr*)&addr, &addrsize);
         if (newsock == NULL) {
             switch (errno) {
                 // EPROTO is not defined for freebsd, and Stevens says, in UNP,
@@ -619,7 +619,7 @@ status_t tcp_server_start(tcp_server this)
 
     assert(this != NULL);
 
-    if (!accept_new_connections(this, this->listener)) {
+    if (!accept_new_connections(this)) {
         socket_close(this->listener);
         rc = failure;
     }
