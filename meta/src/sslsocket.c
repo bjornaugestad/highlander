@@ -386,7 +386,6 @@ status_t sslsocket_close(sslsocket this)
     if (ret == 0)
         ret = SSL_shutdown(this->ssl);
 
-
     int fd = BIO_get_fd(this->bio, NULL);
     if (fd > 0) {
         shutdown(fd, SHUT_RDWR);

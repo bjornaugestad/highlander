@@ -7,6 +7,7 @@ AM_CFLAGS=\
 	-I$(srcdir)\
 	-I$(top_srcdir)/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\
+	-fsanitize=address,undefined,leak\
 	-Wformat-overflow=2 -Woverflow -Wshift-overflow=2 -Wstrict-overflow=5\
 	-O2 -ggdb -Wextra -Wall -pedantic -Wno-long-long  -Wno-inline
 

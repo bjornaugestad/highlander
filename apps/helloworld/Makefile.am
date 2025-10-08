@@ -7,6 +7,7 @@ AM_CFLAGS=-p -pg
 
 helloworld_CFLAGS=\
 	-Winline -Wshadow -std=gnu2x \
+	-fsanitize=address,undefined,leak\
 	-Wshadow\
 	-I/usr/local/lib\
 	-I$(top_srcdir)/http/src\

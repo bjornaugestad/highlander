@@ -51,6 +51,7 @@ libhighlander_a_CFLAGS=\
 
 libhighlanderd_a_CFLAGS=\
 	 -std=gnu2x -pthread\
+	-fsanitize=address,undefined,leak\
 	-I$(srcdir)\
 	-I$(top_srcdir)/meta/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\
@@ -78,14 +79,14 @@ check_PROGRAMS=\
 attribute_check_SOURCES=attribute.c
 attribute_check_CFLAGS=-DCHECK_ATTRIBUTE $(AM_CFLAGS)\
 	-I$(top_srcdir)/meta/src
-attribute_check_LDADD=-lmetad -lssl -lcrypto -lpthread
+attribute_check_LDADD=-lasan -lmetad -lssl -lcrypto -lpthread
 attribute_check_LDFLAGS=-L$(top_srcdir)/meta/src
 
 cookie_check_SOURCES=cookies.c
 cookie_check_CFLAGS=-DCHECK_COOKIE $(AM_CFLAGS)\
 	-I$(top_srcdir)/meta/src
 
-cookie_check_LDADD=-lhighlander -lmetad -lssl -lcrypto -lpthread
+cookie_check_LDADD=-lasan -lhighlander -lmetad -lssl -lcrypto -lpthread 
 cookie_check_LDFLAGS=-L$(top_srcdir)/http/src -L$(top_srcdir)/meta/src
 
 rfc1738_check_SOURCES=rfc1738.c
@@ -109,7 +110,7 @@ http_server_check_SOURCES=\
 	attribute.c
 http_server_check_CFLAGS=-DCHECK_HTTP_SERVER $(AM_CFLAGS)\
 	-I$(top_srcdir)/meta/src -O0 -ggdb
-http_server_check_LDADD=-lmetad -lssl -lcrypto -lpthread
+http_server_check_LDADD= -lasan -lmetad -lssl -lcrypto -lpthread
 http_server_check_LDFLAGS=-L$(top_srcdir)/meta/src
 
 http_client_check_SOURCES=\
@@ -128,5 +129,5 @@ http_client_check_SOURCES=\
 	attribute.c
 http_client_check_CFLAGS=-DCHECK_HTTP_CLIENT $(AM_CFLAGS)\
 	-I$(top_srcdir)/meta/src -O0 -ggdb
-http_client_check_LDADD=-lmetad -lssl -lcrypto -lpthread
+http_client_check_LDADD= -lasan -lmetad -lssl -lcrypto -lpthread
 http_client_check_LDFLAGS=-L$(top_srcdir)/meta/src

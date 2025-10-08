@@ -7,6 +7,7 @@ AM_CFLAGS=-p -pg
 
 httpd_CFLAGS=\
 	-Winline -Wshadow -std=gnu2x \
+	-fsanitize=address,undefined,leak\
 	-Wshadow\
 	-Wformat-overflow=2 -Woverflow -Wshift-overflow=2 -Wstrict-overflow=5\
 	-Wextra -Wall -pedantic -W -Werror -Wno-long-long -pthread -DNDEBUG -O3

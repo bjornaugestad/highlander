@@ -9,6 +9,7 @@ AM_CFLAGS=-p -pg -Werror
 
 metaftpd_CFLAGS=\
 	-Winline -Wshadow -std=gnu2x \
+	-fsanitize=address,undefined,leak\
 	-Wshadow\
 	-Wextra -Wall -pedantic -W -Werror -Wno-long-long -pthread -DNDEBUG -O3\
 	-Wformat-overflow=2 -Woverflow -Wshift-overflow=2 -Wstrict-overflow=5\
