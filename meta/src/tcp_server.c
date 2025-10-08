@@ -58,7 +58,7 @@ struct tcp_server_tag {
     void *service_arg;
 
     // The socket we accept connections from.
-    socket_t sock;
+    socket_t listener;
 
     /* The work queue */
     threadpool queue;
@@ -606,8 +606,8 @@ status_t tcp_server_get_root_resources(tcp_server this)
     if (this->socktype == SOCKTYPE_SSL && !setup_server_ctx(this))
         return failure;
 
-    this->sock = socket_create_server_socket(this->socktype, hostname, this->port);
-    if (this->sock == NULL)
+    this->listener = socket_create_server_socket(this->socktype, hostname, this->port);
+    if (this->listener == NULL)
         return failure;
 
     return success;
@@ -619,16 +619,16 @@ status_t tcp_server_start(tcp_server this)
 
     assert(this != NULL);
 
-    if (!accept_new_connections(this, this->sock)) {
-        socket_close(this->sock);
+    if (!accept_new_connections(this, this->listener)) {
+        socket_close(this->listener);
         rc = failure;
     }
-    else if (!socket_close(this->sock))
+    else if (!socket_close(this->listener))
         rc = failure;
     else
         rc = success;
 
-    this->sock = NULL;
+    this->listener = NULL;
     return rc;
 }
 
@@ -714,20 +714,23 @@ status_t tcp_server_start_via_process(process p, tcp_server s)
 // root resources? Hmm, we should probably move things around a bit,
 // probably to a dtor. For testing purposes, we use the (get|free)_root_resources
 // until teardown is correct. 
-status_t tcp_server_free_root_resources(tcp_server s)
+status_t tcp_server_free_root_resources(tcp_server this)
 {
     printf("%s(): I'm here\n", __func__);
-    if (s->socktype == SOCKTYPE_SSL)
-        destroy_server_ctx(s);
 
     /* NOTE: 2005-11-27: Check out why we don't close the socket here. */
     // NOTE: 2017-05-17: Maybe because it's the accept-socket? We should still close it, though
     // NOTE: 2025-10-06: socket_close() now closes *and* frees the generic socket.
-    assert(s != NULL);
-    if (s->sock != NULL)
-        return socket_close(s->sock);
+    // NOTE: 2025-10-08: Perhaps not destroy server context before closing socket?
+    assert(this != NULL);
+    status_t rc = success;
+    if (this->listener != NULL)
+        rc = socket_close(this->listener);
 
-    return success;
+    if (this->socktype == SOCKTYPE_SSL)
+        destroy_server_ctx(this);
+
+    return rc;
 }
 
 int tcp_server_shutting_down(tcp_server this)
