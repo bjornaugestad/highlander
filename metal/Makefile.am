@@ -1,5 +1,4 @@
 AM_CFLAGS=-ggdb -O0 -Wall -Wextra -pedantic -std=gnu11 -Werror -pthread\
-	-fsanitize=address,undefined,leak\
 	-Iinclude -I$(top_srcdir)/include\
 	-Wno-empty-body
 

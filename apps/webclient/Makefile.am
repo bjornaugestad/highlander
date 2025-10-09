@@ -7,7 +7,6 @@ AM_CFLAGS=-p -pg
 
 webclient_CFLAGS=\
 	-Winline -Wshadow -std=gnu2x \
-	-fsanitize=address,undefined,leak\
 	-Wshadow\
 	-I$(top_srcdir)/http/src\
 	-I$(top_srcdir)/meta/src\

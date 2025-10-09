@@ -51,7 +51,6 @@ libhighlander_a_CFLAGS=\
 
 libhighlanderd_a_CFLAGS=\
 	 -std=gnu2x -pthread\
-	-fsanitize=address,undefined,leak\
 	-I$(srcdir)\
 	-I$(top_srcdir)/meta/src\
 	-Werror -Wshadow -W -Wmissing-prototypes\

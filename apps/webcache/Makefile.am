@@ -17,7 +17,6 @@ webcached_SOURCES=\
 
 webcached_CFLAGS=\
 	 -std=gnu2x -D_REENTRANT -pthread\
-	-fsanitize=address,undefined,leak\
 	-I$(srcdir)\
 	-I$(srcdir)/webcache\
 	-I$(top_srcdir)/meta/src\
