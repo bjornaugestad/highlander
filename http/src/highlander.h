@@ -226,7 +226,7 @@ int   http_server_get_block_when_full(http_server s)
 size_t http_server_get_max_pages(http_server s)
     __attribute__((nonnull, warn_unused_result));
 
-status_t http_server_set_server_cert(http_server p, const char *path);
+status_t http_server_set_server_cert_chain_file(http_server p, const char *path);
 status_t http_server_set_private_key(http_server p, const char *path);
 status_t http_server_set_ca_directory(http_server p, const char *path);
 

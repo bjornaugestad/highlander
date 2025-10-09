@@ -1089,12 +1089,12 @@ unsigned long http_server_sum_denied_clients(http_server p)
     return tcp_server_sum_denied_clients(p->tcpsrv);
 }
 
-status_t http_server_set_server_cert(http_server this, const char *path)
+status_t http_server_set_server_cert_chain_file(http_server this, const char *path)
 {
     assert(this != NULL);
     assert(this->tcpsrv != NULL);
 
-    return tcp_server_set_server_cert(this->tcpsrv, path);
+    return tcp_server_set_cert_chain_file(this->tcpsrv, path);
 }
 
 status_t http_server_set_private_key(http_server this, const char *path)

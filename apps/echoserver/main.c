@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
 
     verify_key_and_cert(server_key, server_cert_chain);
 
-    tcp_server_set_server_cert(srv, server_cert_chain);
+    tcp_server_set_cert_chain_file(srv, server_cert_chain);
     tcp_server_set_private_key(srv, server_key);
     tcp_server_set_service_function(srv, fn, NULL);
     tcp_server_start_via_process(p, srv);

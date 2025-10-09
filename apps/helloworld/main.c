@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
         if (!openssl_init())
             exit(1);
 
-        if (!http_server_set_server_cert(s, "./cert.pem"))
+        if (!http_server_set_server_cert_chain_file(s, "./cert.pem"))
             die("Meh. Could not set server cert\n");
 
         if (!http_server_set_private_key(s, "./key.pem"))
