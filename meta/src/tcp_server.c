@@ -51,7 +51,7 @@ struct tcp_server_tag {
     // SSL_CTX, so for us, per tcp_server and highly optional.
     // Regular servers need none of these.
     cstring server_cert, private_key, cadir, cert_chain_file;
-    SSL_CTX *ctx;
+    SSL_CTX *server_context;
 
     // Function to call when a new connection is accepted
     void *(*service_func)(void *arg);
@@ -192,7 +192,7 @@ void tcp_server_free(tcp_server this)
     cstring_free(this->cadir);
 
     if (this->socktype == SOCKTYPE_SSL)
-        SSL_CTX_free(this->ctx);
+        SSL_CTX_free(this->server_context);
 
     /* Free the regex struct */
     if (this->pattern_compiled) {
@@ -415,7 +415,7 @@ static status_t accept_new_connections(tcp_server this)
             continue; // retry
         }
 
-        newsock = socket_accept(this->listener, this->ctx, (struct sockaddr*)&addr, &addrsize);
+        newsock = socket_accept(this->listener, this->server_context, (struct sockaddr*)&addr, &addrsize);
         if (newsock == NULL) {
             switch (errno) {
                 // EPROTO is not defined for freebsd, and Stevens says, in UNP,
@@ -512,8 +512,8 @@ static status_t destroy_server_ctx(tcp_server this)
 {
     assert(this != NULL);
 
-    if (this->ctx != NULL)
-        SSL_CTX_free(this->ctx);
+    if (this->server_context != NULL)
+        SSL_CTX_free(this->server_context);
 
     return success;
 }
@@ -526,7 +526,7 @@ static status_t setup_server_ctx(tcp_server this)
     const SSL_METHOD *method;
 
     assert(this != NULL);
-    assert(this->ctx == NULL);
+    assert(this->server_context == NULL);
     assert(this->server_cert != NULL);
     assert(this->private_key != NULL);
 
@@ -534,8 +534,8 @@ static status_t setup_server_ctx(tcp_server this)
     if (method == NULL)
         goto err;
 
-    this->ctx = SSL_CTX_new(method);
-    if (this->ctx == NULL)
+    this->server_context = SSL_CTX_new(method);
+    if (this->server_context == NULL)
         goto err;
 
     // Tell SSL where to find trusted CA certificates
@@ -545,21 +545,21 @@ static status_t setup_server_ctx(tcp_server this)
     if (this->cadir != NULL)
         cadir = c_str(this->cadir);
         
-    rc = SSL_CTX_load_verify_locations(this->ctx, server_cert, cadir);
+    rc = SSL_CTX_load_verify_locations(this->server_context, server_cert, cadir);
     if (rc != 1)
         goto err;
 
-    rc = SSL_CTX_set_default_verify_paths(this->ctx);
+    rc = SSL_CTX_set_default_verify_paths(this->server_context);
     if (rc != 1)
         goto err;
 
     // Load certfile from disk. chained certs are optional.
     if (this->cert_chain_file != NULL) {
         const char *cert_chain_file = c_str(this->cert_chain_file);
-        rc = SSL_CTX_use_certificate_chain_file(this->ctx, cert_chain_file);
+        rc = SSL_CTX_use_certificate_chain_file(this->server_context, cert_chain_file);
     }
     else // Just use server cert directly
-        rc = SSL_CTX_use_certificate_file(this->ctx, server_cert, SSL_FILETYPE_PEM);
+        rc = SSL_CTX_use_certificate_file(this->server_context, server_cert, SSL_FILETYPE_PEM);
 
     if (rc != 1)
         goto err;
@@ -567,16 +567,16 @@ static status_t setup_server_ctx(tcp_server this)
 
     // Private key goes here.
     const char *private_key = c_str(this->private_key);
-    rc = SSL_CTX_use_PrivateKey_file(this->ctx, private_key, SSL_FILETYPE_PEM);
+    rc = SSL_CTX_use_PrivateKey_file(this->server_context, private_key, SSL_FILETYPE_PEM);
     if (rc != 1)
         goto err;
 
-    SSL_CTX_set_verify(this->ctx, verifyflags, verify_callback);
-    SSL_CTX_set_verify_depth(this->ctx, 4);
-    SSL_CTX_set_options(this->ctx, options);
-    SSL_CTX_clear_options(this->ctx, SSL_OP_NO_TLSv1_3);
-    SSL_CTX_set_min_proto_version(this->ctx, TLS1_3_VERSION);
-    SSL_CTX_set_max_proto_version(this->ctx, TLS1_3_VERSION);
+    SSL_CTX_set_verify(this->server_context, verifyflags, verify_callback);
+    SSL_CTX_set_verify_depth(this->server_context, 4);
+    SSL_CTX_set_options(this->server_context, options);
+    SSL_CTX_clear_options(this->server_context, SSL_OP_NO_TLSv1_3);
+    SSL_CTX_set_min_proto_version(this->server_context, TLS1_3_VERSION);
+    SSL_CTX_set_max_proto_version(this->server_context, TLS1_3_VERSION);
 
     return success;
 
@@ -587,9 +587,9 @@ err:
     fprintf(stderr, "%s(): Some error occurred\n", __func__);
     ERR_print_errors_fp(stderr);
 
-    if (this->ctx != NULL) {
-        SSL_CTX_free(this->ctx);
-        this->ctx = NULL;
+    if (this->server_context != NULL) {
+        SSL_CTX_free(this->server_context);
+        this->server_context = NULL;
     }
 
     return failure;

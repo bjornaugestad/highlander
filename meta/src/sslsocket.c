@@ -296,12 +296,73 @@ sslsocket sslsocket_create_server_socket(const char *host, int port)
     return NULL;
 }
 
+// 20251008: New version, loosely based on a client program chatgpt wrote
+// to test the echoserver when nc failed to perform properly. We throw away
+// all the old code which used BIOs a lot. Fuck BIO! Worst concept ever.
+//
+// So what do we do here? We open a socket connection to a server. 
+// IOW, we create a 'socket', we 'connect' and we create an SSL object too.
+//
+// Assumptions: 
+// - An SSL context already exist. (SSL_CTX_new() et al)
+// - We don't manage signals here.
+// - We're IP v4/v6 agnostic
+//
+
 sslsocket sslsocket_create_client_socket(void *context,
     const char *host, int port)
 {
 // It's a PITA to get rid of BIO, so we disable shit for a while boa@20251008
 (void)context; (void)host;(void)port;
+
+    assert(context != NULL);
+    assert(host != NULL);
+    assert(strlen(host) > 0);
+    assert(port > 0);
+
 #if 0
+    struct addrinfo hints, *res = NULL, *rp;
+
+    // Create a socket. This calls socket() as well. TODO: Perhaps rewrite semantics?
+    // Right now, the fn isn't version agnostic.
+    sslsocket new = sslsocket_socket();
+    if (new == NULL)
+        return NULL;
+
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family   = AF_UNSPEC;     // try IPv6 then IPv4 (system order)
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_protocol = IPPROTO_TCP;
+    hints.ai_flags    = AI_ADDRCONFIG;
+
+    rc = getaddrinfo(host, port, &hints, &res);
+    if (rc != 0)
+        return NULL;
+
+    for (rp = res; rp; rp = rp->ai_next) {
+        if (connect(new->fd, rp->ai_addr, rp->ai_addrlen) == 0) {
+            freeaddrinfo(res);
+            break; // success
+        }
+
+        // If connect fails, we must close and re-open the socket. Meh.
+        // This sucks, as we want the next entry in hints, not the previous.
+        // Take a break.
+        close(new->fd);
+        new->fd = socket
+    }
+
+    freeaddrinfo(res);
+    if (new->fd == -1)
+        return NULL;
+
+    // Now we have a valid fd and it's connected to the server
+    // Time to create the sslsocket object.
+    assert(fd != -1);
+
+
+    
+    
     sslsocket this;
     char hostport[1024];
     size_t n;
