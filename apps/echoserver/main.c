@@ -74,5 +74,5 @@ int main(int argc, char *argv[])
 
     tcp_server_free(srv);
     process_free(p);
-    return 0;
+    return !!openssl_exit();
 }
