@@ -63,6 +63,26 @@ status_t socket_clear_nonblock(socket_t p)
 ssize_t  socket_read(socket_t p, char *buf, size_t count, int timeout, int retries)
     __attribute__((warn_unused_result, nonnull));
 
+// boa@20251009: Now that OpenSSL finally has a sane interface, we can merge
+// code duplicated in both tcpsocket and sslsocket. We start gently with the two
+// set_nonblock/clear_nonblock functions and add two shared functions here.
+// Think of gensocket as a C++ parent class for tcpsocket and sslsocket, and
+// think of these functions as protected member functions in the parent class.
+//
+// I'm well aware that we kinda call ourselves here:
+// socket_set_nonblock()->tcpsocket_set_nonblock()->gensocket_setnonblock().
+// We could of course just have socket_set_nonblock() do the work, but socket_t
+// does not hold the fd ATM and who knows if SSL will require more magic in the
+// future. And FTR: Old openssl with BIO, locking, thread management and what
+// else, was a fucking nightmare!
+status_t gensocket_set_nonblock(int fd) __attribute__((warn_unused_result));
+status_t gensocket_set_reuse_addr(int fd) __attribute__((warn_unused_result));
+status_t gensocket_clear_nonblock(int fd) __attribute__((warn_unused_result));
+status_t gensocket_listen(int fd, int backlog) __attribute__((warn_unused_result));
+
+status_t gensocket_bind_inet(int fd, const char *hostname, int port)
+ __attribute__((warn_unused_result));
+
 #ifdef __cplusplus
 }
 #endif

@@ -20,6 +20,7 @@
 //#include <arpa/inet.h>
 #endif
 
+#include <gensocket.h>
 #include <tcpsocket.h>
 
 struct tcpsocket_tag {
@@ -32,20 +33,11 @@ struct tcpsocket_tag {
  */
 static status_t tcpsocket_set_reuseaddr(tcpsocket this)
 {
-    int optval;
-    socklen_t optlen;
-
     assert(this != NULL);
     assert(this->fd >= 0);
 
-    optval = 1;
-    optlen = (socklen_t)sizeof optval;
-    if (setsockopt(this->fd, SOL_SOCKET, SO_REUSEADDR, &optval, optlen) == -1)
-        return failure;
-
-    return success;
+    return gensocket_set_reuse_addr(this->fd);
 }
-
 
 /*
  * This is a local helper function. It polls for some kind of event,
@@ -193,53 +185,12 @@ ssize_t tcpsocket_read(tcpsocket this, char *dest, size_t count, int timeout, in
     return -1; // We timed out
 }
 
-
-/* Binds a socket to an address/port.
- * This part is a bit incorrect as we have already
- * created a socket with a specific protocol family,
- * and here we bind it to the PF specified in the services...
- */
-static status_t tcpsocket_bind_inet(tcpsocket this, const char *hostname, int port)
-{
-    struct hostent* host = NULL;
-    struct sockaddr_in my_addr;
-    socklen_t cb = (socklen_t)sizeof my_addr;
-
-    assert(this != NULL);
-    assert(this->fd >= 0);
-    assert(port > 0);
-
-    // TODO: s/gethostbyname/getaddrinfo/
-    if (hostname != NULL) {
-        if ((host = gethostbyname(hostname)) ==NULL) {
-            errno = h_errno; /* OBSOLETE? */
-            return failure;
-        }
-    }
-
-    memset(&my_addr, '\0', sizeof my_addr);
-    my_addr.sin_port = htons(port);
-
-    if (hostname == NULL) {
-        my_addr.sin_family = AF_INET;
-        my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    }
-    else {
-        my_addr.sin_family = host->h_addrtype;
-        my_addr.sin_addr.s_addr = ((struct in_addr*)host->h_addr)->s_addr;
-    }
-
-    if (bind(this->fd, (struct sockaddr *)&my_addr, cb) == -1)
-        return failure;
-
-    return success;
-}
-
 status_t tcpsocket_bind(tcpsocket this, const char *hostname, int port)
 {
     assert(this != NULL);
+    assert(this->fd >= 0);
 
-    return tcpsocket_bind_inet(this, hostname, port);
+    return gensocket_bind_inet(this->fd, hostname, port);
 }
 
 tcpsocket tcpsocket_socket(void)
@@ -260,13 +211,9 @@ tcpsocket tcpsocket_socket(void)
 
 status_t tcpsocket_listen(tcpsocket this, int backlog)
 {
-    assert(this != NULL);
     assert(this->fd >= 0);
 
-    if (listen(this->fd, backlog) == -1)
-        return failure;
-
-    return success;
+    return gensocket_listen(this->fd, backlog);
 }
 
 tcpsocket tcpsocket_create_server_socket(const char *host, int port)
@@ -323,38 +270,18 @@ tcpsocket tcpsocket_create_client_socket(const char *host, int port)
 
 status_t tcpsocket_set_nonblock(tcpsocket this)
 {
-    int flags;
-
     assert(this != NULL);
     assert(this->fd >= 0);
 
-    flags = fcntl(this->fd, F_GETFL);
-    if (flags == -1)
-        return failure;
-
-    flags |= O_NONBLOCK;
-    if (fcntl(this->fd, F_SETFL, flags) == -1)
-        return failure;
-
-    return success;
+    return gensocket_set_nonblock(this->fd);
 }
 
 status_t tcpsocket_clear_nonblock(tcpsocket this)
 {
-    int flags;
-
     assert(this != NULL);
     assert(this->fd >= 0);
 
-    flags = fcntl(this->fd, F_GETFL);
-    if (flags == -1)
-        return failure;
-
-    flags -= (flags & O_NONBLOCK);
-    if (fcntl(this->fd, F_SETFL, flags) == -1)
-        return failure;
-
-    return success;
+    return gensocket_clear_nonblock(this->fd);
 }
 
 status_t tcpsocket_close(tcpsocket this)

@@ -17,6 +17,7 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
+#include <gensocket.h>
 #include <sslsocket.h>
 
 struct sslsocket_tag {
@@ -29,26 +30,20 @@ struct sslsocket_tag {
 // Suitable for server sockets only.
 static status_t sslsocket_set_reuseaddr(sslsocket this)
 {
-    int optval;
-    socklen_t optlen;
-
     assert(this != NULL);
     assert(this->fd >= 0);
 
-    optval = 1;
-    optlen = (socklen_t)sizeof optval;
-    if (setsockopt(this->fd, SOL_SOCKET, SO_REUSEADDR, &optval, optlen) == -1)
-        return failure;
-
-    return success;
+    return gensocket_set_reuse_addr(this->fd);
 }
 
 /*
  * This is a helper function. It polls for some kind of event,
  * which normally is POLLIN or POLLOUT.
- * The function returns 1 if the event has occured, and 0 if an
- * error occured. It set errno to EAGAIN if a timeout occured, and
+ * 
+ * It set errno to EAGAIN if a timeout occured, and
  * it maps POLLHUP and POLLERR to EPIPE, and POLLNVAL to EINVAL.
+ *
+ * TODO? SSL fuckery with WANT_READ/WRITE?
  */
 status_t sslsocket_poll_for(sslsocket this, int timeout, short poll_for)
 {
@@ -173,7 +168,6 @@ ssize_t sslsocket_read(sslsocket this, char *dest, size_t count,
     int timeout, int nretries)
 {
     ssize_t nread;
-    status_t status;
 
     assert(this != NULL);
     assert(this->fd > -1);
@@ -198,14 +192,12 @@ ssize_t sslsocket_read(sslsocket this, char *dest, size_t count,
         int err = SSL_get_error(this->ssl, nread);
         switch (err) {
             case SSL_ERROR_WANT_READ:
-                status = sslsocket_poll_for(this, timeout, POLLIN);
-                if (status == failure)
+                if (!sslsocket_poll_for(this, timeout, POLLIN))
                     return -1;
                 break;
 
             case SSL_ERROR_WANT_WRITE:
-                status = sslsocket_poll_for(this, timeout, POLLOUT);
-                if (status == failure)
+                if (!sslsocket_poll_for(this, timeout, POLLOUT))
                     return -1;
                 break;
 
@@ -236,31 +228,30 @@ ssize_t sslsocket_read(sslsocket this, char *dest, size_t count,
  */
 status_t sslsocket_bind(sslsocket this, const char *hostname, int port)
 {
-    // Avoid duplicating code. TODO: Unify common TCP/TLS code
-    struct tcpsocket_tag;
-    status_t tcpsocket_bind(struct tcpsocket_tag *, const char *hostname, int port);
+    assert(this != NULL);
+    assert(hostname != NULL);
+    assert(this->fd >= 0);
+    assert(port > 0);
 
-    status_t rc = tcpsocket_bind((struct tcpsocket_tag *)this, hostname, port);
-
-    return rc;
+    return gensocket_bind_inet(this->fd, hostname, port);
 }
 
 sslsocket sslsocket_socket(void)
 {
-    sslsocket this;
+    sslsocket new;
     int af = AF_INET;
 
-    if ((this = malloc(sizeof *this)) == NULL)
+    if ((new = malloc(sizeof *new)) == NULL)
         return NULL;
 
-    this->ssl = NULL;
+    new->ssl = NULL;
 
-    if ((this->fd = socket(af, SOCK_STREAM, 0)) == -1) {
-        free(this);
+    if ((new->fd = socket(af, SOCK_STREAM, 0)) == -1) {
+        free(new);
         return NULL;
     }
 
-    return this;
+    return new;
 }
 
 status_t sslsocket_listen(sslsocket this, int backlog)
@@ -268,10 +259,7 @@ status_t sslsocket_listen(sslsocket this, int backlog)
     assert(this != NULL);
     assert(this->fd >= 0);
 
-    if (listen(this->fd, backlog) == -1)
-        return failure;
-
-    return success;
+    return gensocket_listen(this->fd, backlog);
 }
 
 sslsocket sslsocket_create_server_socket(const char *host, int port)
@@ -424,38 +412,19 @@ err:
 
 status_t sslsocket_set_nonblock(sslsocket this)
 {
-    int flags;
 
     assert(this != NULL);
     assert(this->fd >= 0);
 
-    flags = fcntl(this->fd, F_GETFL);
-    if (flags == -1)
-        return failure;
-
-    flags |= O_NONBLOCK;
-    if (fcntl(this->fd, F_SETFL, flags) == -1)
-        return failure;
-
-    return success;
+    return gensocket_set_nonblock(this->fd);
 }
 
 status_t sslsocket_clear_nonblock(sslsocket this)
 {
-    int flags;
-
     assert(this != NULL);
     assert(this->fd >= 0);
 
-    flags = fcntl(this->fd, F_GETFL);
-    if (flags == -1)
-        return failure;
-
-    flags -= (flags & O_NONBLOCK);
-    if (fcntl(this->fd, F_SETFL, flags) == -1)
-        return failure;
-
-    return success;
+    return gensocket_clear_nonblock(this->fd);
 }
 
 // This function can be called in various states. Think of it as a dtor.
@@ -477,7 +446,7 @@ status_t sslsocket_close(sslsocket this)
     }
 
     if (this->ssl != NULL) {
-        // We free after shitting down the fd
+        // We free after shutting down the fd
         SSL_free(this->ssl);
     }
 
@@ -521,8 +490,6 @@ sslsocket sslsocket_accept(sslsocket this, void *context,
         return NULL;
     }
 
-    // We set the nonblock flag here, since SSL prefers to set this
-    // early and we want tcp_server to treat sockets uniformly.
     if (!sslsocket_set_nonblock(new)) {
         sslsocket_close(new);
         return NULL;

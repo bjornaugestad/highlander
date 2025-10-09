@@ -1,5 +1,8 @@
 #include <assert.h>
 #include <stdlib.h>
+#include <fcntl.h>
+#include <netinet/in.h>
+#include <netdb.h>
 
 #include <gensocket.h>
 
@@ -219,5 +222,107 @@ ssize_t socket_read(socket_t p, char *buf, size_t count, int timeout, int retrie
     assert(p->instance != NULL);
 
     return p->read(p->instance, buf, count, timeout, retries);
+}
+
+status_t gensocket_set_nonblock(int fd)
+{
+    int flags;
+
+    assert(fd >= 0);
+
+    flags = fcntl(fd, F_GETFL);
+    if (flags == -1)
+        return failure;
+
+    flags |= O_NONBLOCK;
+    if (fcntl(fd, F_SETFL, flags) == -1)
+        return failure;
+
+    return success;
+}
+
+status_t gensocket_clear_nonblock(int fd)
+{
+    int flags;
+
+    assert(fd >= 0);
+
+    flags = fcntl(fd, F_GETFL);
+    if (flags == -1)
+        return failure;
+
+    flags -= (flags & O_NONBLOCK);
+    if (fcntl(fd, F_SETFL, flags) == -1)
+        return failure;
+
+    return success;
+}
+
+status_t gensocket_listen(int fd, int backlog)
+{
+    assert(fd >= 0);
+
+    if (listen(fd, backlog) == -1)
+        return failure;
+
+    return success;
+}
+
+status_t gensocket_set_reuse_addr(int fd)
+{
+    int optval;
+    socklen_t optlen;
+
+    assert(fd >= 0);
+
+    optval = 1;
+    optlen = (socklen_t)sizeof optval;
+    if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &optval, optlen) == -1)
+        return failure;
+
+    return success;
+}
+
+
+/* Binds a socket to an address/port.
+ * This part is a bit incorrect as we have already created a socket with
+ * a specific protocol family, and here we bind it to the PF specified
+ * in the services...
+ *
+ * TODO: Make it version agnostic and (later).
+ */
+status_t gensocket_bind_inet(int fd, const char *hostname, int port)
+{
+    struct hostent* host = NULL;
+    struct sockaddr_in my_addr;
+    socklen_t cb = (socklen_t)sizeof my_addr;
+
+    assert(fd >= 0);
+    assert(port > 0);
+
+    // TODO: s/gethostbyname/getaddrinfo/
+    if (hostname != NULL) {
+        if ((host = gethostbyname(hostname)) ==NULL) {
+            errno = h_errno; /* OBSOLETE? */
+            return failure;
+        }
+    }
+
+    memset(&my_addr, '\0', sizeof my_addr);
+    my_addr.sin_port = htons(port);
+
+    if (hostname == NULL) {
+        my_addr.sin_family = AF_INET;
+        my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    }
+    else {
+        my_addr.sin_family = host->h_addrtype;
+        my_addr.sin_addr.s_addr = ((struct in_addr*)host->h_addr)->s_addr;
+    }
+
+    if (bind(fd, (struct sockaddr *)&my_addr, cb) == -1)
+        return failure;
+
+    return success;
 }
 
