@@ -578,6 +578,12 @@ static status_t setup_server_ctx(tcp_server this)
     SSL_CTX_set_min_proto_version(this->server_context, TLS1_3_VERSION);
     SSL_CTX_set_max_proto_version(this->server_context, TLS1_3_VERSION);
 
+    // Verify that private key matches cert
+    if (SSL_CTX_check_private_key(this->server_context) != 1) {
+        die("Private key %s does not match with cert %s\n", 
+            c_str(this->private_key), c_str(this->cert_chain_file));
+    }
+
     return success;
 
 err:
