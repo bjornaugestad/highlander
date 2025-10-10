@@ -645,6 +645,10 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+LDFLAGS_RELEASE
+LDFLAGS_DEBUG
+CFLAGS_RELEASE
+CFLAGS_DEBUG
 RANLIB
 am__fastdepCC_FALSE
 am__fastdepCC_TRUE
@@ -739,6 +743,7 @@ ac_user_opts='
 enable_option_checking
 enable_silent_rules
 enable_dependency_tracking
+enable_debug
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1377,6 +1382,8 @@ Optional Features:
                           do not reject slow dependency extractors
   --disable-dependency-tracking
                           speeds up one-time build
+  --disable-debug         build with -O3 -DNDEBUG instead of sanitizers
+  --disable-debug         release -O3 -DNDEBUG
 
 Some influential environment variables:
   CC          C compiler command
@@ -4825,6 +4832,62 @@ fi
 
 # Checks for library functions.
 #AC_CHECK_FUNCS([strerror_r inet_ntop localtime_r socket strerror strtol sendfile])
+
+# default = debug
+# Check whether --enable-debug was given.
+if test ${enable_debug+y}
+then :
+  enableval=$enable_debug;
+else case e in #(
+  e) enable_debug=yes ;;
+esac
+fi
+
+
+# hardening commons
+HARDEN_CFLAGS="-fPIE -fstack-protector-strong -D_FORTIFY_SOURCE=3 -fstack-clash-protection -fcf-protection=full"
+HARDEN_LDFLAGS="-pie -Wl,-z,relro,-z,now -Wl,--as-needed"
+
+# Check whether --enable-debug was given.
+if test ${enable_debug+y}
+then :
+  enableval=$enable_debug;
+else case e in #(
+  e) enable_debug=yes ;;
+esac
+fi
+
+
+CFLAGS_DEBUG="-std=gnu2x -pthread -I\$(srcdir) -I\$(top_srcdir)/src \
+ -Werror -Wshadow -W -Wmissing-prototypes \
+ -Wformat-overflow=2 -Woverflow -Wshift-overflow=2 -Wstrict-overflow=5 \
+ -Og -ggdb -fno-omit-frame-pointer \
+ -fsanitize=address,undefined,leak \
+ -Wextra -Wall -pedantic -Wno-long-long -Wno-inline \
+ $HARDEN_CFLAGS"
+
+LDFLAGS_DEBUG="-fsanitize=address,undefined,leak $HARDEN_LDFLAGS"
+
+CFLAGS_RELEASE="-std=gnu2x -pthread -I\$(srcdir) -I\$(top_srcdir)/src \
+ -Werror -Wshadow -W -Wmissing-prototypes \
+ -Wformat-overflow=2 -Woverflow -Wshift-overflow=2 -Wstrict-overflow=5 \
+ -O3 -DNDEBUG -Wextra -Wall -pedantic -Wno-long-long -Wno-inline \
+ $HARDEN_CFLAGS"
+
+LDFLAGS_RELEASE="$HARDEN_LDFLAGS"
+
+if test "x$enable_debug" = "xyes"; then
+  CFLAGS="$CFLAGS_DEBUG"
+  LDFLAGS="$LDFLAGS_DEBUG"
+
+printf "%s\n" "#define DEBUG_BUILD 1" >>confdefs.h
+
+else
+  CFLAGS="$CFLAGS_RELEASE"
+  LDFLAGS="$LDFLAGS_RELEASE"
+fi
+
+
 
 
 ac_config_files="$ac_config_files Makefile tools/Makefile json/Makefile meta/Makefile meta/src/Makefile meta/doc/Makefile http/Makefile http/src/Makefile http/doc/Makefile imap/Makefile imap/src/Makefile apps/Makefile apps/webcache/Makefile apps/ftp/Makefile apps/helloworld/Makefile apps/httpd/Makefile apps/echoserver/Makefile apps/webclient/Makefile"

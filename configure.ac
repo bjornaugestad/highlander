@@ -25,6 +25,46 @@ AC_TYPE_PID_T
 # Checks for library functions.
 #AC_CHECK_FUNCS([strerror_r inet_ntop localtime_r socket strerror strtol sendfile])
 
+# default = debug
+AC_ARG_ENABLE([debug],
+  [AS_HELP_STRING([--disable-debug],[build with -O3 -DNDEBUG instead of sanitizers])],
+  [],[enable_debug=yes])
+
+# hardening commons
+HARDEN_CFLAGS="-fPIE -fstack-protector-strong -D_FORTIFY_SOURCE=3 -fstack-clash-protection -fcf-protection=full"
+HARDEN_LDFLAGS="-pie -Wl,-z,relro,-z,now -Wl,--as-needed"
+
+AC_ARG_ENABLE([debug],[AS_HELP_STRING([--disable-debug],[release -O3 -DNDEBUG])],[],[enable_debug=yes])
+
+CFLAGS_DEBUG="-std=gnu2x -pthread -I\$(srcdir) -I\$(top_srcdir)/src \
+ -Werror -Wshadow -W -Wmissing-prototypes \
+ -Wformat-overflow=2 -Woverflow -Wshift-overflow=2 -Wstrict-overflow=5 \
+ -Og -ggdb -fno-omit-frame-pointer \
+ -fsanitize=address,undefined,leak \
+ -Wextra -Wall -pedantic -Wno-long-long -Wno-inline \
+ $HARDEN_CFLAGS"
+
+LDFLAGS_DEBUG="-fsanitize=address,undefined,leak $HARDEN_LDFLAGS"
+
+CFLAGS_RELEASE="-std=gnu2x -pthread -I\$(srcdir) -I\$(top_srcdir)/src \
+ -Werror -Wshadow -W -Wmissing-prototypes \
+ -Wformat-overflow=2 -Woverflow -Wshift-overflow=2 -Wstrict-overflow=5 \
+ -O3 -DNDEBUG -Wextra -Wall -pedantic -Wno-long-long -Wno-inline \
+ $HARDEN_CFLAGS"
+
+LDFLAGS_RELEASE="$HARDEN_LDFLAGS"
+
+if test "x$enable_debug" = "xyes"; then
+  CFLAGS="$CFLAGS_DEBUG"
+  LDFLAGS="$LDFLAGS_DEBUG"
+  AC_DEFINE([DEBUG_BUILD],[1],[Debug build])
+else
+  CFLAGS="$CFLAGS_RELEASE"
+  LDFLAGS="$LDFLAGS_RELEASE"
+fi
+
+AC_SUBST([CFLAGS_DEBUG]) AC_SUBST([CFLAGS_RELEASE])
+AC_SUBST([LDFLAGS_DEBUG]) AC_SUBST([LDFLAGS_RELEASE])
 
 AC_CONFIG_FILES([
 	Makefile
