@@ -25,14 +25,6 @@ AC_TYPE_PID_T
 # Checks for library functions.
 #AC_CHECK_FUNCS([strerror_r inet_ntop localtime_r socket strerror strtol sendfile])
 
-AC_ARG_ENABLE([valgrind], 
-	[--enable-valgrind Enable valgrind integration],
-	[case ${enableval} in
-	 	yes) valgrind=true;;
-		no) valgrind=false;;
-		*) AC_MSG_ERROR([bad value ${enableval} for --enable-valgrind]) ;;
-	esac],[valgrind=false])
-AM_CONDITIONAL([WITH_VALGRIND], [test x$valgrind = xtrue])
 
 AC_CONFIG_FILES([
 	Makefile

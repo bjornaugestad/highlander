@@ -57,10 +57,6 @@ libhighlanderd_a_CFLAGS=\
 	-O0 -Wextra -ggdb -Wextra -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
     -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
 
-if WITH_VALGRIND
-libhighlander_a_CFLAGS+=-DWITH_VALGRIND=1 
-endif
-
 TESTS=\
 	http_server_check\
 	http_client_check\

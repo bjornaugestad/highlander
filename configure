@@ -645,8 +645,6 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
-WITH_VALGRIND_FALSE
-WITH_VALGRIND_TRUE
 RANLIB
 am__fastdepCC_FALSE
 am__fastdepCC_TRUE
@@ -741,7 +739,6 @@ ac_user_opts='
 enable_option_checking
 enable_silent_rules
 enable_dependency_tracking
-enable_valgrind
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1380,7 +1377,6 @@ Optional Features:
                           do not reject slow dependency extractors
   --disable-dependency-tracking
                           speeds up one-time build
---enable-valgrind Enable valgrind integration
 
 Some influential environment variables:
   CC          C compiler command
@@ -4830,27 +4826,6 @@ fi
 # Checks for library functions.
 #AC_CHECK_FUNCS([strerror_r inet_ntop localtime_r socket strerror strtol sendfile])
 
-# Check whether --enable-valgrind was given.
-if test ${enable_valgrind+y}
-then :
-  enableval=$enable_valgrind; case ${enableval} in
-	 	yes) valgrind=true;;
-		no) valgrind=false;;
-		*) as_fn_error $? "bad value ${enableval} for --enable-valgrind" "$LINENO" 5 ;;
-	esac
-else case e in #(
-  e) valgrind=false ;;
-esac
-fi
-
- if test x$valgrind = xtrue; then
-  WITH_VALGRIND_TRUE=
-  WITH_VALGRIND_FALSE='#'
-else
-  WITH_VALGRIND_TRUE='#'
-  WITH_VALGRIND_FALSE=
-fi
-
 
 ac_config_files="$ac_config_files Makefile tools/Makefile json/Makefile meta/Makefile meta/src/Makefile meta/doc/Makefile http/Makefile http/src/Makefile http/doc/Makefile imap/Makefile imap/src/Makefile apps/Makefile apps/webcache/Makefile apps/ftp/Makefile apps/helloworld/Makefile apps/httpd/Makefile apps/echoserver/Makefile apps/webclient/Makefile"
 
@@ -5031,10 +5006,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${am__fastdepCC_TRUE}" && test -z "${am__fastdepCC_FALSE}"; then
   as_fn_error $? "conditional \"am__fastdepCC\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${WITH_VALGRIND_TRUE}" && test -z "${WITH_VALGRIND_FALSE}"; then
-  as_fn_error $? "conditional \"WITH_VALGRIND\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

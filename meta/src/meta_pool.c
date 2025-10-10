@@ -3,17 +3,8 @@
  * All Rights Reserved. See COPYING for license details
  */
 
-#ifdef WITH_VALGRIND
-#include <valgrind/memcheck.h>
-#endif
-
 #include <stdlib.h>
 #include <assert.h>
-
-#ifdef __sun
-#	define _POSIX_PTHREAD_SEMANTICS
-#endif
-
 #include <pthread.h>
 
 #include <meta_pool.h>
@@ -109,10 +100,6 @@ status_t pool_get(pool this, void **ppres)
         if (this->pdata[i] != NULL) {
             resource = this->pdata[i];
             this->pdata[i] = NULL;
-
-#ifdef WITH_VALGRIND
-            VALGRIND_MAKE_MEM_UNDEFINED(resource, this->size);
-#endif
             break;
         }
     }

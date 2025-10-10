@@ -417,20 +417,8 @@ static status_t accept_new_connections(tcp_server this)
         newsock = socket_accept(this->listener, this->server_context, (struct sockaddr*)&addr, &addrsize);
         if (newsock == NULL) {
             switch (errno) {
-                // EPROTO is not defined for freebsd, and Stevens says, in UNP,
-                // vol. 1, page 424 that EPROTO should be ignored.
-#ifdef EPROTO
                 case EPROTO:
-#endif
-
-                // ENONET does not exist under freebsd, and is not even mentioned
-                // in UNP1. Alan Cox refers to RFC1122 in a patch posted to news.
-#ifdef ENONET
                 case ENONET:
-#endif
-
-                // AIX specific stuff. Nmap causes accept to return ENOTCONN,
-                // but oddly enough only on port 80. Let's see if a retry helps.
                 case ENOTCONN:
 
                 case EAGAIN:
