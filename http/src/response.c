@@ -1560,6 +1560,9 @@ static status_t read_chunked_response(http_response this, connection conn,
         }
     }
 
+    if (content == NULL) {
+        return failure;
+    }
     response_set_allocated_content_buffer(this, content, ntotal);
     return success;
 }
@@ -1609,6 +1612,10 @@ status_t response_receive(http_response response, connection conn,
     if ((nread = connection_read(conn, content, contentlen)) == -1) {
         free(content);
         return set_os_error(e, errno);
+    }
+
+    if (content == NULL) {
+        return failure;
     }
 
     response_set_allocated_content_buffer(response, content, nread);
