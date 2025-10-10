@@ -761,7 +761,7 @@ int main(void)
         cstring_free(dup);
 
         // cstring_copy
-        cstring dest = cstring_new();
+        dest = cstring_new();
         if (!cstring_set(s, "This is the source"))
             exit(1);
 

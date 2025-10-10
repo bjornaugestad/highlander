@@ -265,6 +265,7 @@ static void append(char *s, char c)
     strcat(s, tmp);
 }
 
+__attribute__((noinline))
 static void write_html_buffer(FILE *f, const char *str)
 {
     int nprinted = 0;

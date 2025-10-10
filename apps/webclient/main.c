@@ -52,7 +52,7 @@ static void show_help(void)
     printf("   -v Be verbose\n");
 }
 
-void parse_commandline(int argc, char *argv[])
+static void parse_commandline(int argc, char *argv[])
 {
     int c;
 
@@ -120,7 +120,7 @@ static void print_response_contents(http_response response)
         putchar(*s++);
 }
 
-void* threadfunc(void* arg)
+static void* threadfunc(void* arg)
 {
     (void)arg;
 

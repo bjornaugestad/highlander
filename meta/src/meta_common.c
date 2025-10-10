@@ -22,6 +22,7 @@ static void indent(int levels)
         putchar('\t');
 }
 
+__attribute__((noinline))
 void verbose(int level, const char *fmt, ...)
 {
     if (level <= meta_verbose_level) {

@@ -161,17 +161,17 @@ status_t pool_recycle(pool this, void *resource)
 
 static void *tfn(void *arg)
 {
-    pool pool = arg;
+    pool p = arg;
     size_t i, niter = NITER;
     void *dummy;
 
     for (i = 0; i < niter; i++) {
-        if (!pool_get(pool, (void **)&dummy)) {
+        if (!pool_get(p, (void **)&dummy)) {
             fprintf(stderr, "Unable to get resource\n");
             exit(77);
         }
 
-        pool_recycle(pool, dummy);
+        pool_recycle(p, dummy);
     }
 
     return NULL;
@@ -179,28 +179,28 @@ static void *tfn(void *arg)
 
 int main(void)
 {
-    pool pool;
+    pool p;
     pthread_t t1, t2;
     size_t i;
 
-    if ((pool = pool_new(NELEM)) == NULL)
+    if ((p = pool_new(NELEM)) == NULL)
         return 77;
 
     /* Add some items to the pool */
     for (i = 0; i < NELEM; i++) {
         void *dummy = (void*)(i + 1);
-        pool_add(pool, dummy);
+        pool_add(p, dummy);
     }
 
     /* Start the threads */
-    pthread_create(&t1, NULL, tfn, pool);
-    pthread_create(&t2, NULL, tfn, pool);
+    pthread_create(&t1, NULL, tfn, p);
+    pthread_create(&t2, NULL, tfn, p);
 
     /* Wait for the threads to finish */
     pthread_join(t1, NULL);
     pthread_join(t2, NULL);
 
-    pool_free(pool, NULL);
+    pool_free(p, NULL);
     return 0;
 }
 #endif

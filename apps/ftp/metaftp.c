@@ -148,7 +148,7 @@ static int add_entry(list lst, const path_t abspath, const char *filename)
  * Function returns NULL if an error occurs, else a list which must be freed
  * after use.
  */
-list read_directory(const path_t abspath)
+static list read_directory(const path_t abspath)
 {
     DIR *d = NULL;
     struct dirent *de = NULL;
@@ -199,7 +199,7 @@ static int sort_directory(const void *p1, const void *p2)
 }
 
 
-status_t add_html_header(http_response page, const char *uri)
+static status_t add_html_header(http_response page, const char *uri)
 {
     const char *header =
         "<html>\n"
@@ -301,7 +301,7 @@ static status_t show_directory_as_html(http_response page, list lst, const char 
 }
 
 
-status_t show_directory(http_response page, const path_t abspath, const char *uri)
+static status_t show_directory(http_response page, const path_t abspath, const char *uri)
 {
     list lst;
     status_t status;

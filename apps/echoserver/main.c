@@ -51,7 +51,7 @@ static void parse_command_line(int argc, char *argv[])
 
 
 // Move to tcp_server later
-X509 *cert_load(const char *path)
+static X509 *cert_load(const char *path)
 {
     FILE *fp = fopen(path, "r");
     if (!fp)
@@ -62,29 +62,24 @@ X509 *cert_load(const char *path)
     return crt;
 }
 
-void cert_free(X509 *crt)
+static void cert_free(X509 *crt)
 {
     if (crt)
         X509_free(crt);
 }
 
-bool cert_not_yet_valid(const X509 *crt)
+static bool cert_not_yet_valid(const X509 *crt)
 {
     return X509_cmp_current_time(X509_get0_notBefore(crt)) > 0;
 }
 
-bool cert_expired(const X509 *crt)
+static bool cert_expired(const X509 *crt)
 {
     return X509_cmp_current_time(X509_get0_notAfter(crt)) <= 0;
 }
 
-bool cert_time_valid(const X509 *crt)
-{
-    return !cert_not_yet_valid(crt) && !cert_expired(crt);
-}
-
 /* --- usage --- */
-bool cert_is_ca(const X509 *crt)
+static bool cert_is_ca(const X509 *crt)
 {
     int crit = -1;
     BASIC_CONSTRAINTS *bc = X509_get_ext_d2i(crt, NID_basic_constraints, &crit, NULL);
@@ -93,18 +88,25 @@ bool cert_is_ca(const X509 *crt)
     return ret;
 }
 
-bool cert_valid_for_server(const X509 *crt)
+#if 0
+static bool cert_time_valid(const X509 *crt)
+{
+    return !cert_not_yet_valid(crt) && !cert_expired(crt);
+}
+
+static bool cert_valid_for_server(const X509 *crt)
 {
     return X509_check_purpose((X509 *)crt, X509_PURPOSE_SSL_SERVER, 0) == 1;
 }
 
 /* --- composite check --- */
-bool cert_is_server_usable(const X509 *crt)
+static bool cert_is_server_usable(const X509 *crt)
 {
     return cert_time_valid(crt) && cert_valid_for_server(crt) && !cert_is_ca(crt);
 }
+#endif
 
-EVP_PKEY *private_key_load(const char *path)
+static EVP_PKEY *private_key_load(const char *path)
 {
     FILE *f = fopen(path, "r");
     if (f == NULL)
