@@ -118,9 +118,13 @@ socket_t socket_create_client_socket(int socktype, void *context,
 //
 // Fun fact: Now that BIO is out, ssl_socket_accept() is borderline equal to tcp_socket_accept().
 // Let's see if we can reuse code. 
+//
+// 20251010: context can be NULL for TCP sockets, but not for SSL
 socket_t socket_accept(socket_t p, void *context, struct sockaddr *addr, socklen_t *addrsize)
 {
     socket_t new;
+
+    assert(p->socktype == SOCKTYPE_TCP || context != NULL);
 
     new = create_instance(p->socktype);
     if (new == NULL)
