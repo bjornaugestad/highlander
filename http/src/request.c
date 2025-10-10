@@ -107,11 +107,9 @@ struct http_request_tag {
     int mime_version_minor;		/* v1.0 §D.2.7 */
     cstring title;				/* v1.0 §D.2.9 */
 
-    /* We may receive data (POST)
-     * As it may be encoded in all sort of ways, we
-     * keep it as a byte buffer instead of a cstring
-     * We alloc and free this buffer.
-     */
+    // We may receive data (POST)
+    // As it may be encoded in all sort of ways, we keep it as a byte
+    // buffer instead of a cstring. We alloc and free this buffer.
     char *entity_buf;
 };
 
