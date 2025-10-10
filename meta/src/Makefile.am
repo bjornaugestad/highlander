@@ -135,10 +135,6 @@ check_PROGRAMS=\
 	tcp_client_check
 
 
-AM_CFLAGS=-Wall --std=gnu2x -Wextra -Werror -O0 -ggdb\
-	-Wformat-overflow=2 -Woverflow -Wshift-overflow=2 -Wstrict-overflow=2
-# FANALYZER=-fanalyzer
-
 meta_process_check_SOURCES=\
 	meta_process.c cstring.c meta_common.c
 meta_process_check_CFLAGS=-DCHECK_META_PROCESS $(AM_CFLAGS)

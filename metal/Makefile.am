@@ -1,4 +1,4 @@
-AM_CFLAGS=-ggdb -O0 -Wall -Wextra -pedantic -std=gnu11 -Werror -pthread\
+AM_CFLAGS=+-ggdb -O0 -Wall -Wextra -pedantic -std=gnu11 -Werror -pthread\
 	-Iinclude -I$(top_srcdir)/include\
 	-Wno-empty-body
 

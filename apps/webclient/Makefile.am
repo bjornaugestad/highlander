@@ -3,7 +3,6 @@ bin_PROGRAMS=webclient
 webclient_SOURCES=main.c
 
 AM_CPPFLAGS=-I$(top_distdir)/http/src -I$(top_distdir)/meta/src
-AM_CFLAGS=-p -pg
 
 webclient_CFLAGS=\
 	-Winline -Wshadow -std=gnu2x \

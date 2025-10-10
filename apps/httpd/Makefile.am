@@ -3,7 +3,6 @@ bin_PROGRAMS=httpd
 httpd_SOURCES=httpd.c
 
 AM_CPPFLAGS=-I$(top_srcdir)/http/src -I$(top_srcdir)/meta/src
-AM_CFLAGS=-p -pg
 
 httpd_CFLAGS=\
 	-Winline -Wshadow -std=gnu2x \

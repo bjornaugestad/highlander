@@ -5,7 +5,6 @@ nodist_metaftpd_SOURCES=document.c about.c folder.c pagehandlers.h
 EXTRA_DIST=metaftp.conf
 
 AM_CPPFLAGS=-I$(top_srcdir)/meta/src -I$(top_srcdir)/http/src
-AM_CFLAGS=-p -pg -Werror
 
 metaftpd_CFLAGS=\
 	-Winline -Wshadow -std=gnu2x \
