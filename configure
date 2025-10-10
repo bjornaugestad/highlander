@@ -608,6 +608,7 @@ PACKAGE_STRING='highlander 0.9.99'
 PACKAGE_BUGREPORT='bjorn.augestad@gmail.com'
 PACKAGE_URL=''
 
+ac_default_prefix=${HOME}
 ac_unique_file="http/src/internals.h"
 # Factoring default headers for most tests.
 ac_includes_default="\
@@ -3173,6 +3174,10 @@ fi
 
 
 
+
+
+# Set default destination(prefix) to home diretory so we
+# can install stuff persistently on Qubes
 
 
 

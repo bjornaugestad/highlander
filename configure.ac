@@ -6,6 +6,10 @@ AM_INIT_AUTOMAKE
 AM_EXTRA_RECURSIVE_TARGETS([foo])
 
 
+# Set default destination(prefix) to home diretory so we 
+# can install stuff persistently on Qubes
+AC_PREFIX_DEFAULT([${HOME}])
+
 AC_CONFIG_SRCDIR([http/src/internals.h])
 # AC_CONFIG_HEADER([config.h])
 
