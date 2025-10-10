@@ -13,7 +13,7 @@ foo_LDADD=-lhighlander -lmeta -lssl -lcrypto -lpthread
 
 food_CFLAGS=-W -Wall -pedantic -Wextra -std=gnu2x -Wshadow -Wmissing-prototypes -pthread -O0 -ggdb
 food_LDFLAGS=-L$(HOME)/lib # Assuming local install of highlander
-food_LDADD=-lhighlanderd -lmetad -lssl -lcrypto -lpthread
+food_LDADD=-lhighlanderd -lmeta -lssl -lcrypto -lpthread
 
 %.c : %.html
 	hipp -i mypages.h -o $*.c $<

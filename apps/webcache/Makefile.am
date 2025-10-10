@@ -27,7 +27,7 @@ webcached_CFLAGS=\
 	-Wno-deprecated-declarations
 
 
-webcached_LDADD=-lhighlander -lmetad -lssl -lcrypto -lpthread
+webcached_LDADD=-lhighlander -lmeta -lssl -lcrypto -lpthread
 webcached_LDFLAGS=-L$(top_srcdir)/meta/src -L$(top_srcdir)/http/src
 
 # Convert the GIF logo to C source code

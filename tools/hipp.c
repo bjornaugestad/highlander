@@ -635,7 +635,7 @@ static void create_makefile_am(int argc, char *argv[])
 
     p(f, "food_CFLAGS=-W -Wall -pedantic -Wextra -std=gnu2x -Wshadow -Wmissing-prototypes -pthread -O0 -ggdb\n");
     p(f, "food_LDFLAGS=-L$(HOME)/lib # Assuming local install of highlander\n");
-    p(f, "food_LDADD=-lhighlanderd -lmetad -lssl -lcrypto -lpthread\n");
+    p(f, "food_LDADD=-lhighlanderd -lmeta -lssl -lcrypto -lpthread\n");
     p(f, "\n");
 
     /* Add all the translation rules for extensions? */

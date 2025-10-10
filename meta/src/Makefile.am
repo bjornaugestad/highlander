@@ -1,7 +1,7 @@
 #AUTOMAKE_OPTIONS=subdir-objects
 
 # The main target
-lib_LIBRARIES=libmeta.a libmetad.a
+lib_LIBRARIES=libmeta.a
 
 include_HEADERS=\
 	cstring.h\
@@ -72,8 +72,6 @@ libmeta_a_SOURCES=\
 	meta_regex.c\
 	meta_stringmap.c
 
-libmetad_a_SOURCES=$(libmeta_a_SOURCES)
-
 # Flags.
 # -D_BSD_SOURCE is to get the prototype for strerror_r.
 # _SVID_SOURCE will do the same thing.
@@ -87,14 +85,6 @@ libmeta_a_CFLAGS=\
 	-O3 -Wall -Wno-long-long  -ftree-vectorize\
     -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast\
 	-fomit-frame-pointer -msse4.2
-
-libmetad_a_CFLAGS=\
-	-std=gnu2x -pthread\
-	-I$(srcdir)\
-	-I$(top_srcdir)/src\
-	-Werror -Wshadow -W -Wmissing-prototypes\
-	-O0 -ggdb -Wall -Wno-long-long  -ftree-vectorize -Wno-inline\
-    -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast
 
 TESTS=\
 	meta_process_check\

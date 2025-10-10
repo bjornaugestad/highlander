@@ -12,5 +12,5 @@ httpd_CFLAGS=\
 	-Wextra -Wall -pedantic -W -Werror -Wno-long-long -pthread -DNDEBUG -O3
 
 httpd_LDFLAGS=-L$(top_srcdir)/meta/src -L$(top_srcdir)/http/src
-httpd_LDADD=-lhighlander -lmetad -lpthread -lssl -lcrypto
+httpd_LDADD=-lhighlander -lmeta -lpthread -lssl -lcrypto
 
