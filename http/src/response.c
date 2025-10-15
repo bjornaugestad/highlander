@@ -1583,6 +1583,20 @@ status_t response_receive(http_response response, connection conn,
     if (!read_response_header_fields(conn, response, e))
         return failure;
 
+    // 20251015: Cloudflare(CF) violates the RFCs and send TE for non-200,
+    // like 301 Moved Permanently. And of course they throw in non-standard
+    // header fields like CF-RAY and X-content-type-options. Fuck'em.
+    // Do an early successful exit for non-200 non-errors.
+    int status = response_get_status(response);
+    switch (status) {
+        case 204: // OK, but no content
+        case 301: // Permanently moved
+        case 302: // Temp. moved
+        case 304: // Not Modified
+            return success;
+
+    }
+
     /* Now we hopefully have a content-length field. See if we can read
      * it or if it is too big. */
     if (entity_header_content_length_isset(eh)) {
@@ -1612,10 +1626,6 @@ status_t response_receive(http_response response, connection conn,
     if ((nread = connection_read(conn, content, contentlen)) == -1) {
         free(content);
         return set_os_error(e, errno);
-    }
-
-    if (content == NULL) {
-        return failure;
     }
 
     response_set_allocated_content_buffer(response, content, nread);
