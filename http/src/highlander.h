@@ -226,9 +226,14 @@ int   http_server_get_block_when_full(http_server s)
 size_t http_server_get_max_pages(http_server s)
     __attribute__((nonnull, warn_unused_result));
 
-status_t http_server_set_server_cert_chain_file(http_server p, const char *path);
-status_t http_server_set_private_key(http_server p, const char *path);
-status_t http_server_set_ca_directory(http_server p, const char *path);
+status_t http_server_set_server_cert_chain_file(http_server p, const char *path)
+    __attribute__((nonnull, warn_unused_result));
+
+status_t http_server_set_private_key(http_server p, const char *path)
+    __attribute__((nonnull, warn_unused_result));
+
+status_t http_server_set_ca_directory(http_server p, const char *path)
+    __attribute__((nonnull, warn_unused_result));
 
 const char* request_get_uri(http_request request)
     __attribute__((nonnull, warn_unused_result));
@@ -483,13 +488,19 @@ entity_header request_get_entity_header(http_request r) __attribute__((nonnull, 
 http_response response_new(void) __attribute__((malloc));
 
 void response_free(http_response response);
-void response_recycle(http_response response);
-void response_set_version(http_response response, http_version version);
-void response_set_status(http_response response, int status);
-int response_get_status(http_response response);
+void response_recycle(http_response response)
+    __attribute__((nonnull));
+void response_set_version(http_response response, http_version version)
+    __attribute__((nonnull));
+void response_set_status(http_response response, int status)
+    __attribute__((nonnull));
+int response_get_status(http_response response)
+    __attribute__((nonnull, warn_unused_result));
 
-general_header response_get_general_header(http_response r) __attribute__((nonnull, warn_unused_result));
-entity_header response_get_entity_header(http_response r) __attribute__((nonnull, warn_unused_result));
+general_header response_get_general_header(http_response r) 
+    __attribute__((nonnull, warn_unused_result));
+entity_header response_get_entity_header(http_response r) 
+    __attribute__((nonnull, warn_unused_result));
 
 /* Note that file argument *MUST* be a FILE* */
 void response_dump(http_response r, void *file)         __attribute__((nonnull));
