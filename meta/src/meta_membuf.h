@@ -70,6 +70,8 @@ static inline void membuf_free(membuf this)
     }
 }
 
+static inline void membuf_freev(void *p) { membuf_free(p); }
+
 // Return the number of bytes available for reading from the membuf buffer.
 __attribute__((warn_unused_result, nonnull))
 static inline size_t membuf_canread(membuf mb)

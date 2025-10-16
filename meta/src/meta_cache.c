@@ -94,6 +94,11 @@ static void cache_entry_free(struct cache_entry* p)
     }
 }
 
+static void cache_entry_freev(void *vp)
+{
+    cache_entry_free(vp);
+}
+
 /* We need to free whatever is in the cache, for which we use the cleanup
  * argument. We also need to free the cache_entry node itself. That node
  * contains a pointer to the data we (optionally) freed with the
@@ -127,7 +132,7 @@ void cache_free(cache c, dtor cleanup)
                 entry->data = NULL;
             }
 
-            list_free(lst, (dtor)cache_entry_free);
+            list_free(lst, cache_entry_freev);
         }
     }
 
@@ -145,7 +150,7 @@ void cache_invalidate(cache c, dtor cleanup)
 
     for (i = 0; i < c->nelem; i++) {
         if (c->hashtable[i] != NULL) {
-            list_free(c->hashtable[i], (dtor)cache_entry_free);
+            list_free(c->hashtable[i], cache_entry_freev);
             c->hashtable[i] = NULL;
         }
     }
@@ -373,7 +378,7 @@ status_t cache_remove(cache c, size_t id)
     assert(c->hashtable[id % c->nelem] != NULL);
     assert(cache_exists(c, id));
 
-    list_delete(c->hashtable[id % c->nelem], i, (dtor)cache_entry_free);
+    list_delete(c->hashtable[id % c->nelem], i, cache_entry_freev);
     remove_from_hotlist(c, id);
     return success;
 }

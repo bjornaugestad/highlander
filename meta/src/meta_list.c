@@ -555,6 +555,11 @@ static void *item_adapt_value(struct item* p)
     return &p->value;
 }
 
+static void *item_adapt_valuev(void *vp)
+{
+    return item_adapt_value(vp);
+}
+
 static bool item_foreach(void *arg, void *item)
 {
     assert(arg == NULL);
@@ -682,7 +687,7 @@ int main(void)
     /* Now adapt the original list to a list pointing directly to the integer member
      * named value. Then check that we have the values we expect(0..999).
      */
-    if ((b = sublist_adaptor(a, (void*(*)(void*))item_adapt_value)) == NULL)
+    if ((b = sublist_adaptor(a, item_adapt_valuev)) == NULL)
         return77("Could not adapt list");
 
     i = 0;

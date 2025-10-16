@@ -25,6 +25,8 @@ connection connection_new(int socktype, int timeout_reads, int timeout_writes,
     __attribute__((malloc));
 
 void connection_free(connection conn);
+static inline void connection_freev(void *p) { connection_free(p); }
+
 
 void connection_recycle(connection conn)
     __attribute__((nonnull));

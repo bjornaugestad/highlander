@@ -181,9 +181,9 @@ void tcp_server_free(tcp_server this)
         this->queue = NULL;
     }
 
-    pool_free(this->connections, (dtor)connection_free);
-    pool_free(this->read_buffers, (dtor)membuf_free);
-    pool_free(this->write_buffers, (dtor)membuf_free);
+    pool_free(this->connections, connection_freev);
+    pool_free(this->read_buffers, membuf_freev);
+    pool_free(this->write_buffers, membuf_freev);
 
     cstring_free(this->host);
     cstring_free(this->private_key);
@@ -262,7 +262,7 @@ err:
     if (!threadpool_destroy(this->queue, 0))
         warning("Unable to destroy thread pool\n");
 
-    pool_free(this->connections, (dtor)connection_free);
+    pool_free(this->connections, connection_freev);
     pool_free(this->read_buffers, NULL);
     pool_free(this->write_buffers, NULL);
 

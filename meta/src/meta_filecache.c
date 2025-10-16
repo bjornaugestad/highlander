@@ -49,6 +49,11 @@ void fileinfo_free(fileinfo p)
     }
 }
 
+static void fileinfo_freev(void *p)
+{
+    fileinfo_free(p);
+}
+
 void fileinfo_set_stat(fileinfo p, const struct stat* pst)
 {
     assert(p != NULL);
@@ -131,7 +136,7 @@ filecache filecache_new(size_t nelem, size_t bytes)
 void filecache_free(filecache this)
 {
     if (this != NULL) {
-        cache_free(this->metacache, (dtor)fileinfo_free);
+        cache_free(this->metacache, fileinfo_freev);
         stringmap_free(this->filenames);
         pthread_rwlock_destroy(&this->lock);
         free(this);
