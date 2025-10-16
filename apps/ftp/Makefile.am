@@ -4,15 +4,7 @@ metaftpd_SOURCES=metaftp.c about.html document.png folder.gif
 nodist_metaftpd_SOURCES=document.c about.c folder.c pagehandlers.h
 EXTRA_DIST=metaftp.conf
 
-AM_CPPFLAGS=-I$(top_srcdir)/meta/src -I$(top_srcdir)/http/src
-
-metaftpd_CFLAGS=\
-	-Winline -Wshadow -std=gnu2x \
-	-Wshadow\
-	-Wextra -Wall -pedantic -W -Werror -Wno-long-long -pthread -DNDEBUG -O3\
-	-Wformat-overflow=2 -Woverflow -Wshift-overflow=2 -Wstrict-overflow=5\
-	-Wno-deprecated-declarations
-
+metaftpd_CFLAGS=-I$(top_srcdir)/meta/src -I$(top_srcdir)/http/src
 metaftpd_LDFLAGS=-L$(top_srcdir)/http/src -L$(top_srcdir)/meta/src
 metaftpd_LDADD=-lhighlander -lmeta -lssl -lcrypto -lpthread
 
