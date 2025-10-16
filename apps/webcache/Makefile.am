@@ -15,16 +15,7 @@ webcached_SOURCES=\
 	html_utilities.c\
 	statpack.c
 
-webcached_CFLAGS=\
-	 -std=gnu2x -D_REENTRANT -pthread\
-	-I$(srcdir)\
-	-I$(srcdir)/webcache\
-	-I$(top_srcdir)/meta/src\
-	-I$(top_srcdir)/http/src\
-	-Werror -Wshadow -W -Wmissing-prototypes\
-	-O2 -Wextra -Wall -pedantic -Wno-long-long  -ftree-vectorize -Wno-inline\
-    -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast\
-	-Wno-deprecated-declarations
+webcached_CFLAGS=-I$(srcdir) -I$(srcdir)/webcache -I$(top_srcdir)/meta/src -I$(top_srcdir)/http/src
 
 
 webcached_LDADD=-lhighlander -lmeta -lssl -lcrypto -lpthread

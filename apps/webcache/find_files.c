@@ -334,14 +334,13 @@ status_t find_files(
     size_t cb = 0;
 
     struct dirent *de = NULL;
-    char debuff[sizeof(struct dirent) + 100];
     struct stat st;
 
     /* We return error(0) for anything but permission errors */
     if ( (d = opendir(dirname)) == NULL)
         return errno == EACCES ? success : failure;
 
-    while (readdir_r(d, (struct dirent*)debuff, &de) == 0 && de != NULL) {
+    while ((de = readdir(d)) != NULL) {
         /* We do not walk parent or current directory */
         if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0)
             continue;
