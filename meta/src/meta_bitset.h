@@ -25,7 +25,7 @@ typedef struct bitset_tag* bitset;
 // easy to use a bigger unit.
 struct bitset_tag {
     size_t bitcount, size;
-    unsigned char *data __attribute__((nonstring));
+    unsigned char *data;
 };
 
 

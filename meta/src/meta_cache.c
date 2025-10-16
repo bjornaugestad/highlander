@@ -36,24 +36,25 @@ struct cache_tag {
     size_t hotlist_nelem;
 };
 
-/* OK, nå har vi en meget rask og fin cache, men ingen
- * oversikt over LRU items. Det må vi ha.
- * Det er ikke noe poeng i å vite MRU da lookups er
- * såpass raskt at det ikke er noe tema, men vi må vite
- * hvilke noder vi skal slette når cachen er full.
- * Vi skal ikke slette de mest populære(MRU) ei heller
- * de som er pinned i cachen. Så hva gjør vi?
- * - Vi ønsker ikke å traversere hashmapen.
- * - Vi ønsker ikke å telle hvor ofte et item
+/*
+ * OK, naa har vi en meget rask og fin cache, men ingen
+ * oversikt over LRU items. Det maa vi ha.
+ * Det er ikke noe poeng i aa vite MRU da lookups er
+ * saapass raskt at det ikke er noe tema, men vi maa vite
+ * hvilke noder vi skal slette naar cachen er full.
+ * Vi skal ikke slette de mest populaere(MRU) ei heller
+ * de som er pinned i cachen. Saa hva gjoer vi?
+ * - Vi oensker ikke aa traversere hashmapen.
+ * - Vi oensker ikke aa telle hvor ofte et item
  *	 er brukt.
  *
- * Vi lager derfor en minikø, en hotlist, som
+ * Vi lager derfor en minikoe, en hotlist, som
  * inneholder n id's. Disse er de sist brukte
- * id's, sortert stigende.(sist brukt først).
+ * id's, sortert stigende.(sist brukt foerst).
  * Dette er strengt tatt et ring buffer.
- * Så sletter vi tilfeldig valgte noder som
+ * Saa sletter vi tilfeldig valgte noder som
  * a) ikke er pinned
- * b) ikke er på hotlisten.
+ * b) ikke er paa hotlisten.
  * Greit nok?
  */
 

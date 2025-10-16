@@ -142,12 +142,15 @@ copy_from_readbuf(connection this, void *buf, size_t count)
     return membuf_read(this->readbuf, buf, count);
 }
 
+#if 0
+clang says unused
 static inline bool
 readbuf_contains_atleast(connection this, size_t count)
 {
     size_t n = membuf_canread(this->readbuf);
     return n >= count;
 }
+#endif
 
 static inline bool
 readbuf_contains_data(connection this)

@@ -42,7 +42,7 @@ AC_ARG_ENABLE([debug],[AS_HELP_STRING([--disable-debug],[release -O3 -DNDEBUG])]
 
 CFLAGS_DEBUG="-std=gnu2x -pthread -I\$(srcdir) -I\$(top_srcdir)/src \
  -Werror -Wshadow -W -Wmissing-prototypes \
- -Wformat-overflow=2 -Woverflow -Wshift-overflow=2 -Wstrict-overflow=5 \
+ -Wformat-overflow -Woverflow -Wshift-overflow  \
  -Og -ggdb -fno-omit-frame-pointer \
  -fsanitize=address,undefined,leak \
  -Wextra -Wall -pedantic -Wno-long-long -Wno-inline \
@@ -52,7 +52,7 @@ LDFLAGS_DEBUG="-fsanitize=address,undefined,leak $HARDEN_LDFLAGS"
 
 CFLAGS_RELEASE="-std=gnu2x -pthread -I\$(srcdir) -I\$(top_srcdir)/src \
  -Werror -Wshadow -W -Wmissing-prototypes \
- -Wformat-overflow=2 -Woverflow -Wshift-overflow=2 -Wstrict-overflow=5 \
+ -Wformat-overflow -Woverflow -Wshift-overflow  \
  -O3 -DNDEBUG -Wextra -Wall -pedantic -Wno-long-long -Wno-inline \
  $HARDEN_CFLAGS"
 
