@@ -152,7 +152,6 @@ static list read_directory(const path_t abspath)
 {
     DIR *d = NULL;
     struct dirent *de = NULL;
-    char debuff[sizeof(struct dirent) + 100];
     int err = 0;
     list lst;
 
@@ -163,18 +162,18 @@ static list read_directory(const path_t abspath)
         err = 1;
     }
     else {
-        while (readdir_r(d, (struct dirent*)debuff, &de) == 0 && de != NULL) {
-            if (strcmp(de->d_name, ".") == 0
-            || strcmp(de->d_name, "..") == 0)
+        while ((de = readdir(d)) != NULL) {
+            if (strcmp(de->d_name, ".") == 0 || strcmp(de->d_name, "..") == 0)
                 ; /* Skip these */
             else if (!add_entry(lst, abspath, de->d_name)) {
                 err = 1;
                 break;
             }
         }
-
-        closedir(d);
     }
+
+    if (d != NULL)
+        closedir(d);
 
     if (err) {
         list_free(lst, dirinfo_dtor);
