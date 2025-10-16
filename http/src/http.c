@@ -7,7 +7,7 @@
  * Reads one line, terminated by \r\n, off the socket.
  * The \r\n is removed, if present.
  *
- * NOTE: According to RFC 2616, ง4.2, Header Fields may extend over
+ * NOTE: According to RFC 2616, ยง4.2, Header Fields may extend over
  * many lines. I qoute:
  *	Header fields can be extended over multiple lines by preceding each extra
  *	line with at least one SP or HT. Applications ought to follow "common form",

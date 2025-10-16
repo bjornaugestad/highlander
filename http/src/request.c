@@ -81,31 +81,31 @@ struct http_request_tag {
     pair params;
     list cookies;
 
-    cstring accept;				/* v1.0 ?D.2.1 v1.1 ง14.1 */
-    cstring accept_charset;		/* v1.0 งD.2.2 v1.1 ง14.2 */
-    cstring accept_encoding;	/* v1.0 งD.2.3 v1.1 ง14.3 */
-    cstring accept_language;	/* v1.0 งD.2.4 v1.1 ง14.4 */
-    cstring authorization;		/* v1.0 ง10.2 v1.1 ง14.8 */
-    cstring expect;				/* v1.1 ง14.20 */
-    cstring from;				/* v1.0 ง10.8 v1.1 ง14.22 */
-    cstring host;				/* v1.1 ง14.23 */
-    cstring if_match;			/* v1.1 ง14.24 */
-    time_t if_modified_since;	/* v1.0 ง10.9 v1.1 ง14.25 */
-    cstring if_none_match;		/* v1.1 ง14.26 */
-    cstring if_range;			/* v1.1 ง14.27 */
-    time_t if_unmodified_since;	/* v1.1 ง14.28 */
-    int max_forwards;			/* v1.1 ง14.31 */
-    cstring proxy_authorization;/* v1.1 ง14.34 */
-    cstring range;				/* v1.1 ง14.35 */
-    cstring referer;			/* v1.0 ง10.13 v1.1 ง14.36 */
-    cstring te;					/* v1.1 ง14.39 */
-    cstring user_agent;			/* v1.0 ง10.15 v1.1 ง14.43 */
+    cstring accept;				/* v1.0 ?D.2.1 v1.1 ยง14.1 */
+    cstring accept_charset;		/* v1.0 ยงD.2.2 v1.1 ยง14.2 */
+    cstring accept_encoding;	/* v1.0 ยงD.2.3 v1.1 ยง14.3 */
+    cstring accept_language;	/* v1.0 ยงD.2.4 v1.1 ยง14.4 */
+    cstring authorization;		/* v1.0 ยง10.2 v1.1 ยง14.8 */
+    cstring expect;				/* v1.1 ยง14.20 */
+    cstring from;				/* v1.0 ยง10.8 v1.1 ยง14.22 */
+    cstring host;				/* v1.1 ยง14.23 */
+    cstring if_match;			/* v1.1 ยง14.24 */
+    time_t if_modified_since;	/* v1.0 ยง10.9 v1.1 ยง14.25 */
+    cstring if_none_match;		/* v1.1 ยง14.26 */
+    cstring if_range;			/* v1.1 ยง14.27 */
+    time_t if_unmodified_since;	/* v1.1 ยง14.28 */
+    int max_forwards;			/* v1.1 ยง14.31 */
+    cstring proxy_authorization;/* v1.1 ยง14.34 */
+    cstring range;				/* v1.1 ยง14.35 */
+    cstring referer;			/* v1.0 ยง10.13 v1.1 ยง14.36 */
+    cstring te;					/* v1.1 ยง14.39 */
+    cstring user_agent;			/* v1.0 ยง10.15 v1.1 ยง14.43 */
 
     /* Version 1.0 fields */
-    cstring link;				/* v1.0 งD.2.6 */
-    int mime_version_major;		/* v1.0 งD.2.7 */
-    int mime_version_minor;		/* v1.0 งD.2.7 */
-    cstring title;				/* v1.0 งD.2.9 */
+    cstring link;				/* v1.0 ยงD.2.6 */
+    int mime_version_major;		/* v1.0 ยงD.2.7 */
+    int mime_version_minor;		/* v1.0 ยงD.2.7 */
+    cstring title;				/* v1.0 ยงD.2.9 */
 
     // We may receive data (POST)
     // As it may be encoded in all sort of ways, we keep it as a byte
@@ -1201,7 +1201,7 @@ static status_t parse_accept_language(http_request req, const char *value, error
     return req_parse_multivalued_fields(req, value, request_set_accept_language, e);
 }
 
-/* The request line, defined in ง5.1, is
+/* The request line, defined in ยง5.1, is
  *		 Method SP Request-URI SP HTTP-Version CRLF
  */
 static status_t send_request_line(http_request r, connection c, error e)
@@ -1891,7 +1891,7 @@ parse_request_version(const char *line, http_request request, error e)
  * Returns > 0 if request line wasn't understood, 0 if OK
  * Input is Method SP Request-URI SP [ HTTP-Version ]
  * The CRLF has been removed.
- * See ง5.1 for details.
+ * See ยง5.1 for details.
  * We support 0.9, 1.0 and 1.1 and GET, HEAD and POST
  */
 static status_t

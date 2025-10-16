@@ -24,8 +24,8 @@
 /*
  * NOTE:
  * Husk at vi kan ha URL requests som skal mappes direkte til
- * f. eks. 301 Moved Permanently. Disse bør mappes i main()
- * før oppstart av http_server. Vi har 2 grupper av disse
+ * f. eks. 301 Moved Permanently. Disse bÃ¸r mappes i main()
+ * fÃ¸r oppstart av http_server. Vi har 2 grupper av disse
  * a) Flyttet og ny adresse er kjent (301)
  * b) Borte uten ny, kjent adresse (410)
  */

@@ -74,24 +74,24 @@ struct http_response_tag {
     /*
      * 4 of these fields are common to http 1.0 and http1.1
      * The fields are:
-     *	location		See rfc1945, ง10.11 for 1.0 doc
-     *	server			See rfc1945, ง10.14 for 1.0 doc
-     *	www_authenticate	See rfc1945, ง10.16 for 1.0 doc
-     *	retry_after		See rfc1945, งD.2.8 for 1.0 doc
+     *	location		See rfc1945, ยง10.11 for 1.0 doc
+     *	server			See rfc1945, ยง10.14 for 1.0 doc
+     *	www_authenticate	See rfc1945, ยง10.16 for 1.0 doc
+     *	retry_after		See rfc1945, ยงD.2.8 for 1.0 doc
      *
      * All other fields are http 1.1 specific, but some are
      * commonly used as an extension of http 1.0, e.g. Host
      */
 
     unsigned long age;
-    int accept_ranges;			/* ง14.5 */
-    cstring etag;				/* ง14.19 */
-    cstring location;			/* ง14.30 */
-    cstring proxy_authenticate;	/* ง14.33 */
-    time_t retry_after;			/* ง14.38 */
-    cstring server;				/* ง14.39 */
-    cstring vary;				/* ง14.44 */
-    cstring www_authenticate;	/* ง14.47 */
+    int accept_ranges;			/* ยง14.5 */
+    cstring etag;				/* ยง14.19 */
+    cstring location;			/* ยง14.30 */
+    cstring proxy_authenticate;	/* ยง14.33 */
+    time_t retry_after;			/* ยง14.38 */
+    cstring server;				/* ยง14.39 */
+    cstring vary;				/* ยง14.44 */
+    cstring www_authenticate;	/* ยง14.47 */
 
     /* Outgoing cookies */
     list cookies;
@@ -1306,7 +1306,7 @@ static status_t parse_server(http_response r, const char *value, error e)
 }
 
 /*
- * ง14.5: Accept-Ranges is either "bytes", "none", or range-units(section 3.12)
+ * ยง14.5: Accept-Ranges is either "bytes", "none", or range-units(section 3.12)
  * The only range unit defined by HTTP 1.1 is "bytes", and we MAY ignore
  * all others.
  */
@@ -1405,7 +1405,7 @@ status_t parse_response_header(int idx, http_response req, const char *value, er
     return response_header_fields[idx].handler(req, value, e);
 }
 
-/* The response status line(ง6.1) is
+/* The response status line(ยง6.1) is
  *		HTTP-Version SP Status-Code SP Reason-Phrase CRLF
  * It is the first line in all HTTP responses.
  */

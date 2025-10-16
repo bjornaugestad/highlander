@@ -329,15 +329,15 @@ static status_t serviceConnection2(
             return success;
 
         /*
-         * NOTE: Her må/bør vi legge inn ny funksjonalitet:
+         * NOTE: Her mÃ¥/bÃ¸r vi legge inn ny funksjonalitet:
          * Disconnect connections som
-         * a) Har kjørt lengst i tid
-         * b) Har overført mest bytes (opp eller ned)
-         * eller c) har dårligst transfer rate
+         * a) Har kjÃ¸rt lengst i tid
+         * b) Har overfÃ¸rt mest bytes (opp eller ned)
+         * eller c) har dÃ¥rligst transfer rate
          * Grunnen er at dersom vi har n worker threads og n
-         * persistent connections, havner alle nye connections i kø.
-         * De får aldri kjøretid. Så disconnect-regelen over gjelder derfor
-         * kun om køen har > 0 entries.
+         * persistent connections, havner alle nye connections i kÃ¸.
+         * De fÃ¥r aldri kjÃ¸retid. SÃ¥ disconnect-regelen over gjelder derfor
+         * kun om kÃ¸en har > 0 entries.
          */
 
         if (!connection_flush(conn))

@@ -207,7 +207,7 @@ int main(void)
     size_t cb;
 
     static const char*tests[] = {
-        "æøå ÆØÅ",
+        "Ã¦Ã¸Ã¥ Ã†Ã˜Ã…",
         "a couple of spaces",
         "specials %%%%%%,,,,,,::.-_0=[]{}???+\\\"",
     };
