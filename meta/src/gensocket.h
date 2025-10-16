@@ -35,9 +35,6 @@ socket_t socket_accept(socket_t p, void *context, struct sockaddr *addr,
 status_t socket_bind(socket_t p, const char *hostname, int port)
     __attribute__((warn_unused_result, nonnull));
 
-status_t socket_listen(socket_t p, int backlog)
-    __attribute__((warn_unused_result, nonnull));
-
 status_t socket_close(socket_t p)
     __attribute__((nonnull));
 
@@ -75,6 +72,17 @@ ssize_t  socket_read(socket_t p, char *buf, size_t count, int timeout, int retri
 // does not hold the fd ATM and who knows if SSL will require more magic in the
 // future. And FTR: Old openssl with BIO, locking, thread management and what
 // else, was a fucking nightmare!
+//
+// boa@20251016: Clang's sanitizer is a pita when it comes to cast fn pointers.
+// Let's try to unify what we can and don't cast. In socket, we call gensocket
+// and implement common functionality in gensocket. We do need the fd though,
+// and that's the PITA. We must add it. Long term, we can eliminate fd from
+// tcp_socket, and just use a void* arg for tlssocket for SSL_CTX et al.
+// Alternative approach? Drop the goal of building servers without TLS and just
+// merge the functions. They're mostly identical anyways.
+//
+// Also, we're redundant here. No need to even support listen() in the ptr-list
+// as the create-functions call listen already. Same goes for reuse_addr.
 status_t gensocket_set_nonblock(int fd) __attribute__((warn_unused_result));
 status_t gensocket_set_reuse_addr(int fd) __attribute__((warn_unused_result));
 status_t gensocket_clear_nonblock(int fd) __attribute__((warn_unused_result));

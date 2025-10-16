@@ -27,17 +27,6 @@ struct tcpsocket_tag {
     int fd;
 };
 
-/*
- * Sets the socket options we want on the main socket
- * Suitable for server sockets only.
- */
-static status_t tcpsocket_set_reuseaddr(tcpsocket this)
-{
-    assert(this != NULL);
-    assert(this->fd >= 0);
-
-    return gensocket_set_reuse_addr(this->fd);
-}
 
 /*
  * This is a local helper function. It polls for some kind of event,
@@ -185,14 +174,6 @@ ssize_t tcpsocket_read(tcpsocket this, char *dest, size_t count, int timeout, in
     return -1; // We timed out
 }
 
-status_t tcpsocket_bind(tcpsocket this, const char *hostname, int port)
-{
-    assert(this != NULL);
-    assert(this->fd >= 0);
-
-    return gensocket_bind_inet(this->fd, hostname, port);
-}
-
 tcpsocket tcpsocket_socket(void)
 {
     tcpsocket this;
@@ -209,13 +190,6 @@ tcpsocket tcpsocket_socket(void)
     return this;
 }
 
-status_t tcpsocket_listen(tcpsocket this, int backlog)
-{
-    assert(this->fd >= 0);
-
-    return gensocket_listen(this->fd, backlog);
-}
-
 tcpsocket tcpsocket_create_server_socket(const char *host, int port)
 {
     tcpsocket new;
@@ -223,9 +197,9 @@ tcpsocket tcpsocket_create_server_socket(const char *host, int port)
     if ((new = tcpsocket_socket()) == NULL)
         return NULL;
 
-    if (tcpsocket_set_reuseaddr(new)
-    && tcpsocket_bind(new, host, port)
-    && tcpsocket_listen(new, 100))
+    if (gensocket_set_reuse_addr(new->fd)
+    && gensocket_bind_inet(new->fd, host, port)
+    && gensocket_listen(new->fd, 100))
         return new;
 
     tcpsocket_close(new);
@@ -260,28 +234,12 @@ tcpsocket tcpsocket_create_client_socket(const char *host, int port)
         return NULL;
     }
 
-    if (!tcpsocket_set_nonblock(this)) {
+    if (!gensocket_set_nonblock(this->fd)) {
         tcpsocket_close(this);
         return NULL;
     }
 
     return this;
-}
-
-status_t tcpsocket_set_nonblock(tcpsocket this)
-{
-    assert(this != NULL);
-    assert(this->fd >= 0);
-
-    return gensocket_set_nonblock(this->fd);
-}
-
-status_t tcpsocket_clear_nonblock(tcpsocket this)
-{
-    assert(this != NULL);
-    assert(this->fd >= 0);
-
-    return gensocket_clear_nonblock(this->fd);
 }
 
 status_t tcpsocket_close(tcpsocket this)
@@ -327,7 +285,7 @@ tcpsocket tcpsocket_accept(tcpsocket this, struct sockaddr *addr, socklen_t *add
     new->fd = clientfd;
     // We set the nonblock flag here, since SSL prefers to set this
     // early and we want tcp_server to treat sockets uniformly.
-    if (!tcpsocket_set_nonblock(new)) {
+    if (!gensocket_set_nonblock(new->fd)) {
         close(clientfd);
         free(new);
         return NULL;

@@ -26,16 +26,6 @@ struct sslsocket_tag {
     SSL *ssl;
 };
 
-// Sets the socket options we want on the main socket
-// Suitable for server sockets only.
-static status_t sslsocket_set_reuseaddr(sslsocket this)
-{
-    assert(this != NULL);
-    assert(this->fd >= 0);
-
-    return gensocket_set_reuse_addr(this->fd);
-}
-
 /*
  * This is a helper function. It polls for some kind of event,
  * which normally is POLLIN or POLLOUT.
@@ -221,21 +211,6 @@ ssize_t sslsocket_read(sslsocket this, char *dest, size_t count,
 }
 
 
-/* Binds a socket to an address/port.
- * This part is a bit incorrect as we have already
- * created a socket with a specific protocol family,
- * and here we bind it to the PF specified in the services...
- */
-status_t sslsocket_bind(sslsocket this, const char *hostname, int port)
-{
-    assert(this != NULL);
-    assert(hostname != NULL);
-    assert(this->fd >= 0);
-    assert(port > 0);
-
-    return gensocket_bind_inet(this->fd, hostname, port);
-}
-
 sslsocket sslsocket_socket(void)
 {
     sslsocket new;
@@ -274,9 +249,9 @@ sslsocket sslsocket_create_server_socket(const char *host, int port)
         return NULL;
 
     // Configure it.
-    if (sslsocket_set_reuseaddr(new)
-    && sslsocket_bind(new, host, port)
-    && sslsocket_listen(new, 100)) {
+    if (gensocket_set_reuse_addr(new->fd)
+    && gensocket_bind_inet(new->fd, host, port)
+    && gensocket_listen(new->fd, 100)) {
         return new;
     }
 
@@ -410,22 +385,6 @@ err:
 #endif
 }
 
-status_t sslsocket_set_nonblock(sslsocket this)
-{
-
-    assert(this != NULL);
-    assert(this->fd >= 0);
-
-    return gensocket_set_nonblock(this->fd);
-}
-
-status_t sslsocket_clear_nonblock(sslsocket this)
-{
-    assert(this != NULL);
-    assert(this->fd >= 0);
-
-    return gensocket_clear_nonblock(this->fd);
-}
 
 // This function can be called in various states. Think of it as a dtor.
 status_t sslsocket_close(sslsocket this)
@@ -490,7 +449,7 @@ sslsocket sslsocket_accept(sslsocket this, void *context,
         return NULL;
     }
 
-    if (!sslsocket_set_nonblock(new)) {
+    if (!gensocket_set_nonblock(new->fd)) {
         sslsocket_close(new);
         return NULL;
     }

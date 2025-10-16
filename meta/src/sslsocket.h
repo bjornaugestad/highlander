@@ -41,12 +41,6 @@ status_t sslsocket_wait_for_writability(sslsocket p, int timeout)
 status_t sslsocket_write(sslsocket p, const char *s, size_t count, int timeout, int retries)
     __attribute__((warn_unused_result));
 
-status_t sslsocket_bind(sslsocket p, const char *hostname, int port)
-    __attribute__((warn_unused_result));
-
-status_t sslsocket_set_nonblock(sslsocket p)
-    __attribute__((warn_unused_result));
-
 status_t sslsocket_clear_nonblock(sslsocket p)
     __attribute__((warn_unused_result));
 

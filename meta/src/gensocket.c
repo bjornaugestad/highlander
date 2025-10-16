@@ -14,16 +14,12 @@ struct gensocket_tag {
     void *instance;
 
     // Some function pointers we need.
-    status_t (*bind)(void *instance, const char *hostname, int port);
-    status_t (*listen)(void *instance, int backlog);
     status_t (*close)(void *instance);
 
     status_t (*poll_for)(void *instance, int timeout, short polltype);
     status_t (*wait_for_data)(void *instance, int timeout);
     status_t (*wait_for_writability)(void *instance, int timeout);
     status_t (*write)(void *instance, const char *s, size_t count, int timeout, int retries);
-    status_t (*set_nonblock)(void *instance);
-    status_t (*clear_nonblock)(void *instance);
     ssize_t  (*read)(void *instance, char *buf, size_t count, int timeout, int retries);
 };
 
@@ -40,27 +36,19 @@ static socket_t create_instance(int socktype)
 
     // Set up the type-specific function pointers
     if (socktype == SOCKTYPE_TCP) {
-        p->bind = (typeof(p->bind))tcpsocket_bind;
-        p->listen = (typeof(p->listen))tcpsocket_listen;
         p->close = (typeof(p->close))tcpsocket_close;
         p->poll_for = (typeof(p->poll_for))tcpsocket_poll_for;
         p->wait_for_data = (typeof(p->wait_for_data))tcpsocket_wait_for_data;
         p->wait_for_writability = (typeof(p->wait_for_writability))tcpsocket_wait_for_writability;
         p->write = (typeof(p->write))tcpsocket_write;
-        p->set_nonblock = (typeof(p->set_nonblock))tcpsocket_set_nonblock;
-        p->clear_nonblock = (typeof(p->clear_nonblock))tcpsocket_clear_nonblock;
         p->read = (typeof(p->read))tcpsocket_read;
     }
     else {
-        p->bind = (typeof(p->bind))sslsocket_bind;
-        p->listen = (typeof(p->listen))sslsocket_listen;
         p->close = (typeof(p->close))sslsocket_close;
         p->poll_for = (typeof(p->poll_for))sslsocket_poll_for;
         p->wait_for_data = (typeof(p->wait_for_data))sslsocket_wait_for_data;
         p->wait_for_writability = (typeof(p->wait_for_writability))sslsocket_wait_for_writability;
         p->write = (typeof(p->write))sslsocket_write;
-        p->set_nonblock = (typeof(p->set_nonblock))sslsocket_set_nonblock;
-        p->clear_nonblock = (typeof(p->clear_nonblock))sslsocket_clear_nonblock;
         p->read = (typeof(p->read))sslsocket_read;
     }
 
@@ -143,25 +131,6 @@ socket_t socket_accept(socket_t p, void *context, struct sockaddr *addr, socklen
     return new;
 }
 
-status_t socket_bind(socket_t p, const char *hostname, int port)
-{
-    assert(p != NULL);
-    assert(p->instance != NULL);
-    assert(hostname != NULL);
-    assert(port > 0);
-
-    return p->bind(p->instance, hostname, port);
-}
-
-status_t socket_listen(socket_t p, int backlog)
-{
-    assert(p != NULL);
-    assert(p->instance != NULL);
-    assert(backlog > 0);
-
-    return p->listen(p->instance, backlog);
-}
-
 status_t socket_close(socket_t p)
 {
     assert(p != NULL);
@@ -202,22 +171,6 @@ status_t socket_write(socket_t p, const char *s, size_t count, int timeout, int 
     assert(p->instance != NULL);
 
     return p->write(p->instance, s, count, timeout, retries);
-}
-
-status_t socket_set_nonblock(socket_t p)
-{
-    assert(p != NULL);
-    assert(p->instance != NULL);
-
-    return p->set_nonblock(p->instance);
-}
-
-status_t socket_clear_nonblock(socket_t p)
-{
-    assert(p != NULL);
-    assert(p->instance != NULL);
-
-    return p->clear_nonblock(p->instance);
 }
 
 ssize_t socket_read(socket_t p, char *buf, size_t count, int timeout, int retries)
