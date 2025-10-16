@@ -270,7 +270,6 @@ int main(void)
 {
     fifo f;
     size_t i, nelem;
-    status_t rc;
     char dummydata[1000] = "Hello";
     clock_t stop, start;
     double duration;
@@ -284,9 +283,10 @@ int main(void)
     /* Fill the fifo completely */
     start = clock();
     for (i = 0; i < nelem; i++) {
-        rc = fifo_add(f, dummydata);
-        assert(rc != 0);
+        status_t rc = fifo_add(f, dummydata);
+        assert(rc != 0); (void)rc;
     }
+
     stop = clock();
     duration = (stop - start) * 1.0 / CLOCKS_PER_SEC;
     printf("%s: Added %lu elements in %f seconds\n", __FILE__, (unsigned long)nelem, duration);
@@ -300,6 +300,7 @@ int main(void)
         int xi;
         xi = (s != NULL); assert(xi);
         xi = (strcmp(s, dummydata) == 0); assert(xi);
+        (void)xi;
     }
 
     /* Add a new one, this should fail */
@@ -318,6 +319,7 @@ int main(void)
         int xi;
         xi = (s != NULL); assert(xi);
         xi = (strcmp(s, dummydata) == 0); assert(xi);
+        (void)xi;
     }
 
     /* The first should be OK, the next must fail */

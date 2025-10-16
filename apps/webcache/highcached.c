@@ -37,7 +37,7 @@ static int g_daemonize = 0;
  * We have finally a version of verbose() in the highlander library.
  * This variable sets the level of verbosity.
  */
-extern int meta_verbose_level;
+extern unsigned int meta_verbose_level;
 
 http_server g_server = NULL;
 static http_server g_adminserver = NULL;

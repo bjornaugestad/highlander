@@ -296,8 +296,11 @@ static void write_html_buffer(FILE *f, const char *str)
             fputc(*s, f);
 
         nprinted++;
+        if (nprinted > 70)
+            nprinted = 0;
+
         if (*s == '\n'
-        || (last != '\\' && strchr(wrappers, *s) && nprinted > 70)) {
+        || (last != '\\' && strchr(wrappers, *s))) {
             nprinted = 0;
             p(f, "\\n\"\n        \"");
             last = '\0';

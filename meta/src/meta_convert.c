@@ -13,6 +13,7 @@ status_t toint(const char *src, int *dest)
     assert(src != NULL);
     assert(dest != NULL);
 
+    res = 0; // Make gcc shut up
     if (!tolong(src, &res))
         return failure;
 
@@ -30,6 +31,7 @@ status_t touint(const char *src, unsigned *dest)
     assert(src != NULL);
     assert(dest != NULL);
 
+    res = 0; // Make gcc shut up
     if (!toulong(src, &res))
         return failure;
 

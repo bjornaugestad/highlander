@@ -13,17 +13,17 @@
 
 #include <meta_common.h>
 
-int meta_verbose_level = 0;
-int meta_indent_level = 0;
+unsigned int meta_verbose_level = 0;
+unsigned int meta_indent_level = 0;
 
-static void indent(int levels)
+static void indent(unsigned levels)
 {
     while (levels-- > 0)
         putchar('\t');
 }
 
 __attribute__((noinline))
-void verbose(int level, const char *fmt, ...)
+void verbose(unsigned int level, const char *fmt, ...)
 {
     if (level <= meta_verbose_level) {
         indent(meta_indent_level);

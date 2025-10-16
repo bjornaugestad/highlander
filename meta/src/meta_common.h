@@ -32,10 +32,10 @@ typedef void(*dtor)(void*);
  * These variables are always present so that command line processing
  * can be simpler. They just don't do anything in release builds (NDEBUG).
  */
-extern int meta_verbose_level;
-extern int meta_indent_level;
+extern unsigned int meta_verbose_level;
+extern unsigned int meta_indent_level;
 
-void verbose(int level, const char *fmt, ...);
+void verbose(unsigned int level, const char *fmt, ...);
     //__attribute__((nonnull))
     //__attribute__((format(printf,2,3)));
 

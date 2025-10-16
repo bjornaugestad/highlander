@@ -803,6 +803,7 @@ int main(void)
 
         cstring_free(dest);
         cstring_free(s);
+        (void)status;
     }
 
     return 0;

@@ -62,6 +62,7 @@ int main(void)
         assert(cb == BUFSIZE);
 
         membuf_free(mb);
+        (void)cb;
     }
 
     // Now loop with odd sizes to see if we miss a byte or two. Size stuff so

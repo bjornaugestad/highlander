@@ -455,6 +455,7 @@ int main(void)
 #endif
 
     cache_free(c, free);
+    (void)rc; // make gcc shut up
     return 0;
 }
 
