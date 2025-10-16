@@ -26,6 +26,13 @@ struct sslsocket_tag {
     SSL *ssl;
 };
 
+int sslsocket_get_fd(sslsocket p)
+{
+    assert(p != NULL);
+    return p->fd;
+}
+
+
 /*
  * This is a helper function. It polls for some kind of event,
  * which normally is POLLIN or POLLOUT.

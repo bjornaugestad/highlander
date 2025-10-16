@@ -11,6 +11,7 @@
 
 struct gensocket_tag {
     int socktype;
+    int fd; // As for now, 20251016, we get a copy from the sub-classes. 
     void *instance;
 
     // Some function pointers we need.
@@ -74,6 +75,12 @@ socket_t socket_create_server_socket(int type, const char *host, int port)
         return NULL;
     }
 
+    // This is a nice place to grab the fd from the 'sub-classes' and 
+    // store it in socket_t. boa@20251016
+    if (type == SOCKTYPE_TCP)
+        this->fd = tcpsocket_get_fd((tcpsocket)this->instance);
+    else
+        this->fd = sslsocket_get_fd((sslsocket)this->instance);
     return this;
 }
 

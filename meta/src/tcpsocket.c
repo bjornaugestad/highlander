@@ -27,6 +27,11 @@ struct tcpsocket_tag {
     int fd;
 };
 
+int tcpsocket_get_fd(tcpsocket p)
+{
+    assert(p != NULL);
+    return p->fd;
+}
 
 /*
  * This is a local helper function. It polls for some kind of event,
