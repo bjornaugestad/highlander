@@ -310,8 +310,9 @@ static status_t response_send_header_fields(http_response p, connection conn)
     if (!general_header_date_isset(p->general_header))
         general_header_set_date(p->general_header, time(NULL));
 
-    general_header_send_fields(p->general_header, conn);
-    entity_header_send_fields(p->entity_header, conn);
+    if (!general_header_send_fields(p->general_header, conn)
+    ||  !entity_header_send_fields(p->entity_header, conn))
+        return failure;
 
 
     if (status) {
@@ -1700,6 +1701,7 @@ void response_dump(http_response r, void *file)
     list_iterator li;
     for (li = list_first(r->cookies); !list_end(li); li = list_next(li)) {
         cookie c = list_get(li);
-        cookie_dump(c, f);
+        if (!cookie_dump(c, f))
+            continue;
     }
 }
