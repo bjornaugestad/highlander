@@ -235,7 +235,7 @@ static status_t serviceConnection2(http_server srv, connection conn,
 
     dynamic_page dp;
     size_t cbSent;
-    int status, iserror = 0;
+    int iserror = 0;
     size_t max_posted_content = http_server_get_post_limit(srv);
 
     while (!http_server_shutting_down(srv)) {
@@ -270,17 +270,13 @@ static status_t serviceConnection2(http_server srv, connection conn,
         }
         else {
             // We didn't find the page
-            response_set_status(response, HTTP_404_NOT_FOUND);
-            if (!response_set_connection(response, "close"))
-                return failure;
-
-            // We consider 404 an error and close the connection
+            set_http_error(e, HTTP_404_NOT_FOUND);
             iserror = 1;
         }
 
         if (iserror) {
             if (is_protocol_error(e)) {
-                status = get_error_code(e);
+                int status = get_error_code(e);
                 response_set_status(response, status);
 
                 if (!response_set_connection(response, "close"))
@@ -359,6 +355,11 @@ static status_t serviceConnection2(http_server srv, connection conn,
 // Things get tricky here, as we must deal with various conditions,
 // like protocol versions and semantics(persistence vs close), and
 // a myriad of error conditions.
+//
+// Fun fact: The socket's closed when this function exits, so there's
+// no need to close it here. WTF, my man, WTF have I been thinking 
+// for so many years? The tricky part is of course if we want do
+// send to client or not. IOW, when do we flush the connection's buffers?
 void* serviceConnection(void* psa)
 {
     assert(psa != NULL);
@@ -375,15 +376,22 @@ void* serviceConnection(void* psa)
 
     status_t ok = serviceConnection2(srv, conn, request, response, e);
 
+#if 0
     // BUG/TODO/WTF: boa@20251017
     // If !ok and not tcpip error, we try to close connection.
     // This doesn't cut it, does it? Perhaps it does, but we shouldn't
     // really wonder here. The iserror "state machine" in serviceConnection2
     // is poor at best.
+    //
+    // connection_close() does close the socket, but so does the threadpool's
+    // cleanup-fn. So double close? connection_discard() closes the socket too,
+    // but no problems there. I don't get it.
     if (!ok && is_tcpip_error(e))
         connection_discard(conn);
     else if (!connection_close(conn))
         warning("Could not close connection\n");
+
+#endif
 
     // Note that there's a possible race condition here. If 
     // serviceConnection2() recycled the objects just before it
@@ -393,7 +401,7 @@ void* serviceConnection(void* psa)
     http_server_recycle_response(srv, response);
 
     error_free(e);
-    return (void*)(intptr_t)ok;
+    return ok;
 }
 
 int http_status_code(int iserror)
