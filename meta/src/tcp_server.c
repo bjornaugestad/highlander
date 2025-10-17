@@ -5,6 +5,7 @@
 
 #include <unistd.h>
 #include <stdbool.h>
+#include <stdatomic.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -21,7 +22,6 @@
 #include <openssl/dh.h>
 
 #include <meta_pool.h>
-#include <meta_atomic.h>
 #include <threadpool.h>
 #include <tcp_server.h>
 #include <connection.h>
@@ -84,13 +84,13 @@ struct tcp_server_tag {
     pool write_buffers;
 
     // Our shutdown flag
-    int shutting_down;
+    _Atomic bool shutting_down;
 
     /* Our performance counters */
-    atomic_ulong sum_poll_intr; /* # of times poll() returned EINTR */
-    atomic_ulong sum_poll_again; /* # of times poll() returned EAGAIN */
-    atomic_ulong sum_accept_failed;
-    atomic_ulong sum_denied_clients;
+    _Atomic unsigned long sum_poll_intr; /* # of times poll() returned EINTR */
+    _Atomic unsigned long sum_poll_again; /* # of times poll() returned EAGAIN */
+    _Atomic unsigned long sum_accept_failed;
+    _Atomic unsigned long sum_denied_clients;
 };
 
 /*
@@ -157,12 +157,7 @@ tcp_server tcp_server_new(int socktype)
 
         new->readbuf_size =  (1024 * 4);
         new->writebuf_size = (1024 *64);
-        new->shutting_down = 0;
-
-        atomic_ulong_init(&new->sum_poll_intr);
-        atomic_ulong_init(&new->sum_poll_again);
-        atomic_ulong_init(&new->sum_accept_failed);
-        atomic_ulong_init(&new->sum_denied_clients);
+        atomic_store_explicit(&new->shutting_down, false, memory_order_relaxed);
     }
 
     return new;
@@ -199,10 +194,6 @@ void tcp_server_free(tcp_server this)
         this->pattern_compiled = false;
     }
 
-    atomic_ulong_destroy(&this->sum_poll_intr);
-    atomic_ulong_destroy(&this->sum_poll_again);
-    atomic_ulong_destroy(&this->sum_accept_failed);
-    atomic_ulong_destroy(&this->sum_denied_clients);
     free(this);
 }
 
@@ -402,12 +393,12 @@ static status_t accept_new_connections(tcp_server this)
     assert(this != NULL);
     assert(this->listener != NULL);
 
-    while (!this->shutting_down) {
+    while (!atomic_load_explicit(&this->shutting_down, memory_order_relaxed)) {
         if (!socket_poll_for(socket_get_fd(this->listener), this->timeout_accepts, POLLIN)) {
             if (errno == EINTR)
-                atomic_ulong_inc(&this->sum_poll_intr);
+                this->sum_poll_intr++;
             else if (errno == EAGAIN)
-                atomic_ulong_inc(&this->sum_poll_again);
+                this->sum_poll_again++;
             else
                 return failure;
 
@@ -428,7 +419,7 @@ static status_t accept_new_connections(tcp_server this)
                 case EHOSTUNREACH:
                 case EOPNOTSUPP:
                 case ENETUNREACH:
-                    atomic_ulong_inc(&this->sum_accept_failed);
+                    this->sum_accept_failed++;
                     continue;
 
                 default:
@@ -441,7 +432,7 @@ static status_t accept_new_connections(tcp_server this)
         // Check if the client is permitted to connect or not.
         if (!client_can_connect(this, &addr)) {
             socket_close(newsock);
-            atomic_ulong_inc(&this->sum_denied_clients);
+            this->sum_denied_clients++;
             continue;
         }
 
@@ -718,7 +709,7 @@ static status_t tcp_server_free_root_resourcesv(void *p) { return tcp_server_fre
 status_t tcp_server_shutdown(tcp_server this)
 {
     assert(this != NULL);
-    this->shutting_down = 1;
+    atomic_store_explicit(&this->shutting_down, true, memory_order_relaxed);
     return success;
 }
 static status_t tcp_server_shutdownv(void *p) { return tcp_server_shutdown(p); }
@@ -736,7 +727,7 @@ status_t tcp_server_start_via_process(process p, tcp_server s)
 int tcp_server_shutting_down(tcp_server this)
 {
     assert(this != NULL);
-    return this->shutting_down;
+    return atomic_load_explicit(&this->shutting_down, memory_order_relaxed);
 }
 
 unsigned long tcp_server_sum_blocked(tcp_server this)
@@ -760,25 +751,25 @@ unsigned long tcp_server_sum_added(tcp_server this)
 unsigned long tcp_server_sum_poll_intr(tcp_server this)
 {
     assert(this != NULL);
-    return atomic_ulong_get(&this->sum_poll_intr);
+    return this->sum_poll_intr;
 }
 
 unsigned long tcp_server_sum_poll_again(tcp_server this)
 {
     assert(this != NULL);
-    return atomic_ulong_get(&this->sum_poll_again);
+    return this->sum_poll_again;
 }
 
 unsigned long tcp_server_sum_accept_failed(tcp_server this)
 {
     assert(this != NULL);
-    return atomic_ulong_get(&this->sum_accept_failed);
+    return this->sum_accept_failed;
 }
 
 unsigned long tcp_server_sum_denied_clients(tcp_server this)
 {
     assert(this != NULL);
-    return atomic_ulong_get(&this->sum_denied_clients);
+    return this->sum_denied_clients;
 }
 
 status_t tcp_server_set_private_key(tcp_server this, const char *path)

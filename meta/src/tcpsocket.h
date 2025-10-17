@@ -16,9 +16,11 @@ extern "C" {
 
 typedef struct tcpsocket_tag *tcpsocket;
 
+#if 0
 tcpsocket tcpsocket_socket(void)
     __attribute__((warn_unused_result))
     __attribute__((malloc));
+#endif
 
 int tcpsocket_get_fd(tcpsocket p);
 

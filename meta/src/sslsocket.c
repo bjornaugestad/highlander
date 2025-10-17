@@ -168,17 +168,16 @@ ssize_t sslsocket_read(sslsocket this, char *dest, size_t count,
 }
 
 
-sslsocket sslsocket_socket(void)
+sslsocket sslsocket_socket(struct addrinfo *ai)
 {
     sslsocket new;
-    int af = AF_INET;
 
     if ((new = malloc(sizeof *new)) == NULL)
         return NULL;
 
     new->ssl = NULL;
 
-    if ((new->fd = socket(af, SOCK_STREAM, 0)) == -1) {
+    if ((new->fd = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol)) == -1) {
         free(new);
         return NULL;
     }
@@ -198,19 +197,31 @@ sslsocket sslsocket_create_server_socket(const char *host, int port)
 {
     sslsocket new;
 
-    if (host == NULL)
-        host = "localhost";
+    struct addrinfo hints = {0}, *res, *ai;
+    char serv[6];
 
-    // Create the socket, including calling socket().
-    if ((new = sslsocket_socket()) == NULL)
+    snprintf(serv, sizeof serv, "%u", (unsigned)port);
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG | AI_NUMERICSERV;
+
+    if (getaddrinfo(host, serv, &hints, &res) != 0)
         return NULL;
 
-    // Configure it.
-    if (gensocket_set_reuse_addr(new->fd)
-    && gensocket_bind_inet(new->fd, host, port)
-    && gensocket_listen(new->fd, 100)) {
-        return new;
+    for (ai = res; ai; ai = ai->ai_next) {
+        new = sslsocket_socket(ai);
+        if (new == NULL)
+            continue;
+
+        if (gensocket_set_reuse_addr(new->fd)
+        && gensocket_bind_inet(new->fd, ai)
+        && gensocket_listen(new->fd, 100))
+            return new;
     }
+
+    freeaddrinfo(res);
+    if (new == NULL)
+        return NULL;
 
     sslsocket_close(new);
     return NULL;

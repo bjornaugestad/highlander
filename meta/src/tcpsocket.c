@@ -125,15 +125,14 @@ ssize_t tcpsocket_read(tcpsocket this, char *dest, size_t count, int timeout, in
     return -1; // We timed out
 }
 
-tcpsocket tcpsocket_socket(void)
+static tcpsocket tcpsocket_socket(struct addrinfo *ai)
 {
     tcpsocket this;
-    int af = AF_INET;
 
     if ((this = malloc(sizeof *this)) == NULL)
         return NULL;
 
-    if ((this->fd = socket(af, SOCK_STREAM, 0)) == -1) {
+    if ((this->fd = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol)) == -1) {
         free(this);
         return NULL;
     }
@@ -145,13 +144,31 @@ tcpsocket tcpsocket_create_server_socket(const char *host, int port)
 {
     tcpsocket new;
 
-    if ((new = tcpsocket_socket()) == NULL)
+    struct addrinfo hints = {0}, *res, *ai;
+    char serv[6];
+
+    snprintf(serv, sizeof serv, "%u", (unsigned)port);
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG | AI_NUMERICSERV;
+
+    if (getaddrinfo(host, serv, &hints, &res) != 0)
         return NULL;
 
-    if (gensocket_set_reuse_addr(new->fd)
-    && gensocket_bind_inet(new->fd, host, port)
-    && gensocket_listen(new->fd, 100))
-        return new;
+    for (ai = res; ai; ai = ai->ai_next) {
+        new = tcpsocket_socket(ai);
+        if (new == NULL)
+            continue;
+
+        if (gensocket_set_reuse_addr(new->fd)
+        && gensocket_bind_inet(new->fd, ai)
+        && gensocket_listen(new->fd, 100))
+            return new;
+    }
+
+    freeaddrinfo(res);
+    if (new == NULL)
+        return NULL;
 
     tcpsocket_close(new);
     return NULL;
@@ -159,31 +176,36 @@ tcpsocket tcpsocket_create_server_socket(const char *host, int port)
 
 tcpsocket tcpsocket_create_client_socket(const char *host, int port)
 {
-    struct hostent *phost;
-    struct sockaddr_in sa;
+    char serv[6];
+    struct addrinfo hints = {0}, *res = NULL, *ai;
     tcpsocket this;
 
     assert(host != NULL);
 
-    if ((phost = gethostbyname(host)) == NULL) {
-        errno = h_errno; /* OBSOLETE? */
-        return NULL;
-    }
+    snprintf(serv, sizeof serv, "%u", (unsigned)port);
+    hints.ai_family   = AF_UNSPEC;          // v4/v6
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags    = AI_ADDRCONFIG | AI_NUMERICSERV;
 
-    /* Create a socket structure */
-    sa.sin_family = phost->h_addrtype;
-    memcpy(&sa.sin_addr, phost->h_addr, (size_t)phost->h_length);
-    sa.sin_port = htons(port);
-
-    /* Open a socket to the server */
-    if ((this = tcpsocket_socket()) == NULL)
+    int rc = getaddrinfo(host, serv, &hints, &res);
+    if (rc)
         return NULL;
 
-    /* Connect to the server. */
-    if (connect(this->fd, (struct sockaddr *) &sa, sizeof sa) == -1) {
+    for (ai = res; ai; ai = ai->ai_next) {
+        this = tcpsocket_socket(ai);
+        if (this == NULL)
+            continue;
+
+        if (connect(this->fd, ai->ai_addr, ai->ai_addrlen) == 0)
+            break;
+
         tcpsocket_close(this);
-        return NULL;
+        this = NULL;
     }
+
+    freeaddrinfo(res);
+    if (this == NULL)
+        return NULL;
 
     if (!gensocket_set_nonblock(this->fd)) {
         tcpsocket_close(this);

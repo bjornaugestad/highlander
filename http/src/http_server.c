@@ -6,6 +6,7 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <stdatomic.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
@@ -54,7 +55,7 @@ struct http_server_tag {
     page_attribute default_attributes;
 
     /* Shutdown flag for this server */
-    int shutting_down;
+    _Atomic bool shutting_down;
 
     /* each server has a pool of request- and response-objects */
     pool requests;
@@ -141,6 +142,8 @@ http_server http_server_new(int socktype)
     }
 
     set_server_defaults(this);
+
+    atomic_store_explicit(&this->shutting_down, false, memory_order_relaxed);
     return this;
 }
 
@@ -557,7 +560,7 @@ int http_server_shutting_down(http_server this)
 {
     assert(this != NULL);
 
-    return this->shutting_down;
+    return atomic_load_explicit(&this->shutting_down, memory_order_relaxed);
 }
 
 
@@ -839,7 +842,7 @@ void http_server_add_logentry(
 status_t http_server_shutdown(http_server this)
 {
     assert(this != NULL);
-    this->shutting_down = 1;
+    atomic_store_explicit(&this->shutting_down, true, memory_order_relaxed);
     tcp_server_shutdown(this->tcpsrv);
     return success;
 }
@@ -1155,7 +1158,6 @@ static void * serverthread(void *arg)
     if (!http_server_free_root_resources(this))
         die("%s:Could not free root resources\n", __func__);
 
-    http_server_free(this);
     return NULL;
 }
 
@@ -1232,6 +1234,8 @@ static void check_response_time(void)
     sleep(3);
     if (pthread_join(t, NULL))
         die("Could not join server thread.\n");
+
+    http_server_free(this);
 }
 
 int main(void)

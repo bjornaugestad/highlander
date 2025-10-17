@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <pthread.h>
+#include <stdatomic.h>
 
 #include <meta_common.h>
 
@@ -468,7 +469,7 @@ int sampler_aggregate(
 static const size_t nentity = 1, nsamples = 3600;
 #if 1
 static sampler sampled_data;
-static int shutting_down;
+static _Atomic bool shutting_down = false;
 
 static void *writer(void *arg)
 {
@@ -476,7 +477,7 @@ static void *writer(void *arg)
     time_t now;
 
     (void)arg;
-    while (!shutting_down) {
+    while (!atomic_load_explicit(&shutting_down, memory_order_relaxed)) {
         now = time(NULL);
         sampler_start_update(sampled_data, now);
         for (i = 0; i < nentity; i++) {
@@ -495,7 +496,7 @@ static void *reader(void *arg)
 {
     int* id = arg;
 
-    while (!shutting_down) {
+    while (!atomic_load_explicit(&shutting_down, memory_order_relaxed)) {
         size_t i, csamples;
 
         sampler_start_read(sampled_data);
@@ -643,7 +644,7 @@ int main(void)
         fprintf(stderr, "Main thread sleeping\n");
         sleep(5);
         fprintf(stderr, "Main thread shutting down\n");
-        shutting_down = 1;
+        atomic_store_explicit(&shutting_down, true, memory_order_relaxed);
 
         pthread_join(writerthread, NULL);
         pthread_join(reader1, NULL);

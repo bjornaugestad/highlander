@@ -82,7 +82,8 @@ status_t gensocket_set_reuse_addr(int fd) __attribute__((warn_unused_result));
 status_t gensocket_clear_nonblock(int fd) __attribute__((warn_unused_result));
 status_t gensocket_listen(int fd, int backlog) __attribute__((warn_unused_result));
 
-status_t gensocket_bind_inet(int fd, const char *hostname, int port)
+struct addrinfo;
+status_t gensocket_bind_inet(int fd, struct addrinfo *ai)
  __attribute__((warn_unused_result));
 
 #ifdef __cplusplus

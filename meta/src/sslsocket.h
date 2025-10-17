@@ -17,7 +17,8 @@ extern "C" {
 typedef struct sslsocket_tag *sslsocket;
 int sslsocket_get_fd(sslsocket p);
 
-sslsocket sslsocket_socket(void)
+struct addrinfo;
+sslsocket sslsocket_socket(struct addrinfo *ai)
     __attribute__((warn_unused_result));
 
 status_t sslsocket_listen(sslsocket p, int backlog)

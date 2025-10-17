@@ -647,9 +647,14 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 LDFLAGS_RELEASE
-LDFLAGS_DEBUG
 CFLAGS_RELEASE
-CFLAGS_DEBUG
+SANLIBS_TSAN
+LDFLAGS_TSAN
+CFLAGS_TSAN
+SANLIBS_ASANUB
+LDFLAGS_ASANUB
+CFLAGS_ASANUB
+CFLAGS_DEBUG_BASE
 RANLIB
 am__fastdepCC_FALSE
 am__fastdepCC_TRUE
@@ -745,6 +750,7 @@ enable_option_checking
 enable_silent_rules
 enable_dependency_tracking
 enable_debug
+enable_tsan
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1383,8 +1389,8 @@ Optional Features:
                           do not reject slow dependency extractors
   --disable-dependency-tracking
                           speeds up one-time build
-  --disable-debug         build with -O3 -DNDEBUG instead of sanitizers
-  --disable-debug         release -O3 -DNDEBUG
+  --disable-debug         release build (-O3 -DNDEBUG), default is debug
+  --enable-tsan           build with ThreadSanitizer (no ASan/UBSan/LSan)
 
 Some influential environment variables:
   CC          C compiler command
@@ -3176,14 +3182,9 @@ fi
 
 
 
-# Set default destination(prefix) to home diretory so we
-# can install stuff persistently on Qubes
 
 
 
-# AC_CONFIG_HEADER([config.h])
-
-# Checks for programs.
 
 
 
@@ -4696,7 +4697,6 @@ fi
 
 
 
-# Checks for header files.
 
 ac_header= ac_cache=
 for ac_item in $ac_header_c_list
@@ -4782,8 +4782,6 @@ then :
 
 fi
 
-
-# Checks for typedefs, structures, and compiler characteristics.
 ac_fn_c_check_type "$LINENO" "mode_t" "ac_cv_type_mode_t" "$ac_includes_default"
 if test "x$ac_cv_type_mode_t" = xyes
 then :
@@ -4835,10 +4833,6 @@ fi
 
 
 
-# Checks for library functions.
-#AC_CHECK_FUNCS([strerror_r inet_ntop localtime_r socket strerror strtol sendfile])
-
-# default = debug
 # Check whether --enable-debug was given.
 if test ${enable_debug+y}
 then :
@@ -4849,51 +4843,88 @@ esac
 fi
 
 
-# hardening commons
+# Check whether --enable-tsan was given.
+if test ${enable_tsan+y}
+then :
+  enableval=$enable_tsan;
+else case e in #(
+  e) enable_tsan=no ;;
+esac
+fi
+
+
+if test "x$enable_tsan" = "xyes" && test "x$enable_debug" = "xyes"
+then :
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: --enable-tsan overrides debug sanitizers" >&5
+printf "%s\n" "$as_me: WARNING: --enable-tsan overrides debug sanitizers" >&2;}
+
+fi
+
 HARDEN_CFLAGS="-fPIE -fstack-protector-strong -D_FORTIFY_SOURCE=3 -fstack-clash-protection -fcf-protection=full"
 HARDEN_LDFLAGS="-pie -Wl,-z,relro,-z,now -Wl,--as-needed"
 
-# Check whether --enable-debug was given.
-if test ${enable_debug+y}
-then :
-  enableval=$enable_debug;
-else case e in #(
-  e) enable_debug=yes ;;
-esac
-fi
-
-
-CFLAGS_DEBUG="-std=gnu2x -pthread -I\$(srcdir) -I\$(top_srcdir)/src \
+CFLAGS_DEBUG_BASE="-std=gnu2x -pthread -I\$(srcdir) -I\$(top_srcdir)/src \
  -Werror -Wshadow -W -Wmissing-prototypes \
- -Wformat-overflow -Woverflow -Wshift-overflow  \
+ -Wformat-overflow -Woverflow -Wshift-overflow \
  -Og -ggdb -fno-omit-frame-pointer \
  -Wextra -Wall -pedantic -Wno-long-long -Wno-inline \
- -fsanitize=address,undefined,leak \
  $HARDEN_CFLAGS"
 
-LDFLAGS_DEBUG="$HARDEN_LDFLAGS"
+CFLAGS_ASANUB="$CFLAGS_DEBUG_BASE -fsanitize=address,undefined,leak"
+LDFLAGS_ASANUB="$HARDEN_LDFLAGS"
+SANLIBS_ASANUB="-Wl,--no-as-needed -fsanitize=address,undefined,leak -Wl,--as-needed"
+
+CFLAGS_TSAN="$CFLAGS_DEBUG_BASE -fsanitize=thread"
+LDFLAGS_TSAN="$HARDEN_LDFLAGS -pthread"
+SANLIBS_TSAN="-Wl,--no-as-needed -fsanitize=thread -Wl,--as-needed"
 
 CFLAGS_RELEASE="-std=gnu2x -pthread -I\$(srcdir) -I\$(top_srcdir)/src \
  -Werror -Wshadow -W -Wmissing-prototypes \
- -Wformat-overflow -Woverflow -Wshift-overflow  \
+ -Wformat-overflow -Woverflow -Wshift-overflow \
  -O3 -DNDEBUG -Wextra -Wall -pedantic -Wno-long-long -Wno-inline \
  $HARDEN_CFLAGS"
 
 LDFLAGS_RELEASE="$HARDEN_LDFLAGS"
 
-if test "x$enable_debug" = "xyes"; then
-  CFLAGS="$CFLAGS_DEBUG"
-  LDFLAGS="$LDFLAGS_DEBUG"
+if test "x$enable_tsan" = "xyes"
+then :
 
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Building with ThreadSanitizer" >&5
+printf "%s\n" "$as_me: Building with ThreadSanitizer" >&6;}
+  CFLAGS="$CFLAGS_TSAN"
+  LDFLAGS="$LDFLAGS_TSAN"
+  LIBS="$LIBS $SANLIBS_TSAN"
+printf "%s\n" "#define TSAN_BUILD 1" >>confdefs.h
+
+
+else case e in #(
+  e)
+  if test "x$enable_debug" = "xyes"
+then :
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Building with ASan/UBSan/LSan" >&5
+printf "%s\n" "$as_me: Building with ASan/UBSan/LSan" >&6;}
+    CFLAGS="$CFLAGS_ASANUB"
+    LDFLAGS="$LDFLAGS_ASANUB"
+    LIBS="$LIBS $SANLIBS_ASANUB"
 printf "%s\n" "#define DEBUG_BUILD 1" >>confdefs.h
 
-  SAN_LIBS="-Wl,--no-as-needed -fsanitize=address,undefined,leak -Wl,--as-needed"
-  LIBS="$LIBS $SAN_LIBS"
 
-else
-  CFLAGS="$CFLAGS_RELEASE"
-  LDFLAGS="$LDFLAGS_RELEASE"
+else case e in #(
+  e)
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: Building release" >&5
+printf "%s\n" "$as_me: Building release" >&6;}
+    CFLAGS="$CFLAGS_RELEASE"
+    LDFLAGS="$LDFLAGS_RELEASE"
+   ;;
+esac
 fi
+ ;;
+esac
+fi
+
+
 
 
 

@@ -14,6 +14,7 @@
 #include <pthread.h>
 #include <sys/types.h>
 #include <pwd.h>
+#include <stdatomic.h>
 
 #include <meta_common.h>
 #include <cstring.h>
@@ -58,7 +59,7 @@ struct process_tag {
     struct service services[MAX_SERVICES];
     size_t nservices;
 
-    int shutting_down;
+    _Atomic bool shutting_down;
 
     /* The shutdown thread */
     pthread_t sdt;
@@ -80,7 +81,7 @@ process process_new(const char *appname)
         goto memerr;
     
     new->nservices = 0;
-    new->shutting_down = 0;
+    atomic_store_explicit(&new->shutting_down, false, memory_order_relaxed);
     return new;
 
 memerr:
@@ -174,7 +175,7 @@ static status_t set_signals_to_block(void)
 
 int process_shutting_down(process this)
 {
-    return this->shutting_down;
+    return atomic_load_explicit(&this->shutting_down, memory_order_relaxed);
 }
 
 // Write the pid to /var/run/appname.pid
@@ -214,41 +215,29 @@ static status_t write_pid(process this, pid_t pid)
     return success;
 }
 
-// This thread waits for SIGTERM. When received, this function will
-// call the shutdown function for the services we manage.
-//
-// Note that we write this thread's pid to /var/run/appname.pid so
-// we know which pid to terminate.
+// This thread waits for SIGTERM. 
 static void *shutdown_thread(void *arg)
 {
     sigset_t catch;
     int caught;
     process proc = arg;
-    pid_t my_pid;
-    size_t i;
 
     assert(proc != NULL);
 
-    // Since this is the thread to receive the signal, we save its pid.
-    // This is important under Linux, as each thread has its own pid.
-    // 20251007 update: This is no longer true. We now have gettid() which
-    // should do the same. Let's see if that's correct, shall we?
-    // "man gettid" for details and kernel versions. Start with "man getpid"
-    my_pid = gettid();
-    if (!write_pid(proc, my_pid)) {
-        warning("Unable to write pid %lu to the pid file.",
-            (unsigned long)my_pid);
-    }
+    pid_t my_pid = gettid();
+    if (!write_pid(proc, my_pid))
+        warning("Unable to write pid %lu to the pid file.", (unsigned long)my_pid);
 
     sigemptyset(&catch);
     sigaddset(&catch, SIGTERM);
 
     // Wait, wait, wait for SIGTERM 
     sigwait(&catch, &caught);
-    proc->shutting_down = 1;
+    atomic_store_explicit(&proc->shutting_down, true, memory_order_relaxed);
 
     /* Shut down all services we handle */
-    for (i = 0; i < proc->nservices; i++) {
+    // BUG/TODO: We cannot call shutdown before pthread_join! boa@20251017
+    for (size_t i = 0; i < proc->nservices; i++) {
         struct service *s = &proc->services[i];
         s->shutdown_func(s->object);
     }
@@ -256,7 +245,7 @@ static void *shutdown_thread(void *arg)
     return NULL;
 }
 
-static status_t handle_shutdown(process this)
+static status_t start_shutdown_thread(process this)
 {
     int err;
 
@@ -428,7 +417,7 @@ status_t process_start(process this, int fork_and_close)
 
     // Start shutdown thread before we do setuid() or chroot() to
     // be able to write to /var/run.
-    if (!handle_shutdown(this)) {
+    if (!start_shutdown_thread(this)) {
         process_run_undo_functions(this, NULL);
         return failure;
     }
@@ -535,6 +524,7 @@ int process_get_exitcode(process this, void *object)
 //
 
 struct test1 {
+    _Atomic bool shutting_down;
     int placeholder;
 };
 
@@ -560,6 +550,11 @@ static status_t test1_run(void *vthis)
 {
     struct test1 *this = vthis;
 
+    while (!atomic_load_explicit(&this->shutting_down, memory_order_relaxed)) {
+        struct timespec ts = { 0, 100000 };
+        nanosleep(&ts, NULL);
+    }
+
     this->placeholder = 2;
     printf("%s()\n", __func__);
     return success;
@@ -569,7 +564,7 @@ static status_t test1_shutdown(void *vthis)
 {
     struct test1 *this = vthis;
 
-    this->placeholder = 3;
+    atomic_store_explicit(&this->shutting_down, true, memory_order_relaxed);
     printf("%s()\n", __func__);
     return success;
 }
@@ -580,6 +575,7 @@ static status_t run_test1(void)
 
     process proc = process_new("test1");
     struct test1 *t1 = malloc(sizeof *t1);
+    atomic_store_explicit(&t1->shutting_down, false, memory_order_relaxed);
 
     printf("%s(): tid:%lu pid:%lu\n", __func__, (unsigned long)pthread_self(), (unsigned long)gettid());
     rc = process_add_object_to_start(proc, t1, test1_do, test1_undo,
@@ -598,18 +594,6 @@ static status_t run_test1(void)
     // before we do that. This is a lazy way to do things, but it makes
     // it possible to send the signal from within the process and doesn't
     // require the test framework to kill it.
-    //
-    // A thought: Do we really kill the correct tid/pid? We write this
-    // because killing by the shutdown_thread()'s pid doesn't seem to
-    // work as it used to. There are very old comments in the code about
-    // Linux specifics, and our error may be that tid == pid in 2025?
-    // Speculations, but let's find out.
-    //
-    // Finding out: getpid() returns the same pid for both threads. WTF?
-    // my shutdown thread has the same pid as any other thread. Kinda
-    // makes sense, but it's a change. When and why did it change? Let's 
-    // find out.
-    //
     sleep(1);
     stop_shutdown_thread(proc);
 

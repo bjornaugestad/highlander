@@ -277,43 +277,10 @@ status_t gensocket_set_reuse_addr(int fd)
 }
 
 
-/* Binds a socket to an address/port.
- * This part is a bit incorrect as we have already created a socket with
- * a specific protocol family, and here we bind it to the PF specified
- * in the services...
- *
- * TODO: Make it version agnostic and (later).
- */
-status_t gensocket_bind_inet(int fd, const char *hostname, int port)
+// Binds a socket to an address
+status_t gensocket_bind_inet(int fd, struct addrinfo *ai)
 {
-    struct hostent* host = NULL;
-    struct sockaddr_in my_addr;
-    socklen_t cb = (socklen_t)sizeof my_addr;
-
-    assert(fd >= 0);
-    assert(port > 0);
-
-    // TODO: s/gethostbyname/getaddrinfo/
-    if (hostname != NULL) {
-        if ((host = gethostbyname(hostname)) ==NULL) {
-            errno = h_errno; /* OBSOLETE? */
-            return failure;
-        }
-    }
-
-    memset(&my_addr, '\0', sizeof my_addr);
-    my_addr.sin_port = htons(port);
-
-    if (hostname == NULL) {
-        my_addr.sin_family = AF_INET;
-        my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    }
-    else {
-        my_addr.sin_family = host->h_addrtype;
-        my_addr.sin_addr.s_addr = ((struct in_addr*)host->h_addr)->s_addr;
-    }
-
-    if (bind(fd, (struct sockaddr *)&my_addr, cb) == -1)
+    if (bind(fd, ai->ai_addr, ai->ai_addrlen) == -1)
         return failure;
 
     return success;
