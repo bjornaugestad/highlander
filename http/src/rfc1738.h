@@ -12,7 +12,7 @@
 extern "C"
 #endif
 
-/* @file
+/* 
  * Implements encode and decode() functions for HTTP URL arguments
  * according to RFC 1738.
  *

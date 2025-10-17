@@ -15,13 +15,6 @@ struct gensocket_tag {
     int socktype;
     int fd; // As for now, 20251016, we get a copy from the sub-classes. 
     void *instance;
-
-    // Some function pointers we need.
-    status_t (*closefn)(void *instance);
-
-    status_t (*wait_for_data)(void *instance, int timeout);
-    status_t (*write)(void *instance, const char *s, size_t count, int timeout, int retries);
-    ssize_t  (*read)(void *instance, char *buf, size_t count, int timeout, int retries);
 };
 
 int socket_get_fd(socket_t this)
@@ -75,24 +68,10 @@ static socket_t create_instance(int socktype)
 
     assert(socktype == SOCKTYPE_TCP || socktype ==SOCKTYPE_SSL);
 
-    if ((p = malloc(sizeof *p)) == NULL)
+    if ((p = calloc(1, sizeof *p)) == NULL)
         return NULL;
 
     p->socktype = socktype;
-
-    // Set up the type-specific function pointers
-    if (socktype == SOCKTYPE_TCP) {
-        p->closefn = (typeof(p->closefn))tcpsocket_close;
-        p->wait_for_data = (typeof(p->wait_for_data))tcpsocket_wait_for_data;
-        p->write = (typeof(p->write))tcpsocket_write;
-        p->read = (typeof(p->read))tcpsocket_read;
-    }
-    else {
-        p->closefn = (typeof(p->closefn))sslsocket_close;
-        p->wait_for_data = (typeof(p->wait_for_data))sslsocket_wait_for_data;
-        p->write = (typeof(p->write))sslsocket_write;
-        p->read = (typeof(p->read))sslsocket_read;
-    }
 
     return p;
 }
@@ -184,7 +163,12 @@ status_t socket_close(socket_t p)
     assert(p != NULL);
     assert(p->instance != NULL);
 
-    status_t rc = p->closefn(p->instance);
+    status_t rc;
+    if (p->socktype == SOCKTYPE_TCP)
+        rc = tcpsocket_close(p->instance);
+    else
+        rc = sslsocket_close(p->instance);
+
     free(p);
     return rc;
 }
@@ -194,24 +178,43 @@ status_t socket_wait_for_data(socket_t p, int timeout)
     assert(p != NULL);
     assert(p->instance != NULL);
 
-    // TLS calls SSL_pending()!
-    return p->wait_for_data(p->instance, timeout);
+    status_t rc;
+    if (p->socktype == SOCKTYPE_TCP)
+        rc = tcpsocket_wait_for_data(p->instance, timeout);
+    else
+        rc = sslsocket_wait_for_data(p->instance, timeout);
+
+    return rc;
 }
 
-status_t socket_write(socket_t p, const char *s, size_t count, int timeout, int retries)
+status_t socket_write(socket_t p, const char *src, size_t count, int timeout, int retries)
 {
     assert(p != NULL);
     assert(p->instance != NULL);
+    assert(src != NULL);
 
-    return p->write(p->instance, s, count, timeout, retries);
+    status_t rc;
+    if (p->socktype == SOCKTYPE_TCP)
+        rc = tcpsocket_write(p->instance, src, count, timeout, retries);
+    else
+        rc = sslsocket_write(p->instance, src, count, timeout, retries);
+
+    return rc;
 }
 
 ssize_t socket_read(socket_t p, char *buf, size_t count, int timeout, int retries)
 {
     assert(p != NULL);
     assert(p->instance != NULL);
+    assert(buf != NULL);
 
-    return p->read(p->instance, buf, count, timeout, retries);
+    ssize_t rc;
+    if (p->socktype == SOCKTYPE_TCP)
+        rc = tcpsocket_read(p->instance, buf, count, timeout, retries);
+    else
+        rc = sslsocket_read(p->instance, buf, count, timeout, retries);
+
+    return rc;
 }
 
 status_t gensocket_set_nonblock(int fd)

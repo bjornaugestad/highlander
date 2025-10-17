@@ -872,6 +872,10 @@ status_t general_header_send_fields(general_header gh, connection c)
  */
 static status_t set_cache_control(general_header gh, const char *s, error e)
 {
+    assert(gh != NULL);
+    assert(s != NULL);
+    assert(e != NULL);
+
     /*
      * We have 2 types of cache-request-directives, with and
      * without a numeric argument. We ignore extensions for now.

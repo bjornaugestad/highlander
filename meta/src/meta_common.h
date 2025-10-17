@@ -109,13 +109,6 @@ typedef struct metastatus *status_t;
  */
 status_t fail(int cause)__attribute__((warn_unused_result));
 
-/*
- * We have our own x*alloc() version to avoid error checking
- */
-void *xmalloc(size_t size) __attribute__((malloc, returns_nonnull));
-void *xcalloc(size_t nmemb, size_t size) __attribute__((malloc, returns_nonnull));
-void *xrealloc(void *mem, size_t size);
-char *xstrdup(const char *src) __attribute__((malloc, returns_nonnull));
 
 #ifdef __cplusplus
 }

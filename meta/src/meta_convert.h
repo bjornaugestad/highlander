@@ -43,42 +43,49 @@ status_t todouble(const char *s, double *dest)
     __attribute__((warn_unused_result))
     __attribute__((nonnull(1, 2)));
 
+__attribute__((nonnull))
 static inline bool isint(const char *s)
 {
     int d;
     return toint(s, &d) != failure;
 }
 
+__attribute__((nonnull))
 static inline bool isuint(const char *s)
 {
     unsigned int d;
     return touint(s, &d) != failure;
 }
 
+__attribute__((nonnull))
 static inline bool issize_t(const char *s)
 {
     size_t d;
     return tosize_t(s, &d) != failure;
 }
 
+__attribute__((nonnull))
 static inline bool islong(const char *s)
 {
     long d;
     return tolong(s, &d) != failure;
 }
 
+__attribute__((nonnull))
 static inline bool isulong(const char *s)
 {
     unsigned long d;
     return toulong(s, &d) != failure;
 }
 
+__attribute__((nonnull))
 static inline bool isfloat(const char *s)
 {
     float d;
     return tofloat(s, &d) != failure;
 }
 
+__attribute__((nonnull))
 static inline bool isdouble(const char *s)
 {
     double d;
