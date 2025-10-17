@@ -40,11 +40,17 @@ static void parse_command_line(int argc, char *argv[])
 }
 int main(int argc, char *argv[])
 {
+    process p;
     http_server s;
     parse_command_line(argc, argv);
 
+    p = process_new("helloworld");
     s = http_server_new(m_servertype);
     http_server_set_port(s, 2000);
+
+    if (!http_server_start_via_process(p, s))
+       die("Internal error\n");
+
     if (!http_server_alloc(s))
         die("Could not allocate resources\n");
 
@@ -62,11 +68,20 @@ int main(int argc, char *argv[])
             die("Meh. Could not set private key\n");
     }
 
-    if (!http_server_get_root_resources(s))
-        die("Could not get root resources\n");
-
-    if (!http_server_start(s))
+    if (!process_start(p, 0))
         die("An error occured\n");
+
+    if (!process_wait_for_shutdown(p)) {
+        perror("process_wait_for_shutdown");
+        exit(4);
+    }
+
+    http_server_free(s);
+    process_free(p);
+
+
+    if (m_servertype == SOCKTYPE_SSL)
+        return !!openssl_exit();
 
     return 0;
 }

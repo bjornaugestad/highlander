@@ -1,0 +1,8 @@
+FILES="array_check bitset_check cache_check configfile_check convert_check cstring_check fifo_check list_check membuf_check meta_process_check miscfunc_check pair_check pool_check regex_check sampler_check slotbuf_check stack_check stringmap_check tcp_client_check tcp_server_check wlock_check"
+
+CMD="valgrind --show-leak-kinds=all --leak-check=full --track-origins=yes "
+
+for i in $FILES; do
+    echo $i
+    make $i && $CMD --log-file=$i.%p.log ./$i
+done

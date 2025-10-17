@@ -1,3 +1,8 @@
+// Simple echoserver, BUT the observant reader will notice that the
+// callback fn can be replaced with anything. In other words, one can
+// just write a new function to implement a new protocol.
+// boa@20251017
+
 #include <stdio.h>
 #include <unistd.h>
 
@@ -47,8 +52,6 @@ static void parse_command_line(int argc, char *argv[])
         }
     }
 }
-
-
 
 // Move to tcp_server later
 static X509 *cert_load(const char *path)
