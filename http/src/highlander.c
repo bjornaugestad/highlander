@@ -315,15 +315,12 @@ static status_t serviceConnection2(http_server srv, connection conn,
         // if (cbSent == 0)
             // return failure;
 
-        printf("%s():2.88\n", __func__);
         /* Did the user set the Connection header field to "close" */
         if (strcmp(response_get_connection(response), "close") == 0)
             return success;
 
-        printf("%s():2.9\n", __func__);
         if (!connection_is_persistent(conn))
             return success;
-        printf("%s():2.10\n", __func__);
 
         /*
          * NOTE: Her må/bør vi legge inn ny funksjonalitet:
@@ -375,23 +372,6 @@ void* serviceConnection(void* psa)
     http_response response = http_server_get_response(srv);
 
     status_t ok = serviceConnection2(srv, conn, request, response, e);
-
-#if 0
-    // BUG/TODO/WTF: boa@20251017
-    // If !ok and not tcpip error, we try to close connection.
-    // This doesn't cut it, does it? Perhaps it does, but we shouldn't
-    // really wonder here. The iserror "state machine" in serviceConnection2
-    // is poor at best.
-    //
-    // connection_close() does close the socket, but so does the threadpool's
-    // cleanup-fn. So double close? connection_discard() closes the socket too,
-    // but no problems there. I don't get it.
-    if (!ok && is_tcpip_error(e))
-        connection_discard(conn);
-    else if (!connection_close(conn))
-        warning("Could not close connection\n");
-
-#endif
 
     // Note that there's a possible race condition here. If 
     // serviceConnection2() recycled the objects just before it

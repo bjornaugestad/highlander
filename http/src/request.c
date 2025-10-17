@@ -1962,7 +1962,7 @@ int find_request_header(const char *name)
     // The TODO here is to support non-standard header fields. Not hard,
     // just add a hash table for name/value pairs, here as well as in response.c .
 
-    fprintf(stderr, "Could not find name: <%s>\n", name);
+    // fprintf(stderr, "Could not find name: <%s>\n", name);
     return -1;
 }
 
