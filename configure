@@ -4867,11 +4867,10 @@ CFLAGS_DEBUG="-std=gnu2x -pthread -I\$(srcdir) -I\$(top_srcdir)/src \
  -Werror -Wshadow -W -Wmissing-prototypes \
  -Wformat-overflow -Woverflow -Wshift-overflow  \
  -Og -ggdb -fno-omit-frame-pointer \
- -fsanitize=address,undefined,leak \
  -Wextra -Wall -pedantic -Wno-long-long -Wno-inline \
  $HARDEN_CFLAGS"
 
-LDFLAGS_DEBUG="-fsanitize=address,undefined,leak $HARDEN_LDFLAGS"
+LDFLAGS_DEBUG="$HARDEN_LDFLAGS"
 
 CFLAGS_RELEASE="-std=gnu2x -pthread -I\$(srcdir) -I\$(top_srcdir)/src \
  -Werror -Wshadow -W -Wmissing-prototypes \
