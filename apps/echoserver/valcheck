@@ -1,12 +1,12 @@
-# build with debug symbols: -g -O0
-valgrind --tool=memcheck \
-  --leak-check=full \
-  --show-leak-kinds=all \
-  --track-origins=yes \
-  --num-callers=50 \
-  --read-inline-info=yes \
-  --trace-children=yes \
-  --log-file=valgrind.%p.log \
-  ./echoserver $*
+echo "Checking for leaks with valgrind"
+valgrind --log-file=echoserver.%p.log --track-origins=yes --leak-check=full --show-leak-kinds=all ./echoserver  &
+sleep 2
+X=$(echo "hello" | nc localhost 3000)
+if test "x$X" != "xhello"; then
+    exit 1
+fi
 
-
+pid=$(cat echoserver.pid) || exit 1
+kill -TERM $pid
+sleep 3
+exit 0

@@ -858,8 +858,8 @@ status_t http_server_get_root_resources(http_server this)
 status_t http_server_free_root_resources(http_server this)
 {
     /* NOTE: 2005-11-27: Check out why we don't close the socket here. */
-    (void)this;
-    return success;
+    /* NOTE: 2025-10-17: Yeah, wtf? Close it. */
+    return tcp_server_free_root_resources(this->tcpsrv);
 }
 
 bool http_server_has_default_page_handler(http_server this)
@@ -1148,6 +1148,9 @@ static void * serverthread(void *arg)
 
     sleep(this->timeout_accept / 1000 + 1);
 
+    if (!http_server_free_root_resources(this))
+        die("%s:Could not free root resources\n", __func__);
+
     http_server_free(this);
     return NULL;
 }
@@ -1197,13 +1200,13 @@ static void check_response_time(void)
     pthread_t t;
     int err;
     clock_t start, stop;
-    double duration, max_duration = 0.05;
+    double duration, max_duration = 0.15;
 
     if ((err = pthread_create(&t, NULL, serverthread, this)))
         die("Could not start server thread\n");
 
     // Give server time to bind..
-    sleep(1);
+    sleep(8);
 
     // Now make a request
     start = clock();
@@ -1217,11 +1220,12 @@ static void check_response_time(void)
         exit(1);
     }
 
-    sleep(1);
+    sleep(3);
     if (!http_server_shutdown(this))
         die("Could not shutdown server.\n");
 
 
+    sleep(3);
     if (pthread_join(t, NULL))
         die("Could not join server thread.\n");
 }

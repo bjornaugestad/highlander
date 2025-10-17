@@ -162,14 +162,18 @@ int main(int argc, char *argv[])
     if (!tcp_server_init(srv))
         exit(2);
 
-    // New stuff. Verify that certs are OK.
-    const char *server_cert_chain = "pki/server/server_chain.pem";
-    const char *server_key = "pki/server/server.key";
 
-    verify_key_and_cert(server_key, server_cert_chain);
+    if (m_servertype == SOCKTYPE_SSL) {
+        // New stuff. Verify that certs are OK.
+        const char *server_cert_chain = "pki/server/server_chain.pem";
+        const char *server_key = "pki/server/server.key";
 
-    tcp_server_set_cert_chain_file(srv, server_cert_chain);
-    tcp_server_set_private_key(srv, server_key);
+        verify_key_and_cert(server_key, server_cert_chain);
+
+        tcp_server_set_cert_chain_file(srv, server_cert_chain);
+        tcp_server_set_private_key(srv, server_key);
+    }
+
     tcp_server_set_service_function(srv, fn, NULL);
     tcp_server_start_via_process(p, srv);
 
@@ -183,5 +187,8 @@ int main(int argc, char *argv[])
 
     tcp_server_free(srv);
     process_free(p);
-    return !!openssl_exit();
+    if (m_servertype == SOCKTYPE_SSL)
+        return !!openssl_exit();
+    else
+        return 0;
 }
