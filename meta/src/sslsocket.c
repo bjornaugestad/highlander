@@ -73,13 +73,6 @@ status_t sslsocket_poll_for(sslsocket this, int timeout, short poll_for)
     return status;
 }
 
-status_t sslsocket_wait_for_writability(sslsocket this, int timeout)
-{
-    assert(this != NULL);
-
-    return sslsocket_poll_for(this, timeout, POLLOUT);
-}
-
 status_t sslsocket_wait_for_data(sslsocket this, int timeout)
 {
     assert(this != NULL);

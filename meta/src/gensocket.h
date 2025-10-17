@@ -42,19 +42,11 @@ status_t socket_close(socket_t p)
 status_t socket_poll_for(socket_t p, int timeout, int polltype)
     __attribute__((warn_unused_result, nonnull));
 
+// Calls SSL_pending() in one impl
 status_t socket_wait_for_data(socket_t p, int timeout)
     __attribute__((warn_unused_result, nonnull));
 
-status_t socket_wait_for_writability(socket_t p, int timeout)
-    __attribute__((warn_unused_result, nonnull));
-
 status_t socket_write(socket_t p, const char *s, size_t count, int timeout, int retries)
-    __attribute__((warn_unused_result, nonnull));
-
-status_t socket_set_nonblock(socket_t p)
-    __attribute__((warn_unused_result, nonnull));
-
-status_t socket_clear_nonblock(socket_t p)
     __attribute__((warn_unused_result, nonnull));
 
 ssize_t  socket_read(socket_t p, char *buf, size_t count, int timeout, int retries)

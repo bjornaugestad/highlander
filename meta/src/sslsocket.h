@@ -36,9 +36,6 @@ status_t sslsocket_poll_for(sslsocket this, int timeout, short poll_for)
 status_t sslsocket_wait_for_data(sslsocket p, int timeout)
     __attribute__((warn_unused_result));
 
-status_t sslsocket_wait_for_writability(sslsocket p, int timeout)
-    __attribute__((warn_unused_result));
-
 status_t sslsocket_write(sslsocket p, const char *s, size_t count, int timeout, int retries)
     __attribute__((warn_unused_result));
 

@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <sys/poll.h>
 
 #include <gensocket.h>
 
@@ -19,10 +20,56 @@ struct gensocket_tag {
 
     status_t (*poll_for)(void *instance, int timeout, short polltype);
     status_t (*wait_for_data)(void *instance, int timeout);
-    status_t (*wait_for_writability)(void *instance, int timeout);
     status_t (*write)(void *instance, const char *s, size_t count, int timeout, int retries);
     ssize_t  (*read)(void *instance, char *buf, size_t count, int timeout, int retries);
 };
+
+/*
+ * This is a local helper function. It polls for some kind of event,
+ * which normally is POLLIN or POLLOUT.
+ * The function returns 1 if the event has occured, and 0 if an
+ * error occured. It set errno to EAGAIN if a timeout occured, and
+ * it maps POLLHUP and POLLERR to EPIPE, and POLLNVAL to EINVAL.
+ */
+status_t socket_poll_for(socket_t this, int timeout, int poll_for)
+{
+    struct pollfd pfd;
+    int rc;
+    status_t status = failure;
+
+    assert(this != NULL);
+    assert(this->fd >= 0);
+    assert(poll_for == POLLIN || poll_for == POLLOUT);
+    assert(timeout >= 0);
+
+    pfd.fd = this->fd;
+    pfd.events = poll_for;
+
+    /* NOTE: poll is XPG4, not POSIX */
+    rc = poll(&pfd, 1, timeout);
+    if (rc == 1) {
+        /* We have info in pfd */
+        if (pfd.revents & POLLHUP) {
+            errno = EPIPE;
+        }
+        else if (pfd.revents & POLLERR) {
+            errno = EPIPE;
+        }
+        else if (pfd.revents & POLLNVAL) {
+            errno = EINVAL;
+        }
+        else if ((pfd.revents & poll_for)  == poll_for) {
+            status = success;
+        }
+    }
+    else if (rc == 0) {
+        errno = EAGAIN;
+    }
+    else if (rc == -1) {
+    }
+
+    return status;
+}
 
 static socket_t create_instance(int socktype)
 {
@@ -40,7 +87,6 @@ static socket_t create_instance(int socktype)
         p->close = (typeof(p->close))tcpsocket_close;
         p->poll_for = (typeof(p->poll_for))tcpsocket_poll_for;
         p->wait_for_data = (typeof(p->wait_for_data))tcpsocket_wait_for_data;
-        p->wait_for_writability = (typeof(p->wait_for_writability))tcpsocket_wait_for_writability;
         p->write = (typeof(p->write))tcpsocket_write;
         p->read = (typeof(p->read))tcpsocket_read;
     }
@@ -48,7 +94,6 @@ static socket_t create_instance(int socktype)
         p->close = (typeof(p->close))sslsocket_close;
         p->poll_for = (typeof(p->poll_for))sslsocket_poll_for;
         p->wait_for_data = (typeof(p->wait_for_data))sslsocket_wait_for_data;
-        p->wait_for_writability = (typeof(p->wait_for_writability))sslsocket_wait_for_writability;
         p->write = (typeof(p->write))sslsocket_write;
         p->read = (typeof(p->read))sslsocket_read;
     }
@@ -148,28 +193,13 @@ status_t socket_close(socket_t p)
     return rc;
 }
 
-status_t socket_poll_for(socket_t p, int timeout, int polltype)
-{
-    assert(p != NULL);
-    assert(p->instance != NULL);
-
-    return p->poll_for(p->instance, timeout, polltype);
-}
-
 status_t socket_wait_for_data(socket_t p, int timeout)
 {
     assert(p != NULL);
     assert(p->instance != NULL);
 
+    // TLS calls SSL_pending()!
     return p->wait_for_data(p->instance, timeout);
-}
-
-status_t socket_wait_for_writability(socket_t p, int timeout)
-{
-    assert(p != NULL);
-    assert(p->instance != NULL);
-
-    return p->wait_for_writability(p->instance, timeout);
 }
 
 status_t socket_write(socket_t p, const char *s, size_t count, int timeout, int retries)
