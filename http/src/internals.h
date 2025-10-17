@@ -259,12 +259,6 @@ status_t parse_response_headerfield(
     http_response req,
     error e);
 
-int parse_multivalued_fields(
-    void *dest,
-    const char *value,
-    int(*set_func)(void *dest, const char *value, error e),
-    error e);
-
 /* Return an index in the entity header array,
  * or -1 if the field was not found. */
 int find_entity_header(const char *name);

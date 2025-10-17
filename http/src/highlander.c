@@ -152,13 +152,8 @@ static status_t send_disk_file(
 }
 
 /* Call the callback function for the page */
-status_t handle_dynamic(
-    connection conn,
-    http_server srv,
-    dynamic_page p,
-    http_request req,
-    http_response response,
-    error e)
+status_t handle_dynamic(connection conn, http_server srv, dynamic_page p,
+    http_request req, http_response response, error e)
 {
     int status = HTTP_200_OK;
     http_version version;
@@ -240,6 +235,12 @@ static int semantic_error(http_request request)
 static status_t serviceConnection2(http_server srv, connection conn,
     http_request request, http_response response, error e)
 {
+    assert(srv != NULL);
+    assert(conn != NULL);
+    assert(request != NULL);
+    assert(response != NULL);
+    assert(e != NULL);
+
     dynamic_page dp;
     size_t cbSent;
     int status, iserror = 0;
@@ -369,12 +370,18 @@ void* serviceConnection(void* psa)
     if (e == NULL)
         return NULL;
 
-    srv =  connection_arg2(conn);
+    srv = connection_arg2(conn);
     request = http_server_get_request(srv);
     request_set_defered_read(request, http_server_get_defered_read(srv));
     response = http_server_get_response(srv);
 
     ok = serviceConnection2(srv, conn, request, response, e);
+
+    // BUG/TODO/WTF: boa@20251017
+    // If !ok and not tcpip error, we try to close connection.
+    // This doesn't cut it, does it? Perhaps it does, but we shouldn't
+    // really wonder here. The iserror "state machine" in serviceConnection2
+    // is poor at best.
     if (!ok && is_tcpip_error(e))
         connection_discard(conn);
     else if (!connection_close(conn))

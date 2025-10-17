@@ -13,6 +13,8 @@
 /* Ungrouped handlers */
 static status_t parse_connection(connection conn, const char *value, error e)
 {
+    assert(conn != NULL);
+    assert(value != NULL);
     assert(value != NULL);
     UNUSED(e);
 
@@ -42,15 +44,15 @@ static const struct connection_mapper {
  * instead of the request object, as one connection may "live" longer
  * than the request.
  */
-status_t parse_request_headerfield(
-    connection conn,
-    const char *name,
-    const char *value,
-    http_request req,
-    error e)
+status_t parse_request_headerfield(connection conn, const char *name,
+    const char *value, http_request req, error e)
 {
-    size_t i, n;
     int idx;
+
+    assert(name != NULL);
+    assert(value != NULL);
+    assert(req != NULL);
+    assert(e != NULL);
 
     entity_header eh = request_get_entity_header(req);
     general_header gh = request_get_general_header(req);
@@ -65,7 +67,7 @@ status_t parse_request_headerfield(
 
     /* Now locate the handling function.
      * Go for the connection_map first as it is smaller */
-    n = sizeof connection_map / sizeof *connection_map;
+    size_t i, n = sizeof connection_map / sizeof *connection_map;
     for (i = 0; i < n; i++) {
         if (strcmp(name, connection_map[i].name) == 0)
             return connection_map[i].handler(conn, value, e);
@@ -79,13 +81,15 @@ status_t parse_request_headerfield(
     return success; /* Silently ignore the unknown field */
 }
 
-status_t parse_response_headerfield(
-    const char *name,
-    const char *value,
-    http_response req,
-    error e)
+status_t parse_response_headerfield(const char *name, const char *value,
+    http_response req, error e)
 {
     int idx;
+
+    assert(name != NULL);
+    assert(value != NULL);
+    assert(req != NULL);
+    assert(e != NULL);
 
     entity_header eh = response_get_entity_header(req);
     general_header gh = response_get_general_header(req);
@@ -105,38 +109,3 @@ status_t parse_response_headerfield(
     return success; /* Silently ignore the unknown field */
 }
 
-
-/* Helper function to have the algorithm one place only */
-int parse_multivalued_fields(
-    void *dest,
-    const char *value,
-    int(*set_func)(void* dest, const char *value, error e),
-    error e)
-{
-    const int sep = ',';
-    char buf[100];
-    char *s;
-
-    assert(dest != NULL);
-    assert(value != NULL);
-
-    while ((s = strchr(value, sep)) != NULL) {
-        /* The correct type would be ptrdiff_t,
-         * but -ansi -pedantic complains */
-        size_t span = (size_t)(s - value);
-        if (span + 1 > sizeof buf) {
-            /* We don't want buffer overflow... */
-            value = s + 1;
-            continue;
-        }
-
-        memcpy(buf, value, span);
-        buf[span] = '\0';
-        if (!set_func(dest, buf, e))
-            return 0;
-
-        value = s + 1;
-    }
-
-    return set_func(dest, value, e);
-}

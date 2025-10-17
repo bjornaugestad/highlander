@@ -1593,11 +1593,8 @@ status_t get_field_value(const char *src, char *dest, size_t destsize)
  * Input is normally "name: value"
  * as in Host: www.veryfast.com
  */
-static status_t parse_one_field(
-    connection conn,
-    http_request request,
-    const char *buf,
-    error e)
+static status_t parse_one_field(connection conn, http_request request,
+    const char *buf, error e)
 {
     char name[CCH_FIELDNAME_MAX + 1];
     char value[CCH_FIELDVALUE_MAX + 1];
@@ -1645,6 +1642,8 @@ static http_method get_method(const char *str)
         { "POST", METHOD_POST, }
     };
 
+    assert(str != NULL);
+
     size_t i, n = sizeof methods / sizeof *methods;
     http_method method = METHOD_UNKNOWN;
 
@@ -1668,6 +1667,8 @@ static http_version get_version(const char *s)
         { "HTTP/1.1", VERSION_11, }
     };
 
+    assert(s != NULL);
+
     http_version version = VERSION_UNKNOWN;
     size_t i, n = sizeof versions / sizeof *versions;
 
@@ -1680,7 +1681,6 @@ static http_version get_version(const char *s)
 
     return version;
 }
-
 
 static status_t
 parse_request_method(const char *line, http_request request, error e)
