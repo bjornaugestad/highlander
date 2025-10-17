@@ -6,6 +6,7 @@
 # d) stop the server
 # e) report the result
 
+echo "CWD=$PWD"
 
 FACIT="<html><head><title>Hello, world</title></head><body>Hello, world</body></html>"
 

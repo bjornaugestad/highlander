@@ -78,7 +78,7 @@ list find_new_files(const char *directories, cstring* patterns, size_t npatterns
         fileinfo fi = list_get(i);
         assert(fi != NULL);
         if (filecache_exists(g_filecache, fileinfo_alias(fi)))
-            i = list_delete(lst, i, (dtor)fileinfo_free);
+            i = list_delete(lst, i, fileinfo_freev);
         else
             i = list_next(i);
     }
@@ -86,7 +86,7 @@ list find_new_files(const char *directories, cstring* patterns, size_t npatterns
     return lst;
 
 err:
-    list_free(lst, (dtor)fileinfo_free);
+    list_free(lst, fileinfo_freev);
     return NULL;
 }
 
@@ -116,7 +116,7 @@ list find_modified_files(const char *directories, cstring* patterns, size_t npat
         if (!filecache_stat(g_filecache, fileinfo_alias(fi), &cachefile)
         || cachefile.st_mtime == diskfile->st_mtime)  {
             verbose(3, "File %s is not modified\n", fileinfo_alias(fi));
-            i = list_delete(lst, i, (dtor)fileinfo_free);
+            i = list_delete(lst, i, fileinfo_freev);
         }
         else  {
             verbose(2, "File %s is modified\n", fileinfo_alias(fi));
@@ -127,7 +127,7 @@ list find_modified_files(const char *directories, cstring* patterns, size_t npat
     return lst;
 
 err:
-    list_free(lst, (dtor)fileinfo_free);
+    list_free(lst, fileinfo_freev);
     return NULL;
 }
 
@@ -157,7 +157,7 @@ list find_deleted_files(const char *directories, cstring* patterns, size_t npatt
         /* Found no files at all. Not exactly an internal server error,
          * so we return an empty list.
          */
-        list_free(diskfiles, (dtor)fileinfo_free);
+        list_free(diskfiles, fileinfo_freev);
         return list_new();
 
     }
@@ -185,14 +185,14 @@ list find_deleted_files(const char *directories, cstring* patterns, size_t npatt
         goto err;
 
     verbose(3, "%s(): cleaning up\n", __func__);
-    list_free(diskfiles, (dtor)fileinfo_free);
+    list_free(diskfiles, fileinfo_freev);
     stringmap_free(deleted);
     stringmap_free(sm);
     verbose(3, "%s(): Returning file list with %zu entries\n", __func__, list_size(files));
     return files;
 
 err:
-    list_free(diskfiles, (dtor)fileinfo_free);
+    list_free(diskfiles, fileinfo_freev);
     list_free(files, free);
     stringmap_free(sm);
     stringmap_free(deleted);

@@ -4868,6 +4868,7 @@ CFLAGS_DEBUG="-std=gnu2x -pthread -I\$(srcdir) -I\$(top_srcdir)/src \
  -Wformat-overflow -Woverflow -Wshift-overflow  \
  -Og -ggdb -fno-omit-frame-pointer \
  -Wextra -Wall -pedantic -Wno-long-long -Wno-inline \
+ -fsanitize=address,undefined,leak \
  $HARDEN_CFLAGS"
 
 LDFLAGS_DEBUG="$HARDEN_LDFLAGS"
@@ -4885,6 +4886,9 @@ if test "x$enable_debug" = "xyes"; then
   LDFLAGS="$LDFLAGS_DEBUG"
 
 printf "%s\n" "#define DEBUG_BUILD 1" >>confdefs.h
+
+  SAN_LIBS="-Wl,--no-as-needed -fsanitize=address,undefined,leak -Wl,--as-needed"
+  LIBS="$LIBS $SAN_LIBS"
 
 else
   CFLAGS="$CFLAGS_RELEASE"

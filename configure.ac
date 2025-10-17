@@ -45,6 +45,7 @@ CFLAGS_DEBUG="-std=gnu2x -pthread -I\$(srcdir) -I\$(top_srcdir)/src \
  -Wformat-overflow -Woverflow -Wshift-overflow  \
  -Og -ggdb -fno-omit-frame-pointer \
  -Wextra -Wall -pedantic -Wno-long-long -Wno-inline \
+ -fsanitize=address,undefined,leak \
  $HARDEN_CFLAGS"
 
 LDFLAGS_DEBUG="$HARDEN_LDFLAGS"
@@ -61,6 +62,10 @@ if test "x$enable_debug" = "xyes"; then
   CFLAGS="$CFLAGS_DEBUG"
   LDFLAGS="$LDFLAGS_DEBUG"
   AC_DEFINE([DEBUG_BUILD],[1],[Debug build])
+  SAN_LIBS="-Wl,--no-as-needed -fsanitize=address,undefined,leak -Wl,--as-needed"
+  LIBS="$LIBS $SAN_LIBS"     dnl <- havner ALLER SIST i link-rekka
+  AC_SUBST([LIBS])
+
 else
   CFLAGS="$CFLAGS_RELEASE"
   LDFLAGS="$LDFLAGS_RELEASE"

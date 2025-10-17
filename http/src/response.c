@@ -930,7 +930,7 @@ void response_recycle(http_response p)
 
     /* Free cookies */
     if (p->cookies) {
-        list_free(p->cookies, (dtor)cookie_free);
+        list_free(p->cookies, cookie_freev);
         p->cookies = list_new();
     }
 

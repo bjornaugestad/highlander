@@ -145,7 +145,7 @@ static int show_new_files(http_request req, http_response page)
     rc = HTTP_200_OK;
 
 cleanup:
-    list_free(files, (dtor)fileinfo_free);
+    list_free(files, fileinfo_freev);
     return rc;
 }
 
@@ -181,7 +181,7 @@ static int show_modified_files(http_request req, http_response page)
     }
 
 cleanup:
-    list_free(files, (dtor)fileinfo_free);
+    list_free(files, fileinfo_freev);
     return rc;
 }
 
@@ -218,8 +218,8 @@ static int show_file_summary(http_request req, http_response page)
     /* Fallthrough is indended */
 
 cleanup:
-    list_free(mod, (dtor)fileinfo_free);
+    list_free(mod, fileinfo_freev);
     list_free(del, free);
-    list_free(new, (dtor)fileinfo_free);
+    list_free(new, fileinfo_freev);
     return rc;
 }

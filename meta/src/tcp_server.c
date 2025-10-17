@@ -608,6 +608,8 @@ status_t tcp_server_get_root_resources(tcp_server this)
     return success;
 }
 
+static status_t tcp_server_get_root_resourcesv(void *p) { return tcp_server_get_root_resources(p); }
+
 status_t tcp_server_start(tcp_server this)
 {
     status_t rc;
@@ -626,6 +628,8 @@ status_t tcp_server_start(tcp_server this)
     this->listener = NULL;
     return rc;
 }
+
+static status_t tcp_server_startv(void *p) { return tcp_server_start(p); }
 
 void tcp_server_set_port(tcp_server this, int port)
 {
@@ -696,25 +700,8 @@ status_t tcp_server_set_hostname(tcp_server this, const char *host)
     return success;
 }
 
-status_t tcp_server_start_via_process(process p, tcp_server s)
-{
-    return process_add_object_to_start(p, s,
-        (status_t(*)(void*))tcp_server_get_root_resources,
-        (status_t(*)(void*))tcp_server_free_root_resources,
-        (status_t(*)(void*))tcp_server_start,
-        (status_t(*)(void*))tcp_server_shutdown);
-}
-
-// 20251006: Something's fucked with SSL teardown. Also, are SSL resources
-// root resources? Hmm, we should probably move things around a bit,
-// probably to a dtor. For testing purposes, we use the (get|free)_root_resources
-// until teardown is correct. 
 status_t tcp_server_free_root_resources(tcp_server this)
 {
-    /* NOTE: 2005-11-27: Check out why we don't close the socket here. */
-    // NOTE: 2017-05-17: Maybe because it's the accept-socket? We should still close it, though
-    // NOTE: 2025-10-06: socket_close() now closes *and* frees the generic socket.
-    // NOTE: 2025-10-08: Perhaps not destroy server context before closing socket?
     assert(this != NULL);
     status_t rc = success;
     if (this->listener != NULL)
@@ -726,17 +713,30 @@ status_t tcp_server_free_root_resources(tcp_server this)
     return rc;
 }
 
-int tcp_server_shutting_down(tcp_server this)
-{
-    assert(this != NULL);
-    return this->shutting_down;
-}
+static status_t tcp_server_free_root_resourcesv(void *p) { return tcp_server_free_root_resources(p); }
 
 status_t tcp_server_shutdown(tcp_server this)
 {
     assert(this != NULL);
     this->shutting_down = 1;
     return success;
+}
+static status_t tcp_server_shutdownv(void *p) { return tcp_server_shutdown(p); }
+
+
+status_t tcp_server_start_via_process(process p, tcp_server s)
+{
+    return process_add_object_to_start(p, s,
+        tcp_server_get_root_resourcesv,
+        tcp_server_free_root_resourcesv,
+        tcp_server_startv,
+        tcp_server_shutdownv);
+}
+
+int tcp_server_shutting_down(tcp_server this)
+{
+    assert(this != NULL);
+    return this->shutting_down;
 }
 
 unsigned long tcp_server_sum_blocked(tcp_server this)

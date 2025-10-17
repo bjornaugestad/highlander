@@ -71,6 +71,7 @@ fileinfo fileinfo_new(void)
     __attribute__((malloc));
 
 void fileinfo_free(fileinfo p);
+static inline void fileinfo_freev(void *p) { fileinfo_free(p); }
 
 const struct stat* fileinfo_stat(fileinfo p)
     __attribute__((warn_unused_result))

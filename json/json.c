@@ -108,15 +108,18 @@ struct json_parser {
 };
 
 static void value_free(struct value *p);
+static void value_freev(void *p) { value_freev(p); }
 
 static void object_free(struct object *p)
 {
-if (p != NULL) {
-    free(p->name);
-    value_free(p->value);
-    free(p);
+    if (p != NULL) {
+        free(p->name);
+        value_free(p->value);
+        free(p);
+    }
 }
-}
+
+static inline void object_freev(void *p) { object_free(p); }
 
 static void value_free(struct value *p)
 {
@@ -124,11 +127,11 @@ if (p == NULL)
     return;
 
 if (p->type == VAL_ARRAY)
-    list_free(p->v.aval, (dtor)value_free);
+    list_free(p->v.aval, value_freev);
 else if (p->type == VAL_QSTRING)
     free(p->v.sval);
 else if (p->type == VAL_OBJECT)
-    list_free(p->v.oval, (dtor)object_free);
+    list_free(p->v.oval, object_freev);
 
 free(p);
 }
@@ -787,7 +790,7 @@ static struct value *accept_array_elements(struct json_parser *p)
     // fail18: Can't nest too deep.
     p->jp_buf.narrays++;
     if (p->jp_buf.narrays > MAX_ARRAY_NESTING) {
-        list_free(lst, (dtor)value_free);
+        list_free(lst, value_freev);
         return NULL;
     }
 
@@ -810,7 +813,7 @@ static struct value *accept_array_elements(struct json_parser *p)
 
     // Note that we do need to be at token ARRAY END
     if (!accept(p, TOK_ARRAYEND)) {
-        list_free(lst, (dtor)value_free);
+        list_free(lst, value_freev);
         return NULL;
     }
     p->jp_buf.narrays--;
@@ -818,7 +821,7 @@ static struct value *accept_array_elements(struct json_parser *p)
     // handle fail4.json: The number of commas should equal
     // the number of values minus one.
     if (nvalues > 0 && nvalues - ncommas != 1) {
-        list_free(lst, (dtor)value_free);
+        list_free(lst, value_freev);
         return NULL;
     }
 
@@ -928,19 +931,19 @@ static list accept_objects(struct json_parser *src)
 
     if (ncommas > 0 && nobjects - ncommas != 1) {
         // too many commas.
-        list_free(result, (dtor)object_free);
+        list_free(result, object_freev);
         return NULL;
     }
 
     if (!accept(src, TOK_OBJECTEND)) {
-        list_free(result, (dtor)object_free);
+        list_free(result, object_freev);
         return NULL;
     }
 
     return result;
 
 enomem:
-    list_free(result, (dtor)object_free);
+    list_free(result, object_freev);
     object_free(obj);
     return NULL;
 }

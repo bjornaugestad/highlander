@@ -40,7 +40,7 @@ static size_t reload_cache(void)
     return files;
 
 err:
-    list_free(lst, (dtor)fileinfo_free);
+    list_free(lst, fileinfo_freev);
     return 0;
 }
 

@@ -231,7 +231,7 @@ static void http_server_free_request_pool(http_server this)
 {
     assert(this != NULL);
 
-    pool_free(this->requests, (dtor)request_free);
+    pool_free(this->requests, request_freev);
     this->requests = NULL;
 }
 
@@ -239,7 +239,7 @@ static void http_server_free_response_pool(http_server this)
 {
     assert(this != NULL);
 
-    pool_free(this->responses, (dtor)response_free);
+    pool_free(this->responses, response_freev);
     this->responses = NULL;
 }
 
@@ -292,7 +292,7 @@ static status_t http_server_alloc_request_pool(http_server this)
     for (i = 0; i < this->worker_threads; i++) {
         if ((r = request_new()) == NULL) {
             /* Free any prev. allocated */
-            pool_free(this->requests, (dtor)request_free);
+            pool_free(this->requests, request_freev);
             this->requests = NULL;
             return failure;
         }
@@ -319,7 +319,7 @@ static status_t http_server_alloc_response_pool(http_server this)
     for (i = 0; i < this->worker_threads; i++) {
         if ((r = response_new()) == NULL) {
             /* Free any prev. allocated */
-            pool_free(this->responses, (dtor)response_free);
+            pool_free(this->responses, response_freev);
             this->responses = NULL;
             return failure;
         }
@@ -382,6 +382,8 @@ status_t http_server_start(http_server this)
 
     return success;
 }
+static status_t http_server_startv(void *p) { return http_server_start(p); }
+
 
 status_t http_server_add_page(
     http_server this,
@@ -841,6 +843,7 @@ status_t http_server_shutdown(http_server this)
     tcp_server_shutdown(this->tcpsrv);
     return success;
 }
+static status_t http_server_shutdownv(void *p) { return http_server_shutdown(p); }
 
 status_t http_server_get_root_resources(http_server this)
 {
@@ -854,6 +857,7 @@ status_t http_server_get_root_resources(http_server this)
 
     return success;
 }
+static status_t http_server_get_root_resourcesv(void *p) { return http_server_get_root_resources(p); }
 
 status_t http_server_free_root_resources(http_server this)
 {
@@ -861,6 +865,7 @@ status_t http_server_free_root_resources(http_server this)
     /* NOTE: 2025-10-17: Yeah, wtf? Close it. */
     return tcp_server_free_root_resources(this->tcpsrv);
 }
+static status_t http_server_free_root_resourcesv(void *p) { return http_server_free_root_resources(p); }
 
 bool http_server_has_default_page_handler(http_server this)
 {
@@ -896,10 +901,10 @@ status_t http_server_start_via_process(process p, http_server this)
     return process_add_object_to_start(
         p,
         this,
-        (status_t(*)(void*))http_server_get_root_resources,
-        (status_t(*)(void*))http_server_free_root_resources,
-        (status_t(*)(void*))http_server_start,
-        (status_t(*)(void*))http_server_shutdown);
+        http_server_get_root_resourcesv,
+        http_server_free_root_resourcesv,
+        http_server_startv,
+        http_server_shutdownv);
 }
 
 status_t http_server_configure(http_server this, process p, const char *filename)

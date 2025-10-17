@@ -361,6 +361,7 @@ int request_get_defered_read(http_request req)
 http_request request_new(void) __attribute__((malloc, warn_unused_result));
 
 void request_free(http_request p);
+static inline void request_freev(void *pv) { request_free(pv); }
 
 status_t request_set_entity(http_request r, void *entity, size_t cb)
     __attribute__((nonnull, warn_unused_result));
@@ -485,6 +486,8 @@ entity_header request_get_entity_header(http_request r) __attribute__((nonnull, 
 http_response response_new(void) __attribute__((malloc));
 
 void response_free(http_response response);
+static inline void response_freev(void *p) { response_free(p); }
+
 void response_recycle(http_response response)
     __attribute__((nonnull));
 void response_set_version(http_response response, http_version version)

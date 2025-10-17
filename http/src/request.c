@@ -121,7 +121,7 @@ void request_free(http_request p)
     }
 
     if (p->cookies != NULL) {
-        list_free(p->cookies, (dtor)cookie_free);
+        list_free(p->cookies, cookie_freev);
         p->cookies = NULL;
     }
 
@@ -162,7 +162,7 @@ void request_recycle(http_request p)
     }
 
     if (p->cookies != NULL) {
-        list_free(p->cookies, (dtor)cookie_free);
+        list_free(p->cookies, cookie_freev);
         p->cookies = NULL;
     }
 
