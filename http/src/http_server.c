@@ -874,7 +874,6 @@ bool http_server_has_default_page_handler(http_server this)
  * NOTE: This is slow, as we allocate and free memory for each request. :-(
  */
 status_t http_server_run_default_page_handler(
-    connection conn,
     http_server this,
     http_request request,
     http_response response,
@@ -888,7 +887,7 @@ status_t http_server_run_default_page_handler(
     if ((p = dynamic_new(uri, this->default_handler, NULL)) == NULL)
         return set_os_error(e, ENOMEM);
 
-    rc = handle_dynamic(conn, this, p, request, response, e);
+    rc = handle_dynamic(this, p, request, response, e);
     dynamic_free(p);
     return rc;
 }

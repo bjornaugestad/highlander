@@ -54,12 +54,8 @@ struct http_request_tag {
     enum http_method method;
     enum http_version version;
 
-    /* We allow others to access our connection, but DO NOT use it ourselves */
-    connection external_conn;
-
-    /* Set to true if we want do delay the read of posted content,
-     * and to false if we want to read it automagically. Default is false
-     */
+    // Set to true if we want do delay the read of posted content,
+    // and to false if we want to read it automagically. Default is false
     int defered_read;
 
     general_header general_header;
@@ -169,8 +165,6 @@ void request_recycle(http_request p)
         list_free(p->cookies, (dtor)cookie_free);
         p->cookies = NULL;
     }
-
-    p->external_conn = NULL;
 
     general_header_recycle(p->general_header);
     entity_header_recycle(p->entity_header);
@@ -1414,23 +1408,23 @@ static status_t send_if_range(http_request r, connection c)
     return http_send_field(c, "If-Range: ", r->if_range);
 }
 
-static status_t send_if_modified_since(http_request r, connection c)
+static status_t send_if_modified_since(http_request r, connection conn)
 {
     assert(r != NULL);
-    assert(c != NULL);
+    assert(conn != NULL);
 
-    return http_send_date(c, "If-Modified-Since: ", r->if_modified_since);
+    return http_send_date(conn, "If-Modified-Since: ", r->if_modified_since);
 }
 
-static status_t send_if_unmodified_since(http_request r, connection c)
+static status_t send_if_unmodified_since(http_request r, connection conn)
 {
     assert(r != NULL);
-    assert(c != NULL);
+    assert(conn != NULL);
 
-    return http_send_date(c, "If-Unmodified-Since: ", r->if_unmodified_since);
+    return http_send_date(conn, "If-Unmodified-Since: ", r->if_unmodified_since);
 }
 
-static status_t request_send_fields(http_request r, connection c)
+static status_t request_send_fields(http_request r, connection conn)
 {
     static const struct {
         flagtype flag;
@@ -1469,7 +1463,7 @@ static status_t request_send_fields(http_request r, connection c)
 
     for (i = 0; i < nelem; i++) {
         if (request_flag_is_set(r, fields[i].flag))
-            if (!fields[i].func(r, c))
+            if (!fields[i].func(r, conn))
                 return failure;
     }
 
@@ -1477,40 +1471,39 @@ static status_t request_send_fields(http_request r, connection c)
 }
 
 
-status_t request_send(http_request r, connection c, error e)
+status_t request_send(http_request r, connection conn, error e)
 {
     assert(r != NULL);
-    assert(c != NULL);
+    assert(conn != NULL);
     (void)e; /* for now, we may want to add semantic checks later */
 
-    if (!send_request_line(r, c, e))
+    if (!send_request_line(r, conn, e))
         return failure;
 
-    if (!general_header_send_fields(r->general_header, c))
+    if (!general_header_send_fields(r->general_header, conn))
         return failure;
 
-    if (!entity_header_send_fields(r->entity_header, c))
+    if (!entity_header_send_fields(r->entity_header, conn))
         return failure;
 
     /* Now send request fields */
-    if (!request_send_fields(r, c))
+    if (!request_send_fields(r, conn))
         return failure;
 
     /* Now terminate the request */
-    if (!connection_write(c, "\r\n", 2))
+    if (!connection_write(conn, "\r\n", 2))
         return failure;
 
-    if (!connection_flush(c))
+    if (!connection_flush(conn))
         return failure;
 
     return success;
 }
 
-static status_t read_posted_content(
-    size_t max_post_content,
-    connection conn,
-    http_request req,
-    error e)
+// NOTE: one could give the allocated mem to the request object
+// instead of making a copy._could_, not _must_ or _should_
+static status_t read_posted_content(size_t max_post_content,
+    connection conn, http_request req, error e)
 {
     void *buf;
     size_t content_len;
@@ -1549,13 +1542,15 @@ static status_t read_posted_content(
 
 status_t get_field_name(const char *src, char *dest, size_t destsize)
 {
-    char *s;
-    size_t span;
+    assert(src != NULL);
+    assert(dest != NULL);
+    assert(destsize > 0);
 
-    if ((s = strchr(src, ':')) == NULL)
+    const char *s = strchr(src, ':');
+    if (s == NULL)
         return failure;
 
-    span = (size_t)(s - src);
+    size_t span = (size_t)(s - src);
     if (span + 1 >= destsize)
         return failure;
 
@@ -1569,10 +1564,12 @@ status_t get_field_name(const char *src, char *dest, size_t destsize)
  */
 status_t get_field_value(const char *src, char *dest, size_t destsize)
 {
+    assert(src != NULL);
+    assert(dest != NULL);
+    assert(destsize > 0);
+
     /* Locate separator as in name: value */
     const char *s = strchr(src, ':');
-    size_t len;
-
     if (s == NULL)
         return failure;
 
@@ -1581,7 +1578,7 @@ status_t get_field_value(const char *src, char *dest, size_t destsize)
     while (isspace((int)*s))
         s++;
 
-    len = strlen(s);
+    size_t len = strlen(s);
     if (len >= destsize)
         return failure;
 
@@ -1888,7 +1885,6 @@ parse_request_version(const char *line, http_request request, error e)
 
 
 /*
- * Returns > 0 if request line wasn't understood, 0 if OK
  * Input is Method SP Request-URI SP [ HTTP-Version ]
  * The CRLF has been removed.
  * See §5.1 for details.
@@ -1897,6 +1893,10 @@ parse_request_version(const char *line, http_request request, error e)
 static status_t
 parse_request_line(const char *line, http_request request, error e)
 {
+    assert(line != NULL);
+    assert(request != NULL);
+    assert(e != NULL);
+
     if (parse_request_method(line, request, e)
     && parse_request_uri(line, request, e)
     && parse_request_version(line, request, e))
@@ -2002,11 +2002,8 @@ read_request_line(connection conn, http_request request, error e)
  * We now read all header fields. Check method
  * to see if we need to read an entity body as well.
  */
-status_t request_receive(
-    http_request request,
-    connection conn,
-    size_t max_post_content,
-    error e)
+status_t request_receive(http_request request, connection conn,
+    size_t max_post_content, error e)
 {
     if (!read_request_line(conn, request, e))
         return failure;
@@ -2021,21 +2018,6 @@ status_t request_receive(
         return read_posted_content(max_post_content, conn, request, e);
 
     return success;
-}
-
-void request_set_connection(http_request request, connection conn)
-{
-    assert(request != NULL);
-    assert(conn != NULL);
-
-    request->external_conn = conn;
-}
-
-connection request_get_connection(http_request request)
-{
-    assert(request != NULL);
-
-    return request->external_conn;
 }
 
 void request_set_defered_read(http_request req, int flag)

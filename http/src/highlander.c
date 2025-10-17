@@ -152,7 +152,7 @@ static status_t send_disk_file(
 }
 
 /* Call the callback function for the page */
-status_t handle_dynamic(connection conn, http_server srv, dynamic_page p,
+status_t handle_dynamic(http_server srv, dynamic_page p,
     http_request req, http_response response, error e)
 {
     int status = HTTP_200_OK;
@@ -166,14 +166,6 @@ status_t handle_dynamic(connection conn, http_server srv, dynamic_page p,
         return set_http_error(e, HTTP_406_NOT_ACCEPTABLE);
     }
 
-    /* NOTE/TODO: This seems to be a good place to add authorization stuff.
-     * Check if the request has authorization info and send 401 if not.
-     * We don't have to keep state as the next request will
-     * have all autorization stuff needed to keep going.
-     * boa 20080125.
-     * PS: This comment is added because Tandberg wants me to add support
-     * for RFC2617 HTTP Authentication */
-    request_set_connection(req, conn);
     response_set_version(response, version);
     response_set_last_modified(response, time(NULL));
 
@@ -250,23 +242,22 @@ static status_t serviceConnection2(http_server srv, connection conn,
         if (!data_on_socket(conn))
             return set_tcpip_error(e, EAGAIN);
 
-        /* Were we able to read a valid http request?
-         * If not, what is the cause of the error? If it is a http
-         * protocol error, we try to send a response back to the client
-         * and close the connection. If it is anything else(tcp/ip, os)
-         * we stop processing.  */
+        // Were we able to read a valid http request?
+        // If not, what is the cause of the error? If it is a http
+        // protocol error, we try to send a response back to the client
+        // and close the connection. If it is anything else(tcp/ip, os)
+        // we stop processing.
         iserror = !request_receive(request, conn, max_posted_content, e);
 
-        /* So far, so good. We have a valid HTTP request.
-         * Now see if we can locate a page handler function for it.
-         * If we do, call it. If not, see if it on disk or if the
-         * http_server has a default page handler. If neither is true,
-         * then the page was not found(404).
-         */
+        // So far, so good. We have a valid HTTP request.
+        // Now see if we can locate a page handler function for it.
+        // If we do, call it. If not, see if it on disk or if the
+        // http_server has a default page handler. If neither is true,
+        // then the page was not found(404).
         if (iserror)
             ;
         else if ((dp = http_server_lookup(srv, request)) != NULL) {
-            if (!handle_dynamic(conn, srv, dp, request, response, e))
+            if (!handle_dynamic(srv, dp, request, response, e))
                 iserror = 1;
         }
         else if (http_server_can_read_files(srv)) {
@@ -274,14 +265,17 @@ static status_t serviceConnection2(http_server srv, connection conn,
                 iserror = 1;
         }
         else if (http_server_has_default_page_handler(srv)) {
-            if (!http_server_run_default_page_handler(conn, srv, request, response, e))
+            if (!http_server_run_default_page_handler(srv, request, response, e))
                 iserror = 1;
         }
         else {
-            /* We didn't find the page */
+            // We didn't find the page
             response_set_status(response, HTTP_404_NOT_FOUND);
             if (!response_set_connection(response, "close"))
                 return failure;
+
+            // We consider 404 an error and close the connection
+            iserror = 1;
         }
 
         if (iserror) {
@@ -358,24 +352,28 @@ static status_t serviceConnection2(http_server srv, connection conn,
     return success;
 }
 
+// This function handles a new connection. The connection itself has
+// been accepted by another thread and added to the work queue. This
+// thread is a worker thread in a worker pool and services the connection.
+//
+// Things get tricky here, as we must deal with various conditions,
+// like protocol versions and semantics(persistence vs close), and
+// a myriad of error conditions.
 void* serviceConnection(void* psa)
 {
-    connection conn = psa;
-    status_t ok;
-    http_server srv;
-    http_request request;
-    http_response response;
+    assert(psa != NULL);
 
+    connection conn = psa;
     error e = error_new();
     if (e == NULL)
         return NULL;
 
-    srv = connection_arg2(conn);
-    request = http_server_get_request(srv);
+    http_server srv = connection_arg2(conn);
+    http_request request = http_server_get_request(srv);
     request_set_defered_read(request, http_server_get_defered_read(srv));
-    response = http_server_get_response(srv);
+    http_response response = http_server_get_response(srv);
 
-    ok = serviceConnection2(srv, conn, request, response, e);
+    status_t ok = serviceConnection2(srv, conn, request, response, e);
 
     // BUG/TODO/WTF: boa@20251017
     // If !ok and not tcpip error, we try to close connection.
@@ -387,6 +385,10 @@ void* serviceConnection(void* psa)
     else if (!connection_close(conn))
         warning("Could not close connection\n");
 
+    // Note that there's a possible race condition here. If 
+    // serviceConnection2() recycled the objects just before it
+    // returns with success, like if server shuts down at the same time,
+    // then we may try to recycle the same objects twice. Not ideal...
     http_server_recycle_request(srv, request);
     http_server_recycle_response(srv, response);
 

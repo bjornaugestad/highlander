@@ -19,35 +19,24 @@ extern "C" {
 
 #define UNUSED(x)	(void)x
 
-/*
- * Params are here parameters to the uri
- */
+// Params are here parameters to the uri
 #define CCH_PARAMNAME_MAX	100
 #define CCH_PARAMVALUE_MAX	500
 
-/*
- * Max len of a request keyword, e.g. GET, HEAD
- */
+// Max len of a request keyword, e.g. GET, HEAD
 #define CCH_METHOD_MAX	256
 
-/*
- * Max length of version part, HTTP/x.x . 20 should do for a while...
- */
+// Max length of version part, HTTP/x.x . 20 should do for a while...
 #define CCH_VERSION_MAX	20
 
-/*
- * Max len of requested URI
- * This includes any parameters given,
- * like foo.html?bar=foobar&f=asdasdasdasdasdasd
- * I guess this can become very large?
- */
+// Max len of requested URI
+// This includes any parameters given,
+// like foo.html?bar=foobar&f=asdasdasdasdasdasd
+// I guess this can become very large?
 #define CCH_URI_MAX 10240
 
-/*
- *
- * The max # of characters for a http header fieldname.
- * The longest in http 1.1 is If-Unmodified-Since which is 19 bytes (+ 1 for '\0')
- */
+// The max # of characters for a http header fieldname.
+// The longest in http 1.1 is If-Unmodified-Since which is 19 bytes (+ 1 for '\0')
 #define CCH_FIELDNAME_MAX	30
 #define CCH_FIELDVALUE_MAX	10000
 
@@ -88,7 +77,9 @@ void http_server_add_logentry(http_server srv, connection conn, http_request req
 /* Handles the default page */
 bool http_server_has_default_page_handler(http_server s);
 
-status_t http_server_run_default_page_handler(connection conn, http_server s, http_request request, http_response response, error e);
+status_t http_server_run_default_page_handler(http_server s,
+    http_request request, http_response response, error e);
+
 status_t http_send_field(connection conn, const char *name, cstring value);
 status_t http_send_date(connection conn, const char *name, time_t value);
 status_t http_send_ulong(connection conn, const char *name, unsigned long value);
@@ -118,21 +109,14 @@ page_attribute attribute_dup(page_attribute a);
 void cookie_free(cookie c);
 
 time_t parse_rfc822_date(const char *s);
-status_t send_status_code(
-    connection conn,
-    int status_code,
+status_t send_status_code(connection conn, int status_code,
     http_version version);
 
 int http_status_code(int error);
 
 
-status_t handle_dynamic(
-    connection conn,
-    http_server srv,
-    dynamic_page p,
-    http_request req,
-    http_response response,
-    error e);
+status_t handle_dynamic(http_server srv, dynamic_page p,
+    http_request req, http_response response, error e);
 
 general_header general_header_new(void);
 void general_header_free(general_header p);
@@ -245,19 +229,11 @@ bool entity_header_content_type_isset(entity_header eh);
 bool entity_header_expires_isset(entity_header eh);
 bool entity_header_last_modified_isset(entity_header eh);
 
-void request_set_connection(http_request req, connection c);
-status_t parse_request_headerfield(
-    connection conn,
-    const char *fieldname,
-    const char *value,
-    http_request req,
-    error e);
+status_t parse_request_headerfield(connection conn, const char *fieldname,
+    const char *value, http_request req, error e);
 
-status_t parse_response_headerfield(
-    const char *name,
-    const char *value,
-    http_response req,
-    error e);
+status_t parse_response_headerfield(const char *name, const char *value,
+    http_response req, error e);
 
 /* Return an index in the entity header array,
  * or -1 if the field was not found. */

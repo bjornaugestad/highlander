@@ -351,9 +351,6 @@ int cookie_get_secure(cookie c)
 int cookie_get_max_age(cookie c)
     __attribute__((nonnull, warn_unused_result));
 
-connection request_get_connection(http_request req)
-    __attribute__((nonnull, warn_unused_result));
-
 // HTTP Request
 void request_set_defered_read(http_request req, int flag)
     __attribute__((nonnull));
