@@ -18,31 +18,28 @@ struct gensocket_tag {
     // Some function pointers we need.
     status_t (*close)(void *instance);
 
-    status_t (*poll_for)(void *instance, int timeout, short polltype);
     status_t (*wait_for_data)(void *instance, int timeout);
     status_t (*write)(void *instance, const char *s, size_t count, int timeout, int retries);
     ssize_t  (*read)(void *instance, char *buf, size_t count, int timeout, int retries);
 };
 
-/*
- * This is a local helper function. It polls for some kind of event,
- * which normally is POLLIN or POLLOUT.
- * The function returns 1 if the event has occured, and 0 if an
- * error occured. It set errno to EAGAIN if a timeout occured, and
- * it maps POLLHUP and POLLERR to EPIPE, and POLLNVAL to EINVAL.
- */
-status_t socket_poll_for(socket_t this, int timeout, int poll_for)
+int socket_get_fd(socket_t this)
+{
+    assert(this != NULL);
+    return this->fd;
+}
+
+status_t socket_poll_for(int fd, int timeout, int poll_for)
 {
     struct pollfd pfd;
     int rc;
     status_t status = failure;
 
-    assert(this != NULL);
-    assert(this->fd >= 0);
+    assert(fd >= 0);
     assert(poll_for == POLLIN || poll_for == POLLOUT);
     assert(timeout >= 0);
 
-    pfd.fd = this->fd;
+    pfd.fd = fd;
     pfd.events = poll_for;
 
     /* NOTE: poll is XPG4, not POSIX */
@@ -85,14 +82,12 @@ static socket_t create_instance(int socktype)
     // Set up the type-specific function pointers
     if (socktype == SOCKTYPE_TCP) {
         p->close = (typeof(p->close))tcpsocket_close;
-        p->poll_for = (typeof(p->poll_for))tcpsocket_poll_for;
         p->wait_for_data = (typeof(p->wait_for_data))tcpsocket_wait_for_data;
         p->write = (typeof(p->write))tcpsocket_write;
         p->read = (typeof(p->read))tcpsocket_read;
     }
     else {
         p->close = (typeof(p->close))sslsocket_close;
-        p->poll_for = (typeof(p->poll_for))sslsocket_poll_for;
         p->wait_for_data = (typeof(p->wait_for_data))sslsocket_wait_for_data;
         p->write = (typeof(p->write))sslsocket_write;
         p->read = (typeof(p->read))sslsocket_read;

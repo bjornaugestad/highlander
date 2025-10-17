@@ -32,16 +32,6 @@ int sslsocket_get_fd(sslsocket p)
     return p->fd;
 }
 
-
-/*
- * This is a helper function. It polls for some kind of event,
- * which normally is POLLIN or POLLOUT.
- * 
- * It set errno to EAGAIN if a timeout occured, and
- * it maps POLLHUP and POLLERR to EPIPE, and POLLNVAL to EINVAL.
- *
- * TODO? SSL fuckery with WANT_READ/WRITE?
- */
 status_t sslsocket_poll_for(sslsocket this, int timeout, short poll_for)
 {
     assert(this != NULL);
@@ -82,11 +72,9 @@ status_t sslsocket_wait_for_data(sslsocket this, int timeout)
     if (SSL_pending(this->ssl) > 0)
         return success;
 
-    return sslsocket_poll_for(this, timeout, POLLIN);
+    return socket_poll_for(this->fd, timeout, POLLIN);
 }
 
-// 20251005: TODO: Rewrite to handle SSL requests for read/write, 
-// just like we do in the read function below.
 status_t sslsocket_write(sslsocket this, const char *buf, size_t count,
     int timeout, int nretries)
 {
@@ -98,7 +86,7 @@ status_t sslsocket_write(sslsocket this, const char *buf, size_t count,
     assert(nretries >= 0);
 
     do {
-        if (!sslsocket_poll_for(this, timeout, POLLOUT)) {
+        if (!socket_poll_for(this->fd, timeout, POLLOUT)) {
             if (errno != EAGAIN)
                 return failure;
 
@@ -123,12 +111,12 @@ status_t sslsocket_write(sslsocket this, const char *buf, size_t count,
         int err = SSL_get_error(this->ssl, rc);
         switch (err) {
             case SSL_ERROR_WANT_READ:
-                if (!sslsocket_poll_for(this, timeout, POLLIN))
+                if (!socket_poll_for(this->fd, timeout, POLLIN))
                     return failure;
                 break;
 
             case SSL_ERROR_WANT_WRITE:
-                if (!sslsocket_poll_for(this, timeout, POLLOUT))
+                if (!socket_poll_for(this->fd, timeout, POLLOUT))
                     return failure;
                 break;
 
@@ -167,7 +155,7 @@ ssize_t sslsocket_read(sslsocket this, char *dest, size_t count,
     assert(dest != NULL);
 
     do {
-        if (!sslsocket_poll_for(this, timeout, POLLIN)) {
+        if (!socket_poll_for(this->fd, timeout, POLLIN)) {
             if (errno == EAGAIN)
                 continue; // Try again.
 
@@ -182,12 +170,12 @@ ssize_t sslsocket_read(sslsocket this, char *dest, size_t count,
         int err = SSL_get_error(this->ssl, nread);
         switch (err) {
             case SSL_ERROR_WANT_READ:
-                if (!sslsocket_poll_for(this, timeout, POLLIN))
+                if (!socket_poll_for(this->fd, timeout, POLLIN))
                     return -1;
                 break;
 
             case SSL_ERROR_WANT_WRITE:
-                if (!sslsocket_poll_for(this, timeout, POLLOUT))
+                if (!socket_poll_for(this->fd, timeout, POLLOUT))
                     return -1;
                 break;
 

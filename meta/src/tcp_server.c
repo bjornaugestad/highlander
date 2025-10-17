@@ -403,7 +403,7 @@ static status_t accept_new_connections(tcp_server this)
     assert(this->listener != NULL);
 
     while (!this->shutting_down) {
-        if (!socket_poll_for(this->listener, this->timeout_accepts, POLLIN)) {
+        if (!socket_poll_for(socket_get_fd(this->listener), this->timeout_accepts, POLLIN)) {
             if (errno == EINTR)
                 atomic_ulong_inc(&this->sum_poll_intr);
             else if (errno == EAGAIN)

@@ -41,10 +41,6 @@ status_t tcpsocket_wait_for_data(tcpsocket p, int timeout)
     __attribute__((nonnull))
     __attribute__((warn_unused_result));
 
-status_t tcpsocket_wait_for_writability(tcpsocket p, int timeout)
-    __attribute__((nonnull))
-    __attribute__((warn_unused_result));
-
 status_t tcpsocket_write(tcpsocket p, const char *s, size_t count,
     int timeout, int retries)
     __attribute__((nonnull))

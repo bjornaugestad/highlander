@@ -23,6 +23,8 @@ extern "C" {
 
 typedef struct gensocket_tag *socket_t;
 
+int socket_get_fd(socket_t this);
+
 socket_t socket_create_server_socket(int type, const char *host, int port)
     __attribute__((warn_unused_result, nonnull));
 
@@ -39,8 +41,8 @@ status_t socket_close(socket_t p)
     __attribute__((nonnull));
 
 // polltype is POLLIN and friends
-status_t socket_poll_for(socket_t p, int timeout, int polltype)
-    __attribute__((warn_unused_result, nonnull));
+status_t socket_poll_for(int fd, int timeout, int polltype)
+    __attribute__((warn_unused_result));
 
 // Calls SSL_pending() in one impl
 status_t socket_wait_for_data(socket_t p, int timeout)

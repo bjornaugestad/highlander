@@ -33,13 +33,6 @@ int tcpsocket_get_fd(tcpsocket p)
     return p->fd;
 }
 
-/*
- * This is a local helper function. It polls for some kind of event,
- * which normally is POLLIN or POLLOUT.
- * The function returns 1 if the event has occured, and 0 if an
- * error occured. It set errno to EAGAIN if a timeout occured, and
- * it maps POLLHUP and POLLERR to EPIPE, and POLLNVAL to EINVAL.
- */
 status_t tcpsocket_poll_for(tcpsocket this, int timeout, short poll_for)
 {
     struct pollfd pfd;
@@ -80,18 +73,11 @@ status_t tcpsocket_poll_for(tcpsocket this, int timeout, short poll_for)
     return status;
 }
 
-status_t tcpsocket_wait_for_writability(tcpsocket this, int timeout)
-{
-    assert(this != NULL);
-
-    return tcpsocket_poll_for(this, timeout, POLLOUT);
-}
-
 status_t tcpsocket_wait_for_data(tcpsocket this, int timeout)
 {
     assert(this != NULL);
 
-    return tcpsocket_poll_for(this, timeout, POLLIN);
+    return socket_poll_for(this->fd, timeout, POLLIN);
 }
 
 status_t tcpsocket_write(tcpsocket this, const char *buf, size_t count, int timeout, int nretries)
@@ -105,7 +91,7 @@ status_t tcpsocket_write(tcpsocket this, const char *buf, size_t count, int time
     assert(nretries >= 0);
 
     do {
-        if (!tcpsocket_wait_for_writability(this, timeout)) {
+        if (!socket_poll_for(this->fd, timeout, POLLOUT)) {
             if (errno != EAGAIN)
                 return failure;
 
@@ -159,7 +145,7 @@ ssize_t tcpsocket_read(tcpsocket this, char *dest, size_t count, int timeout, in
     assert(dest != NULL);
 
     do {
-        if (!tcpsocket_wait_for_data(this, timeout)) {
+        if (!socket_poll_for(this->fd, timeout, POLLIN)) {
             if (errno == EAGAIN)
                 continue; // Try again.
 
