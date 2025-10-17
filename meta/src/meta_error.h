@@ -13,7 +13,7 @@ extern "C" {
 #endif
 
 /*
- * @brief Generalized error handling.
+ * Generalized error handling.
  *
  * There can be multiple sources of errors in a server like metaweb.
  * 1. Socket errors due to network failure/hacking
@@ -29,7 +29,7 @@ extern "C" {
  * in just one int (returned from a function).
  *
  * I therefore use an error class, error, and report errors there.
- * Functions then must accept a error* as a param and return -1
+ * Functions then must accept a error* as a param and return failure
  * on failure and fill out the proper values in the param.
  */
 #define META_ERROR_MESSAGE_MAX 1024

@@ -17,7 +17,7 @@ struct gensocket_tag {
     void *instance;
 
     // Some function pointers we need.
-    status_t (*close)(void *instance);
+    status_t (*closefn)(void *instance);
 
     status_t (*wait_for_data)(void *instance, int timeout);
     status_t (*write)(void *instance, const char *s, size_t count, int timeout, int retries);
@@ -82,13 +82,13 @@ static socket_t create_instance(int socktype)
 
     // Set up the type-specific function pointers
     if (socktype == SOCKTYPE_TCP) {
-        p->close = (typeof(p->close))tcpsocket_close;
+        p->closefn = (typeof(p->closefn))tcpsocket_close;
         p->wait_for_data = (typeof(p->wait_for_data))tcpsocket_wait_for_data;
         p->write = (typeof(p->write))tcpsocket_write;
         p->read = (typeof(p->read))tcpsocket_read;
     }
     else {
-        p->close = (typeof(p->close))sslsocket_close;
+        p->closefn = (typeof(p->closefn))sslsocket_close;
         p->wait_for_data = (typeof(p->wait_for_data))sslsocket_wait_for_data;
         p->write = (typeof(p->write))sslsocket_write;
         p->read = (typeof(p->read))sslsocket_read;
@@ -184,7 +184,7 @@ status_t socket_close(socket_t p)
     assert(p != NULL);
     assert(p->instance != NULL);
 
-    status_t rc = p->close(p->instance);
+    status_t rc = p->closefn(p->instance);
     free(p);
     return rc;
 }

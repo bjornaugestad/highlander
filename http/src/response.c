@@ -666,6 +666,7 @@ size_t response_get_content_length(http_response p)
 status_t response_set_connection(http_response response, const char *value)
 {
     assert(response != NULL);
+    assert(value != NULL);
 
     return general_header_set_connection(response->general_header, value);
 }
@@ -679,18 +680,24 @@ void response_set_date(http_response response, time_t value)
 status_t response_set_pragma(http_response response, const char *value)
 {
     assert(response != NULL);
+    assert(value != NULL);
+
     return general_header_set_pragma(response->general_header, value);
 }
 
 status_t response_set_trailer(http_response response, const char *value)
 {
     assert(response != NULL);
+    assert(value != NULL);
+
     return general_header_set_trailer(response->general_header, value);
 }
 
 status_t response_set_transfer_encoding(http_response response, const char *value)
 {
     assert(response != NULL);
+    assert(value != NULL);
+
     return general_header_set_transfer_encoding(response->general_header, value);
 }
 

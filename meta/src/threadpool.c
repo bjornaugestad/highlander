@@ -129,10 +129,12 @@ static void *threadpool_exec_thread(void *arg)
         // different requests.
         wp->workfn(wp->workarg);
 
+    printf("%s():X9\n", __func__);
         // Call cleanup function, if present
         if (wp->cleanupfn != 0)
             wp->cleanupfn(wp->cleanup_arg, wp->workarg);
 
+    printf("%s():X10\n", __func__);
         free(wp);
     }
 

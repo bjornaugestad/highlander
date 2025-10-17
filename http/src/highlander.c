@@ -236,12 +236,9 @@ static int semantic_error(http_request request)
 }
 #endif
 
-static status_t serviceConnection2(
-    http_server srv,
-    connection conn,
-    http_request request,
-    http_response response,
-    error e)
+// boa@20251017: Weird semantics. We return failure without setting e.
+static status_t serviceConnection2(http_server srv, connection conn,
+    http_request request, http_response response, error e)
 {
     dynamic_page dp;
     size_t cbSent;
@@ -318,15 +315,24 @@ static status_t serviceConnection2(
             return failure;
 
         http_server_add_logentry(srv, conn, request, response_get_status(response), cbSent);
-        if (cbSent == 0)
-            return failure;
 
+        // 20251017: bug! We can send headers without entities. We even do that
+        // as a "quick fix" written in 2003. see response_send() for details.
+        // I'm not sure if I have a good fix ATM as the bug manifests itself
+        // as a SIGSEGV, so "return failure" seems to be wrong.
+        // OTOH, cbSent is used for logging only.
+        // if (cbSent == 0)
+            // return failure;
+
+        printf("%s():2.88\n", __func__);
         /* Did the user set the Connection header field to "close" */
         if (strcmp(response_get_connection(response), "close") == 0)
             return success;
 
+        printf("%s():2.9\n", __func__);
         if (!connection_is_persistent(conn))
             return success;
+        printf("%s():2.10\n", __func__);
 
         /*
          * NOTE: Her må/bør vi legge inn ny funksjonalitet:

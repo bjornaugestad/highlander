@@ -748,6 +748,7 @@ void http_server_add_logentry(
     struct tm tm_now;
     char datebuf[100];
     int cc;
+    printf("I AM HERE:%s()\n", __func__);
 
     /* This string used to be INET_ADDRSTRLEN + 1 chars long, but that constant
      * plus inet_ntop() ports really bad to other systems (HP-UX/cygWindows).

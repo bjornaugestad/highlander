@@ -32,37 +32,6 @@ int sslsocket_get_fd(sslsocket p)
     return p->fd;
 }
 
-status_t sslsocket_poll_for(sslsocket this, int timeout, short poll_for)
-{
-    assert(this != NULL);
-    assert(poll_for == POLLIN || poll_for == POLLOUT);
-    assert(timeout >= 0);
-
-    struct pollfd pfd;
-    pfd.fd = this->fd;
-    pfd.events = poll_for;
-
-    /* NOTE: poll is XPG4, not POSIX */
-    int rc = poll(&pfd, 1, timeout);
-    status_t status = failure;
-
-    if (rc == 1) {
-        /* We have info in pfd */
-        if (pfd.revents & POLLHUP)
-            errno = EPIPE;
-        else if (pfd.revents & POLLERR)
-            errno = EPIPE;
-        else if (pfd.revents & POLLNVAL)
-            errno = EINVAL;
-        else if ((pfd.revents & poll_for)  == poll_for)
-            status = success;
-    }
-    else if (rc == 0)
-        errno = EAGAIN;
-
-    return status;
-}
-
 status_t sslsocket_wait_for_data(sslsocket this, int timeout)
 {
     assert(this != NULL);

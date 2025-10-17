@@ -33,46 +33,6 @@ int tcpsocket_get_fd(tcpsocket p)
     return p->fd;
 }
 
-status_t tcpsocket_poll_for(tcpsocket this, int timeout, short poll_for)
-{
-    struct pollfd pfd;
-    int rc;
-    status_t status = failure;
-
-    assert(this != NULL);
-    assert(this->fd >= 0);
-    assert(poll_for == POLLIN || poll_for == POLLOUT);
-    assert(timeout >= 0);
-
-    pfd.fd = this->fd;
-    pfd.events = poll_for;
-
-    /* NOTE: poll is XPG4, not POSIX */
-    rc = poll(&pfd, 1, timeout);
-    if (rc == 1) {
-        /* We have info in pfd */
-        if (pfd.revents & POLLHUP) {
-            errno = EPIPE;
-        }
-        else if (pfd.revents & POLLERR) {
-            errno = EPIPE;
-        }
-        else if (pfd.revents & POLLNVAL) {
-            errno = EINVAL;
-        }
-        else if ((pfd.revents & poll_for)  == poll_for) {
-            status = success;
-        }
-    }
-    else if (rc == 0) {
-        errno = EAGAIN;
-    }
-    else if (rc == -1) {
-    }
-
-    return status;
-}
-
 status_t tcpsocket_wait_for_data(tcpsocket this, int timeout)
 {
     assert(this != NULL);
