@@ -52,10 +52,10 @@ status_t socket_write(socket_t p, const char *s, size_t count, int timeout, int 
 ssize_t  socket_read(socket_t p, char *buf, size_t count, int timeout, int retries)
     __attribute__((warn_unused_result, nonnull));
 
-status_t gensocket_set_nonblock(int fd) __attribute__((warn_unused_result));
-status_t gensocket_set_reuse_addr(int fd) __attribute__((warn_unused_result));
-status_t gensocket_clear_nonblock(int fd) __attribute__((warn_unused_result));
-status_t gensocket_listen(int fd, int backlog) __attribute__((warn_unused_result));
+status_t socket_set_nonblock(int fd) __attribute__((warn_unused_result));
+status_t socket_set_reuse_addr(int fd) __attribute__((warn_unused_result));
+status_t socket_clear_nonblock(int fd) __attribute__((warn_unused_result));
+status_t socket_listen(int fd, int backlog) __attribute__((warn_unused_result));
 
 #ifdef __cplusplus
 }

@@ -136,11 +136,10 @@ status_t socket_poll_for(int fd, int timeout, int poll_for)
 // Our ctor
 static socket_t socket_new(int socktype)
 {
-    socket_t new;
-
     assert(socktype == SOCKTYPE_TCP || socktype ==SOCKTYPE_SSL);
 
-    if ((new = calloc(1, sizeof *new)) == NULL)
+    socket_t new = calloc(1, sizeof *new);
+    if (new == NULL)
         return NULL;
 
     new->ssl = NULL; // Will be set later.
@@ -160,7 +159,7 @@ static void socket_free(socket_t this)
 }
 
 // Binds a socket to an address
-static status_t gensocket_bind_inet(int fd, struct addrinfo *ai)
+static status_t socket_bind_inet(int fd, struct addrinfo *ai)
 {
     if (bind(fd, ai->ai_addr, ai->ai_addrlen) == -1)
         return failure;
@@ -177,7 +176,8 @@ static socket_t socket_socket(int socktype, struct addrinfo *ai)
     if (new == NULL)
         return NULL;
 
-    if ((new->fd = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol)) == -1) {
+    new->fd = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
+    if (new->fd == -1) {
         socket_free(new);
         return NULL;
     }
@@ -205,9 +205,9 @@ static socket_t tcp_create_server_socket(const char *host, int port)
         if (new == NULL)
             continue;
 
-        if (gensocket_set_reuse_addr(socket_get_fd(new))
-        && gensocket_bind_inet(socket_get_fd(new), ai)
-        && gensocket_listen(socket_get_fd(new), 100)) {
+        if (socket_set_reuse_addr(socket_get_fd(new))
+        && socket_bind_inet(socket_get_fd(new), ai)
+        && socket_listen(socket_get_fd(new), 100)) {
             freeaddrinfo(res);
             return new;
         }
@@ -254,7 +254,7 @@ static socket_t tcp_create_client_socket(const char *host, int port)
     if (this == NULL)
         return NULL;
 
-    if (!gensocket_set_nonblock(this->fd)) {
+    if (!socket_set_nonblock(this->fd)) {
         socket_close(this);
         return NULL;
     }
@@ -281,18 +281,12 @@ socket_t socket_create_client_socket(int socktype, void *context,
 {
     assert(socktype == SOCKTYPE_TCP || context != NULL);
 
-    socket_t new;
-    if (socktype == SOCKTYPE_TCP) {
-        if ((new = tcp_create_client_socket(host, port)) != NULL) {
-            assert(new->ssl == NULL);
-            return new;
-        }
-    }
-    else { // SSL - work in progress. BIO related...
+    if (socktype == SOCKTYPE_TCP)
+        return tcp_create_client_socket(host, port);
+    else { 
+        // SSL - work in progress. BIO related...
         return NULL;
     }
-
-    return new;
 }
 
 __attribute__((nonnull, warn_unused_result))
@@ -328,8 +322,8 @@ static socket_t ssl_accept(int fd, void *context,
     if (clientfd == -1)
         return NULL;
 
-    socket_t new;
-    if ((new = socket_new(SOCKTYPE_SSL)) == NULL) {
+    socket_t new = socket_new(SOCKTYPE_SSL);
+    if (new == NULL) {
         close(clientfd);
         return NULL;
     }
@@ -349,7 +343,7 @@ static socket_t ssl_accept(int fd, void *context,
         return NULL;
     }
 
-    if (!gensocket_set_nonblock(new->fd)) {
+    if (!socket_set_nonblock(new->fd)) {
         socket_close(new);
         return NULL;
     }
@@ -436,8 +430,6 @@ status_t socket_wait_for_data(socket_t p, int timeout)
 
 static status_t tcp_write(int fd, const char *buf, size_t count, int timeout, int nretries)
 {
-    ssize_t nwritten = 0;
-
     assert(fd >= 0);
     assert(buf != NULL);
     assert(timeout >= 0);
@@ -452,7 +444,8 @@ static status_t tcp_write(int fd, const char *buf, size_t count, int timeout, in
             continue;
         }
 
-        if ((nwritten = write(fd, buf, count)) == -1)
+        ssize_t nwritten = write(fd, buf, count);
+        if (nwritten == -1)
             return failure;
 
         buf += nwritten;
@@ -480,8 +473,6 @@ status_t socket_write(socket_t p, const char *src, size_t count, int timeout, in
 
 static ssize_t ssl_read(int fd, SSL *ssl, char *dest, size_t count, int timeout, int nretries)
 {
-    ssize_t nread;
-
     assert(fd > -1);
     assert(ssl != NULL);
     assert(timeout >= 0);
@@ -497,9 +488,9 @@ static ssize_t ssl_read(int fd, SSL *ssl, char *dest, size_t count, int timeout,
         }
 
         // Return data asap, even if partial
-        if ((nread = SSL_read(ssl, dest, count)) > 0) {
+        ssize_t nread = SSL_read(ssl, dest, count);
+        if (nread > 0)
             return nread;
-        }
 
         int err = SSL_get_error(ssl, nread);
         switch (err) {
@@ -534,8 +525,6 @@ static ssize_t ssl_read(int fd, SSL *ssl, char *dest, size_t count, int timeout,
 
 static ssize_t tcp_read(int fd, char *dest, size_t count, int timeout, int nretries)
 {
-    ssize_t nread;
-
     assert(fd >= 0);
     assert(timeout >= 0);
     assert(nretries >= 0);
@@ -550,7 +539,8 @@ static ssize_t tcp_read(int fd, char *dest, size_t count, int timeout, int nretr
         }
 
         // Return data asap, even if partial
-        if ((nread = read(fd, dest, count)) > 0)
+        ssize_t nread = read(fd, dest, count);
+        if (nread > 0)
             return nread;
 
         if (nread == -1 && errno != EAGAIN) {
@@ -575,7 +565,7 @@ ssize_t socket_read(socket_t p, char *buf, size_t count, int timeout, int retrie
         return ssl_read(p->fd, p->ssl, buf, count, timeout, retries);
 }
 
-status_t gensocket_set_nonblock(int fd)
+status_t socket_set_nonblock(int fd)
 {
     int flags;
 
@@ -592,7 +582,7 @@ status_t gensocket_set_nonblock(int fd)
     return success;
 }
 
-status_t gensocket_clear_nonblock(int fd)
+status_t socket_clear_nonblock(int fd)
 {
     int flags;
 
@@ -609,7 +599,7 @@ status_t gensocket_clear_nonblock(int fd)
     return success;
 }
 
-status_t gensocket_listen(int fd, int backlog)
+status_t socket_listen(int fd, int backlog)
 {
     assert(fd >= 0);
 
@@ -619,7 +609,7 @@ status_t gensocket_listen(int fd, int backlog)
     return success;
 }
 
-status_t gensocket_set_reuse_addr(int fd)
+status_t socket_set_reuse_addr(int fd)
 {
     int optval;
     socklen_t optlen;
