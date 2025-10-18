@@ -26,7 +26,7 @@ typedef struct gensocket_tag *socket_t;
 int socket_get_fd(socket_t p);
 
 struct addrinfo;
-socket_t socket_socket(struct addrinfo *ai)
+socket_t socket_socket(int socktype, struct addrinfo *ai)
     __attribute__((warn_unused_result, nonnull));
 
 int socket_get_fd(socket_t this);

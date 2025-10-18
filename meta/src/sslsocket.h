@@ -9,48 +9,38 @@
 #include <sys/socket.h> // for the types
 
 #include <meta_common.h>
+#include <gensocket.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef struct sslsocket_tag *sslsocket;
-int sslsocket_get_fd(sslsocket p);
 
-bool sslsocket_pending(sslsocket this);
+bool sslsocket_pending(socket_t this);
 
-sslsocket sslsocket_accept(sslsocket p, void *ssl_ctx, 
+socket_t sslsocket_accept(socket_t p, void *ssl_ctx, 
     struct sockaddr_storage *addr, socklen_t *addrsize)
         __attribute__((warn_unused_result));
 
-ssize_t  sslsocket_read(sslsocket p, char *buf, size_t count, int timeout, int retries)
-    __attribute__((warn_unused_result));
-
-status_t sslsocket_write(sslsocket p, const char *s, size_t count, int timeout, int retries)
-    __attribute__((warn_unused_result));
-
-status_t sslsocket_clear_nonblock(sslsocket p)
-    __attribute__((warn_unused_result));
-
-sslsocket sslsocket_create_server_socket(const char *host, int port)
+status_t sslsocket_clear_nonblock(socket_t p)
     __attribute__((warn_unused_result));
 
 // context should be a valid pointer to an SSL_CTX object.
-sslsocket sslsocket_create_client_socket(void *context, const char *host, int port)
+socket_t sslsocket_create_client_socket(void *context, const char *host, int port)
     __attribute__((warn_unused_result));
 
-status_t sslsocket_close(sslsocket p);
+status_t sslsocket_close(socket_t p);
 
-status_t sslsocket_set_rootcert(sslsocket p, const char *path)
+status_t sslsocket_set_rootcert(socket_t p, const char *path)
     __attribute__((warn_unused_result));
 
-status_t sslsocket_set_private_key(sslsocket p, const char *path)
+status_t sslsocket_set_private_key(socket_t p, const char *path)
     __attribute__((warn_unused_result));
 
-status_t sslsocket_set_ciphers(sslsocket p, const char *ciphers)
+status_t sslsocket_set_ciphers(socket_t p, const char *ciphers)
     __attribute__((warn_unused_result));
 
-status_t sslsocket_set_ca_directory(sslsocket p, const char *path)
+status_t sslsocket_set_ca_directory(socket_t p, const char *path)
     __attribute__((warn_unused_result));
 
 #ifdef __cplusplus

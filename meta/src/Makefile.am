@@ -16,8 +16,6 @@ include_HEADERS=\
 	meta_list.h\
 	meta_fifo.h\
 	miscssl.h\
-	tcpsocket.h\
-	sslsocket.h\
 	gensocket.h\
 	meta_membuf.h\
 	meta_stack.h\
@@ -49,8 +47,6 @@ libmeta_a_SOURCES=\
 	meta_bitset.c\
 	meta_process.c\
 	miscssl.c\
-	tcpsocket.c\
-	sslsocket.c\
 	gensocket.c\
 	meta_error.c\
 	tcp_server.c\
@@ -132,7 +128,7 @@ meta_process_check_SOURCES=\
 meta_process_check_CFLAGS=-DCHECK_META_PROCESS 
 
 tcp_server_check_SOURCES=tcp_server.c threadpool.c meta_membuf.c meta_pool.c\
-	gensocket.c sslsocket.c tcpsocket.c connection.c\
+	gensocket.c connection.c\
 	meta_process.c cstring.c meta_common.c
 tcp_server_check_CFLAGS=-DCHECK_TCP_SERVER 
 
@@ -140,7 +136,7 @@ tcp_server_check_LDFLAGS=
 tcp_server_check_LDADD=-lssl -lcrypto -lpthread
 
 tcp_client_check_SOURCES=tcp_client.c threadpool.c meta_membuf.c \
-	gensocket.c sslsocket.c tcpsocket.c connection.c cstring.c meta_common.c
+	gensocket.c connection.c cstring.c meta_common.c
 tcp_client_check_CFLAGS=-DCHECK_TCP_CLIENT 
 
 tcp_client_check_LDFLAGS=
