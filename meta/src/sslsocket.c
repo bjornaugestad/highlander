@@ -195,7 +195,7 @@ status_t sslsocket_listen(sslsocket this, int backlog)
 
 sslsocket sslsocket_create_server_socket(const char *host, int port)
 {
-    sslsocket new;
+    sslsocket new = NULL;
 
     struct addrinfo hints = {0}, *res, *ai;
     char serv[6];
@@ -215,8 +215,10 @@ sslsocket sslsocket_create_server_socket(const char *host, int port)
 
         if (gensocket_set_reuse_addr(new->fd)
         && gensocket_bind_inet(new->fd, ai)
-        && gensocket_listen(new->fd, 100))
+        && gensocket_listen(new->fd, 100)) {
+            freeaddrinfo(res);
             return new;
+        }
     }
 
     freeaddrinfo(res);

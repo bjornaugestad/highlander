@@ -142,7 +142,7 @@ static tcpsocket tcpsocket_socket(struct addrinfo *ai)
 
 tcpsocket tcpsocket_create_server_socket(const char *host, int port)
 {
-    tcpsocket new;
+    tcpsocket new = NULL;
 
     struct addrinfo hints = {0}, *res, *ai;
     char serv[6];
@@ -162,8 +162,10 @@ tcpsocket tcpsocket_create_server_socket(const char *host, int port)
 
         if (gensocket_set_reuse_addr(new->fd)
         && gensocket_bind_inet(new->fd, ai)
-        && gensocket_listen(new->fd, 100))
+        && gensocket_listen(new->fd, 100)) {
+            freeaddrinfo(res);
             return new;
+        }
     }
 
     freeaddrinfo(res);
@@ -178,7 +180,7 @@ tcpsocket tcpsocket_create_client_socket(const char *host, int port)
 {
     char serv[6];
     struct addrinfo hints = {0}, *res = NULL, *ai;
-    tcpsocket this;
+    tcpsocket this = NULL;
 
     assert(host != NULL);
 
