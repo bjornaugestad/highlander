@@ -24,8 +24,7 @@ tcpsocket tcpsocket_socket(void)
 
 int tcpsocket_get_fd(tcpsocket p);
 
-tcpsocket tcpsocket_accept(tcpsocket p, struct sockaddr *addr,
-    socklen_t *addrsize)
+tcpsocket tcpsocket_accept(tcpsocket p, struct sockaddr_storage *addr, socklen_t *addrsize)
     __attribute__((nonnull))
     __attribute__((warn_unused_result))
     __attribute__((malloc));

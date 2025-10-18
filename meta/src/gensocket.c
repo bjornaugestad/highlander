@@ -135,7 +135,7 @@ socket_t socket_create_client_socket(int socktype, void *context,
 // Let's see if we can reuse code. 
 //
 // 20251010: context can be NULL for TCP sockets, but not for SSL
-socket_t socket_accept(socket_t p, void *context, struct sockaddr *addr, socklen_t *addrsize)
+socket_t socket_accept(socket_t p, void *context, struct sockaddr_storage *addr, socklen_t *addrsize)
 {
     socket_t new;
 

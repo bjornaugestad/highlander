@@ -31,7 +31,7 @@ socket_t socket_create_server_socket(int type, const char *host, int port)
 socket_t socket_create_client_socket(int type, void *context, const char *host, int port)
     __attribute__((warn_unused_result, nonnull(3)));
 
-socket_t socket_accept(socket_t p, void *context, struct sockaddr *addr,
+socket_t socket_accept(socket_t p, void *context, struct sockaddr_storage *addr,
     socklen_t *addrsize) __attribute__((warn_unused_result, nonnull(3,4)));
 
 status_t socket_bind(socket_t p, const char *hostname, int port)

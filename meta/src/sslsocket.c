@@ -3,6 +3,7 @@
  * All Rights Reserved. See COPYING for license details
  */
 
+#define _GNU_SOURCE 1
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
@@ -386,7 +387,7 @@ status_t sslsocket_close(sslsocket this)
 
 // Accept a new TLS connection, similar to accept().
 sslsocket sslsocket_accept(sslsocket this, void *context, 
-    struct sockaddr *addr __attribute__((unused)), socklen_t *addrsize)
+    struct sockaddr_storage *addr, socklen_t *addrsize)
 {
     sslsocket new;
     int clientfd;
@@ -395,7 +396,7 @@ sslsocket sslsocket_accept(sslsocket this, void *context,
     assert(addr != NULL);
     assert(addrsize != NULL);
 
-    clientfd = accept(this->fd, addr, addrsize);
+    clientfd = accept4(this->fd, (struct sockaddr *)addr, addrsize, SOCK_CLOEXEC );
     if (clientfd == -1)
         return NULL;
 

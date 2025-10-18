@@ -25,7 +25,7 @@ status_t sslsocket_listen(sslsocket p, int backlog)
     __attribute__((warn_unused_result));
 
 sslsocket sslsocket_accept(sslsocket p, void *ssl_ctx, 
-    struct sockaddr *addr, socklen_t *addrsize)
+    struct sockaddr_storage *addr, socklen_t *addrsize)
         __attribute__((warn_unused_result));
 
 ssize_t  sslsocket_read(sslsocket p, char *buf, size_t count, int timeout, int retries)

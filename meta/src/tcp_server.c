@@ -410,7 +410,7 @@ static status_t accept_new_connections(tcp_server this)
             continue; // retry
         }
 
-        newsock = socket_accept(this->listener, this->server_context, (struct sockaddr*)&addr, &addrsize);
+        newsock = socket_accept(this->listener, this->server_context, &addr, &addrsize);
         if (newsock == NULL) {
             switch (errno) {
                 case EPROTO:

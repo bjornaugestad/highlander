@@ -3,6 +3,7 @@
  * All Rights Reserved. See COPYING for license details
  */
 
+#define _GNU_SOURCE 1
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
@@ -239,7 +240,7 @@ status_t tcpsocket_close(tcpsocket this)
     return success;
 }
 
-tcpsocket tcpsocket_accept(tcpsocket this, struct sockaddr *addr, socklen_t *addrsize)
+tcpsocket tcpsocket_accept(tcpsocket this, struct sockaddr_storage *addr, socklen_t *addrsize)
 {
     tcpsocket new;
     int clientfd;
@@ -248,7 +249,7 @@ tcpsocket tcpsocket_accept(tcpsocket this, struct sockaddr *addr, socklen_t *add
     assert(addr != NULL);
     assert(addrsize != NULL);
 
-    clientfd = accept(this->fd, addr, addrsize);
+    clientfd = accept4(this->fd, (struct sockaddr *)addr, addrsize, SOCK_CLOEXEC | SOCK_NONBLOCK);
     if (clientfd == -1)
         return NULL;
 
@@ -258,13 +259,5 @@ tcpsocket tcpsocket_accept(tcpsocket this, struct sockaddr *addr, socklen_t *add
     }
 
     new->fd = clientfd;
-    // We set the nonblock flag here, since SSL prefers to set this
-    // early and we want tcp_server to treat sockets uniformly.
-    if (!gensocket_set_nonblock(new->fd)) {
-        close(clientfd);
-        free(new);
-        return NULL;
-    }
-
     return new;
 }
