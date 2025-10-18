@@ -101,8 +101,6 @@ AC_CONFIG_FILES([
   http/Makefile
   http/src/Makefile
   http/doc/Makefile
-  imap/Makefile
-  imap/src/Makefile
   apps/Makefile
   apps/webcache/Makefile
   apps/ftp/Makefile

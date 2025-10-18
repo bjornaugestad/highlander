@@ -1,4 +1,0 @@
-We start implementing imap and imaps. We use tcp_server to handle
-the TCP/SSL part. This directory implements RFC3501.
-boa 20170527 (who ATM does not know much about IMAP)
-

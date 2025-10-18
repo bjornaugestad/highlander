@@ -108,7 +108,7 @@ struct json_parser {
 };
 
 static void value_free(struct value *p);
-static void value_freev(void *p) { value_freev(p); }
+static void value_freev(void *p) { value_free(p); }
 
 static void object_free(struct object *p)
 {
@@ -1141,10 +1141,12 @@ void json_free(struct value *objects)
     value_free(objects);
 }
 
+#if 0
 void json_traverse(struct value *value)
 {
     print_value(value);
 }
+#endif
 
 static status_t testfile(const char *filename)
 {

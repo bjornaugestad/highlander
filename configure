@@ -4929,7 +4929,7 @@ fi
 
 
 
-ac_config_files="$ac_config_files Makefile tools/Makefile json/Makefile meta/Makefile meta/src/Makefile meta/doc/Makefile http/Makefile http/src/Makefile http/doc/Makefile imap/Makefile imap/src/Makefile apps/Makefile apps/webcache/Makefile apps/ftp/Makefile apps/helloworld/Makefile apps/httpd/Makefile apps/echoserver/Makefile apps/webclient/Makefile"
+ac_config_files="$ac_config_files Makefile tools/Makefile json/Makefile meta/Makefile meta/src/Makefile meta/doc/Makefile http/Makefile http/src/Makefile http/doc/Makefile apps/Makefile apps/webcache/Makefile apps/ftp/Makefile apps/helloworld/Makefile apps/httpd/Makefile apps/echoserver/Makefile apps/webclient/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -5690,8 +5690,6 @@ do
     "http/Makefile") CONFIG_FILES="$CONFIG_FILES http/Makefile" ;;
     "http/src/Makefile") CONFIG_FILES="$CONFIG_FILES http/src/Makefile" ;;
     "http/doc/Makefile") CONFIG_FILES="$CONFIG_FILES http/doc/Makefile" ;;
-    "imap/Makefile") CONFIG_FILES="$CONFIG_FILES imap/Makefile" ;;
-    "imap/src/Makefile") CONFIG_FILES="$CONFIG_FILES imap/src/Makefile" ;;
     "apps/Makefile") CONFIG_FILES="$CONFIG_FILES apps/Makefile" ;;
     "apps/webcache/Makefile") CONFIG_FILES="$CONFIG_FILES apps/webcache/Makefile" ;;
     "apps/ftp/Makefile") CONFIG_FILES="$CONFIG_FILES apps/ftp/Makefile" ;;

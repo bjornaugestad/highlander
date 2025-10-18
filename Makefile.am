@@ -1,4 +1,4 @@
-SUBDIRS=tools meta http apps 
+SUBDIRS=tools meta http apps json
 LDADD=-lpthread -L.
 #AUTOMAKE_OPTIONS=subdir-objects
 
