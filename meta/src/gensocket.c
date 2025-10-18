@@ -217,7 +217,7 @@ static socket_t tcp_create_client_socket(const char *host, int port)
     if (this == NULL)
         return NULL;
 
-    if (!gensocket_set_nonblock(socket_get_fd(this))) {
+    if (!gensocket_set_nonblock(this->fd)) {
         socket_close(this);
         return NULL;
     }
@@ -296,7 +296,7 @@ static socket_t ssl_accept(int fd, void *context,
         return NULL;
 
     socket_t new;
-    if ((new = calloc(1, sizeof *new)) == NULL) {
+    if ((new = socket_new(SOCKTYPE_SSL)) == NULL) {
         close(clientfd);
         return NULL;
     }

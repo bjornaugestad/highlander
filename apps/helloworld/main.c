@@ -40,18 +40,10 @@ static void parse_command_line(int argc, char *argv[])
 }
 int main(int argc, char *argv[])
 {
-    process p;
-    http_server s;
     parse_command_line(argc, argv);
 
-    // debugging make check. It seems to fail when ran from top_dir, and I
-    // suspect that the error is the paths to pki keys. Let's check
-    // which directory we're in and how we're started.
-    char buf[1024];
-    printf("path to executable:%s, current dir:%s\n", argv[0], getcwd(buf, sizeof buf));
-
-    p = process_new("helloworld");
-    s = http_server_new(m_servertype);
+    process p = process_new("helloworld");
+    http_server s = http_server_new(m_servertype);
     http_server_set_port(s, 2000);
 
     if (!http_server_start_via_process(p, s))
