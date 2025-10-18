@@ -65,7 +65,7 @@ struct connection_tag {
     int socktype;
 
     /* Client we're connected with */
-    struct sockaddr_in addr;
+    struct sockaddr_storage addr;
 
     membuf readbuf;
     membuf writebuf;
@@ -455,7 +455,7 @@ int connection_is_persistent(connection this)
     return this->persistent;
 }
 
-struct sockaddr_in* connection_get_addr(connection this)
+struct sockaddr_storage* connection_get_addr(connection this)
 {
     assert(this != NULL);
     return &this->addr;
@@ -468,7 +468,7 @@ void connection_free(connection this)
     }
 }
 
-void connection_set_params(connection this, socket_t _sock, struct sockaddr_in* paddr)
+void connection_set_params(connection this, socket_t _sock, struct sockaddr_storage * paddr)
 {
     assert(this != NULL);
 

@@ -110,8 +110,12 @@ struct tcp_server_tag {
  *   already have a precompiled regexp available. All we now
  *   have to do is to regexec.
  */
-static bool client_can_connect(tcp_server srv, struct sockaddr_in* addr)
+static bool client_can_connect(tcp_server srv, struct sockaddr_storage *addr)
 {
+#if 1
+    (void)srv;(void)addr;
+    return true;
+#else
     int vaddr;
     char sz[INET_ADDRSTRLEN + 1];
 
@@ -135,6 +139,7 @@ static bool client_can_connect(tcp_server srv, struct sockaddr_in* addr)
     }
 
     return true;
+#endif
 }
 
 tcp_server tcp_server_new(int socktype)
@@ -386,7 +391,7 @@ static status_t accept_new_connections(tcp_server this)
 {
     status_t rc;
     socket_t newsock;
-    struct sockaddr_in addr;
+    struct sockaddr_storage addr;
     socklen_t addrsize = sizeof addr;
     connection conn;
 

@@ -13,7 +13,10 @@ FACIT="<html><head><title>Hello, world</title></head><body>Hello, world</body></
 # Kill other instances, if any
 killall -qw helloworld > /dev/null 2>&1
 
-./helloworld -t > /dev/null 2>&1 &
+# Is someone else listening?
+sudo netstat -tlnp
+
+./helloworld -t > logfile 2>&1 &
 sleep 0.5
 
 wget -O /tmp/x localhost:2000 > /dev/null 2>&1
@@ -34,9 +37,13 @@ fi
 
 # Rinse and repeat for https
 killall -qw helloworld > /dev/null 2>&1
+sleep 1
 
-./helloworld > /dev/null 2>&1 &
-sleep 0.5
+# Is someone else listening?
+sudo netstat -tlnp
+
+./helloworld > logfile2 2>&1 &
+sleep 2
 
 wget -O /tmp/x --no-check-certificate --secure-protocol=auto https://localhost:2000 > /dev/null 2>&1
 GOT=$?

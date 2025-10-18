@@ -81,10 +81,10 @@ int	 connection_is_persistent(connection conn)
 void connection_set_persistent(connection conn, int val)
     __attribute__((nonnull));
 
-void connection_set_params(connection conn, socket_t sock, struct sockaddr_in* paddr)
+void connection_set_params(connection conn, socket_t sock, struct sockaddr_storage* paddr)
     __attribute__((nonnull));
 
-struct sockaddr_in* connection_get_addr(connection conn)
+struct sockaddr_storage* connection_get_addr(connection conn)
     __attribute__((nonnull, warn_unused_result));
 
 int data_on_socket(connection conn)

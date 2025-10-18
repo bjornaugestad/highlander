@@ -754,12 +754,6 @@ void http_server_add_logentry(
     char datebuf[100];
     int cc;
 
-    /* This string used to be INET_ADDRSTRLEN + 1 chars long, but that constant
-     * plus inet_ntop() ports really bad to other systems (HP-UX/cygWindows).
-     * Haven't found a reentrant version of inet_ntoa yet, so I'll leave it
-     * as is for now.
-     */
-    char ip[200];
 
     assert(this != NULL);
     assert(status_code != 0);
@@ -816,7 +810,21 @@ void http_server_add_logentry(
         return;
     }
 
-    inet_ntop(AF_INET, &connection_get_addr(conn)->sin_addr, ip, sizeof ip),
+    char ip[INET6_ADDRSTRLEN];
+    void *src = NULL;
+    struct sockaddr_storage *paddr = connection_get_addr(conn);
+
+    if (paddr == NULL)
+        src = "unknown";
+    else if (paddr->ss_family == AF_INET)
+        src = &((struct sockaddr_in *)paddr)->sin_addr;
+    else if (paddr->ss_family == AF_INET6)
+        src = &((struct sockaddr_in6 *)paddr)->sin6_addr;
+    else
+        strcpy(ip,  "unknown");
+        
+    if (src != NULL)
+        inet_ntop(paddr->ss_family, src, ip, sizeof ip);
 
     cc = fprintf(this->logfile, "%s - - [%s] \"%s %s\" %d %lu\n",
         ip,
