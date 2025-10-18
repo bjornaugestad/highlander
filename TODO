@@ -56,4 +56,5 @@ Thu Oct 16 06:31:03 CEST 2025
       certs til egne brukere.
 
   
-
+Sat Oct 18 08:32:39 CEST 2025
+- Merge tcpsocket and sslsocket into socket_t. 
