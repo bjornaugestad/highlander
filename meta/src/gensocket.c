@@ -14,7 +14,7 @@
 
 struct gensocket_tag {
     int socktype;
-    int fd; // As for now, 20251016, we get a copy from the sub-classes. 
+    int fd;
     SSL *ssl;
 };
 
@@ -136,16 +136,27 @@ status_t socket_poll_for(int fd, int timeout, int poll_for)
 // Our ctor
 static socket_t socket_new(int socktype)
 {
-    socket_t p;
+    socket_t new;
 
     assert(socktype == SOCKTYPE_TCP || socktype ==SOCKTYPE_SSL);
 
-    if ((p = calloc(1, sizeof *p)) == NULL)
+    if ((new = calloc(1, sizeof *new)) == NULL)
         return NULL;
 
-    p->socktype = socktype;
+    new->ssl = NULL; // Will be set later.
+    new->socktype = socktype;
+    return new;
+}
 
-    return p;
+static void socket_free(socket_t this)
+{
+    if (this != NULL) {
+        if (this->ssl != NULL) {
+            SSL_free(this->ssl);
+        }
+
+        free(this);
+    }
 }
 
 // Binds a socket to an address
@@ -155,6 +166,23 @@ static status_t gensocket_bind_inet(int fd, struct addrinfo *ai)
         return failure;
 
     return success;
+}
+
+// Create a socket object and call socket()
+static socket_t socket_socket(int socktype, struct addrinfo *ai)
+{
+    assert(socktype == SOCKTYPE_TCP || socktype == SOCKTYPE_SSL);
+
+    socket_t new = socket_new(socktype);
+    if (new == NULL)
+        return NULL;
+
+    if ((new->fd = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol)) == -1) {
+        socket_free(new);
+        return NULL;
+    }
+
+    return new;
 }
 
 static socket_t tcp_create_server_socket(const char *host, int port)
@@ -251,27 +279,23 @@ socket_t socket_create_server_socket(int socktype, const char *host, int port)
 socket_t socket_create_client_socket(int socktype, void *context, 
     const char *host, int port)
 {
-    socket_t new;
-
     assert(socktype == SOCKTYPE_TCP || context != NULL);
 
+    socket_t new;
     if (socktype == SOCKTYPE_TCP) {
         if ((new = tcp_create_client_socket(host, port)) != NULL) {
             assert(new->ssl == NULL);
             return new;
         }
     }
-    else { // SSL - work in progress
-        return NULL;
-    }
-
-    if (new == NULL) {
-        free(new);
+    else { // SSL - work in progress. BIO related...
         return NULL;
     }
 
     return new;
 }
+
+__attribute__((nonnull, warn_unused_result))
 static socket_t tcp_accept(int fd, struct sockaddr_storage *addr, socklen_t *addrsize)
 {
     assert(fd >= 0);
@@ -282,8 +306,8 @@ static socket_t tcp_accept(int fd, struct sockaddr_storage *addr, socklen_t *add
     if (clientfd == -1)
         return NULL;
 
-    socket_t new;
-    if ((new = socket_new(SOCKTYPE_TCP)) == NULL) {
+    socket_t new = socket_new(SOCKTYPE_TCP);
+    if (new == NULL) {
         close(clientfd);
         return NULL;
     }
@@ -333,41 +357,15 @@ static socket_t ssl_accept(int fd, void *context,
     return new;
 }
 
-
-// Accept is special and is also a ctor like function. This function is called from
-// tcp_server's accept_new_connections() and deals with TLS specific cruft.
-//
 socket_t socket_accept(socket_t listener, void *context, struct sockaddr_storage *addr, socklen_t *addrsize)
 {
     assert(listener->socktype == SOCKTYPE_TCP || listener->socktype == SOCKTYPE_SSL);
     assert(listener->socktype == SOCKTYPE_TCP || context != NULL);
 
-    socket_t new;
     if (listener->socktype == SOCKTYPE_TCP)
-        new = tcp_accept(listener->fd, addr, addrsize);
+        return tcp_accept(listener->fd, addr, addrsize);
     else 
-        new = ssl_accept(listener->fd, context, addr, addrsize);
-
-    return new;
-}
-
-socket_t socket_socket(int socktype, struct addrinfo *ai)
-{
-    assert(socktype == SOCKTYPE_TCP || socktype == SOCKTYPE_SSL);
-
-    socket_t new;
-    if ((new = calloc(1, sizeof *new)) == NULL)
-        return NULL;
-
-    new->socktype = socktype;
-    new->ssl = NULL;
-
-    if ((new->fd = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol)) == -1) {
-        free(new);
-        return NULL;
-    }
-
-    return new;
+        return ssl_accept(listener->fd, context, addr, addrsize);
 }
 
 // This function can be called in various states. Think of it as a dtor.
@@ -389,12 +387,7 @@ static status_t ssl_close(socket_t this)
         close(this->fd);
     }
 
-    if (this->ssl != NULL) {
-        // We free after shutting down the fd
-        SSL_free(this->ssl);
-    }
-
-    free(this);
+    socket_free(this);
     return success;
 }
 
@@ -479,14 +472,10 @@ status_t socket_write(socket_t p, const char *src, size_t count, int timeout, in
     assert(src != NULL);
     assert(p->socktype == SOCKTYPE_TCP || p->socktype == SOCKTYPE_SSL);
 
-
-    status_t rc;
     if (p->socktype == SOCKTYPE_TCP)
-        rc = tcp_write(p->fd, src, count, timeout, retries);
+        return tcp_write(p->fd, src, count, timeout, retries);
     else
-        rc = ssl_write(p->fd, p->ssl, src, count, timeout, retries);
-
-    return rc;
+        return ssl_write(p->fd, p->ssl, src, count, timeout, retries);
 }
 
 static ssize_t ssl_read(int fd, SSL *ssl, char *dest, size_t count, int timeout, int nretries)
@@ -579,14 +568,11 @@ ssize_t socket_read(socket_t p, char *buf, size_t count, int timeout, int retrie
     assert(buf != NULL);
     assert(p->socktype == SOCKTYPE_TCP || p->socktype == SOCKTYPE_SSL);
 
-    ssize_t rc;
     if (p->socktype == SOCKTYPE_TCP) {
-        rc = tcp_read(p->fd, buf, count, timeout, retries);
+        return tcp_read(p->fd, buf, count, timeout, retries);
     }
     else
-        rc = ssl_read(p->fd, p->ssl, buf, count, timeout, retries);
-
-    return rc;
+        return ssl_read(p->fd, p->ssl, buf, count, timeout, retries);
 }
 
 status_t gensocket_set_nonblock(int fd)
@@ -647,5 +633,4 @@ status_t gensocket_set_reuse_addr(int fd)
 
     return success;
 }
-
 

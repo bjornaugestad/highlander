@@ -22,10 +22,7 @@ extern "C" {
 #define SOCKTYPE_SSL    2
 
 typedef struct gensocket_tag *socket_t;
-
-struct addrinfo;
-socket_t socket_socket(int socktype, struct addrinfo *ai)
-    __attribute__((warn_unused_result, nonnull));
+int socket_get_fd(socket_t this);
 
 socket_t socket_create_server_socket(int type, const char *host, int port)
     __attribute__((warn_unused_result, nonnull));
