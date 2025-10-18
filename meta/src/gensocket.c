@@ -148,6 +148,15 @@ static socket_t socket_new(int socktype)
     return p;
 }
 
+// Binds a socket to an address
+static status_t gensocket_bind_inet(int fd, struct addrinfo *ai)
+{
+    if (bind(fd, ai->ai_addr, ai->ai_addrlen) == -1)
+        return failure;
+
+    return success;
+}
+
 static socket_t tcp_create_server_socket(const char *host, int port)
 {
     socket_t new = NULL;
@@ -639,13 +648,4 @@ status_t gensocket_set_reuse_addr(int fd)
     return success;
 }
 
-
-// Binds a socket to an address
-status_t gensocket_bind_inet(int fd, struct addrinfo *ai)
-{
-    if (bind(fd, ai->ai_addr, ai->ai_addrlen) == -1)
-        return failure;
-
-    return success;
-}
 
