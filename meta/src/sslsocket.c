@@ -33,16 +33,9 @@ int sslsocket_get_fd(sslsocket p)
     return p->fd;
 }
 
-status_t sslsocket_wait_for_data(sslsocket this, int timeout)
+bool sslsocket_pending(sslsocket this)
 {
-    assert(this != NULL);
-    assert(this->ssl != NULL);
-
-    // Are there bytes already read and available?
-    if (SSL_pending(this->ssl) > 0)
-        return success;
-
-    return socket_poll_for(this->fd, timeout, POLLIN);
+    return SSL_pending(this->ssl) > 0;
 }
 
 status_t sslsocket_write(sslsocket this, const char *buf, size_t count,
@@ -169,7 +162,7 @@ ssize_t sslsocket_read(sslsocket this, char *dest, size_t count,
 }
 
 
-sslsocket sslsocket_socket(struct addrinfo *ai)
+static sslsocket sslsocket_socket(struct addrinfo *ai)
 {
     sslsocket new;
 
@@ -184,14 +177,6 @@ sslsocket sslsocket_socket(struct addrinfo *ai)
     }
 
     return new;
-}
-
-status_t sslsocket_listen(sslsocket this, int backlog)
-{
-    assert(this != NULL);
-    assert(this->fd >= 0);
-
-    return gensocket_listen(this->fd, backlog);
 }
 
 sslsocket sslsocket_create_server_socket(const char *host, int port)
@@ -215,8 +200,8 @@ sslsocket sslsocket_create_server_socket(const char *host, int port)
             continue;
 
         if (gensocket_set_reuse_addr(new->fd)
-        && gensocket_bind_inet(new->fd, ai)
-        && gensocket_listen(new->fd, 100)) {
+        &&  gensocket_bind_inet(new->fd, ai)
+        &&  gensocket_listen(new->fd, 100)) {
             freeaddrinfo(res);
             return new;
         }
@@ -396,7 +381,7 @@ sslsocket sslsocket_accept(sslsocket this, void *context,
     assert(addr != NULL);
     assert(addrsize != NULL);
 
-    clientfd = accept4(this->fd, (struct sockaddr *)addr, addrsize, SOCK_CLOEXEC );
+    clientfd = accept4(this->fd, (struct sockaddr *)addr, addrsize, SOCK_CLOEXEC);
     if (clientfd == -1)
         return NULL;
 

@@ -17,21 +17,13 @@ extern "C" {
 typedef struct sslsocket_tag *sslsocket;
 int sslsocket_get_fd(sslsocket p);
 
-struct addrinfo;
-sslsocket sslsocket_socket(struct addrinfo *ai)
-    __attribute__((warn_unused_result));
-
-status_t sslsocket_listen(sslsocket p, int backlog)
-    __attribute__((warn_unused_result));
+bool sslsocket_pending(sslsocket this);
 
 sslsocket sslsocket_accept(sslsocket p, void *ssl_ctx, 
     struct sockaddr_storage *addr, socklen_t *addrsize)
         __attribute__((warn_unused_result));
 
 ssize_t  sslsocket_read(sslsocket p, char *buf, size_t count, int timeout, int retries)
-    __attribute__((warn_unused_result));
-
-status_t sslsocket_wait_for_data(sslsocket p, int timeout)
     __attribute__((warn_unused_result));
 
 status_t sslsocket_write(sslsocket p, const char *s, size_t count, int timeout, int retries)
