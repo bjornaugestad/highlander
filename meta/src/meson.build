@@ -33,7 +33,7 @@ install_headers(
   'threadpool.h')
 
 meta_inc = include_directories('.')
-meta_lib = static_library('libmeta', [
+meta_lib = static_library('meta', [
 	'meta_common.c',
 	'meta_sampler.c',
 	'meta_wlock.c',

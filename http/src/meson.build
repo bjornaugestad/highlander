@@ -36,3 +36,31 @@ highlander_dep = declare_dependency(
   link_with: highlander_lib,
   include_directories: highlander_inc,
 )
+
+# felles http-kilder
+http_common = [
+  'http.c','request.c','response.c','general_header.c','entity_header.c',
+  'cookies.c','parse_http.c','parse_time.c','dynamic_page.c','rfc1738.c',
+  'send_status_code.c','attribute.c'
+]
+
+# server-test
+http_server_check = executable(
+  'http_server_check',
+  ['http_server.c','http_client.c','highlander.c'] + http_common,
+  c_args: ['-DCHECK_HTTP_SERVER'],
+  dependencies: [meta_dep, openssl_dep, threads],
+)
+test('http_server_check', http_server_check)
+
+# client-test
+http_client_check = executable(
+  'http_client_check',
+  ['http_client.c'] + http_common,
+  c_args: ['-DCHECK_HTTP_CLIENT'],
+  dependencies: [meta_dep, openssl_dep, threads],
+)
+test('http_client_check', http_client_check)
+
+
+

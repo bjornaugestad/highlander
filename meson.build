@@ -6,6 +6,7 @@ global_includes = []
 global_c_args = []
 global_link_args = []
 openssl_dep = dependency('openssl', required: true)
+threads     = dependency('threads', required: true)
 
 subdir('tools')
 subdir('meta')
