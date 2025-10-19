@@ -6,7 +6,14 @@
 # d) stop the server
 # e) report the result
 
-echo "CWD=$PWD"
+# We test under meson and it always builds to build-dir, and
+# passes the name of the executable to us as arg1.
+EXE=$1
+
+if test ! -f "$EXE"; then
+    echo "Meh, could not see executable"
+    exit 1
+fi
 
 FACIT="<html><head><title>Hello, world</title></head><body>Hello, world</body></html>"
 
@@ -16,10 +23,10 @@ killall -qw helloworld > /dev/null 2>&1
 # Is someone else listening?
 sudo netstat -tlnp
 
-./helloworld -t > logfile 2>&1 &
+$EXE -t > logfile 2>&1 &
 sleep 0.5
 
-wget -O /tmp/x localhost:2000 > /dev/null 2>&1
+curl -s -o /tmp/x localhost:2000
 GOT=$?
 killall -qw helloworld > /dev/null 2>&1
 
@@ -42,10 +49,12 @@ sleep 1
 # Is someone else listening?
 sudo netstat -tlnp
 
-./helloworld > logfile2 2>&1 &
+$EXE > logfile2 2>&1 &
 sleep 2
 
-wget -O /tmp/x --no-check-certificate --secure-protocol=auto https://localhost:2000 > /dev/null 2>&1
+# wget -O /tmp/x --no-check-certificate --secure-protocol=auto https://localhost:2000 > /dev/null 2>&1
+curl -s -o /tmp/x https://localhost:2000
+
 GOT=$?
 killall -qw helloworld > /dev/null 2>&1
 
