@@ -1,5 +1,3 @@
-# Auto-converted from Makefile.am (best-effort)
-
 httpd_exe = executable('httpd', ['httpd.c'],
   install: true,
   include_directories: [ meta_inc, highlander_inc, global_includes],

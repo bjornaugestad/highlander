@@ -77,7 +77,7 @@ meta_dep = declare_dependency(
 
 # Auto-generated Meson snippet for tests in meta/src
 test_deps = []  # add common deps here if needed (e.g., cmocka)
-test_common_c_args = ['-Wall', '--std=gnu2x', '-Wextra', '-Werror', '-O0', '-ggdb', '-Wformat-overflow=2', '-Woverflow', '-Wshift-overflow=2', '-Wstrict-overflow=2']
+test_common_c_args = ['-Wall', '--std=gnu2x', '-Wextra', '-Werror', '-O0', '-ggdb', '-Wformat-overflow', '-Woverflow', '-Wshift-overflow', '-Wstrict-overflow']
 test_common_link_args = []
 
 convert_check_exe = executable('convert_check', ['meta_convert.c', 'meta_common.c'],
