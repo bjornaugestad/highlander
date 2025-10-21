@@ -136,10 +136,10 @@ add_to_writebuf(connection this, const void *buf, size_t count)
 #endif
 }
 
-static inline size_t
+static inline ssize_t
 copy_from_readbuf(connection this, void *buf, size_t count)
 {
-    return membuf_read(this->readbuf, buf, count);
+    return (ssize_t)membuf_read(this->readbuf, buf, count);
 }
 
 #if 0
@@ -380,7 +380,6 @@ static ssize_t read_from_socket(connection this, void *buf, size_t count)
 
 ssize_t connection_read(connection this, void *buf, size_t count)
 {
-    size_t ncopied;
     ssize_t nread;
 
     /* We need a char buffer to be able to compute offsets */
@@ -391,11 +390,11 @@ ssize_t connection_read(connection this, void *buf, size_t count)
 
     /* First copy data from the read buffer.
      * Were all bytes copied from buf? If so, return. */
-    ncopied = copy_from_readbuf(this, buf, count);
-    if (ncopied == count)
-        return (ssize_t)ncopied;
+    ssize_t ncopied = copy_from_readbuf(this, buf, count);
+    if (ncopied == (ssize_t)count)
+        return ncopied;
 
-    count -= ncopied;
+    count -= (size_t)ncopied;
     cbuf += ncopied;
 
     // If the buffer can't hold the number of bytes we're

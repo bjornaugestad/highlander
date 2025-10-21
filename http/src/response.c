@@ -610,6 +610,7 @@ status_t http_send_date(connection conn, const char *name, time_t value)
 
 status_t http_send_string(connection conn, const char *s)
 {
+    assert(conn != NULL);
     assert(s != NULL);
 
     size_t cb = strlen(s);
@@ -618,23 +619,37 @@ status_t http_send_string(connection conn, const char *s)
 
 status_t http_send_ulong(connection conn, const char *name, unsigned long value)
 {
+    assert(conn != NULL);
+    assert(name != NULL);
+
     char val[1000];
-    size_t cb = snprintf(val, sizeof val, "%s%lu", name, value);
-    if (cb >= sizeof val)
+    int cb = snprintf(val, sizeof val, "%s%lu", name, value);
+    if (cb < 0 || (size_t)cb >= sizeof val)
         return failure;
 
-    return connection_write(conn, val, cb);
+    return connection_write(conn, val, (size_t)cb);
+}
+
+status_t http_send_int(connection conn, const char *name, int value)
+{
+    assert(conn != NULL);
+    assert(name != NULL);
+
+    char val[1000];
+    int cb = snprintf(val, sizeof val, "%s%d", name, value);
+    if (cb < 0 || (size_t)cb >= sizeof val)
+        return failure;
+
+    return connection_write(conn, val, (size_t)cb);
 }
 
 status_t http_send_field(connection conn, const char *name, cstring value)
 {
-    size_t cb;
-
     assert(conn != NULL);
     assert(name != NULL);
     assert(value != NULL);
 
-    cb = strlen(name);
+    size_t cb = strlen(name);
     if (!connection_write(conn, name, cb))
         return failure;
 
@@ -1528,8 +1543,7 @@ static status_t read_chunked_response(http_response this, connection conn,
     size_t max_contentlen, error e)
 {
     size_t chunklen, ntotal = 0;
-    ssize_t nread;
-    char *content = NULL, *tmp;
+    char *content = NULL;
 
     for (;;) {
         if (!get_chunklen(conn, &chunklen))
@@ -1544,7 +1558,7 @@ static status_t read_chunked_response(http_response this, connection conn,
         }
 
         // Make sure we have memory to read into
-        tmp = realloc(content, ntotal + chunklen);
+        char *tmp = realloc(content, ntotal + chunklen);
         if (tmp == NULL) {
             free(content);
             return set_os_error(e, ENOSPC);
@@ -1555,22 +1569,22 @@ static status_t read_chunked_response(http_response this, connection conn,
         // Now read the chunk off the socket.
         // Big chunks may cause timeout, so we loop
         for (;;) {
-            nread = connection_read(conn, content + ntotal, chunklen);
+            ssize_t nread = connection_read(conn, content + ntotal, chunklen);
             if (nread < 0) {
                 free(content);
                 return failure;
             }
 
-            ntotal += nread;
-            chunklen -= nread;
+            ntotal += (size_t)nread;
+            chunklen -= (size_t)nread;
             if (chunklen == 0)
                 break;
         }
     }
 
-    if (content == NULL) {
+    if (content == NULL)
         return failure;
-    }
+
     response_set_allocated_content_buffer(this, content, ntotal);
     return success;
 }
@@ -1636,7 +1650,7 @@ status_t response_receive(http_response response, connection conn,
         return set_os_error(e, errno);
     }
 
-    response_set_allocated_content_buffer(response, content, nread);
+    response_set_allocated_content_buffer(response, content, (size_t)nread);
     return success;
 }
 

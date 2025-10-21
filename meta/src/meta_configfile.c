@@ -233,6 +233,7 @@ status_t configfile_get_long(configfile cf, const char *name, long *value)
 status_t configfile_get_ulong(configfile cf, const char *name, unsigned long *value)
 {
     char sz[20];
+    long val;
 
     assert(cf != NULL);
     assert(name != NULL);
@@ -242,13 +243,14 @@ status_t configfile_get_ulong(configfile cf, const char *name, unsigned long *va
         return failure;
 
     errno = 0;
-    *value = strtol(sz, NULL, 10);
-    if (*value == ULONG_MAX)
+    val = strtol(sz, NULL, 10);
+    if (val == LONG_MIN || val == LONG_MAX)
         return failure;
 
-    if (*value == 0 && errno == EINVAL)
+    if (val == 0 && errno == EINVAL)
         return failure;
 
+    *value = (unsigned long)val;
     return success;
 }
 

@@ -1341,7 +1341,7 @@ static status_t send_max_forwards(http_request r, connection c)
     assert(r != NULL);
     assert(c != NULL);
 
-    return http_send_ulong(c, "Max-Forwards: ", r->max_forwards);
+    return http_send_int(c, "Max-Forwards: ", r->max_forwards);
 }
 
 static status_t send_proxy_authorization(http_request r, connection c)
@@ -1505,21 +1505,20 @@ status_t request_send(http_request r, connection conn, error e)
 static status_t read_posted_content(size_t max_post_content,
     connection conn, http_request req, error e)
 {
-    void *buf;
-    size_t content_len;
-    ssize_t nread;
 
-    content_len = request_get_content_length(req);
+    size_t content_len = request_get_content_length(req);
     if (content_len == 0)
         return set_http_error(e, HTTP_411_LENGTH_REQUIRED);
 
     if (max_post_content < content_len)
         return set_http_error(e, HTTP_400_BAD_REQUEST);
 
+    void *buf;
     if ((buf = malloc(content_len)) == NULL)
         return set_os_error(e, errno);
 
-    if ((nread = connection_read(conn, buf, content_len)) == -1) {
+    ssize_t nread = connection_read(conn, buf, content_len);
+    if (nread  == -1) {
         free(buf);
         return set_tcpip_error(e, errno);
     }
@@ -1530,7 +1529,7 @@ static status_t read_posted_content(size_t max_post_content,
         return set_tcpip_error(e, EINVAL);
     }
 
-    if (!request_set_entity(req, buf, nread)) {
+    if (!request_set_entity(req, buf, (size_t)nread)) {
         free(buf);
         return set_os_error(e, ENOSPC);
     }

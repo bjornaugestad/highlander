@@ -7,7 +7,7 @@
         test_clang_release test_clang_debug test_clang_tsan test_clang_asan_ubsan
 
 all: \
-  build_gcc_release build_gcc_debug build_gcc_tsan build_gcc_asan_ubsan \
+  build_gcc_debug build_gcc_release build_gcc_tsan build_gcc_asan_ubsan \
   build_clang_release build_clang_debug build_clang_tsan build_clang_asan_ubsan
 
 test: \

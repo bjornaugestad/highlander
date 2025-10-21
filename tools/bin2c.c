@@ -238,7 +238,7 @@ void create_text_arrays(const char *filename, FILE *f)
 void create_bin_arrays(const char *filename, FILE *f)
 {
     int fd, printed;
-    size_t cb;
+    ssize_t cb;
     unsigned char line[2048];
 
     if ( (fd = open(filename, O_RDONLY)) == -1) {
@@ -250,7 +250,7 @@ void create_bin_arrays(const char *filename, FILE *f)
 
     printed = 0;
     while ( (cb = read(fd, line, sizeof line)) > 0) {
-        size_t i;
+        ssize_t i;
         for (i = 0; i < cb; i++) {
             printed += fprintf(f, "%d,", line[i]);
 

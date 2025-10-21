@@ -317,7 +317,9 @@ int sampler_get(sampler s, size_t entity_id, size_t i, long long* pval)
 
 int sampler_avg(sampler s, size_t eid, size_t from, size_t to, long long* pval)
 {
-    size_t i, valid_nelem = 0;
+    size_t i;
+
+    long long valid_nelem = 0;
     long long sum = 0LL;
 
     for (i = from; i < to; i++) {

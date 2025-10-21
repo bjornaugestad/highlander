@@ -15,7 +15,7 @@
 static inline unsigned long hash(const unsigned char *str)
 {
     unsigned long hashval = 5381;
-    int c;
+    unsigned char c;
 
     while ((c = *str++) != '\0')
         hashval = ((hashval << 5) + hashval) + c;

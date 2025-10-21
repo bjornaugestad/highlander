@@ -59,12 +59,12 @@ status_t cstring_extend(cstring s, size_t size)
 
 status_t cstring_vprintf(cstring dest, const char *fmt, va_list ap)
 {
-    int i;
-    size_t size;
-    va_list ap2;
+    assert(dest != NULL);
+    assert(fmt != NULL);
 
+    va_list ap2;
     va_copy(ap2, ap);
-    size = vsnprintf(NULL, 0, fmt, ap2);
+    size_t size = (size_t)vsnprintf(NULL, 0, fmt, ap2);
     va_end(ap2);
 
     // size now contains the bytes needed _excluding_ the null char.
@@ -79,8 +79,9 @@ status_t cstring_vprintf(cstring dest, const char *fmt, va_list ap)
     if (!has_room_for(dest, size) && !cstring_extend(dest, size))
         return failure;
 
-    // We append the new data, therefore the &
-    i = vsnprintf(&dest->data[dest->len], size, fmt, ap);
+    // We append the new data, therefore the &. This 'cannot' fail
+    // as we've computed the bytes needed above and reallocated.
+    size_t i = (size_t)vsnprintf(&dest->data[dest->len], size, fmt, ap);
 
     // We do not know the length of the data after vsnprintf()
     // We therefore recompute the len member.
@@ -107,14 +108,14 @@ status_t cstring_printf(cstring dest, const char *fmt, ...)
 
 status_t cstring_pcat(cstring dest, const char *start, const char *end)
 {
-    ptrdiff_t cb;
 
     assert(dest != NULL);
     assert(start != NULL);
     assert(end != NULL);
     assert(start < end);
 
-    cb = end - start;
+    // We know this will work due to the assert.
+    size_t cb = (size_t)(end - start);
     if (!has_room_for(dest, cb) && !cstring_extend(dest, cb))
         return failure;
 

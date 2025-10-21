@@ -726,7 +726,7 @@ static inline status_t send_cachecontrol(general_header gh, connection conn)
     }
 
     if (general_header_flag_is_set(gh, GENERAL_HEADER_MAX_AGE_SET)) {
-        if (!http_send_ulong(conn, "max-age=", gh->max_age))
+        if (!http_send_int(conn, "max-age=", gh->max_age))
             return 0;
 
         if (nfields && !http_send_string(conn, ", "))
@@ -736,7 +736,7 @@ static inline status_t send_cachecontrol(general_header gh, connection conn)
     }
 
     if (general_header_flag_is_set(gh, GENERAL_HEADER_MAX_STALE_SET)) {
-        if (!http_send_ulong(conn, "max-stale=", gh->max_stale))
+        if (!http_send_int(conn, "max-stale=", gh->max_stale))
             return 0;
 
         if (nfields && !http_send_string(conn, ", "))
@@ -746,7 +746,7 @@ static inline status_t send_cachecontrol(general_header gh, connection conn)
     }
 
     if (general_header_flag_is_set(gh, GENERAL_HEADER_MIN_FRESH_SET)) {
-        if (!http_send_ulong(conn, "min-fresh=", gh->min_fresh))
+        if (!http_send_int(conn, "min-fresh=", gh->min_fresh))
             return 0;
 
         if (nfields && !http_send_string(conn, ", "))
@@ -806,7 +806,7 @@ static inline status_t send_cachecontrol(general_header gh, connection conn)
     }
 
     if (general_header_flag_is_set(gh, GENERAL_HEADER_S_MAXAGE_SET)) {
-        if (!http_send_ulong(conn, "s-maxage=", gh->s_maxage))
+        if (!http_send_int(conn, "s-maxage=", gh->s_maxage))
             return 0;
 
         if (nfields && !http_send_string(conn, ", "))

@@ -503,16 +503,11 @@ static status_t destroy_server_ctx(tcp_server this)
 
 static status_t setup_server_ctx(tcp_server this)
 {
-    int verifyflags = 0; // SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
-    int options = SSL_OP_NO_COMPRESSION | SSL_OP_CIPHER_SERVER_PREFERENCE;
-    int rc;
-    const SSL_METHOD *method;
-
     assert(this != NULL);
     assert(this->server_context == NULL);
     assert(this->private_key != NULL);
 
-    method = TLS_server_method();
+    const SSL_METHOD *method = TLS_server_method();
     if (method == NULL)
         goto err;
 
@@ -527,6 +522,7 @@ static status_t setup_server_ctx(tcp_server this)
     if (this->cadir != NULL)
         cadir = c_str(this->cadir);
         
+    int rc;
     if (cadir != NULL) {
         rc = SSL_CTX_load_verify_locations(this->server_context, NULL, cadir);
         if (rc != 1)
@@ -557,6 +553,8 @@ static status_t setup_server_ctx(tcp_server this)
     if (rc != 1)
         goto err;
 
+    int verifyflags = 0; // SSL_VERIFY_PEER | SSL_VERIFY_FAIL_IF_NO_PEER_CERT;
+    uint64_t options = SSL_OP_NO_COMPRESSION | SSL_OP_CIPHER_SERVER_PREFERENCE;
     SSL_CTX_set_verify(this->server_context, verifyflags, verify_callback);
     SSL_CTX_set_verify_depth(this->server_context, 4);
     SSL_CTX_set_options(this->server_context, options);

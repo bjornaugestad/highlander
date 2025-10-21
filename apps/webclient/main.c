@@ -14,7 +14,7 @@
 /* A couple of globals */
 
 /* How many client threads will be created? */
-int g_nthreads = 1;
+size_t g_nthreads = 1;
 int g_nrequests = 1;
 int g_print_contents = 0;
 int g_print_header = 0;
@@ -75,7 +75,7 @@ static void parse_commandline(int argc, char *argv[])
                 break;
 
             case 't':
-                g_nthreads = atoi(optarg);
+                g_nthreads = (size_t)atoi(optarg);
                 break;
 
             case 'r':
@@ -194,16 +194,17 @@ int main(int argc, char *argv[])
         /* allocate space for n thread id's, start threads and then join them */
         pthread_t *threads;
 
-        if ( (threads = malloc(sizeof *threads * g_nthreads)) == NULL)
+        size_t cb = sizeof *threads * g_nthreads;
+        if ( (threads = malloc(cb)) == NULL)
             die("Out of memory\n");
 
-        for (int i = 0; i < g_nthreads; i++) {
+        for (size_t i = 0; i < g_nthreads; i++) {
             if (pthread_create(&threads[i], NULL, threadfunc, NULL))
                 die("Could not start thread\n");
         }
 
         /* Join the threads */
-        for (int i = 0; i < g_nthreads; i++) {
+        for (size_t i = 0; i < g_nthreads; i++) {
             if (pthread_join(threads[i], NULL))
                 die("Could not join thread\n");
         }

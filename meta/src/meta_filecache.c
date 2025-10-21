@@ -152,7 +152,7 @@ status_t filecache_add(filecache this, fileinfo finfo, int pin, unsigned long* p
     if ((fd = open(fileinfo_name(finfo), O_RDONLY)) == -1)
         goto err;
 
-    if ((finfo->contents = malloc(finfo->st.st_size)) == NULL)
+    if ((finfo->contents = malloc((size_t)finfo->st.st_size)) == NULL)
         goto err;
 
     if (read(fd, finfo->contents, (size_t)finfo->st.st_size) != (ssize_t)finfo->st.st_size)
@@ -239,7 +239,7 @@ status_t filecache_get(filecache this, const char *filename, void** pdata, size_
         if (rc) {
             fileinfo fi = p;
             *pdata = fi->contents;
-            *pcb = fi->st.st_size;
+            *pcb = (size_t)fi->st.st_size;
         }
     }
 

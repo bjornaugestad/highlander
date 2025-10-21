@@ -450,7 +450,7 @@ static status_t tcp_write(int fd, const char *buf, size_t count, int timeout, in
             return failure;
 
         buf += nwritten;
-        count -= nwritten;
+        count -= (size_t)nwritten;
     } while(count > 0 && nretries--);
 
     /* If not able to write and no errors detected, we have a timeout */
