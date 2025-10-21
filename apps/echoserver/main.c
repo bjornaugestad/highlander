@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <seccomp.h>
 
 // Move to lib eventually
 #include <openssl/x509.h>
@@ -148,10 +149,103 @@ static void verify_key_and_cert(const char *server_key, const char *server_cert_
     EVP_PKEY_free(pkey);
 }
 
+// net stuff: seccomp. 
+// // We want them to increase security for servers listening to public addrs.
+// We use echoserver as demo program for seccomp so we can adjust API calls
+// and test easily.
+//
+// We have a couple of roles in echo server:
+// - main - the main thread
+// - shutdown thread: 
+// - accept thread:
+// - worker thread(s):
+// Each role has different needs and hence different permissions. We
+// create an array for each role and pass the array as argument to relevant
+// functions. NULL means no permissions.
+
+
+static int main_seccomp[] = {
+    SCMP_SYS(futex),
+    SCMP_SYS(rt_sigprocmask),
+    SCMP_SYS(rt_sigaction),
+    SCMP_SYS(restart_syscall),
+    SCMP_SYS(getpid),
+    SCMP_SYS(gettid),
+    SCMP_SYS(tgkill),         // pthread_kill
+    SCMP_SYS(write),          // logging
+    SCMP_SYS(exit),
+    SCMP_SYS(exit_group),
+    -1                      // Sentinel value, end of array
+};
+
+static int shutdown_seccomp[] = {
+    SCMP_SYS(futex),
+    SCMP_SYS(rt_sigprocmask),
+    SCMP_SYS(rt_sigaction),
+    SCMP_SYS(restart_syscall),
+    SCMP_SYS(getpid),
+    SCMP_SYS(gettid),
+    SCMP_SYS(tgkill),
+    SCMP_SYS(rt_sigtimedwait),
+    SCMP_SYS(clock_gettime),
+    SCMP_SYS(clock_nanosleep),
+    SCMP_SYS(write),          // optional logging
+    SCMP_SYS(close),
+    SCMP_SYS(exit),
+    SCMP_SYS(exit_group),
+    -1                      // Sentinel value, end of array
+};
+
+static int accept_seccomp[] = {
+    SCMP_SYS(accept4),
+    SCMP_SYS(poll),
+    SCMP_SYS(ppoll),
+    SCMP_SYS(close),
+    SCMP_SYS(shutdown),
+    SCMP_SYS(futex),
+    SCMP_SYS(rt_sigprocmask),
+    SCMP_SYS(rt_sigaction),
+    SCMP_SYS(restart_syscall),
+    SCMP_SYS(clock_gettime),
+    SCMP_SYS(clock_nanosleep),
+    SCMP_SYS(getpid),
+    SCMP_SYS(gettid),
+    SCMP_SYS(tgkill),
+    SCMP_SYS(write),          // logging
+    SCMP_SYS(getsockname),
+    SCMP_SYS(getpeername),
+    -1                      // Sentinel value, end of array
+};
+
+static int worker_seccomp[] = {
+    SCMP_SYS(read),
+    SCMP_SYS(write),
+    SCMP_SYS(close),
+    SCMP_SYS(shutdown),
+    SCMP_SYS(poll),
+    SCMP_SYS(ppoll),
+    SCMP_SYS(futex),
+    SCMP_SYS(rt_sigprocmask),
+    SCMP_SYS(rt_sigaction),
+    SCMP_SYS(restart_syscall),
+    SCMP_SYS(clock_gettime),
+    SCMP_SYS(clock_nanosleep),
+    SCMP_SYS(getpid),
+    SCMP_SYS(gettid),
+    SCMP_SYS(tgkill),
+    -1                      // Sentinel value, end of array
+};
+
 int main(int argc, char *argv[])
 {
     process p;
     tcp_server srv;
+
+    // work in progress
+    (void)main_seccomp;
+    (void)shutdown_seccomp;
+    (void)accept_seccomp;
+    (void)worker_seccomp;
 
     parse_command_line(argc, argv);
 

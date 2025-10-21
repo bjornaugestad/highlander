@@ -7,6 +7,7 @@ global_c_args = []
 global_link_args = []
 openssl_dep = dependency('openssl', required: true)
 threads     = dependency('threads', required: true)
+seccomp_dep = dependency('libseccomp', required : true)
 
 subdir('tools')
 subdir('meta')
