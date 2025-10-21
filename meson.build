@@ -12,13 +12,28 @@ global_c_args = [
     '-Wstrict-prototypes', 
     '-Wmissing-prototypes',
     '-Wwrite-strings',
+    '-Wshadow',
+    '-Wcast-align',
+    '-Wpointer-arith',
+    '-Wformat-security',
+    '-Wdouble-promotion',
+    '-Wuninitialized',
 ]
 
 # gcc/clang issues
 if cc.get_id() == 'gcc'
-  global_c_args += ['-Warith-conversion']
+  global_c_args += [
+    '-Warith-conversion',
+    '-Wlogical-op',
+    '-Wduplicated-cond',
+    '-Wduplicated-branches',
+    '-Wstringop-overflow',
+    '-Wrestrict',
+  ]
 elif cc.get_id() == 'clang'
-  global_c_args += ['-Wimplicit-int-conversion',  
+  global_c_args += [
+    '-Wimplicit-int-conversion',  
+    '-Wshorten-64-to-32',
     '-Wconversion',
     '-Wsign-conversion'
   ]
