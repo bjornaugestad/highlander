@@ -8,6 +8,7 @@
 #define HIGHLANDER_H
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <time.h>
 
 #include <meta_process.h>
@@ -88,7 +89,7 @@ typedef int (*handlerfn)(http_request, http_response);
 // new stuff 20141231: We need a client ADT for better testing of the server
 http_client http_client_new(int socktype) __attribute__((warn_unused_result));
 void http_client_free(http_client p);
-status_t http_client_connect(http_client this, const char *host, int port)
+status_t http_client_connect(http_client this, const char *host, uint16_t port)
     __attribute__((warn_unused_result));
 
 status_t http_client_get(http_client this, const char *host, const char *uri, error e)
@@ -185,7 +186,7 @@ status_t http_server_set_default_page_attributes(http_server s, page_attribute a
 status_t http_server_set_host(http_server s, const char *name)
     __attribute__((nonnull, warn_unused_result));
 
-void http_server_set_port(http_server s, int n)
+void http_server_set_port(http_server s, uint16_t n)
     __attribute__((nonnull));
 
 int http_server_get_timeout_write(http_server s)    __attribute__((nonnull, warn_unused_result));

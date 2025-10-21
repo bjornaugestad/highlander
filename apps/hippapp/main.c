@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 
 	// Bind and listen to host/port.
 	static const char *hostname = "localhost";
-	int portnumber = 2000;
+	uint16_t portnumber = 2000;
 
 	// Silence the compiler
 	(void)argc;

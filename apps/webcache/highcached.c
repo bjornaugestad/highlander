@@ -206,7 +206,7 @@ static void create_cache(void)
 
 static void configure_admin_server(http_server s, const char *configfilename)
 {
-    int port;
+    uint16_t port;
     char host[1024];
     configfile cf;
 

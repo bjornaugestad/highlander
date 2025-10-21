@@ -200,7 +200,7 @@ connection connection_new(
     return new;
 }
 
-status_t connection_connect(connection this, const char *host, int port)
+status_t connection_connect(connection this, const char *host, uint16_t port)
 {
     assert(this != NULL);
 

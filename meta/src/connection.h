@@ -35,7 +35,7 @@ void *connection_arg2(connection conn)
     __attribute__((nonnull, warn_unused_result));
 
 /* connect to a host on a port, return 0 on errors */
-status_t connection_connect(connection c, const char *host, int port)
+status_t connection_connect(connection c, const char *host, uint16_t port)
     __attribute__((nonnull, warn_unused_result));
 
 status_t connection_printf(connection conn, const char *format, ...)

@@ -50,7 +50,7 @@ void http_client_free(http_client this)
     free(this);
 }
 
-status_t http_client_connect(http_client this, const char *host, int port)
+status_t http_client_connect(http_client this, const char *host, uint16_t port)
 {
     assert(this != NULL);
     assert(host != NULL);
@@ -146,7 +146,7 @@ int main(void)
 
     int socktype = SOCKTYPE_TCP;
     const char *hostname = "www.random.org";
-    int port = 80;
+    uint16_t port = 80;
     const char *uri = "/cgi-bin/randbyte?nbytes=32&format=h";
     if (!openssl_init())
         exit(1);

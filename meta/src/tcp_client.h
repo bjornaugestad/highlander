@@ -21,10 +21,10 @@ status_t tcp_client_set_hostname(tcp_client srv, const char *host)
     __attribute__((warn_unused_result))
     __attribute__((nonnull(1)));
 
-void tcp_client_set_port(tcp_client srv, int port)
+void tcp_client_set_port(tcp_client srv, uint16_t port)
     __attribute__((nonnull));
 
-status_t tcp_client_connect(tcp_client this, const char *host, int port);
+status_t tcp_client_connect(tcp_client this, const char *host, uint16_t port);
 
 // We need these properties when we create SSL sockets, so
 // set them before calling tcp_client_get_root_resources(),

@@ -20,7 +20,7 @@ static void show_usage(void)
 }
 
 static int m_servertype = SOCKTYPE_TCP;
-static int g_portno = 2000;
+static uint16_t g_portno = 2000;
 
 static void parse_command_line(int argc, char *argv[])
 {
@@ -31,8 +31,8 @@ static void parse_command_line(int argc, char *argv[])
     while ((c = getopt(argc, argv, options)) != -1) {
         switch (c) {
             case 'p':
-                if (!isint(optarg) || !toint(optarg, &g_portno))
-                    die("Port number must be an integer\n");
+                if (!isuint16_t(optarg) || !touint16_t(optarg, &g_portno))
+                    die("Port number must be an integer fitting in uint16_t\n");
                 break;
 
             case 'h':
@@ -46,10 +46,6 @@ static void parse_command_line(int argc, char *argv[])
                 exit(1);
         }
     }
-
-    // Some sanity checks
-    if (g_portno == 0 || g_portno > 65535)
-        die("Port number out of range(%d)\n", g_portno);
 }
 
 int main(int argc, char *argv[])

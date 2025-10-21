@@ -68,7 +68,7 @@ struct http_server_tag {
     int retries_write;
 
     char *host;
-    int port;
+    uint16_t port;
     size_t worker_threads;	/* Number of threads available */
     size_t queue_size;	/* Max entries in the queue */
     int block_when_full;
@@ -497,7 +497,7 @@ size_t http_server_get_max_pages(http_server this)
     return this->max_pages;
 }
 
-void http_server_set_port(http_server this, int n)
+void http_server_set_port(http_server this, uint16_t n)
 {
     assert(this != NULL);
 
@@ -916,7 +916,7 @@ status_t http_server_start_via_process(process p, http_server this)
 
 status_t http_server_configure(http_server this, process p, const char *filename)
 {
-    int port = -1;
+    uint16_t port = 0;
     int workers = -1;
     int queuesize = -1;
     int block_when_full = -1;
@@ -985,7 +985,7 @@ status_t http_server_configure(http_server this, process p, const char *filename
     && !configfile_get_string(cf, "documentroot", docroot, sizeof docroot))
         goto readerr;
 
-    if (configfile_exists(cf, "port") && !configfile_get_int(cf, "port", &port))
+    if (configfile_exists(cf, "port") && !configfile_get_uint16_t(cf, "port", &port))
         goto readerr;
 
     if (configfile_exists(cf, "hostname")
@@ -998,7 +998,7 @@ status_t http_server_configure(http_server this, process p, const char *filename
 
     configfile_free(cf);
 
-    if (port != -1)
+    if (port != 0)
         http_server_set_port(this, port);
 
     if (retries_read != -1)
@@ -1173,7 +1173,7 @@ static void make_request(void)
 
     const char *hostname ="localhost";
     const char *uri = "/";
-    int port = 2000;
+    uint16_t port = 2000;
 
     if ((p = http_client_new(SOCKTYPE_TCP)) == NULL)
         exit(1);

@@ -272,6 +272,23 @@ status_t configfile_get_uint(configfile cf, const char *name, unsigned int *valu
     *value = (unsigned int)tmp;
     return success;
 }
+status_t configfile_get_uint16_t(configfile cf, const char *name, uint16_t *value)
+{
+    unsigned tmp;
+
+    assert(cf != NULL);
+    assert(name != NULL);
+    assert(value != NULL);
+
+    if (!configfile_get_uint(cf, name, &tmp))
+        return failure;
+
+    if (tmp > UINT16_MAX)
+        return fail(EINVAL);
+
+    *value = (uint16_t)tmp;
+    return success;
+}
 
 status_t configfile_get_int(configfile cf, const char *name, int *value)
 {

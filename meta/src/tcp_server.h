@@ -54,7 +54,7 @@ status_t tcp_server_set_hostname(tcp_server srv, const char *host)
 void tcp_server_set_unix_socket(tcp_server srv)
     __attribute__((nonnull));
 
-void tcp_server_set_port(tcp_server srv, int port)
+void tcp_server_set_port(tcp_server srv, uint16_t port)
     __attribute__((nonnull));
 
 void tcp_server_set_queue_size(tcp_server srv, size_t size)

@@ -33,7 +33,7 @@ struct tcp_server_tag {
     cstring host;
 
     /* Port to listen to */
-    int port;
+    uint16_t port;
 
     // SSL or TCP
     int socktype;
@@ -625,7 +625,7 @@ status_t tcp_server_start(tcp_server this)
 
 static status_t tcp_server_startv(void *p) { return tcp_server_start(p); }
 
-void tcp_server_set_port(tcp_server this, int port)
+void tcp_server_set_port(tcp_server this, uint16_t port)
 {
     assert(this != NULL);
     this->port = port;

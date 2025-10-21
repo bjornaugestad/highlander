@@ -147,7 +147,7 @@ void tcp_client_free(tcp_client this)
     free(this);
 }
 
-status_t tcp_client_connect(tcp_client this, const char *host, int port)
+status_t tcp_client_connect(tcp_client this, const char *host, uint16_t port)
 {
     assert(this != NULL);
     assert(host != NULL);

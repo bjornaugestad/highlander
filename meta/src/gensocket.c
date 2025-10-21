@@ -13,6 +13,10 @@
 
 #include <gensocket.h>
 
+// Some compile time sanity checks
+_Static_assert((in_port_t)-1 > 0, "in_port_t must be unsigned");
+_Static_assert(sizeof(in_port_t) == 2, "in_port_t must be 16-bit");
+
 struct gensocket_tag {
     int socktype;
     int fd;
@@ -186,7 +190,7 @@ static socket_t socket_socket(int socktype, struct addrinfo *ai)
     return new;
 }
 
-static socket_t tcp_create_server_socket(const char *host, int port)
+static socket_t tcp_create_server_socket(const char *host, uint16_t port)
 {
     socket_t new = NULL;
 
@@ -222,7 +226,7 @@ static socket_t tcp_create_server_socket(const char *host, int port)
     return NULL;
 }
 
-static socket_t tcp_create_client_socket(const char *host, int port)
+static socket_t tcp_create_client_socket(const char *host, uint16_t port)
 {
     char serv[6];
     struct addrinfo hints = {0}, *res = NULL, *ai;
@@ -264,7 +268,7 @@ static socket_t tcp_create_client_socket(const char *host, int port)
 }
 
 // A ctor function
-socket_t socket_create_server_socket(int socktype, const char *host, int port)
+socket_t socket_create_server_socket(int socktype, const char *host, uint16_t port)
 {
     socket_t new;
     assert(socktype == SOCKTYPE_TCP || socktype == SOCKTYPE_SSL);
@@ -278,7 +282,7 @@ socket_t socket_create_server_socket(int socktype, const char *host, int port)
 
 // A ctor function
 socket_t socket_create_client_socket(int socktype, void *context, 
-    const char *host, int port)
+    const char *host, uint16_t port)
 {
     assert(socktype == SOCKTYPE_TCP || context != NULL);
 

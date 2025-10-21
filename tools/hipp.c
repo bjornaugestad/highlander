@@ -466,6 +466,7 @@ static void create_mainfile(int argc, char *argv[], const char *filename)
 
     p(f, "#include <stdlib.h>\n");
     p(f, "#include <unistd.h>\n");
+    p(f, "#include <stdint.h>\n");
     p(f, "#include <errno.h>\n");
     p(f, "#include <highlander.h>\n");
     p(f, "#include <meta_process.h>\n");
@@ -492,7 +493,7 @@ static void create_mainfile(int argc, char *argv[], const char *filename)
     "",
     "    // Bind and listen to host/port.",
     "    static const char *hostname = \"localhost\";",
-    "    int portnumber = 2000;",
+    "    uint16_t portnumber = 2000;",
     "",
     "    // Silence the compiler",
     "    (void)argc;",

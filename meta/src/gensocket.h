@@ -6,6 +6,7 @@
 #ifndef GENSOCKET_H
 #define GENSOCKET_H
 
+#include <stdint.h>
 #include <sys/socket.h>
 #include <meta_common.h>
 
@@ -24,16 +25,16 @@ extern "C" {
 typedef struct gensocket_tag *socket_t;
 int socket_get_fd(socket_t this);
 
-socket_t socket_create_server_socket(int type, const char *host, int port)
+socket_t socket_create_server_socket(int type, const char *host, uint16_t port)
     __attribute__((warn_unused_result, nonnull));
 
-socket_t socket_create_client_socket(int type, void *context, const char *host, int port)
+socket_t socket_create_client_socket(int type, void *context, const char *host, uint16_t port)
     __attribute__((warn_unused_result, nonnull(3)));
 
 socket_t socket_accept(socket_t p, void *context, struct sockaddr_storage *addr,
     socklen_t *addrsize) __attribute__((warn_unused_result, nonnull(3,4)));
 
-status_t socket_bind(socket_t p, const char *hostname, int port)
+status_t socket_bind(socket_t p, const char *hostname, uint16_t port)
     __attribute__((warn_unused_result, nonnull));
 
 status_t socket_close(socket_t p)
