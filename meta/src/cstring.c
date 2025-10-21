@@ -153,7 +153,7 @@ status_t cstring_charcat(cstring dest, int c)
     if (!has_room_for(dest, 1) && !cstring_extend(dest, 1))
         return failure;
 
-    dest->data[dest->len++] = c;
+    dest->data[dest->len++] = (char)c;
     dest->data[dest->len] = '\0';
 
     assert(dest->len == strlen(dest->data));
@@ -494,7 +494,7 @@ void cstring_lower(cstring s)
 
     for (i = 0; i < s->len; i++) {
         if (isupper((unsigned char)s->data[i]))
-            s->data[i] = tolower((unsigned char)s->data[i]);
+            s->data[i] = (char)tolower((unsigned char)s->data[i]);
     }
 }
 
@@ -506,7 +506,7 @@ void cstring_upper(cstring s)
 
     for (i = 0; i < s->len; i++) {
         if (islower((unsigned char)s->data[i]))
-            s->data[i] = toupper((unsigned char)s->data[i]);
+            s->data[i] = (char)toupper((unsigned char)s->data[i]);
     }
 }
 
@@ -576,6 +576,7 @@ int cstring_find(cstring s, int c)
     return (int)(p - s->data);
 }
 
+// TODO: int's too short for really long strings
 int cstring_findstr(cstring s, const char *str)
 {
     const char *p;
@@ -586,7 +587,7 @@ int cstring_findstr(cstring s, const char *str)
     if ((p = strstr(s->data, str)) == NULL)
         return -1;
 
-    return p - s->data;
+    return (int)(p - s->data);
 }
 
 #ifdef CHECK_CSTRING

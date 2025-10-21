@@ -14,6 +14,7 @@
 #include <meta_misc.h>
 #include <meta_pair.h>
 #include <meta_list.h>
+#include <meta_convert.h>
 
 #include "highlander.h"
 #include "internals.h"
@@ -90,7 +91,7 @@ struct http_request_tag {
     cstring if_none_match;		/* v1.1 §14.26 */
     cstring if_range;			/* v1.1 §14.27 */
     time_t if_unmodified_since;	/* v1.1 §14.28 */
-    int max_forwards;			/* v1.1 §14.31 */
+    unsigned int max_forwards;	/* v1.1 §14.31 */
     cstring proxy_authorization;/* v1.1 §14.34 */
     cstring range;				/* v1.1 §14.35 */
     cstring referer;			/* v1.0 §10.13 v1.1 §14.36 */
@@ -567,7 +568,7 @@ status_t request_set_if_unmodified_since(http_request r, time_t value)
     return success;
 }
 
-void request_set_max_forwards(http_request r, unsigned long value)
+void request_set_max_forwards(http_request r, unsigned int value)
 {
     r->max_forwards = value;
     request_set_flag(r, REQUEST_MAX_FORWARDS_SET);
@@ -1042,16 +1043,21 @@ static status_t parse_if_range(http_request req, const char *value, error e)
 
 static status_t parse_max_forwards(http_request req, const char *value, error e)
 {
-    unsigned long v;
-
+    (void)e;
     assert(req != NULL);
     assert(value != NULL);
 
-    if ((v = strtoul(value, NULL, 10)) == 0)
+    if (!isuint(value))
         return set_http_error(e, HTTP_400_BAD_REQUEST);
 
-    request_set_max_forwards(req, v);
-    return success;
+    unsigned int v;
+    status_t rc = touint(value, &v);
+    if (rc == success) {
+        request_set_max_forwards(req, v);
+        return success;
+    }
+
+    return set_http_error(e, HTTP_500_INTERNAL_SERVER_ERROR);
 }
 
 static status_t parse_proxy_authorization(http_request req, const char *value, error e)
@@ -1341,7 +1347,7 @@ static status_t send_max_forwards(http_request r, connection c)
     assert(r != NULL);
     assert(c != NULL);
 
-    return http_send_int(c, "Max-Forwards: ", r->max_forwards);
+    return http_send_unsigned_int(c, "Max-Forwards: ", r->max_forwards);
 }
 
 static status_t send_proxy_authorization(http_request r, connection c)
@@ -1747,7 +1753,7 @@ static char *locate_next_uri_param(char *s)
 static inline status_t
 decode_uri_param_value(char *decoded, const char *value, size_t cb, error e)
 {
-    int rc = rfc1738_decode(decoded, cb, value, strlen(value));
+    size_t rc = rfc1738_decode(decoded, cb, value, strlen(value));
     if (rc == 0) {
         if (errno == EINVAL)
             return set_http_error(e, HTTP_400_BAD_REQUEST);

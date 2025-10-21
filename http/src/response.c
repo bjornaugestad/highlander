@@ -643,6 +643,19 @@ status_t http_send_int(connection conn, const char *name, int value)
     return connection_write(conn, val, (size_t)cb);
 }
 
+status_t http_send_unsigned_int(connection conn, const char *name, unsigned int value)
+{
+    assert(conn != NULL);
+    assert(name != NULL);
+
+    char val[1000];
+    int cb = snprintf(val, sizeof val, "%s%u", name, value);
+    if (cb < 0 || (size_t)cb >= sizeof val)
+        return failure;
+
+    return connection_write(conn, val, (size_t)cb);
+}
+
 status_t http_send_field(connection conn, const char *name, cstring value)
 {
     assert(conn != NULL);
@@ -1056,7 +1069,7 @@ response_send_entity(http_response r, connection conn, size_t *pcb)
         *pcb = cb;
         if (cb > 64 * 1024) {
             int timeout = 1;
-            int retries = cb / 1024;
+            int retries = (int)(cb / 1024);
 
             rc = connection_write_big_buffer(conn, r->content_buffer,
                 cb, timeout, retries);

@@ -506,7 +506,7 @@ int process_get_exitcode(process this, void *object)
     for (i = 0; i < this->nservices; i++) {
         struct service *s = &this->services[i];
         if (s->object == object)
-            return s->exitcode;
+            return (int)s->exitcode;
     }
 
     return -1;

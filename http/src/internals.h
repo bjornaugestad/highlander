@@ -84,6 +84,7 @@ status_t http_send_field(connection conn, const char *name, cstring value) __att
 status_t http_send_date(connection conn, const char *name, time_t value) __attribute__((nonnull, warn_unused_result));
 status_t http_send_ulong(connection conn, const char *name, unsigned long value) __attribute__((nonnull, warn_unused_result));
 status_t http_send_int(connection conn, const char *name, int value) __attribute__((nonnull, warn_unused_result));
+status_t http_send_unsigned_int(connection conn, const char *name, unsigned int value) __attribute__((nonnull, warn_unused_result));
 status_t http_send_string(connection conn, const char *s) __attribute__((nonnull, warn_unused_result));
 
 status_t read_line(connection conn, char *buf, size_t cchMax, error e) __attribute__((nonnull, warn_unused_result));

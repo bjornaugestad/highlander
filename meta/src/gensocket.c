@@ -95,7 +95,7 @@ static status_t ssl_write(int fd, SSL *ssl, const char *buf, size_t count,
     return success;
 }
 
-status_t socket_poll_for(int fd, int timeout, int poll_for)
+status_t socket_poll_for(int fd, int timeout, short poll_for)
 {
     struct pollfd pfd;
     int rc;
@@ -489,11 +489,12 @@ static ssize_t ssl_read(int fd, SSL *ssl, char *dest, size_t count, int timeout,
         }
 
         // Return data asap, even if partial
-        ssize_t nread = SSL_read(ssl, dest, count);
-        if (nread > 0)
-            return nread;
+        size_t nread;
+        int rc = SSL_read_ex(ssl, dest, count, &nread);
+        if (rc > 0)
+            return (ssize_t)nread;
 
-        int err = SSL_get_error(ssl, nread);
+        int err = SSL_get_error(ssl, rc);
         switch (err) {
             case SSL_ERROR_WANT_READ:
                 if (!socket_poll_for(fd, timeout, POLLIN))

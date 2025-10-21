@@ -35,8 +35,8 @@ static int encode(int c, char *dest)
         low = '0' + low;
 
     *dest++ = '%';
-    *dest++ = high;
-    *dest = low;
+    *dest++ = (char)high;
+    *dest = (char)low;
     return 1;
 }
 
@@ -142,7 +142,7 @@ size_t rfc1738_decode(char *dest, size_t destsize, const char *src, size_t srcle
                 return 0;
             }
 
-            *dest++ = c;
+            *dest++ = (char)c;
             src += 3;
             srclen -= 2;
         }

@@ -44,6 +44,7 @@ status_t todouble(const char *s, double *dest)
     __attribute__((nonnull(1, 2)));
 
 __attribute__((nonnull))
+__attribute__((warn_unused_result))
 static inline bool isint(const char *s)
 {
     int d;
@@ -51,6 +52,7 @@ static inline bool isint(const char *s)
 }
 
 __attribute__((nonnull))
+__attribute__((warn_unused_result))
 static inline bool isuint(const char *s)
 {
     unsigned int d;
@@ -58,6 +60,7 @@ static inline bool isuint(const char *s)
 }
 
 __attribute__((nonnull))
+__attribute__((warn_unused_result))
 static inline bool issize_t(const char *s)
 {
     size_t d;
@@ -65,6 +68,7 @@ static inline bool issize_t(const char *s)
 }
 
 __attribute__((nonnull))
+__attribute__((warn_unused_result))
 static inline bool islong(const char *s)
 {
     long d;
@@ -72,6 +76,7 @@ static inline bool islong(const char *s)
 }
 
 __attribute__((nonnull))
+__attribute__((warn_unused_result))
 static inline bool isulong(const char *s)
 {
     unsigned long d;
@@ -79,6 +84,7 @@ static inline bool isulong(const char *s)
 }
 
 __attribute__((nonnull))
+__attribute__((warn_unused_result))
 static inline bool isfloat(const char *s)
 {
     float d;
@@ -86,6 +92,7 @@ static inline bool isfloat(const char *s)
 }
 
 __attribute__((nonnull))
+__attribute__((warn_unused_result))
 static inline bool isdouble(const char *s)
 {
     double d;

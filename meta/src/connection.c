@@ -89,15 +89,13 @@ struct connection_tag {
 /* Local helpers */
 static inline status_t fill_read_buffer(connection this)
 {
-    ssize_t nread;
-
     assert(this != NULL);
     assert(membuf_canread(this->readbuf) == 0);
 
     /* Clear the read buffer */
     membuf_reset(this->readbuf);
 
-    nread = socket_read(this->sock, membuf_data(this->readbuf),
+    ssize_t nread = socket_read(this->sock, membuf_data(this->readbuf),
         membuf_size(this->readbuf), this->timeout_reads,
         this->retries_reads);
 
@@ -292,7 +290,7 @@ status_t connection_close(connection this)
     return success;
 }
 
-status_t connection_getc(connection this, int *pc)
+status_t connection_getc(connection this, char *pc)
 {
     char c;
 
@@ -365,13 +363,11 @@ status_t connection_write(connection this, const void *buf, size_t count)
  */
 static ssize_t read_from_socket(connection this, void *buf, size_t count)
 {
-    ssize_t nread;
-
     assert(this != NULL);
     assert(buf != NULL);
     assert(readbuf_empty(this));
 
-    nread = socket_read(this->sock, buf, count, this->timeout_reads, this->retries_reads);
+    ssize_t nread = socket_read(this->sock, buf, count, this->timeout_reads, this->retries_reads);
     if (nread > 0)
         this->incoming_bytes += (size_t)nread;
 
@@ -538,13 +534,13 @@ status_t connection_puts(connection this, const char *s)
 status_t connection_gets(connection this, char *dest, size_t destsize)
 {
     status_t rc = success;
-    int c;
     size_t i = 0;
 
     assert(this != NULL);
     assert(dest != NULL);
     assert(destsize > 0);
 
+    char c;
     while (i < destsize && (rc = connection_getc(this, &c))) {
         *dest++ = c;
         i++;

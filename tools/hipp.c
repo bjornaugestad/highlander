@@ -131,7 +131,7 @@ static void create_header(char *filename, int argc, char *argv[], int opt_ind)
     strcpy(guard, remove_ext(base));
     s = guard;
     while (*s != '\0')  {
-        *s = toupper((unsigned char)*s);
+        *s = (char)toupper((unsigned char)*s);
         s++;
     }
 
@@ -385,7 +385,7 @@ static void process_file(char *name)
                     fgetc(fin); /* Skip % */
                 }
                 else
-                    append(g_buf, c);
+                    append(g_buf, (char)c);
 
                 break;
 
@@ -426,7 +426,7 @@ static void process_file(char *name)
                     lineno++;
 
                 /* Add character to buffer */
-                append(g_buf, c);
+                append(g_buf, (char)c);
                 break;
         }
     }

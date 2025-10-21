@@ -61,7 +61,7 @@ status_t connection_flush(connection conn)
 ssize_t  connection_read  (connection conn, void *buf, size_t bufsize)
     __attribute__((nonnull, warn_unused_result));
 
-status_t connection_getc  (connection conn, int* pchar)
+status_t connection_getc  (connection conn, char* pchar)
     __attribute__((nonnull, warn_unused_result));
 
 status_t connection_gets  (connection conn, char *buf, size_t bufsize)

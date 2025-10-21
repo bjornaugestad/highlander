@@ -449,7 +449,7 @@ status_t request_set_if_range(http_request r, const char *value)
 status_t request_set_if_unmodified_since(http_request r, time_t value)
     __attribute__((nonnull, warn_unused_result));
 
-void request_set_max_forwards(http_request r, unsigned long value)
+void request_set_max_forwards(http_request r, unsigned int value)
     __attribute__((nonnull));
 
 status_t request_set_proxy_authorization(http_request r, const char *value)

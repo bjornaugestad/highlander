@@ -8,9 +8,17 @@ global_c_args = [
     '-Wextra',
     '-Werror',
     '-std=gnu2x',
-    '-Warith-conversion',
     '-Wsign-conversion'
 ]
+
+# gcc/clang issues
+if cc.get_id() == 'gcc'
+  global_c_args += ['-Warith-conversion']
+elif cc.get_id() == 'clang'
+  global_c_args += ['-Wimplicit-int-conversion']  
+endif
+
+
 
 global_link_args = []
 openssl_dep = dependency('openssl', required: true)

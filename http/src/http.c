@@ -32,10 +32,10 @@
  */
 status_t read_line(connection conn, char *dest, size_t destsize, error e)
 {
-    int c;
     size_t i = 0;
 
     while (i < destsize) {
+        char c;
         if (!connection_getc(conn, &c))
             return set_tcpip_error(e, errno);
 

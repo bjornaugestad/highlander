@@ -27,11 +27,7 @@ time_t parse_rfc822_date(const char *s)
         "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
     };
 
-    size_t i, size;
-    int imonth, day_of_month = 0;
-    int year = 0;
-    int h, m, sec;
-    struct tm tm;
+    int i, size;
 
     assert(s != NULL);
 
@@ -53,13 +49,13 @@ time_t parse_rfc822_date(const char *s)
     /* Now move to next field which is date as in: 02 SP Jun SP 1982 */
     s += 5;
     assert(isdigit((unsigned char)*s) && isdigit((unsigned char)*(s+1)));
-    day_of_month = ((*s - '0') * 10) + (*s - '0');
+    int day_of_month = ((*s - '0') * 10) + (*s - '0');
 
     /* find month */
     s+= 3;
     assert(isalpha((unsigned char)*s) && isupper((unsigned char)*s));
 
-    imonth = 0;
+    int imonth = 0;
     size = sizeof month / sizeof *month;
     for (i = 0; i < size; i++) {
         if (!memcmp(s, month[i], 3)) {
@@ -74,6 +70,7 @@ time_t parse_rfc822_date(const char *s)
 
 
     /* Move to year */
+    int year = 0;
     s += 4;
     year = 0;
     for (i = 0; i < 4; i++) {
@@ -84,13 +81,13 @@ time_t parse_rfc822_date(const char *s)
     /* Move to time and read it. Format is hh:mm:ss */
     s += 5;
     assert(isdigit(*s) && isdigit(*(s+1)));
-    h = ((*s - '0') * 10) + (*(s + 1) - '0');
+    int h = ((*s - '0') * 10) + (*(s + 1) - '0');
 
     assert(':' == *(s + 2));
-    m = ((*(s + 3) - '0') * 10) + (*(s + 4) - '0');
+    int m = ((*(s + 3) - '0') * 10) + (*(s + 4) - '0');
 
     assert(':' == *(s + 5));
-    sec = ((*(s + 6) - '0') * 10) + (*(s + 7) - '0');
+    int sec = ((*(s + 6) - '0') * 10) + (*(s + 7) - '0');
 
     assert(h < 24);
     assert(m < 60);
@@ -102,6 +99,7 @@ time_t parse_rfc822_date(const char *s)
         return -1;
 
     /* That's it, convert it to a time_t */
+    struct tm tm;
     tm.tm_sec = sec;
     tm.tm_min = m;
     tm.tm_hour = h;

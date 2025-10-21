@@ -40,7 +40,7 @@ status_t socket_close(socket_t p)
     __attribute__((nonnull));
 
 // polltype is POLLIN and friends
-status_t socket_poll_for(int fd, int timeout, int polltype)
+status_t socket_poll_for(int fd, int timeout, short polltype)
     __attribute__((warn_unused_result));
 
 status_t socket_wait_for_data(socket_t p, int timeout)

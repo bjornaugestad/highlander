@@ -41,7 +41,7 @@ int find_word(const char *s, size_t wordidx)
     if (*str == '\0')
         return -1;
 
-    return str - s;
+    return (int)(str - s);
 }
 
 status_t get_word_from_string(const char *src, char *dest,
@@ -214,7 +214,7 @@ void fs_lower(char *s)
 
     while (*s != '\0') {
         if (isupper((int)*s))
-            *s = tolower((int)*s);
+            *s = (char)tolower((int)*s);
 
         s++;
     }

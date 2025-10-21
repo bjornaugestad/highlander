@@ -364,9 +364,9 @@ void start_header(FILE *f, const char *filename)
     /* Create uppercase and replace [./] with _ */
     s = guard;
     while (*s) {
-        if (islower(*s))
-            *s = toupper(*s);
-        else if (!isalnum(*s))
+        if (islower((unsigned char)*s))
+            *s = (char)toupper((unsigned char)*s);
+        else if (!isalnum((unsigned char)*s))
             *s = '_';
 
         s++;
