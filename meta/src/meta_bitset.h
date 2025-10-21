@@ -111,7 +111,7 @@ static inline __attribute__((nonnull)) void bitset_set(bitset this, size_t i)
     assert(this != NULL);
     assert(i < this->size * CHAR_BIT);
 
-    this->data[i / CHAR_BIT] |= (1 << (i % CHAR_BIT));
+    this->data[i / CHAR_BIT] |= (1u << (i % CHAR_BIT));
 }
 
 static inline int bitset_is_set(const bitset this, size_t i)
@@ -119,7 +119,7 @@ static inline int bitset_is_set(const bitset this, size_t i)
     assert(this != NULL);
     assert(i < this->size * CHAR_BIT);
 
-    return this->data[i / CHAR_BIT] & (1 << (i % CHAR_BIT));
+    return this->data[i / CHAR_BIT] & (1u << (i % CHAR_BIT));
 }
 
 static inline __attribute__((nonnull)) void bitset_clear_all(bitset this)
@@ -154,7 +154,7 @@ void bitset_clear(bitset this, size_t i)
     assert(this != NULL);
     assert(i < this->size * CHAR_BIT);
 
-    this->data[i / CHAR_BIT] &= ~(1 << (i % CHAR_BIT));
+    this->data[i / CHAR_BIT] &= ~(1u << (i % CHAR_BIT));
 }
 
 

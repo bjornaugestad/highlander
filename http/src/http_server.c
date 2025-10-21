@@ -815,7 +815,7 @@ void http_server_add_logentry(
     struct sockaddr_storage *paddr = connection_get_addr(conn);
 
     if (paddr == NULL)
-        src = "unknown";
+        strcpy(ip, "unknown");
     else if (paddr->ss_family == AF_INET)
         src = &((struct sockaddr_in *)paddr)->sin_addr;
     else if (paddr->ss_family == AF_INET6)
@@ -826,13 +826,9 @@ void http_server_add_logentry(
     if (src != NULL)
         inet_ntop(paddr->ss_family, src, ip, sizeof ip);
 
-    cc = fprintf(this->logfile, "%s - - [%s] \"%s %s\" %d %lu\n",
-        ip,
-        datebuf,
-        method,
-        request_get_uri(request),
-        status_code ,
-        (unsigned long)bytes_sent);
+    cc = fprintf(this->logfile, "%s - - [%s] \"%s %s\" %d %zu\n",
+        ip, datebuf, method, request_get_uri(request),
+        status_code , bytes_sent);
 
     if (cc <= 0) {
         this->logging = 0;

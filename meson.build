@@ -6,16 +6,22 @@ global_includes = []
 global_c_args = [
     '-Wall',
     '-Wextra',
+    '-Wpedantic',
     '-Werror',
     '-std=gnu2x',
-    '-Wsign-conversion'
+    '-Wstrict-prototypes', 
+    '-Wmissing-prototypes',
+    '-Wwrite-strings',
 ]
 
 # gcc/clang issues
 if cc.get_id() == 'gcc'
   global_c_args += ['-Warith-conversion']
 elif cc.get_id() == 'clang'
-  global_c_args += ['-Wimplicit-int-conversion']  
+  global_c_args += ['-Wimplicit-int-conversion',  
+    '-Wconversion',
+    '-Wsign-conversion'
+  ]
 endif
 
 
