@@ -10,6 +10,7 @@
 #include <assert.h>
 
 #include "internals.h"
+#include <meta_convert.h>
 
 struct cookie_tag {
     cstring name;
@@ -354,7 +355,10 @@ static status_t parse_new_cookie_secure(cookie c, const char *value, error e)
         return 0;
     }
 
-    secure = atoi(c_str(str));
+    const char *s = c_str(str);
+    if (!isint(s) || !toint(s, &secure))
+        return set_http_error(e, HTTP_400_BAD_REQUEST);
+
     if (secure != 1 && secure != 0) {
         cstring_free(str);
         return set_http_error(e, HTTP_400_BAD_REQUEST);
@@ -388,7 +392,10 @@ static status_t parse_new_cookie_version(cookie c, const char *value, error e)
         return 0;
     }
 
-    version = atoi(c_str(str));
+
+    const char *s = c_str(str);
+    if (!isint(s) || !toint(s, &version))
+        return set_http_error(e, HTTP_400_BAD_REQUEST);
     cstring_free(str);
 
     if (version != 1)

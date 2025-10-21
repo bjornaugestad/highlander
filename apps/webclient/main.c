@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <meta_common.h>
+#include <meta_convert.h>
 #include <highlander.h>
 #include <connection.h>
 
@@ -20,7 +21,7 @@ int g_print_contents = 0;
 int g_print_header = 0;
 
 const char*g_hostname = NULL;
-int g_port = 0;
+uint16_t g_port = 0;
 const char* g_uri = "/";
 //
 // timeout is in ms.
@@ -67,19 +68,27 @@ static void parse_commandline(int argc, char *argv[])
                 break;
 
             case 'T':
-                timeout_reads = timeout_writes = atoi(optarg);
+                if (!isint(optarg) || !toint(optarg, &timeout_writes))
+                    die("Timeout must be an integer\n");
+                timeout_reads = timeout_writes;
                 break;
 
             case 'R':
-                nretries_read = nretries_write = atoi(optarg);
+                if (!isint(optarg) || !toint(optarg, &nretries_write))
+                    die("Retries must be an integer\n");
+                nretries_read = nretries_write;
                 break;
 
             case 't':
-                g_nthreads = (size_t)atoi(optarg);
+                if (!issize_t(optarg) || !tosize_t(optarg, &g_nthreads))
+                    die("number of threads must be a positive integer\n");
+
                 break;
 
             case 'r':
-                g_nrequests = atoi(optarg);
+                if (!isint(optarg) || !toint(optarg, &g_nrequests))
+                    die("Number of requests must be an integer\n");
+
                 break;
 
             case 'C':
@@ -108,7 +117,9 @@ static void parse_commandline(int argc, char *argv[])
     }
 
     g_hostname = argv[optind++];
-    g_port = atoi(argv[optind]);
+
+    if (!isuint16_t(argv[optind]) || !touint16_t(argv[optind], &g_port))
+        die("Port number must be a positive integer\n");
 }
 
 static void print_response_contents(http_response response)

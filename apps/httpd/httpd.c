@@ -5,6 +5,7 @@
 
 #include <highlander.h>
 #include <miscssl.h>
+#include <meta_convert.h>
 
 static void show_usage(void)
 {
@@ -30,7 +31,8 @@ static void parse_command_line(int argc, char *argv[])
     while ((c = getopt(argc, argv, options)) != -1) {
         switch (c) {
             case 'p':
-                g_portno = atoi(optarg);
+                if (!isint(optarg) || !toint(optarg, &g_portno))
+                    die("Port number must be an integer\n");
                 break;
 
             case 'h':

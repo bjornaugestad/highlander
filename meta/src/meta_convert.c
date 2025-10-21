@@ -42,6 +42,24 @@ status_t touint(const char *src, unsigned *dest)
     return success;
 }
 
+status_t touint16_t(const char *src, uint16_t *dest)
+{
+    unsigned res;
+
+    assert(src != NULL);
+    assert(dest != NULL);
+
+    res = 0; // Make gcc shut up
+    if (!touint(src, &res))
+        return failure;
+
+    if (res > UINT16_MAX)
+        return fail(ERANGE);
+
+    *dest = (uint16_t)res;
+    return success;
+}
+
 status_t tolong(const char *src, long *dest)
 {
     long res;

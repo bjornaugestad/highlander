@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <highlander.h>
 #include <internals.h>
+#include <meta_convert.h>
 
 /*
  * TODO (2007-05-25):
@@ -920,7 +921,6 @@ static status_t set_cache_control(general_header gh, const char *s, error e)
         if (strstr(s, type2[i].directive) == s) {
             /* NOTE: Same 'bug' as above */
             char *eq = strchr(s, '=');
-            int arg;
 
             /* Could not find = as in NAME=value */
             if (NULL == eq)
@@ -928,12 +928,9 @@ static status_t set_cache_control(general_header gh, const char *s, error e)
 
             /* Skip = and convert arg to integer */
             eq++;
-            arg = -1;
-            arg = atoi(eq);
-            if (-1 == arg) {
-                /* Conversion error. NOTE: How about strtol() instead? */
+            int arg;
+            if (!isint(eq) || !toint(eq, &arg))
                 return set_http_error(e, HTTP_400_BAD_REQUEST);
-            }
 
             /* Call function and continue */
             (*type2[i].func)(gh, arg);
