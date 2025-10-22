@@ -149,7 +149,7 @@ static void verify_key_and_cert(const char *server_key, const char *server_cert_
     EVP_PKEY_free(pkey);
 }
 
-// net stuff: seccomp. 
+// net stuff: seccomp.  20251022++
 // // We want them to increase security for servers listening to public addrs.
 // We use echoserver as demo program for seccomp so we can adjust API calls
 // and test easily.
@@ -162,6 +162,14 @@ static void verify_key_and_cert(const char *server_key, const char *server_cert_
 // Each role has different needs and hence different permissions. We
 // create an array for each role and pass the array as argument to relevant
 // functions. NULL means no permissions.
+//
+// The critical part is when do add these filters. Too soon, and the program
+// won't run as expected. Too late, and we have a security hole.
+//
+// seccomp is per thread so each thread must do this whenever it feels for
+// it. At the same time, we want a simple interface and centralized admin,
+// so we pass arrays of syscalls to the threads at startup and provide
+// functions to use them. 
 
 
 static int main_seccomp[] = {

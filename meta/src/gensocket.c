@@ -31,19 +31,21 @@ int socket_get_fd(socket_t this)
     return this->fd;
 }
 
-static status_t ssl_write(int fd, SSL *ssl, const char *buf, size_t count,
+static status_t ssl_write(socket_t this, const char *buf, size_t count,
     int timeout, int nretries)
 {
     size_t nwritten = 0;
 
-    assert(ssl != NULL);
-    assert(fd >= 0);
+    assert(this != NULL);
+    assert(this->socktype == SOCKTYPE_SSL);
+    assert(this->ssl != NULL);
+    assert(this->fd >= 0);
     assert(buf != NULL);
     assert(timeout >= 0);
     assert(nretries >= 0);
 
     do {
-        if (!socket_poll_for(fd, timeout, POLLOUT)) {
+        if (!socket_poll_for(this->fd, timeout, POLLOUT)) {
             if (errno != EAGAIN)
                 return failure;
 
@@ -51,7 +53,7 @@ static status_t ssl_write(int fd, SSL *ssl, const char *buf, size_t count,
             continue;
         }
 
-        int rc = SSL_write_ex(ssl, buf, count, &nwritten);
+        int rc = SSL_write_ex(this->ssl, buf, count, &nwritten);
         if (rc == 1 && nwritten == count) {
             // Yay, we wrote everything in one go
             return success;
@@ -65,15 +67,15 @@ static status_t ssl_write(int fd, SSL *ssl, const char *buf, size_t count,
         }
 
         // At this point, rc == 0. Interpret SSL_get_error()
-        int err = SSL_get_error(ssl, rc);
+        int err = SSL_get_error(this->ssl, rc);
         switch (err) {
             case SSL_ERROR_WANT_READ:
-                if (!socket_poll_for(fd, timeout, POLLIN))
+                if (!socket_poll_for(this->fd, timeout, POLLIN))
                     return failure;
                 break;
 
             case SSL_ERROR_WANT_WRITE:
-                if (!socket_poll_for(fd, timeout, POLLOUT))
+                if (!socket_poll_for(this->fd, timeout, POLLOUT))
                     return failure;
                 break;
 
@@ -156,6 +158,9 @@ static void socket_free(socket_t this)
 {
     if (this != NULL) {
         if (this->ssl != NULL) {
+            // TODO: Move this one to socket_close after proper SSL_shutdown.
+            // Theres no good way to reuse it, so we're stuck with an SSL_new/free
+            // setup.
             SSL_free(this->ssl);
         }
 
@@ -164,25 +169,28 @@ static void socket_free(socket_t this)
 }
 
 // Binds a socket to an address
-static status_t socket_bind_inet(int fd, struct addrinfo *ai)
+static status_t socket_bind_inet(socket_t this, struct addrinfo *ai)
 {
-    if (bind(fd, ai->ai_addr, ai->ai_addrlen) == -1)
+    if (bind(this->fd, ai->ai_addr, ai->ai_addrlen) == -1)
         return failure;
 
     return success;
 }
 
 // Create a socket object and call socket()
+// TODO: Accept socket_t as arg and return status_t.
 static socket_t socket_socket(int socktype, struct addrinfo *ai)
 {
     assert(socktype == SOCKTYPE_TCP || socktype == SOCKTYPE_SSL);
 
+    // TODO: Don't alloc here. connection_new will do that soon. Just use the fd.
     socket_t new = socket_new(socktype);
     if (new == NULL)
         return NULL;
 
     new->fd = socket(ai->ai_family, ai->ai_socktype, ai->ai_protocol);
     if (new->fd == -1) {
+        // TODO: If we move this to connection, don't free here. Free from connection_free et al.
         socket_free(new);
         return NULL;
     }
@@ -190,6 +198,7 @@ static socket_t socket_socket(int socktype, struct addrinfo *ai)
     return new;
 }
 
+// TODO: Call socket_new() here, then call socket_socket(). It's OK to call socket_free() at the end. Allocator frees...
 static socket_t tcp_create_server_socket(const char *host, uint16_t port)
 {
     socket_t new = NULL;
@@ -211,7 +220,7 @@ static socket_t tcp_create_server_socket(const char *host, uint16_t port)
             continue;
 
         if (socket_set_reuse_addr(socket_get_fd(new))
-        && socket_bind_inet(socket_get_fd(new), ai)
+        && socket_bind_inet(new, ai)
         && socket_listen(socket_get_fd(new), 100)) {
             freeaddrinfo(res);
             return new;
@@ -226,6 +235,8 @@ static socket_t tcp_create_server_socket(const char *host, uint16_t port)
     return NULL;
 }
 
+
+// TODO: Call socket_new() here, then call socket_socket(). It's OK to call socket_free() at the end. Allocator frees...
 static socket_t tcp_create_client_socket(const char *host, uint16_t port)
 {
     char serv[6];
@@ -294,14 +305,15 @@ socket_t socket_create_client_socket(int socktype, void *context,
     }
 }
 
+// TODO: Add newsock as argument. Remove call to socket_new(). return status_t
 __attribute__((nonnull, warn_unused_result))
-static socket_t tcp_accept(int fd, struct sockaddr_storage *addr, socklen_t *addrsize)
+static socket_t tcp_accept(socket_t listener, struct sockaddr_storage *addr, socklen_t *addrsize)
 {
-    assert(fd >= 0);
+    assert(listener->fd >= 0);
     assert(addr != NULL);
     assert(addrsize != NULL);
 
-    int clientfd = accept4(fd, (struct sockaddr *)addr, addrsize, SOCK_CLOEXEC | SOCK_NONBLOCK);
+    int clientfd = accept4(listener->fd, (struct sockaddr *)addr, addrsize, SOCK_CLOEXEC | SOCK_NONBLOCK);
     if (clientfd == -1)
         return NULL;
 
@@ -316,17 +328,20 @@ static socket_t tcp_accept(int fd, struct sockaddr_storage *addr, socklen_t *add
 }
 
 // Accept a new TLS connection, similar to accept().
-static socket_t ssl_accept(int fd, void *context, 
+// TODO: Add newsock as argument. Remove call to socket_new(). return status_t
+static socket_t ssl_accept(socket_t listener, void *context, 
     struct sockaddr_storage *addr, socklen_t *addrsize)
 {
+    assert(listener != NULL);
     assert(addr != NULL);
     assert(context != NULL);
     assert(addrsize != NULL);
 
-    int clientfd = accept4(fd, (struct sockaddr *)addr, addrsize, SOCK_CLOEXEC);
+    int clientfd = accept4(listener->fd, (struct sockaddr *)addr, addrsize, SOCK_CLOEXEC);
     if (clientfd == -1)
         return NULL;
 
+    // TODO: Don't call new here.
     socket_t new = socket_new(SOCKTYPE_SSL);
     if (new == NULL) {
         close(clientfd);
@@ -356,15 +371,16 @@ static socket_t ssl_accept(int fd, void *context,
     return new;
 }
 
+// TODO: add newsock as argument. return status_t
 socket_t socket_accept(socket_t listener, void *context, struct sockaddr_storage *addr, socklen_t *addrsize)
 {
     assert(listener->socktype == SOCKTYPE_TCP || listener->socktype == SOCKTYPE_SSL);
     assert(listener->socktype == SOCKTYPE_TCP || context != NULL);
 
     if (listener->socktype == SOCKTYPE_TCP)
-        return tcp_accept(listener->fd, addr, addrsize);
+        return tcp_accept(listener, addr, addrsize);
     else 
-        return ssl_accept(listener->fd, context, addr, addrsize);
+        return ssl_accept(listener, context, addr, addrsize);
 }
 
 // This function can be called in various states. Think of it as a dtor.
@@ -386,6 +402,7 @@ static status_t ssl_close(socket_t this)
         close(this->fd);
     }
 
+    // TODO: If we move this to connection, don't free here. free in connection_free().
     socket_free(this);
     return success;
 }
@@ -433,15 +450,16 @@ status_t socket_wait_for_data(socket_t p, int timeout)
     return  socket_poll_for(p->fd, timeout, POLLIN);
 }
 
-static status_t tcp_write(int fd, const char *buf, size_t count, int timeout, int nretries)
+static status_t tcp_write(socket_t this, const char *buf, size_t count, int timeout, int nretries)
 {
-    assert(fd >= 0);
+    assert(this != NULL);
+    assert(this->fd >= 0);
     assert(buf != NULL);
     assert(timeout >= 0);
     assert(nretries >= 0);
 
     do {
-        if (!socket_poll_for(fd, timeout, POLLOUT)) {
+        if (!socket_poll_for(this->fd, timeout, POLLOUT)) {
             if (errno != EAGAIN)
                 return failure;
 
@@ -449,7 +467,7 @@ static status_t tcp_write(int fd, const char *buf, size_t count, int timeout, in
             continue;
         }
 
-        ssize_t nwritten = write(fd, buf, count);
+        ssize_t nwritten = write(this->fd, buf, count);
         if (nwritten == -1)
             return failure;
 
@@ -471,21 +489,23 @@ status_t socket_write(socket_t p, const char *src, size_t count, int timeout, in
     assert(p->socktype == SOCKTYPE_TCP || p->socktype == SOCKTYPE_SSL);
 
     if (p->socktype == SOCKTYPE_TCP)
-        return tcp_write(p->fd, src, count, timeout, retries);
+        return tcp_write(p, src, count, timeout, retries);
     else
-        return ssl_write(p->fd, p->ssl, src, count, timeout, retries);
+        return ssl_write(p, src, count, timeout, retries);
 }
 
-static ssize_t ssl_read(int fd, SSL *ssl, char *dest, size_t count, int timeout, int nretries)
+static ssize_t ssl_read(socket_t this, char *dest, size_t count, int timeout, int nretries)
 {
-    assert(fd > -1);
-    assert(ssl != NULL);
+    assert(this != NULL);
+    assert(this->fd > -1);
+    assert(this->socktype == SOCKTYPE_SSL);
+    assert(this->ssl != NULL);
     assert(timeout >= 0);
     assert(nretries >= 0);
     assert(dest != NULL);
 
     do {
-        if (!socket_poll_for(fd, timeout, POLLIN)) {
+        if (!socket_poll_for(this->fd, timeout, POLLIN)) {
             if (errno == EAGAIN)
                 continue; // Try again.
 
@@ -494,19 +514,19 @@ static ssize_t ssl_read(int fd, SSL *ssl, char *dest, size_t count, int timeout,
 
         // Return data asap, even if partial
         size_t nread;
-        int rc = SSL_read_ex(ssl, dest, count, &nread);
+        int rc = SSL_read_ex(this->ssl, dest, count, &nread);
         if (rc > 0)
             return (ssize_t)nread;
 
-        int err = SSL_get_error(ssl, rc);
+        int err = SSL_get_error(this->ssl, rc);
         switch (err) {
             case SSL_ERROR_WANT_READ:
-                if (!socket_poll_for(fd, timeout, POLLIN))
+                if (!socket_poll_for(this->fd, timeout, POLLIN))
                     return -1;
                 break;
 
             case SSL_ERROR_WANT_WRITE:
-                if (!socket_poll_for(fd, timeout, POLLOUT))
+                if (!socket_poll_for(this->fd, timeout, POLLOUT))
                     return -1;
                 break;
 
@@ -568,7 +588,7 @@ ssize_t socket_read(socket_t p, char *buf, size_t count, int timeout, int retrie
         return tcp_read(p->fd, buf, count, timeout, retries);
     }
     else
-        return ssl_read(p->fd, p->ssl, buf, count, timeout, retries);
+        return ssl_read(p, buf, count, timeout, retries);
 }
 
 status_t socket_set_nonblock(int fd)

@@ -390,7 +390,7 @@ static status_t tcp_server_get_connection(tcp_server srv, connection *pconn)
 static status_t accept_new_connections(tcp_server this)
 {
     status_t rc;
-    socket_t newsock;
+    socket_t newsock; // TODO: Make this an incoming arg from connection. Manage state via fd.
     struct sockaddr_storage addr;
     socklen_t addrsize = sizeof addr;
     connection conn;
@@ -444,6 +444,7 @@ static status_t accept_new_connections(tcp_server this)
          // Get a new, per-connection, struct containing data unique to this
          // connection. tcp_server_get_connection() never returns NULL as enough
          // connection resources has been allocated already.
+         // TODO: Get the connection sooner, before we need an fd to assign to. Use conn's fd.
          if (!tcp_server_get_connection(this, &conn)) {
             socket_close(newsock);
             return failure;

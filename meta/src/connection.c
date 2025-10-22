@@ -58,7 +58,7 @@ struct connection_tag {
     int timeout_reads, timeout_writes;
     int retries_reads, retries_writes;
     int persistent;
-    socket_t sock;
+    socket_t cn_sock;
     void *arg2;
 
     // tcp or ssl
@@ -95,7 +95,7 @@ static inline status_t fill_read_buffer(connection this)
     /* Clear the read buffer */
     membuf_reset(this->readbuf);
 
-    ssize_t nread = socket_read(this->sock, membuf_data(this->readbuf),
+    ssize_t nread = socket_read(this->cn_sock, membuf_data(this->readbuf),
         membuf_size(this->readbuf), this->timeout_reads,
         this->retries_reads);
 
@@ -204,7 +204,7 @@ status_t connection_connect(connection this, const char *host, uint16_t port)
 {
     assert(this != NULL);
 
-    if ((this->sock = socket_create_client_socket(this->socktype, this->arg2, host, port)) == NULL)
+    if ((this->cn_sock = socket_create_client_socket(this->socktype, this->arg2, host, port)) == NULL)
         return failure;
 
     return success;
@@ -260,7 +260,7 @@ status_t connection_flush(connection this)
     count = membuf_canread(this->writebuf);
     if (count > 0) {
         rc = socket_write(
-            this->sock,
+            this->cn_sock,
             membuf_data(this->writebuf),
             count,
             this->timeout_writes,
@@ -282,7 +282,7 @@ status_t connection_close(connection this)
     assert(this != NULL);
 
     flush_success = connection_flush(this);
-    close_success = socket_close(this->sock);
+    close_success = socket_close(this->cn_sock);
 
     if (!flush_success || !close_success)
         return failure;
@@ -312,7 +312,7 @@ status_t connection_getc(connection this, char *pc)
 static inline status_t
 write_to_socket(connection this, const char *buf, size_t count)
 {
-    return socket_write(this->sock, buf, count,
+    return socket_write(this->cn_sock, buf, count,
         this->timeout_writes, this->retries_writes);
 }
 
@@ -367,7 +367,7 @@ static ssize_t read_from_socket(connection this, void *buf, size_t count)
     assert(buf != NULL);
     assert(readbuf_empty(this));
 
-    ssize_t nread = socket_read(this->sock, buf, count, this->timeout_reads, this->retries_reads);
+    ssize_t nread = socket_read(this->cn_sock, buf, count, this->timeout_reads, this->retries_reads);
     if (nread > 0)
         this->incoming_bytes += (size_t)nread;
 
@@ -426,8 +426,10 @@ void connection_discard(connection this)
     assert(this != NULL);
 
     /* Close the socket, ignoring any messages */
-    socket_close(this->sock);
-    this->sock = NULL;
+    socket_close(this->cn_sock);
+
+    // TODO: Don't free here. 
+    this->cn_sock = NULL;
     reset_counters(this);
 }
 
@@ -467,7 +469,7 @@ void connection_set_params(connection this, socket_t _sock, struct sockaddr_stor
 {
     assert(this != NULL);
 
-    this->sock = _sock;
+    this->cn_sock = _sock;
     this->addr = *paddr;
 
     reset_counters(this);
@@ -478,9 +480,9 @@ void connection_recycle(connection this)
     assert(this != NULL);
 
     // We need to close the socket here, if it still is open
-    if (this->sock != NULL) {
-        socket_close(this->sock);
-        this->sock = NULL;
+    if (this->cn_sock != NULL) {
+        socket_close(this->cn_sock);
+        this->cn_sock = NULL;
     }
 
     this->persistent = 0;
@@ -491,7 +493,7 @@ int data_on_socket(connection this)
 {
     assert(this != NULL);
 
-    return socket_wait_for_data(this->sock, this->timeout_reads) == success;
+    return socket_wait_for_data(this->cn_sock, this->timeout_reads) == success;
 }
 
 status_t connection_printf(connection conn, const char *fmt, ...)
@@ -570,7 +572,7 @@ status_t connection_write_big_buffer(
     assert(nretries >= 0);
 
     if ((rc = connection_flush(this))) {
-        rc = socket_write(this->sock, buf, count, timeout, nretries);
+        rc = socket_write(this->cn_sock, buf, count, timeout, nretries);
     }
 
     return rc;

@@ -60,6 +60,19 @@ Sat Oct 18 08:32:39 CEST 2025
 - Merge tcpsocket and sslsocket into socket_t.  Done!
 
 Tue Oct 21 10:22:46 CEST 2025
-- Replace atoi() calls with fn from meta_convert.h
+- Replace atoi() calls with fn from meta_convert.h Done
+
+Wed Oct 22 08:00:11 CEST 2025
+- Add seccomp()
+- add prctl()
+- add namespaces (unshare(), setns().
+
+- get rid of calls to malloc and free in the "inner loop" for seccomp() reasons.
+  Not sure if this is a good idea or not, especially for the http server as
+  we really need cstring there and cstring realloc()s on demand. We can
+  do it for echoserver, I guess.
+
+- Create HTTP/Chopped, at minimum version of HTTP/1.1 which removes all
+  crap not needed anyways, which is a lot. Rationale: reduced attach surface.
 
 
