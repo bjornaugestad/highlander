@@ -144,26 +144,32 @@ static bool client_can_connect(tcp_server srv, struct sockaddr_storage *addr)
 
 tcp_server tcp_server_new(int socktype)
 {
-    tcp_server new;
+    tcp_server new = calloc(1, sizeof *new);
+    if (new == NULL)
+        return NULL;
 
-    if ((new = calloc(1, sizeof *new)) != NULL) {
-        /* Some defaults */
-        new->timeout_reads = 5000;
-        new->timeout_writes = 1000;
-        new->timeout_accepts = 800;
-        new->retries_writes = 10;
-
-        new->queue_size = 100;
-        new->nthreads = 10;
-        new->port = 2000;
-        new->socktype = socktype;
-
-        new->pattern_compiled = false;
-
-        new->readbuf_size =  (1024 * 4);
-        new->writebuf_size = (1024 *64);
-        atomic_store_explicit(&new->shutting_down, false, memory_order_relaxed);
+    new->listener = socket_new(socktype);
+    if (new->listener == NULL) {
+        free(new);
+        return NULL;
     }
+
+    /* Some defaults */
+    new->timeout_reads = 5000;
+    new->timeout_writes = 1000;
+    new->timeout_accepts = 800;
+    new->retries_writes = 10;
+
+    new->queue_size = 100;
+    new->nthreads = 10;
+    new->port = 2000;
+    new->socktype = socktype;
+
+    new->pattern_compiled = false;
+
+    new->readbuf_size =  (1024 * 4);
+    new->writebuf_size = (1024 *64);
+    atomic_store_explicit(&new->shutting_down, false, memory_order_relaxed);
 
     return new;
 }
@@ -199,13 +205,43 @@ void tcp_server_free(tcp_server this)
         this->pattern_compiled = false;
     }
 
+    socket_free(this->listener);
     free(this);
+}
+
+// Every running worker thread use one connection. Every queue entry use
+// one connection.  One extra is needed for the current connection.
+//
+// boa@20251022: "current connection"? What's that? We leak here. There is no current
+// connection. What was I thinking 20+ years ago? Let's recap:
+// - queue_size is size of the work queue. 
+// - nthreads is number of worker threads which read work off the queue.
+//
+// What's the current connection for? An extra for accept in case all others are in use?
+// 
+static status_t _init_connections(tcp_server this)
+{
+    size_t count = this->queue_size + this->nthreads + 1;
+    this->connections = pool_new(count);
+    if (this->connections == NULL)
+        return failure;
+
+    for (size_t i = 0; i < count; i++) {
+        connection conn = connection_new(this->socktype, this->timeout_reads, this->timeout_writes,
+            this->retries_reads, this->retries_writes, this->service_arg);
+
+        if (conn == NULL)
+            return failure;
+
+        if (!pool_add(this->connections, conn))
+            die("Just unthinkable.\n");
+    }
+
+    return success;
 }
 
 status_t tcp_server_init(tcp_server this)
 {
-    size_t i, count;
-
     assert(this != NULL);
 
     /* Don't overwrite existing buffers */
@@ -218,44 +254,34 @@ status_t tcp_server_init(tcp_server this)
     if (this->queue == NULL)
         goto err;
 
-    // Every running worker thread use one connection. Every queue entry use
-    // one connection.  One extra is needed for the current connection.
-    count = this->queue_size + this->nthreads + 1;
-    if ((this->connections = pool_new(count)) == NULL)
+    if (!_init_connections(this))
         goto err;
 
-    for (i = 0; i < count; i++) {
-        connection conn = connection_new(this->socktype, this->timeout_reads, this->timeout_writes,
-            this->retries_reads, this->retries_writes, this->service_arg);
-
-        if (conn == NULL)
-            goto err;
-
-        pool_add(this->connections, conn);
-    }
-
     /* Only worker threads can use read/write buffers */
-    count = this->nthreads;
+    size_t count = this->nthreads;
     if ((this->read_buffers = pool_new(count)) == NULL
     || (this->write_buffers = pool_new(count)) == NULL)
         goto err;
 
-    for (i = 0; i < count; i++) {
+    for (size_t i = 0; i < count; i++) {
         membuf rb, wb;
 
         if ((rb = membuf_new(this->readbuf_size)) == NULL
         || (wb = membuf_new(this->writebuf_size)) == NULL)
             goto err;
 
-        pool_add(this->read_buffers, rb);
-        pool_add(this->write_buffers, wb);
+        if (!pool_add(this->read_buffers, rb))
+            die("Just unthinkable.\n");
+
+        if (!pool_add(this->write_buffers, wb))
+            die("Just unthinkable.\n");
     }
 
     return success;
 
 err:
     // Free all memory allocated by this function and then return failure.
-    if (!threadpool_destroy(this->queue, 0))
+    if (!threadpool_destroy(this->queue, false))
         warning("Unable to destroy thread pool\n");
 
     pool_free(this->connections, connection_freev);
@@ -314,16 +340,14 @@ void tcp_server_clear_client_filter(tcp_server this)
 
 static void tcp_server_recycle_connection(void *vsrv, void *vconn)
 {
-    membuf rb, wb;
-
     tcp_server srv = vsrv;
     connection conn = vconn;
 
     assert(srv != NULL);
     assert(conn != NULL);
 
-    rb = connection_reclaim_read_buffer(conn);
-    wb = connection_reclaim_write_buffer(conn);
+    membuf rb = connection_reclaim_read_buffer(conn);
+    membuf wb = connection_reclaim_write_buffer(conn);
 
     if (rb != NULL) {
         membuf_reset(rb);
@@ -389,17 +413,11 @@ static status_t tcp_server_get_connection(tcp_server srv, connection *pconn)
 
 static status_t accept_new_connections(tcp_server this)
 {
-    status_t rc;
-    socket_t newsock; // TODO: Make this an incoming arg from connection. Manage state via fd.
-    struct sockaddr_storage addr;
-    socklen_t addrsize = sizeof addr;
-    connection conn;
-
     assert(this != NULL);
     assert(this->listener != NULL);
 
     while (!atomic_load_explicit(&this->shutting_down, memory_order_relaxed)) {
-        if (!socket_poll_for(socket_get_fd(this->listener), this->timeout_accepts, POLLIN)) {
+        if (!socket_poll_for(this->listener, this->timeout_accepts, POLLIN)) {
             if (errno == EINTR)
                 this->sum_poll_intr++;
             else if (errno == EAGAIN)
@@ -410,13 +428,22 @@ static status_t accept_new_connections(tcp_server this)
             continue; // retry
         }
 
-        newsock = socket_accept(this->listener, this->server_context, &addr, &addrsize);
-        if (newsock == NULL) {
+        // did we shut down while polling?
+        if (atomic_load_explicit(&this->shutting_down, memory_order_relaxed))
+            return success;
+
+        connection conn;
+        if (!tcp_server_get_connection(this, &conn)) 
+            return failure;
+
+        socket_t sock = connection_socket(conn);
+        struct sockaddr_storage addr;
+        socklen_t addrsize = sizeof addr;
+        if (!socket_accept(this->listener, sock, this->server_context, &addr, &addrsize)) {
             switch (errno) {
                 case EPROTO:
                 case ENONET:
                 case ENOTCONN:
-
                 case EAGAIN:
                 case ENETDOWN:
                 case ENOPROTOOPT:
@@ -436,33 +463,22 @@ static status_t accept_new_connections(tcp_server this)
 
         // Check if the client is permitted to connect or not.
         if (!client_can_connect(this, &addr)) {
-            socket_close(newsock);
+            socket_close(sock);
             this->sum_denied_clients++;
             continue;
         }
 
-         // Get a new, per-connection, struct containing data unique to this
-         // connection. tcp_server_get_connection() never returns NULL as enough
-         // connection resources has been allocated already.
-         // TODO: Get the connection sooner, before we need an fd to assign to. Use conn's fd.
-         if (!tcp_server_get_connection(this, &conn)) {
-            socket_close(newsock);
-            return failure;
-         }
+        // Add the new connection to the work queue. Hand over addr first.
+        connection_set_params(conn, &addr);
 
-        // Start a thread to handle the connection with this client.
-        connection_set_params(conn, newsock, &addr);
-
-        rc = threadpool_add_work(this->queue,
-            assign_rw_buffers, this,
-            this->service_func, conn,
-            tcp_server_recycle_connection, this);
+        status_t rc = threadpool_add_work(this->queue, assign_rw_buffers, this,
+            this->service_func, conn, tcp_server_recycle_connection, this);
 
         // The queue was full, so we couldn't add the new connection to the 
         // queue. We must therefore close the connection and do some cleanup.
         if (!rc) {
             if (!connection_close(conn))
-                warning("Could not flush and close connection");
+                warning("Could not close connection");
 
             tcp_server_recycle_connection(this, conn);
         }
@@ -573,9 +589,7 @@ static status_t setup_server_ctx(tcp_server this)
 
 err:
     // An error message is (probably) available on SSL's error stack.
-    // Pop it and set errno using fail().
     // For now, dump all errors on stderr.
-    fprintf(stderr, "%s(): Some error occurred\n", __func__);
     ERR_print_errors_fp(stderr);
 
     if (this->server_context != NULL) {
@@ -596,31 +610,22 @@ status_t tcp_server_get_root_resources(tcp_server this)
     if (this->socktype == SOCKTYPE_SSL && !setup_server_ctx(this))
         return failure;
 
-    this->listener = socket_create_server_socket(this->socktype, hostname, this->port);
-    if (this->listener == NULL)
-        return failure;
-
-    return success;
+    return socket_create_server_socket(this->listener, hostname, this->port);
 }
 
 static status_t tcp_server_get_root_resourcesv(void *p) { return tcp_server_get_root_resources(p); }
 
+// Start the listen/accept loop. We return when shutdown is detected,
+// or an error occurred. Note that a failure doesn't mean that the server
+// never ran. A poll error can occur after hours or days. We still need to
+// cleanup nicely.
+// IOW, a return from this function just means that we've stopped accepting
+// new connection requests.
 status_t tcp_server_start(tcp_server this)
 {
-    status_t rc;
-
     assert(this != NULL);
 
-    if (!accept_new_connections(this)) {
-        socket_close(this->listener);
-        rc = failure;
-    }
-    else if (!socket_close(this->listener))
-        rc = failure;
-    else
-        rc = success;
-
-    this->listener = NULL;
+    status_t rc = accept_new_connections(this);
     return rc;
 }
 
@@ -695,6 +700,7 @@ status_t tcp_server_set_hostname(tcp_server this, const char *host)
     return success;
 }
 
+// Free whatever tcp_server_get_root_resources() aquired
 status_t tcp_server_free_root_resources(tcp_server this)
 {
     assert(this != NULL);

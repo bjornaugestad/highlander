@@ -9,27 +9,29 @@
 #include <tcp_client.h>
 
 struct http_client_tag {
-    tcp_client sock;
+    tcp_client tcpclient;
     http_request request;
     http_response response;
 };
 
 http_client http_client_new(int socktype)
 {
-    http_client new;
-
     assert(socktype == SOCKTYPE_TCP || socktype == SOCKTYPE_SSL);
 
-    if ((new = calloc(1, sizeof *new)) == NULL)
+    http_client new = calloc(1, sizeof *new);
+    if (new == NULL)
         return NULL;
 
-    if ((new->request = request_new()) == NULL)
+    new->request = request_new();
+    if (new->request == NULL)
         goto memerr;
 
-    if ((new->response = response_new()) == NULL)
+    new->response = response_new();
+    if (new->response == NULL)
         goto memerr;
 
-    if ((new->sock = tcp_client_new(socktype)) == NULL)
+    new->tcpclient = tcp_client_new(socktype);
+    if (new->tcpclient == NULL)
         goto memerr;
 
     return new;
@@ -46,7 +48,7 @@ void http_client_free(http_client this)
 
     request_free(this->request);
     response_free(this->response);
-    tcp_client_free(this->sock);
+    tcp_client_free(this->tcpclient);
     free(this);
 }
 
@@ -55,7 +57,7 @@ status_t http_client_connect(http_client this, const char *host, uint16_t port)
     assert(this != NULL);
     assert(host != NULL);
 
-    return tcp_client_connect(this->sock, host, port);
+    return tcp_client_connect(this->tcpclient, host, port);
 }
 
 status_t http_client_get(http_client this, const char *host, const char *uri, error e)
@@ -70,7 +72,7 @@ status_t http_client_get(http_client this, const char *host, const char *uri, er
     || !request_set_user_agent(this->request, "highlander"))
         return failure;
 
-    connection c = tcp_client_connection(this->sock);
+    connection c = tcp_client_connection(this->tcpclient);
     if (!request_send(this->request, c, e))
         return failure;
 
@@ -95,43 +97,43 @@ http_response http_client_response(http_client this)
 status_t http_client_disconnect(http_client this)
 {
     assert(this != NULL);
-    return tcp_client_close(this->sock);
+    return tcp_client_close(this->tcpclient);
 }
 
 int http_client_get_timeout_write(http_client this)
 {
     assert(this != NULL);
-    return tcp_client_get_timeout_write(this->sock);
+    return tcp_client_get_timeout_write(this->tcpclient);
 }
 
 int http_client_get_timeout_read(http_client this)
 {
     assert(this != NULL);
-    return tcp_client_get_timeout_read(this->sock);
+    return tcp_client_get_timeout_read(this->tcpclient);
 }
 
 void http_client_set_timeout_write(http_client this, int millisec)
 {
     assert(this != NULL);
-    tcp_client_set_timeout_write(this->sock, millisec);
+    tcp_client_set_timeout_write(this->tcpclient, millisec);
 }
 
 void http_client_set_timeout_read(http_client this, int millisec)
 {
     assert(this != NULL);
-    tcp_client_set_timeout_read(this->sock, millisec);
+    tcp_client_set_timeout_read(this->tcpclient, millisec);
 }
 
 void http_client_set_retries_read(http_client this, int count)
 {
     assert(this != NULL);
-    tcp_client_set_retries_read(this->sock, count);
+    tcp_client_set_retries_read(this->tcpclient, count);
 }
 
 void http_client_set_retries_write(http_client this, int count)
 {
     assert(this != NULL);
-    tcp_client_set_retries_write(this->sock, count);
+    tcp_client_set_retries_write(this->tcpclient, count);
 }
 
 #ifdef CHECK_HTTP_CLIENT
@@ -140,18 +142,17 @@ void http_client_set_retries_write(http_client this, int count)
 
 int main(void)
 {
-    http_client p;
-    http_response resp;
     error e = error_new();
 
-    int socktype = SOCKTYPE_TCP;
     const char *hostname = "www.random.org";
     uint16_t port = 80;
     const char *uri = "/cgi-bin/randbyte?nbytes=32&format=h";
+
     if (!openssl_init())
         exit(1);
 
-    if ((p = http_client_new(socktype)) == NULL)
+    http_client p = http_client_new(SOCKTYPE_TCP);
+    if (p == NULL)
         die("http_client_new() returned NULL\n");
 
     if (!http_client_connect(p, hostname, port))
@@ -165,7 +166,7 @@ int main(void)
     int status = http_client_http_status(p);
     printf("Server returned %d\n", status);
 
-    resp = http_client_response(p);
+    http_response resp = http_client_response(p);
     /* Copy some bytes from the response, just to see that we got something */
     {
         size_t n = 1000, cb = response_get_content_length(resp);

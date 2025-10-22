@@ -4,6 +4,7 @@
  */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <assert.h>
 #include <pthread.h>
 
@@ -13,13 +14,6 @@
  * The implementation of the pool adt. We allocate room for
  * a set of void *pointers, where each pointer points to one
  * element in the pool. We use a mutex to control access to the pool.
- * The in_use member is 1 if the resource is used by someone, else 0.
- * We allocate one char for each pool member.
- *
- * Changes:
- * 2005-12-15: Removed the in_use member and just zero out the
- * pointer when the resource is in use. pool_recycle() will add
- * a returned resource in the first free slot.
  */
 struct pool_tag {
     void** pdata;			/* Array of void *pointers */
@@ -30,14 +24,14 @@ struct pool_tag {
 
 pool pool_new(size_t size)
 {
-    pool new;
-
     assert(size > 0); /* No point in zero-sized pools */
 
-    if ((new = calloc(1, sizeof *new)) == NULL)
+    pool new = calloc(1, sizeof *new);
+    if (new == NULL)
         return NULL;
 
-    if ((new->pdata = calloc(size, sizeof *new->pdata)) == NULL) {
+    new->pdata = calloc(size, sizeof *new->pdata);
+    if (new->pdata == NULL) {
         free(new);
         return NULL;
     }
@@ -49,22 +43,24 @@ pool pool_new(size_t size)
     return new;
 }
 
-void pool_free(pool this, dtor free_fn)
+// Free entries if we have a dtor and the entry is not NULL
+void pool_free(pool this, dtor dtorfn)
 {
-    size_t i;
-
-
     if (this == NULL)
         return;
 
-    /* Free entries if we have a dtor and the entry is not NULL */
-    if (free_fn != NULL) {
-        assert(this->pdata != NULL);
-        assert(this->size > 0);
+    if (dtorfn != NULL) {
+        int error = pthread_mutex_lock(&this->mutex);
+        if (error)
+            die("WTF?\n");
 
-        for (i = 0; i < this->nelem; i++)
+        for (size_t i = 0; i < this->nelem; i++)
             if (this->pdata[i] != NULL)
-                free_fn(this->pdata[i]);
+                dtorfn(this->pdata[i]);
+
+        error = pthread_mutex_unlock(&this->mutex);
+        if (error)
+            die("WTF?\n");
     }
 
     free(this->pdata);
@@ -72,31 +68,36 @@ void pool_free(pool this, dtor free_fn)
     free(this);
 }
 
-void pool_add(pool this, void *resource)
+status_t pool_add(pool this, void *resource)
 {
     assert(this != NULL);
     assert(resource != NULL);
     assert(this->nelem < this->size);
 
-    pthread_mutex_lock(&this->mutex);
+    int error = pthread_mutex_lock(&this->mutex);
+    if (error)
+        return fail(error);
+
     this->pdata[this->nelem++] = resource;
-    pthread_mutex_unlock(&this->mutex);
+    error = pthread_mutex_unlock(&this->mutex);
+    if (error)
+        return fail(error);
+
+    return success;
 }
 
 status_t pool_get(pool this, void **ppres)
 {
-    size_t i;
-    void *resource = NULL;
-    int error = 0;
-
     assert(this != NULL);
 
-    error = pthread_mutex_lock(&this->mutex);
+    int error = pthread_mutex_lock(&this->mutex);
     if (error)
         return fail(error);
 
-    /* Find a free resource */
-    for (i = 0; i < this->nelem; i++) {
+    // Find a free resource 
+    size_t i, nelem = this->nelem; // avoid race conds and holding mutex for too long
+    void *resource = NULL;
+    for (i = 0; i < nelem; i++) {
         if (this->pdata[i] != NULL) {
             resource = this->pdata[i];
             this->pdata[i] = NULL;
@@ -108,7 +109,7 @@ status_t pool_get(pool this, void **ppres)
     if (error)
         return fail(error);
 
-    if (i == this->nelem)
+    if (i == nelem)
         return fail(ENOSPC);
 
     if (resource == NULL)
@@ -120,17 +121,15 @@ status_t pool_get(pool this, void **ppres)
 
 status_t pool_recycle(pool this, void *resource)
 {
-    size_t i;
-    int error = 0;
-
     assert(this != NULL);
     assert(resource != NULL);
 
-    error = pthread_mutex_lock(&this->mutex);
+    int error = pthread_mutex_lock(&this->mutex);
     if (error)
         return fail(error);
 
-    for (i = 0; i < this->nelem; i++) {
+    size_t i, nelem = this->nelem;
+    for (i = 0; i < nelem; i++) {
         if (this->pdata[i] == NULL) {
             this->pdata[i] = resource;
             break;
@@ -141,10 +140,11 @@ status_t pool_recycle(pool this, void *resource)
     if (error)
         return fail(error);
 
-    /* If the resource wasnt' released, someone released more objects
-     * than they got. */
-    if (i == this->nelem)
+    // If the resource wasnt' released, someone released more objects than they got
+    if (i == nelem) {
+        die("WTF?\n");
         return fail(ENOENT);
+    }
 
     return success;
 }
@@ -171,7 +171,8 @@ static void *tfn(void *arg)
             exit(77);
         }
 
-        pool_recycle(p, dummy);
+        if (!pool_recycle(p, dummy))
+            die("internal error\n");
     }
 
     return NULL;
@@ -189,7 +190,8 @@ int main(void)
     /* Add some items to the pool */
     for (i = 0; i < NELEM; i++) {
         void *dummy = (void*)(i + 1);
-        pool_add(p, dummy);
+        if (!pool_add(p, dummy))
+            die("Could not add object to pool\n");
     }
 
     /* Start the threads */

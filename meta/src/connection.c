@@ -47,22 +47,12 @@
  * 2003-07-15, boa
  */
 
-/*
- * I'm now in the process of transfering some properties from request_t
- * to connection, and thinking that maybe some other props should
- * be associated with the connection, e.g. protocol (HTTP 1.0, 1.1, SHTTP 1.3)
- * Then is is easier to switch protocols.
- */
-
 struct connection_tag {
     int timeout_reads, timeout_writes;
     int retries_reads, retries_writes;
     int persistent;
     socket_t cn_sock;
     void *arg2;
-
-    // tcp or ssl
-    int socktype;
 
     /* Client we're connected with */
     struct sockaddr_storage addr;
@@ -118,24 +108,8 @@ static inline void reset_counters(connection this)
     this->conn_established = this->request_started = time(NULL);
 }
 
-static inline void
-add_to_writebuf(connection this, const void *buf, size_t count)
-{
-    size_t nwritten;
 
-    /* There must be space in the write buffer */
-    assert(membuf_canwrite(this->writebuf) >= count);
-
-    nwritten = membuf_write(this->writebuf, buf, count);
-    assert(count == nwritten);
-
-#ifdef NDEBUG
-    (void)nwritten;
-#endif
-}
-
-static inline ssize_t
-copy_from_readbuf(connection this, void *buf, size_t count)
+static inline ssize_t copy_from_readbuf(connection this, void *buf, size_t count)
 {
     return (ssize_t)membuf_read(this->readbuf, buf, count);
 }
@@ -170,26 +144,25 @@ writebuf_has_room_for(connection this, size_t count)
     return n >= count;
 }
 
-connection connection_new(
-    int socktype,
-    int timeout_reads,
-    int timeout_writes,
-    int retries_reads,
-    int retries_writes,
-    void *arg2)
+connection connection_new(int socktype, int timeout_reads, int timeout_writes,
+    int retries_reads, int retries_writes, void *arg2)
 {
-    connection new;
-
     assert(socktype == SOCKTYPE_TCP || socktype == SOCKTYPE_SSL);
     assert(timeout_reads >= 0);
     assert(timeout_writes >= 0);
     assert(retries_reads >= 0);
     assert(retries_writes >= 0);
 
-    if ((new = calloc(1, sizeof *new)) == NULL)
+    connection new = calloc(1, sizeof *new);
+    if (new == NULL)
         return NULL;
 
-    new->socktype = socktype;
+    new->cn_sock = socket_new(socktype);
+    if (new->cn_sock == NULL) {
+        free(new);
+        return NULL;
+    }
+
     new->timeout_reads = timeout_reads;
     new->timeout_writes = timeout_writes;
     new->retries_reads = retries_reads;
@@ -200,11 +173,18 @@ connection connection_new(
     return new;
 }
 
+socket_t connection_socket(connection conn)
+{
+    assert(conn != NULL);
+    assert(conn->cn_sock != NULL);
+    return conn->cn_sock;
+}
+
 status_t connection_connect(connection this, const char *host, uint16_t port)
 {
     assert(this != NULL);
 
-    if ((this->cn_sock = socket_create_client_socket(this->socktype, this->arg2, host, port)) == NULL)
+    if (!socket_create_client_socket(this->cn_sock, this->arg2, host, port))
         return failure;
 
     return success;
@@ -212,21 +192,18 @@ status_t connection_connect(connection this, const char *host, uint16_t port)
 
 membuf connection_reclaim_read_buffer(connection this)
 {
-    membuf mb;
-
     assert(this != NULL);
 
-    mb = this->readbuf;
+    membuf mb = this->readbuf;
     this->readbuf = NULL;
     return mb;
 }
 
 membuf connection_reclaim_write_buffer(connection this)
 {
-    membuf mb;
     assert(this != NULL);
 
-    mb = this->writebuf;
+    membuf mb = this->writebuf;
     this->writebuf = NULL;
     return mb;
 }
@@ -252,19 +229,13 @@ void connection_assign_write_buffer(connection this, membuf buf)
 
 status_t connection_flush(connection this)
 {
-    status_t rc = success;
-    size_t count;
-
     assert(this != NULL);
 
-    count = membuf_canread(this->writebuf);
+    status_t rc = success;
+    size_t count = membuf_canread(this->writebuf);
     if (count > 0) {
-        rc = socket_write(
-            this->cn_sock,
-            membuf_data(this->writebuf),
-            count,
-            this->timeout_writes,
-            this->retries_writes);
+        rc = socket_write(this->cn_sock, membuf_data(this->writebuf),
+            count, this->timeout_writes, this->retries_writes);
 
         if (rc) {
             this->outgoing_bytes += count;
@@ -277,12 +248,12 @@ status_t connection_flush(connection this)
 
 status_t connection_close(connection this)
 {
-    status_t flush_success, close_success;
-
     assert(this != NULL);
 
-    flush_success = connection_flush(this);
-    close_success = socket_close(this->cn_sock);
+    status_t flush_success = connection_flush(this);
+    status_t close_success = socket_close(this->cn_sock);
+
+    assert(socket_get_fd(this->cn_sock) == -1);
 
     if (!flush_success || !close_success)
         return failure;
@@ -292,16 +263,16 @@ status_t connection_close(connection this)
 
 status_t connection_getc(connection this, char *pc)
 {
-    char c;
 
     assert(this != NULL);
     assert(pc != NULL);
 
-    /* Fill buffer if empty */
+    // Fill buffer if empty
     if (readbuf_empty(this) && !fill_read_buffer(this))
         return failure;
 
-    /* Get one character from buffer */
+    // Get one character from buffer
+    char c;
     if (membuf_read(this->readbuf, &c, 1) != 1)
         return failure;
 
@@ -331,8 +302,8 @@ status_t connection_write(connection this, const void *buf, size_t count)
         return failure;
 
     if (writebuf_has_room_for(this, count)) {
-        add_to_writebuf(this, buf, count);
-        return success;
+        size_t nwritten = membuf_write(this->writebuf, buf, count);
+        return nwritten == count ? success : failure;
     }
 
     if (!write_to_socket(this, buf, count))
@@ -344,20 +315,17 @@ status_t connection_write(connection this, const void *buf, size_t count)
 
 
 /*
- * Here is where we have to measure bps for incoming
- * data. All we have to do is to do a time(NULL) or clock() before
- * and after the call to socket_read(). Then we can compute
- * the duration and compare it with the number of bytes
- * read from the socket.
+ * Here is where we have to measure bps for incoming data. All we have to
+ * do is to do a time(NULL) or clock() before and after the call
+ * to socket_read(). Then we can compute the duration and compare it with
+ * the number of bytes read from the socket.
  *
- * The hard part is to set up general rules on how
- * to categorize our connected clients. Starting to
- * disconnect valid users will not be very popular.
+ * The hard part is to set up general rules on how to categorize our
+ * connected clients. Disconnecting valid users will not be very popular.
  *
- * Remember that we cannot mark an IP as unwanted on the
- * connection level. Due to the pooling of connections the
- * villain may get another connection object the nex time.
- * The proper place is the parent object, the tcp_server.
+ * Remember that we cannot mark an IP as unwanted on the connection level.
+ * Due to the pooling of connections the villain may get another connection
+ * object the nex time.  The proper place is the parent object, the tcp_server.
  * We can either report an IP to the tcp_server or the tcp_server
  * can scan its connections for bad guys.
  */
@@ -367,7 +335,9 @@ static ssize_t read_from_socket(connection this, void *buf, size_t count)
     assert(buf != NULL);
     assert(readbuf_empty(this));
 
-    ssize_t nread = socket_read(this->cn_sock, buf, count, this->timeout_reads, this->retries_reads);
+    ssize_t nread = socket_read(this->cn_sock, buf, count,
+        this->timeout_reads, this->retries_reads);
+
     if (nread > 0)
         this->incoming_bytes += (size_t)nread;
 
@@ -376,16 +346,14 @@ static ssize_t read_from_socket(connection this, void *buf, size_t count)
 
 ssize_t connection_read(connection this, void *buf, size_t count)
 {
-    ssize_t nread;
-
-    /* We need a char buffer to be able to compute offsets */
+    // We need a char buffer to be able to compute offsets
     char *cbuf = buf;
 
     assert(this != NULL);
     assert(buf != NULL);
 
-    /* First copy data from the read buffer.
-     * Were all bytes copied from buf? If so, return. */
+    // First copy data from the read buffer.
+    // Were all bytes copied from buf? If so, return. 
     ssize_t ncopied = copy_from_readbuf(this, buf, count);
     if (ncopied == (ssize_t)count)
         return ncopied;
@@ -393,25 +361,26 @@ ssize_t connection_read(connection this, void *buf, size_t count)
     count -= (size_t)ncopied;
     cbuf += ncopied;
 
-    // If the buffer can't hold the number of bytes we're
-    // trying to read, there's no point in filling it. Therefore
-    // we read directly from the socket if buffer is too small.
+    // If the buffer can't hold the number of bytes we're trying to read,
+    // there's no point in filling it. Therefore we read directly from
+    // the socket if buffer is too small.
     if (membuf_size(this->readbuf) < count) {
-        if ((nread = read_from_socket(this, cbuf, count)) == -1)
+        ssize_t nread = read_from_socket(this, cbuf, count);
+        if (nread == -1)
             return -1;
 
-        /* Return read count */
+        // Return read count
         return nread + (ssize_t)ncopied;
     }
 
-    /* If we end up here, we must first fill the read buffer
-     * and then read from it. */
+    // If we end up here, we must first fill the read buffer
+    // and then read from it. 
     if (!fill_read_buffer(this))
         return -1;
 
-    /* Now read as much as possible from the buffer, and
-     * return count, or possible short count, to our caller. */
-    nread = copy_from_readbuf(this, cbuf, count);
+    // Now read as much as possible from the buffer, and
+    // return count, or possible short count, to our caller.
+    ssize_t nread = copy_from_readbuf(this, cbuf, count);
     return ncopied + nread;
 }
 
@@ -419,18 +388,6 @@ void *connection_arg2(connection this)
 {
     assert(this != NULL);
     return this->arg2;
-}
-
-void connection_discard(connection this)
-{
-    assert(this != NULL);
-
-    /* Close the socket, ignoring any messages */
-    socket_close(this->cn_sock);
-
-    // TODO: Don't free here. 
-    this->cn_sock = NULL;
-    reset_counters(this);
 }
 
 status_t connection_ungetc(connection this, int c)
@@ -461,17 +418,17 @@ struct sockaddr_storage* connection_get_addr(connection this)
 void connection_free(connection this)
 {
     if (this != NULL) {
+        socket_free(this->cn_sock);
         free(this);
     }
 }
 
-void connection_set_params(connection this, socket_t _sock, struct sockaddr_storage * paddr)
+void connection_set_params(connection this, struct sockaddr_storage * paddr)
 {
     assert(this != NULL);
+    assert(paddr != NULL);
 
-    this->cn_sock = _sock;
     this->addr = *paddr;
-
     reset_counters(this);
 }
 
@@ -480,10 +437,8 @@ void connection_recycle(connection this)
     assert(this != NULL);
 
     // We need to close the socket here, if it still is open
-    if (this->cn_sock != NULL) {
+    if (this->cn_sock != NULL)
         socket_close(this->cn_sock);
-        this->cn_sock = NULL;
-    }
 
     this->persistent = 0;
     reset_counters(this);
@@ -527,6 +482,7 @@ status_t connection_puts(connection this, const char *s)
 {
     assert(this != NULL);
     assert(s != NULL);
+
     if (connection_write(this, s, strlen(s)) && connection_flush(this))
         return success;
     else
@@ -535,13 +491,12 @@ status_t connection_puts(connection this, const char *s)
 
 status_t connection_gets(connection this, char *dest, size_t destsize)
 {
-    status_t rc = success;
-    size_t i = 0;
-
     assert(this != NULL);
     assert(dest != NULL);
     assert(destsize > 0);
 
+    status_t rc = success;
+    size_t i = 0;
     char c;
     while (i < destsize && (rc = connection_getc(this, &c))) {
         *dest++ = c;
@@ -557,23 +512,17 @@ status_t connection_gets(connection this, char *dest, size_t destsize)
     return rc;
 }
 
-status_t connection_write_big_buffer(
-    connection this,
-    const void *buf,
-    size_t count,
-    int timeout,
-    int nretries)
+status_t connection_write_big_buffer(connection this, const void *buf,
+    size_t count, int timeout, int nretries)
 {
-    status_t rc;
-
     assert(this != NULL);
     assert(buf != NULL);
     assert(timeout >= 0);
     assert(nretries >= 0);
 
-    if ((rc = connection_flush(this))) {
+    status_t rc = connection_flush(this);
+    if (rc)
         rc = socket_write(this->cn_sock, buf, count, timeout, nretries);
-    }
 
     return rc;
 }

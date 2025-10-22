@@ -26,6 +26,8 @@ connection connection_new(int socktype, int timeout_reads, int timeout_writes,
 
 void connection_free(connection conn);
 static inline void connection_freev(void *p) { connection_free(p); }
+socket_t connection_socket(connection conn)
+    __attribute__((nonnull, warn_unused_result));
 
 
 void connection_recycle(connection conn)
@@ -70,8 +72,6 @@ status_t connection_gets  (connection conn, char *buf, size_t bufsize)
 status_t connection_ungetc(connection conn, int c)
     __attribute__((nonnull, warn_unused_result));
 
-void connection_discard(connection conn) __attribute__((nonnull));
-
 status_t connection_close(connection conn)
     __attribute__((nonnull, warn_unused_result));
 
@@ -81,7 +81,7 @@ int	 connection_is_persistent(connection conn)
 void connection_set_persistent(connection conn, int val)
     __attribute__((nonnull));
 
-void connection_set_params(connection conn, socket_t sock, struct sockaddr_storage* paddr)
+void connection_set_params(connection conn, struct sockaddr_storage* paddr)
     __attribute__((nonnull));
 
 struct sockaddr_storage* connection_get_addr(connection conn)

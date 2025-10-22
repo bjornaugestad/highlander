@@ -22,7 +22,8 @@ pool pool_new(size_t nelem)
 
 void pool_free(pool p, dtor cleanup);
 
-void pool_add(pool p, void *resource)
+status_t pool_add(pool p, void *resource)
+    __attribute__((warn_unused_result))
     __attribute__((nonnull));
 
 status_t pool_get(pool p, void **ppres)

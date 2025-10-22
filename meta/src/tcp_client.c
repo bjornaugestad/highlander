@@ -19,8 +19,6 @@
 struct tcp_client_tag {
     cstring host;
 
-    int socktype;
-
     // The ciphers member has a default value. The rest are NULL
     cstring rootcert, private_key, ciphers, cadir;
     SSL_CTX *context;
@@ -28,7 +26,7 @@ struct tcp_client_tag {
     int timeout_reads, timeout_writes, nretries_read, nretries_write;
     size_t readbuf_size, writebuf_size;
 
-    connection conn;
+    connection tc_conn;
     membuf readbuf;
     membuf writebuf;
 };
@@ -109,14 +107,13 @@ tcp_client tcp_client_new(int socktype)
     new->timeout_reads = new->timeout_writes = 1000;
     new->nretries_read = new->nretries_write = 5;
 
-    new->conn = connection_new(socktype, new->timeout_reads, new->timeout_writes,
+    new->tc_conn = connection_new(socktype, new->timeout_reads, new->timeout_writes,
         new->nretries_read, new->nretries_write, new->context);
-    if (new->conn == NULL)
+    if (new->tc_conn == NULL)
         goto memerr;
 
-    connection_assign_read_buffer(new->conn, new->readbuf);
-    connection_assign_write_buffer(new->conn, new->writebuf);
-    new->socktype = socktype;
+    connection_assign_read_buffer(new->tc_conn, new->readbuf);
+    connection_assign_write_buffer(new->tc_conn, new->writebuf);
 
     return new;
 
@@ -132,12 +129,10 @@ void tcp_client_free(tcp_client this)
 
     membuf_free(this->readbuf);
     membuf_free(this->writebuf);
-    connection_free(this->conn);
+    connection_free(this->tc_conn);
 
-    if (this->socktype == SOCKTYPE_SSL) {
-        if (this->context != NULL)
-            SSL_CTX_free(this->context);
-    }
+    if (this->context != NULL)
+        SSL_CTX_free(this->context);
 
     cstring_free(this->rootcert);
     cstring_free(this->private_key);
@@ -152,15 +147,15 @@ status_t tcp_client_connect(tcp_client this, const char *host, uint16_t port)
     assert(this != NULL);
     assert(host != NULL);
 
-    return connection_connect(this->conn, host, port);
+    return connection_connect(this->tc_conn, host, port);
 }
 
 connection tcp_client_connection(tcp_client p)
 {
     assert(p != NULL);
-    assert(p->conn != NULL);
+    assert(p->tc_conn != NULL);
 
-    return p->conn;
+    return p->tc_conn;
 }
 
 int tcp_client_get_timeout_write(tcp_client this)
@@ -214,7 +209,7 @@ int tcp_client_get_retries_read(tcp_client this)
 status_t tcp_client_close(tcp_client p)
 {
     assert(p != NULL);
-    return connection_close(p->conn);
+    return connection_close(p->tc_conn);
 }
 
 status_t tcp_client_set_rootcert(tcp_client this, const char *path)

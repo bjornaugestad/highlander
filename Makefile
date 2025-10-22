@@ -7,12 +7,12 @@
         test_clang_release test_clang_debug test_clang_tsan test_clang_asan_ubsan
 
 all: \
-  build_gcc_debug build_clang_asan_ubsan # build_clang_release  build_gcc_release build_gcc_tsan build_gcc_asan_ubsan \
-  build_clang_debug build_clang_tsan 
+  build_gcc_debug build_clang_asan_ubsan  build_clang_tsan build_clang_release  build_gcc_release build_gcc_tsan build_gcc_asan_ubsan \
+  build_clang_debug 
 
 test: \
-  test_gcc_debug test_clang_asan_ubsan # test_gcc_release test_gcc_tsan test_gcc_asan_ubsan \
-  test_clang_release test_clang_debug test_clang_tsan 
+  test_gcc_debug test_clang_asan_ubsan  test_clang_tsan test_gcc_release test_gcc_tsan test_gcc_asan_ubsan \
+  test_clang_release test_clang_debug 
 
 # ===== GCC =====
 build_gcc_release:
@@ -33,16 +33,16 @@ build_gcc_asan_ubsan:
 	meson compile -C build_gcc_asan_ubsan
 
 test_gcc_release: build_gcc_release
-	meson test -C build_gcc_release --no-rebuild --print-errorlogs
+	meson test -C build_gcc_release --print-errorlogs
 
 test_gcc_debug: build_gcc_debug
-	meson test -C build_gcc_debug --no-rebuild --print-errorlogs
+	meson test -C build_gcc_debug --print-errorlogs
 
 test_gcc_tsan: build_gcc_tsan
-	meson test -C build_gcc_tsan --no-rebuild --print-errorlogs
+	meson test -C build_gcc_tsan --print-errorlogs
 
 test_gcc_asan_ubsan: build_gcc_asan_ubsan
-	meson test -C build_gcc_asan_ubsan --no-rebuild --print-errorlogs
+	meson test -C build_gcc_asan_ubsan --print-errorlogs
 
 # ===== Clang =====
 build_clang_release:
@@ -62,16 +62,16 @@ build_clang_asan_ubsan:
 	meson compile -C build_clang_asan_ubsan
 
 test_clang_release: build_clang_release
-	meson test -C build_clang_release --no-rebuild --print-errorlogs
+	meson test -C build_clang_release --print-errorlogs
 
 test_clang_debug: build_clang_debug
-	meson test -C build_clang_debug --no-rebuild --print-errorlogs
+	meson test -C build_clang_debug --print-errorlogs
 
 test_clang_tsan: build_clang_tsan
-	meson test -C build_clang_tsan --no-rebuild --print-errorlogs
+	meson test -C build_clang_tsan --print-errorlogs
 
 test_clang_asan_ubsan: build_clang_asan_ubsan
-	meson test -C build_clang_asan_ubsan --no-rebuild --print-errorlogs
+	meson test -C build_clang_asan_ubsan --print-errorlogs
 
 # ===== Hygiene =====
 clean:

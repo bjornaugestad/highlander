@@ -24,15 +24,23 @@ extern "C" {
 
 typedef struct gensocket_tag *socket_t;
 int socket_get_fd(socket_t this);
+int socket_get_type(socket_t this);
 
-socket_t socket_create_server_socket(int type, const char *host, uint16_t port)
+socket_t socket_new(int socktype)
+    __attribute__((warn_unused_result));
+
+void socket_free(socket_t this);
+
+// TODO: rename. It's pretty much just bind we do.
+status_t socket_create_server_socket(socket_t sock, const char *host, uint16_t port)
     __attribute__((warn_unused_result, nonnull));
 
-socket_t socket_create_client_socket(int type, void *context, const char *host, uint16_t port)
-    __attribute__((warn_unused_result, nonnull(3)));
+// TODO: rename. It's pretty much just connect we do.
+status_t socket_create_client_socket(socket_t this, void *context, const char *host, uint16_t port)
+    __attribute__((warn_unused_result, nonnull(1,3)));
 
-socket_t socket_accept(socket_t p, void *context, struct sockaddr_storage *addr,
-    socklen_t *addrsize) __attribute__((warn_unused_result, nonnull(3,4)));
+status_t socket_accept(socket_t listener, socket_t newsock, void *context, struct sockaddr_storage *addr,
+    socklen_t *addrsize) __attribute__((warn_unused_result, nonnull(1,2,4,5)));
 
 status_t socket_bind(socket_t p, const char *hostname, uint16_t port)
     __attribute__((warn_unused_result, nonnull));
@@ -41,7 +49,7 @@ status_t socket_close(socket_t p)
     __attribute__((nonnull));
 
 // polltype is POLLIN and friends
-status_t socket_poll_for(int fd, int timeout, short polltype)
+status_t socket_poll_for(socket_t p, int timeout, short polltype)
     __attribute__((warn_unused_result));
 
 status_t socket_wait_for_data(socket_t p, int timeout)
@@ -53,10 +61,10 @@ status_t socket_write(socket_t p, const char *s, size_t count, int timeout, int 
 ssize_t  socket_read(socket_t p, char *buf, size_t count, int timeout, int retries)
     __attribute__((warn_unused_result, nonnull));
 
-status_t socket_set_nonblock(int fd) __attribute__((warn_unused_result));
-status_t socket_set_reuse_addr(int fd) __attribute__((warn_unused_result));
-status_t socket_clear_nonblock(int fd) __attribute__((warn_unused_result));
-status_t socket_listen(int fd, int backlog) __attribute__((warn_unused_result));
+status_t socket_set_nonblock(socket_t p) __attribute__((warn_unused_result));
+status_t socket_set_reuse_addr(socket_t p) __attribute__((warn_unused_result));
+status_t socket_clear_nonblock(socket_t p) __attribute__((warn_unused_result));
+status_t socket_listen(socket_t p, int backlog) __attribute__((warn_unused_result));
 
 #ifdef __cplusplus
 }
