@@ -276,6 +276,10 @@ status_t socket_create_client_socket(socket_t this, void *context,
     assert(this->socktype == SOCKTYPE_TCP || context != NULL);
     assert(this->fd == -1 && "You're leaking fd's, bro");
 
+#ifdef NDEBUG
+    (void)context;
+#endif
+
     if (this->socktype == SOCKTYPE_TCP)
         return tcp_create_client_socket(this, host, port);
     else { 

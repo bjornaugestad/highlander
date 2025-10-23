@@ -65,7 +65,7 @@ struct tcp_server_tag {
 
     size_t nthreads;
     size_t queue_size;
-    int block_when_full;
+    bool block_when_full;
 
     // Pool of connection objects. Allocated and initiated in tcp_server_init(),
     // freed in tcp_server_free().  Accessed by tcp_server_get_connection() and
@@ -652,7 +652,7 @@ void tcp_server_set_queue_size(tcp_server this, size_t size)
     this->queue_size = size;
 }
 
-void tcp_server_set_block_when_full(tcp_server this, int block_when_full)
+void tcp_server_set_block_when_full(tcp_server this, bool block_when_full)
 {
     assert(this != NULL);
     this->block_when_full = block_when_full;

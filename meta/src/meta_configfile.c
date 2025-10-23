@@ -274,7 +274,7 @@ status_t configfile_get_uint(configfile cf, const char *name, unsigned int *valu
 }
 status_t configfile_get_uint16_t(configfile cf, const char *name, uint16_t *value)
 {
-    unsigned tmp;
+    unsigned tmp = 0; // quiet the compiler
 
     assert(cf != NULL);
     assert(name != NULL);

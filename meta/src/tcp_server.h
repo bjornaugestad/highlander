@@ -7,6 +7,7 @@
 #define TCP_SERVER_H
 
 #include <stddef.h>
+#include <stdbool.h>
 
 #include <meta_process.h>
 #include <gensocket.h>      // for SOCKTYPE_
@@ -66,7 +67,7 @@ void tcp_server_set_readbuf_size(tcp_server srv, size_t size)
 void tcp_server_set_writebuf_size(tcp_server srv, size_t size)
     __attribute__((nonnull));
 
-void tcp_server_set_block_when_full(tcp_server srv, int block)
+void tcp_server_set_block_when_full(tcp_server srv, bool block)
     __attribute__((nonnull));
 
 void tcp_server_set_worker_threads(tcp_server srv, size_t count)
