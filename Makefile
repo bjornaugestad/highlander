@@ -2,8 +2,6 @@
 # boa@20251023
 #
 
-# Some default settings
-
 # What do we build? libmeta.a libhighlander.a test programs and app-demos.
 # Where does the output go? We want output directories per toolchain and build type.
 # Which toolchains do we support? clang and gcc.
@@ -43,6 +41,10 @@ LIBHIGHLANDER_SOURCES=\
 	http/src/html_buffer.c http/src/general_header.c http/src/html_menu.c\
 	http/src/http.c http/src/response.c http/src/html_template.c\
 	http/src/http_server.c meta/src/tcp_server.c
+
+# Start here...
+TARGETS=$(OUTDIR)/libmeta.a $(OUTDIR)/libhighlander.a $(META_TESTS) $(HIGHLANDER_TESTS)
+all: $(TARGETS)
 
 # Test programs for meta. We build them from source and place them in OUTDIR.
 # We need rules per program due to the -DCHECK_foo argument, but we can
@@ -146,15 +148,13 @@ $(OUTDIR)/%.o: %.c | $(OUTDIR)
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Start here...
-TARGETS=$(OUTDIR)/libmeta.a $(OUTDIR)/libhighlander.a $(META_TESTS) $(HIGHLANDER_TESTS)
-all: $(TARGETS)
-
 $(OUTDIR)/libmeta.a: $(LIBMETA_O)
 	$(AR) rcs $@ $^
 
 $(OUTDIR)/libhighlander.a: $(LIBHIGHLANDER_O)
 	$(AR) rcs $@ $^
 
+check: $(META_TESTS) $(HIGHLANDER_TESTS)
+	@for i in $^; do echo "running $$i"; $$i; done
 clean:
 	-@rm $(LIBMETA_O) $(LIBHIGHLANDER_O) $(TARGETS) >& /dev/null
