@@ -513,7 +513,7 @@ void *list_get_item(list lst, size_t index)
     return NULL;
 }
 
-#ifdef LIST_CHECK
+#ifdef CHECK_LIST
 
 /* Some struct to put in the list. */
 struct item {

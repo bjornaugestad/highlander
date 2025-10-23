@@ -1,5 +1,6 @@
 #!/bin/bash
 # build script for highlander. Runs make with the proper flags.
+# Passes whatever args to make
 
 COMMON_CFLAGS="-Wall -Wextra -Wpedantic -Werror -std=gnu2x -Wstrict-prototypes \
 	-Wmissing-prototypes -Wwrite-strings -Wshadow -Wcast-align -Wpointer-arith\
@@ -18,11 +19,11 @@ CFLAGS_CLANG_SAN="$COMMON_CLANG_CFLAGS -O0 -g -fsanitize=address,undefined,leak 
 CFLAGS_CLANG_TSAN="$COMMON_CLANG_CFLAGS -O0 -g -fsanitize=thread -fno-omit-frame-pointer"
 CFLAGS_CLANG_RELEASE="$COMMON_CLANG_CFLAGS -O3 -DNDEBUG"
 
-make CC=gcc CFLAGS="$CFLAGS_GCC_DEBUG" OUTDIR=.build/gcc/debug all
-make CC=gcc CFLAGS="$CFLAGS_GCC_SAN" OUTDIR=.build/gcc/san all
-make CC=gcc CFLAGS="$CFLAGS_GCC_RELEASE" OUTDIR=.build/gcc/release all
+make CC=gcc CFLAGS="$CFLAGS_GCC_DEBUG" OUTDIR=.build/gcc/debug $*
+make CC=gcc CFLAGS="$CFLAGS_GCC_SAN" OUTDIR=.build/gcc/san $*
+make CC=gcc CFLAGS="$CFLAGS_GCC_RELEASE" OUTDIR=.build/gcc/release $*
 
-make CC=clang CFLAGS="$CFLAGS_CLANG_DEBUG" OUTDIR=.build/clang/debug all
-make CC=clang CFLAGS="$CFLAGS_CLANG_SAN" OUTDIR=.build/clang/san all
-make CC=clang CFLAGS="$CFLAGS_CLANG_TSAN" OUTDIR=.build/clang/tsan all
-make CC=clang CFLAGS="$CFLAGS_CLANG_RELEASE" OUTDIR=.build/clang/release all
+make CC=clang CFLAGS="$CFLAGS_CLANG_DEBUG" OUTDIR=.build/clang/debug $*
+make CC=clang CFLAGS="$CFLAGS_CLANG_SAN" OUTDIR=.build/clang/san $*
+make CC=clang CFLAGS="$CFLAGS_CLANG_TSAN" OUTDIR=.build/clang/tsan $*
+make CC=clang CFLAGS="$CFLAGS_CLANG_RELEASE" OUTDIR=.build/clang/release $*

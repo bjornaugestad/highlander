@@ -169,7 +169,7 @@ bitset bitset_xor(bitset b, bitset c)
     return result;
 }
 
-#ifdef BITSET_CHECK
+#ifdef CHECK_BITSET
 
 
 int main(void)
