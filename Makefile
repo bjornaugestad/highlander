@@ -1,90 +1,70 @@
-# Flat Meson/Ninja wrapper
+# Just a simple Makefile without those nightmareish build systems(Automake, Meson)
+# boa@20251023
+#
 
-.PHONY: all test clean reallyclean \
-        build_gcc_release build_clang_release build_gcc_debug build_clang_debug # build_gcc_tsan build_gcc_asan_ubsan \
-        build_clang_tsan build_clang_asan_ubsan \
-        test_gcc_release test_gcc_debug test_gcc_tsan test_gcc_asan_ubsan \
-        test_clang_release test_clang_debug test_clang_tsan test_clang_asan_ubsan
+# Some default settings
 
-all: \
-  build_gcc_debug build_clang_asan_ubsan  build_clang_tsan # build_clang_release  build_gcc_release build_gcc_tsan build_gcc_asan_ubsan \
-  build_clang_debug 
+# What do we build? libmeta.a libhighlander.a test programs and app-demos.
+# Where does the output go? We want output directories per toolchain and build type.
+# Which toolchains do we support? clang and gcc.
+# Which build types? release, debug, tsan, ubsan+asan
+# Since gcc cannot build tsan, we end up with seven invariants:
+# 	- seven CFLAGS, OUTPUTDIR, and so forth
+# 		- gcc_release, gcc_debug, gcc_san
+# 		- glang_release, clang_debug, clang_tsan, clang_san
+#   So we build seven invariants and place the output in seven directories under .build
+#   .build/gcc/{release,debug,san}
+#   .build/clang/{release,debug,tsan,san}
+#
 
-test: \
-  test_gcc_debug test_clang_asan_ubsan  test_clang_tsan # test_gcc_release test_gcc_tsan test_gcc_asan_ubsan \
-  test_clang_release test_clang_debug 
+# Naming of libraries: We have two libs, meta and highlander. They're built in
+# seven ways. Do we want seven names? What do we install? Let's install
+# libmeta.a and libhighlander.a to $(PREFIX) which defaults to $(HOME),
+# so put headers in $(PREFIX)/include and so forth.
 
-# ===== GCC =====
-build_gcc_release:
-	CC=gcc meson setup build_gcc_release --reconfigure --buildtype=release -Db_sanitize=none -Dwarning_level=3
-	meson compile -C build_gcc_release
+LIBMETA_SOURCES=\
+	meta/src/meta_convert.c meta/src/meta_bitset.c meta/src/meta_process.c\
+	meta/src/meta_pool.c meta/src/meta_common.c meta/src/cstring.c\
+	meta/src/meta_error.c meta/src/meta_stringmap.c meta/src/gensocket.c\
+	meta/src/meta_wlock.c meta/src/meta_map.c meta/src/meta_list.c\
+	meta/src/connection.c meta/src/meta_filecache.c meta/src/meta_ticker.c\
+	meta/src/meta_stack.c meta/src/meta_slotbuf.c meta/src/miscssl.c\
+	meta/src/meta_misc.c meta/src/meta_regex.c meta/src/meta_sampler.c\
+	meta/src/meta_pair.c meta/src/meta_membuf.c meta/src/meta_fifo.c\
+	meta/src/meta_configfile.c meta/src/tcp_client.c meta/src/meta_cache.c\
+	meta/src/meta_array.c meta/src/threadpool.c
 
-build_gcc_debug:
-	CC=gcc meson setup build_gcc_debug --reconfigure --buildtype=debug -Db_sanitize=none -Dwarning_level=3
-	meson compile -C build_gcc_debug
+LIBHIGHLANDER_SOURCES=\
+	http/src/cookies.c http/src/parse_time.c http/src/rfc1738.c\
+	http/src/send_status_code.c http/src/highlander.c\
+	http/src/html_template_repository.c http/src/entity_header.c\
+	http/src/html_section.c http/src/parse_http.c http/src/http_client.c\
+	http/src/attribute.c http/src/request.c http/src/dynamic_page.c\
+	http/src/html_buffer.c http/src/general_header.c http/src/html_menu.c\
+	http/src/http.c http/src/response.c http/src/html_template.c\
+	http/src/http_server.c meta/src/tcp_server.c
 
-# note: tsan and gcc may be meh
-build_gcc_tsan:
-	CC=gcc meson setup build_gcc_tsan --reconfigure --buildtype=debug -Db_sanitize=thread -Dwarning_level=3
-	meson compile -C build_gcc_tsan
+# Convert list of source files to list of object files
+LIBMETA_O=$(patsubst %.c, $(OUTDIR)/%.o, $(LIBMETA_SOURCES))
+LIBHIGHLANDER_O=$(patsubst %.c, $(OUTDIR)/%.o, $(LIBHIGHLANDER_SOURCES))
 
-build_gcc_asan_ubsan:
-	CC=gcc meson setup build_gcc_asan_ubsan --reconfigure --buildtype=debug -Db_sanitize=address,undefined -Dwarning_level=3
-	meson compile -C build_gcc_asan_ubsan
+# Create output directory if needed
+$(OUTDIR):
+	@mkdir -p $(OUTDIR)
 
-test_gcc_release: build_gcc_release
-	meson test -C build_gcc_release --print-errorlogs
+$(OUTDIR)/%.o: %.c | $(OUTDIR)
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) -c $< -o $@
 
-test_gcc_debug: build_gcc_debug
-	meson test -C build_gcc_debug --print-errorlogs
+# Start with building libmeta.a
+TARGETS=$(OUTDIR)/libmeta.a $(OUTDIR)/libhighlander.a
+all: $(TARGETS)
 
-test_gcc_tsan: build_gcc_tsan
-	meson test -C build_gcc_tsan --print-errorlogs
+$(OUTDIR)/libmeta.a: $(LIBMETA_O)
+	$(AR) rcs $@ $^
 
-test_gcc_asan_ubsan: build_gcc_asan_ubsan
-	meson test -C build_gcc_asan_ubsan --print-errorlogs
+$(OUTDIR)/libhighlander.a: $(LIBHIGHLANDER_O)
+	$(AR) rcs $@ $^
 
-# ===== Clang =====
-build_clang_release:
-	CC=clang meson setup build_clang_release --reconfigure --buildtype=release -Db_sanitize=none -Dwarning_level=3
-	meson compile -C build_clang_release
-
-build_clang_debug:
-	CC=clang meson setup build_clang_debug --reconfigure --buildtype=debug -Db_sanitize=none -Dwarning_level=3
-	meson compile -C build_clang_debug
-
-build_clang_tsan:
-	CC=clang meson setup build_clang_tsan --reconfigure --buildtype=debug -Db_sanitize=thread -Dwarning_level=3
-	meson compile -C build_clang_tsan
-
-build_clang_asan_ubsan:
-	CC=clang meson setup build_clang_asan_ubsan --reconfigure --buildtype=debug -Db_sanitize=address,undefined -Dwarning_level=3
-	meson compile -C build_clang_asan_ubsan
-
-test_clang_release: build_clang_release
-	meson test -C build_clang_release --print-errorlogs
-
-test_clang_debug: build_clang_debug
-	meson test -C build_clang_debug --print-errorlogs
-
-test_clang_tsan: build_clang_tsan
-	meson test -C build_clang_tsan --print-errorlogs
-
-test_clang_asan_ubsan: build_clang_asan_ubsan
-	meson test -C build_clang_asan_ubsan --print-errorlogs
-
-# ===== Hygiene =====
 clean:
-	-@[ -d build_gcc_release ] && ninja -C build_gcc_release -q clean || true
-	-@[ -d build_gcc_debug ] && ninja -C build_gcc_debug -q clean || true
-	-@[ -d build_gcc_tsan ] && ninja -C build_gcc_tsan -q clean || true
-	-@[ -d build_gcc_asan_ubsan ] && ninja -C build_gcc_asan_ubsan -q clean || true
-	-@[ -d build_clang_release ] && ninja -C build_clang_release -q clean || true
-	-@[ -d build_clang_debug ] && ninja -C build_clang_debug -q clean || true
-	-@[ -d build_clang_tsan ] && ninja -C build_clang_tsan -q clean || true
-	-@[ -d build_clang_asan_ubsan ] && ninja -C build_clang_asan_ubsan -q clean || true
-
-reallyclean:
-	rm -rf build_gcc_release build_gcc_debug build_gcc_tsan build_gcc_asan_ubsan \
-	       build_clang_release build_clang_debug build_clang_tsan build_clang_asan_ubsan
-
+	rm $(LIBMETA_O) $(LIBHIGHLANDER_O) $(TARGETS)
