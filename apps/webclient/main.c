@@ -28,7 +28,7 @@ const char* g_uri = "/";
 //
 // timeout is in ms.
 int timeout_reads = 400, timeout_writes = 50;
-int nretries_read = 8, nretries_write = 4;
+int nretries_read = 2, nretries_write = 2;
 
 
 static void die_error(const char *context, error e)

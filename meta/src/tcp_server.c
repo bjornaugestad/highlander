@@ -91,6 +91,10 @@ struct tcp_server_tag {
     _Atomic unsigned long sum_poll_again; /* # of times poll() returned EAGAIN */
     _Atomic unsigned long sum_accept_failed;
     _Atomic unsigned long sum_denied_clients;
+
+    // we need a mutex to protect our buffers when recycling from worker threads
+    // while the accept thread is running to avoid recycling the bufs in use.
+    pthread_mutex_t buflock;
 };
 
 /*
@@ -155,7 +159,7 @@ tcp_server tcp_server_new(int socktype)
     }
 
     /* Some defaults */
-    new->timeout_reads = 5000;
+    new->timeout_reads = 1000;
     new->timeout_writes = 1000;
     new->timeout_accepts = 800;
     new->retries_writes = 10;
@@ -170,6 +174,8 @@ tcp_server tcp_server_new(int socktype)
     new->readbuf_size =  (1024 * 4);
     new->writebuf_size = (1024 *64);
     atomic_store_explicit(&new->shutting_down, false, memory_order_relaxed);
+
+    pthread_mutex_init(&new->buflock, NULL);
 
     return new;
 }
@@ -187,9 +193,11 @@ void tcp_server_free(tcp_server this)
         this->queue = NULL;
     }
 
+    pthread_mutex_lock(&this->buflock);
     pool_free(this->connections, connection_freev);
     pool_free(this->read_buffers, membuf_freev);
     pool_free(this->write_buffers, membuf_freev);
+    pthread_mutex_unlock(&this->buflock);
 
     cstring_free(this->host);
     cstring_free(this->private_key);
@@ -206,6 +214,7 @@ void tcp_server_free(tcp_server this)
     }
 
     socket_free(this->listener);
+    pthread_mutex_destroy(&this->buflock);
     free(this);
 }
 
@@ -346,6 +355,8 @@ static void tcp_server_recycle_connection(void *vsrv, void *vconn)
     assert(srv != NULL);
     assert(conn != NULL);
 
+    pthread_mutex_lock(&srv->buflock);
+
     membuf rb = connection_reclaim_read_buffer(conn);
     membuf wb = connection_reclaim_write_buffer(conn);
 
@@ -361,6 +372,7 @@ static void tcp_server_recycle_connection(void *vsrv, void *vconn)
 
     connection_recycle(conn);
     pool_recycle(srv->connections, conn);
+    pthread_mutex_unlock(&srv->buflock);
 }
 
 static status_t assign_rw_buffers(void *vsrv, void *vconn)
@@ -477,9 +489,6 @@ static status_t accept_new_connections(tcp_server this)
         // The queue was full, so we couldn't add the new connection to the 
         // queue. We must therefore close the connection and do some cleanup.
         if (!rc) {
-            if (!connection_close(conn))
-                warning("Could not close connection");
-
             tcp_server_recycle_connection(this, conn);
         }
     }

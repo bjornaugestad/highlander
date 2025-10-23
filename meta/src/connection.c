@@ -230,6 +230,7 @@ void connection_assign_write_buffer(connection this, membuf buf)
 status_t connection_flush(connection this)
 {
     assert(this != NULL);
+    assert(this->writebuf != NULL);
 
     status_t rc = success;
     size_t count = membuf_canread(this->writebuf);
@@ -249,6 +250,7 @@ status_t connection_flush(connection this)
 status_t connection_close(connection this)
 {
     assert(this != NULL);
+    assert(this->writebuf != NULL);
 
     status_t flush_success = connection_flush(this);
     status_t close_success = socket_close(this->cn_sock);
