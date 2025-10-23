@@ -32,7 +32,7 @@ int socket_get_fd(socket_t this)
 }
 
 static status_t ssl_write(socket_t this, const char *buf, size_t count,
-    int timeout, int nretries)
+    unsigned timeout, unsigned nretries)
 {
     size_t nwritten = 0;
 
@@ -41,8 +41,6 @@ static status_t ssl_write(socket_t this, const char *buf, size_t count,
     assert(this->ssl != NULL);
     assert(this->fd >= 0);
     assert(buf != NULL);
-    assert(timeout >= 0);
-    assert(nretries >= 0);
 
     do {
         if (!socket_poll_for(this, timeout, POLLOUT)) {
@@ -101,7 +99,7 @@ static status_t ssl_write(socket_t this, const char *buf, size_t count,
     return success;
 }
 
-status_t socket_poll_for(socket_t this, int timeout, short poll_for)
+status_t socket_poll_for(socket_t this, unsigned timeout, short poll_for)
 {
     struct pollfd pfd;
     int rc;
@@ -110,13 +108,12 @@ status_t socket_poll_for(socket_t this, int timeout, short poll_for)
     assert(this != NULL);
     assert(this->fd >= 0);
     assert(poll_for == POLLIN || poll_for == POLLOUT);
-    assert(timeout >= 0);
 
     pfd.fd = this->fd;
     pfd.events = poll_for;
 
     /* NOTE: poll is XPG4, not POSIX */
-    rc = poll(&pfd, 1, timeout);
+    rc = poll(&pfd, 1, (int)timeout);
     if (rc == 1) {
         /* We have info in pfd */
         if (pfd.revents & POLLHUP) {
@@ -222,23 +219,23 @@ static status_t tcp_create_server_socket(socket_t sock, const char *host, uint16
 
 static status_t tcp_create_client_socket(socket_t this, const char *host, uint16_t port)
 {
-    char serv[6];
-    struct addrinfo hints = {0}, *res = NULL, *ai;
-
     assert(this != NULL);
     assert(this->fd == -1);
     assert(this->socktype == SOCKTYPE_TCP || this->socktype == SOCKTYPE_SSL);
     assert(host != NULL);
     assert(port > 0);
 
+    char serv[6];
     snprintf(serv, sizeof serv, "%u", (unsigned)port);
+
+    struct addrinfo hints = {0}, *res = NULL, *ai;
     hints.ai_family   = AF_UNSPEC;          // v4/v6
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags    = AI_ADDRCONFIG | AI_NUMERICSERV;
 
     int rc = getaddrinfo(host, serv, &hints, &res);
     if (rc)
-        return NULL;
+        return failure;
 
     for (ai = res; ai; ai = ai->ai_next) {
         if (!socket_socket(this, ai))
@@ -430,7 +427,7 @@ static bool sslsocket_pending(socket_t this)
     return SSL_pending(this->ssl) > 0;
 }
 
-status_t socket_wait_for_data(socket_t p, int timeout)
+status_t socket_wait_for_data(socket_t p, unsigned timeout)
 {
     assert(p != NULL);
 
@@ -440,13 +437,11 @@ status_t socket_wait_for_data(socket_t p, int timeout)
     return  socket_poll_for(p, timeout, POLLIN);
 }
 
-static status_t tcp_write(socket_t this, const char *buf, size_t count, int timeout, int nretries)
+static status_t tcp_write(socket_t this, const char *buf, size_t count, unsigned timeout, unsigned nretries)
 {
     assert(this != NULL);
     assert(this->fd >= 0);
     assert(buf != NULL);
-    assert(timeout >= 0);
-    assert(nretries >= 0);
 
     do {
         if (!socket_poll_for(this, timeout, POLLOUT)) {
@@ -472,7 +467,7 @@ static status_t tcp_write(socket_t this, const char *buf, size_t count, int time
     return success;
 }
 
-status_t socket_write(socket_t p, const char *src, size_t count, int timeout, int retries)
+status_t socket_write(socket_t p, const char *src, size_t count, unsigned timeout, unsigned retries)
 {
     assert(p != NULL);
     assert(src != NULL);
@@ -484,14 +479,12 @@ status_t socket_write(socket_t p, const char *src, size_t count, int timeout, in
         return ssl_write(p, src, count, timeout, retries);
 }
 
-static ssize_t ssl_read(socket_t this, char *dest, size_t count, int timeout, int nretries)
+static ssize_t ssl_read(socket_t this, char *dest, size_t count, unsigned timeout, unsigned nretries)
 {
     assert(this != NULL);
     assert(this->fd > -1);
     assert(this->socktype == SOCKTYPE_SSL);
     assert(this->ssl != NULL);
-    assert(timeout >= 0);
-    assert(nretries >= 0);
     assert(dest != NULL);
 
     do {
@@ -539,12 +532,10 @@ static ssize_t ssl_read(socket_t this, char *dest, size_t count, int timeout, in
     return -1; // We timed out
 }
 
-static ssize_t tcp_read(socket_t this, char *dest, size_t count, int timeout, int nretries)
+static ssize_t tcp_read(socket_t this, char *dest, size_t count, unsigned timeout, unsigned nretries)
 {
     assert(this != NULL);
     assert(this->fd >= 0);
-    assert(timeout >= 0);
-    assert(nretries >= 0);
     assert(dest != NULL);
 
     do {
@@ -569,7 +560,7 @@ static ssize_t tcp_read(socket_t this, char *dest, size_t count, int timeout, in
     return -1; // We timed out
 }
 
-ssize_t socket_read(socket_t p, char *buf, size_t count, int timeout, int retries)
+ssize_t socket_read(socket_t p, char *buf, size_t count, unsigned timeout, unsigned retries)
 {
     assert(p != NULL);
     assert(buf != NULL);

@@ -61,11 +61,11 @@ struct http_server_tag {
     pool requests;
     pool responses;
 
-    int timeout_read;
-    int timeout_write;
-    int timeout_accept;
-    int retries_read;
-    int retries_write;
+    unsigned timeout_read;
+    unsigned timeout_write;
+    unsigned timeout_accept;
+    unsigned retries_read;
+    unsigned retries_write;
 
     char *host;
     uint16_t port;
@@ -427,56 +427,56 @@ dynamic_page http_server_lookup(http_server this, http_request request)
     return NULL;
 }
 
-void http_server_set_timeout_read(http_server this, int n)
+void http_server_set_timeout_read(http_server this, unsigned n)
 {
     assert(this != NULL);
 
     this->timeout_read = n;
 }
 
-void http_server_set_timeout_write(http_server this, int n)
+void http_server_set_timeout_write(http_server this, unsigned n)
 {
     assert(this != NULL);
 
     this->timeout_write = n;
 }
 
-void http_server_set_timeout_accept(http_server this, int n)
+void http_server_set_timeout_accept(http_server this, unsigned n)
 {
     assert(this != NULL);
 
     this->timeout_accept = n;
 }
 
-int http_server_get_timeout_read(http_server this)
+unsigned http_server_get_timeout_read(http_server this)
 {
     assert(this != NULL);
 
     return this->timeout_read;
 }
 
-void http_server_set_retries_read(http_server this, int seconds)
+void http_server_set_retries_read(http_server this, unsigned seconds)
 {
     assert(this != NULL);
 
     this->retries_read = seconds;
 }
 
-void http_server_set_retries_write(http_server this, int seconds)
+void http_server_set_retries_write(http_server this, unsigned seconds)
 {
     assert(this != NULL);
 
     this->retries_write = seconds;
 }
 
-int http_server_get_timeout_accept(http_server this)
+unsigned http_server_get_timeout_accept(http_server this)
 {
     assert(this != NULL);
 
     return this->timeout_accept;
 }
 
-int http_server_get_timeout_write(http_server this)
+unsigned http_server_get_timeout_write(http_server this)
 {
     assert(this != NULL);
 
@@ -504,7 +504,7 @@ void http_server_set_port(http_server this, uint16_t n)
     this->port = n;
 }
 
-int http_server_get_port(http_server this)
+uint16_t http_server_get_port(http_server this)
 {
     assert(this != NULL);
 
@@ -918,11 +918,11 @@ status_t http_server_configure(http_server this, process p, const char *filename
     int workers = -1;
     int queuesize = -1;
     int block_when_full = -1;
-    int timeout_read = -1;
-    int timeout_write = -1;
-    int timeout_accept = -1;
-    int retries_read = -1;
-    int retries_write = -1;
+    unsigned timeout_read = 0;
+    unsigned timeout_write = 0;
+    unsigned timeout_accept = 0;
+    unsigned retries_read = 0;
+    unsigned retries_write = 0;
     int logrotate = -1;
 
     char hostname[1024] = { '\0' };
@@ -952,19 +952,19 @@ status_t http_server_configure(http_server this, process p, const char *filename
         goto readerr;
 
     if (configfile_exists(cf, "timeout_read")
-    && !configfile_get_int(cf, "timeout_read", &timeout_read))
+    && !configfile_get_uint(cf, "timeout_read", &timeout_read))
         goto readerr;
 
     if (configfile_exists(cf, "timeout_write")
-    && !configfile_get_int(cf, "timeout_write", &timeout_write))
+    && !configfile_get_uint(cf, "timeout_write", &timeout_write))
         goto readerr;
 
     if (configfile_exists(cf, "retries_read")
-    && !configfile_get_int(cf, "retries_read", &retries_read))
+    && !configfile_get_uint(cf, "retries_read", &retries_read))
         goto readerr;
 
     if (configfile_exists(cf, "retries_write")
-    && !configfile_get_int(cf, "retries_write", &retries_write))
+    && !configfile_get_uint(cf, "retries_write", &retries_write))
         goto readerr;
 
     if (configfile_exists(cf, "logrotate")
@@ -999,22 +999,22 @@ status_t http_server_configure(http_server this, process p, const char *filename
     if (port != 0)
         http_server_set_port(this, port);
 
-    if (retries_read != -1)
+    if (retries_read != 0)
         http_server_set_retries_read(this, retries_read);
 
-    if (retries_write != -1)
+    if (retries_write != 0)
         http_server_set_retries_write(this, retries_write);
 
     if (logrotate != -1)
         http_server_set_logrotate(this, logrotate);
 
-    if (timeout_read != -1)
+    if (timeout_read != 0)
         http_server_set_timeout_read(this, timeout_read);
 
-    if (timeout_write != -1)
+    if (timeout_write != 0)
         http_server_set_timeout_write(this, timeout_write);
 
-    if (timeout_accept != -1)
+    if (timeout_accept != 0)
         http_server_set_timeout_accept(this, timeout_accept);
 
     if (block_when_full != -1)

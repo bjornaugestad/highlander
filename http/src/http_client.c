@@ -100,37 +100,37 @@ status_t http_client_disconnect(http_client this)
     return tcp_client_close(this->tcpclient);
 }
 
-int http_client_get_timeout_write(http_client this)
+unsigned http_client_get_timeout_write(http_client this)
 {
     assert(this != NULL);
     return tcp_client_get_timeout_write(this->tcpclient);
 }
 
-int http_client_get_timeout_read(http_client this)
+unsigned http_client_get_timeout_read(http_client this)
 {
     assert(this != NULL);
     return tcp_client_get_timeout_read(this->tcpclient);
 }
 
-void http_client_set_timeout_write(http_client this, int millisec)
+void http_client_set_timeout_write(http_client this, unsigned millisec)
 {
     assert(this != NULL);
     tcp_client_set_timeout_write(this->tcpclient, millisec);
 }
 
-void http_client_set_timeout_read(http_client this, int millisec)
+void http_client_set_timeout_read(http_client this, unsigned millisec)
 {
     assert(this != NULL);
     tcp_client_set_timeout_read(this->tcpclient, millisec);
 }
 
-void http_client_set_retries_read(http_client this, int count)
+void http_client_set_retries_read(http_client this, unsigned count)
 {
     assert(this != NULL);
     tcp_client_set_retries_read(this->tcpclient, count);
 }
 
-void http_client_set_retries_write(http_client this, int count)
+void http_client_set_retries_write(http_client this, unsigned count)
 {
     assert(this != NULL);
     tcp_client_set_retries_write(this->tcpclient, count);

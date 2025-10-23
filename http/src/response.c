@@ -1068,8 +1068,8 @@ response_send_entity(http_response r, connection conn, size_t *pcb)
         size_t cb = response_get_content_length(r);
         *pcb = cb;
         if (cb > 64 * 1024) {
-            int timeout = 1;
-            int retries = (int)(cb / 1024);
+            unsigned timeout = 1;
+            unsigned retries = (unsigned)(cb / 1024);
 
             rc = connection_write_big_buffer(conn, r->content_buffer,
                 cb, timeout, retries);

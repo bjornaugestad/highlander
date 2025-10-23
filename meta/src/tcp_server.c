@@ -39,10 +39,10 @@ struct tcp_server_tag {
     int socktype;
 
     // timeout in milliseconds
-    int timeout_reads, timeout_writes, timeout_accepts;
+    unsigned timeout_reads, timeout_writes, timeout_accepts;
 
     // How many times should we try to read/write before we disconnect?
-    int retries_reads, retries_writes;
+    unsigned retries_reads, retries_writes;
 
     // The size of the connections read/write buffers
     size_t readbuf_size, writebuf_size;
@@ -664,7 +664,7 @@ void tcp_server_set_worker_threads(tcp_server this, size_t count)
     this->nthreads = count;
 }
 
-void tcp_server_set_timeout(tcp_server this, int reads, int writes, int accepts)
+void tcp_server_set_timeout(tcp_server this, unsigned reads, unsigned writes, unsigned accepts)
 {
     assert(this != NULL);
 
@@ -673,7 +673,7 @@ void tcp_server_set_timeout(tcp_server this, int reads, int writes, int accepts)
     this->timeout_accepts = accepts;
 }
 
-void tcp_server_set_retries(tcp_server this, int reads, int writes)
+void tcp_server_set_retries(tcp_server this, unsigned reads, unsigned writes)
 {
     assert(this != NULL);
     this->retries_writes = writes;

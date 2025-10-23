@@ -106,20 +106,17 @@ http_response http_client_response(http_client this)
 
 status_t http_client_disconnect(http_client this);
 
-int http_client_get_timeout_write(http_client p)
+unsigned http_client_get_timeout_write(http_client p)
     __attribute__((nonnull, warn_unused_result));
 
-int http_client_get_timeout_read(http_client p)
-    __attribute__((nonnull, warn_unused_result));
-
-int http_client_get_timeout_read(http_client p)
+unsigned http_client_get_timeout_read(http_client p)
     __attribute__((nonnull, warn_unused_result));
 
 
-void http_client_set_timeout_write(http_client p, int millisec) __attribute__((nonnull));
-void http_client_set_timeout_read(http_client p, int millisec)  __attribute__((nonnull));
-void http_client_set_retries_read(http_client p, int count)     __attribute__((nonnull));
-void http_client_set_retries_write(http_client p, int count)    __attribute__((nonnull));
+void http_client_set_timeout_write(http_client p, unsigned millisec) __attribute__((nonnull));
+void http_client_set_timeout_read(http_client p, unsigned millisec)  __attribute__((nonnull));
+void http_client_set_retries_read(http_client p, unsigned count)     __attribute__((nonnull));
+void http_client_set_retries_write(http_client p, unsigned count)    __attribute__((nonnull));
 
 
 http_server http_server_new(int socktype) __attribute__((warn_unused_result));
@@ -186,19 +183,18 @@ status_t http_server_set_default_page_attributes(http_server s, page_attribute a
 status_t http_server_set_host(http_server s, const char *name)
     __attribute__((nonnull, warn_unused_result));
 
-void http_server_set_port(http_server s, uint16_t n)
-    __attribute__((nonnull));
+void http_server_set_port(http_server s, uint16_t n) __attribute__((nonnull));
 
-int http_server_get_timeout_write(http_server s)    __attribute__((nonnull, warn_unused_result));
-int http_server_get_timeout_read(http_server srv)   __attribute__((nonnull, warn_unused_result));
-int http_server_get_timeout_accept(http_server srv) __attribute__((nonnull, warn_unused_result));
-int http_server_get_timeout_read(http_server s)     __attribute__((nonnull, warn_unused_result));
+unsigned http_server_get_timeout_write(http_server s)    __attribute__((nonnull, warn_unused_result));
+unsigned http_server_get_timeout_read(http_server srv)   __attribute__((nonnull, warn_unused_result));
+unsigned http_server_get_timeout_accept(http_server srv) __attribute__((nonnull, warn_unused_result));
+unsigned http_server_get_timeout_read(http_server s)     __attribute__((nonnull, warn_unused_result));
 
-void http_server_set_timeout_write(http_server s, int seconds)  __attribute__((nonnull)); 
-void http_server_set_timeout_read(http_server s, int seconds)   __attribute__((nonnull)); 
-void http_server_set_timeout_accept(http_server s, int seconds) __attribute__((nonnull)); 
-void http_server_set_retries_read(http_server s, int seconds)   __attribute__((nonnull)); 
-void http_server_set_retries_write(http_server s, int seconds)  __attribute__((nonnull));
+void http_server_set_timeout_write(http_server s, unsigned seconds)  __attribute__((nonnull)); 
+void http_server_set_timeout_read(http_server s, unsigned seconds)   __attribute__((nonnull)); 
+void http_server_set_timeout_accept(http_server s, unsigned seconds) __attribute__((nonnull)); 
+void http_server_set_retries_read(http_server s, unsigned seconds)   __attribute__((nonnull)); 
+void http_server_set_retries_write(http_server s, unsigned seconds)  __attribute__((nonnull));
 
 
 void http_server_set_worker_threads(http_server s, size_t n) __attribute__((nonnull));
@@ -212,7 +208,7 @@ status_t http_server_set_logfile(http_server s, const char *logfile)
 void http_server_set_logrotate(http_server s, int logrotate)
     __attribute__((nonnull));
 
-int http_server_get_port(http_server s)
+uint16_t http_server_get_port(http_server s)
     __attribute__((nonnull, warn_unused_result));
 
 size_t http_server_get_worker_threads(http_server s)

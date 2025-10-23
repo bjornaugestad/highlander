@@ -76,10 +76,10 @@ void tcp_server_set_service_function(tcp_server srv,
     void *(*func)(void*), void *arg)
     __attribute__((nonnull(1)));
 
-void tcp_server_set_timeout(tcp_server srv, int reads, int writes, int accepts)
+void tcp_server_set_timeout(tcp_server srv, unsigned reads, unsigned writes, unsigned accepts)
     __attribute__((nonnull));
 
-void tcp_server_set_retries(tcp_server srv, int reads, int writes)
+void tcp_server_set_retries(tcp_server srv, unsigned reads, unsigned writes)
     __attribute__((nonnull));
 
 

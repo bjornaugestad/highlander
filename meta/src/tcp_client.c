@@ -23,7 +23,7 @@ struct tcp_client_tag {
     cstring rootcert, private_key, ciphers, cadir;
     SSL_CTX *context;
 
-    int timeout_reads, timeout_writes, nretries_read, nretries_write;
+    unsigned timeout_reads, timeout_writes, nretries_read, nretries_write;
     size_t readbuf_size, writebuf_size;
 
     connection tc_conn;
@@ -158,49 +158,49 @@ connection tcp_client_connection(tcp_client p)
     return p->tc_conn;
 }
 
-int tcp_client_get_timeout_write(tcp_client this)
+unsigned tcp_client_get_timeout_write(tcp_client this)
 {
     assert(this != NULL);
     return this->timeout_writes;
 }
 
-int tcp_client_get_timeout_read(tcp_client this)
+unsigned tcp_client_get_timeout_read(tcp_client this)
 {
     assert(this != NULL);
     return this->timeout_reads;
 }
 
-void tcp_client_set_timeout_write(tcp_client this, int millisec)
+void tcp_client_set_timeout_write(tcp_client this, unsigned millisec)
 {
     assert(this != NULL);
     this->timeout_writes = millisec;
 }
 
-void tcp_client_set_timeout_read(tcp_client this, int millisec)
+void tcp_client_set_timeout_read(tcp_client this, unsigned millisec)
 {
     assert(this != NULL);
     this->timeout_reads = millisec;
 }
 
-void tcp_client_set_retries_read(tcp_client this, int count)
+void tcp_client_set_retries_read(tcp_client this, unsigned count)
 {
     assert(this != NULL);
     this->nretries_read = count;
 }
 
-void tcp_client_set_retries_write(tcp_client this, int count)
+void tcp_client_set_retries_write(tcp_client this, unsigned count)
 {
     assert(this != NULL);
     this->nretries_write = count;
 }
 
-int tcp_client_get_retries_write(tcp_client this)
+unsigned tcp_client_get_retries_write(tcp_client this)
 {
     assert(this != NULL);
     return this->nretries_write;
 }
 
-int tcp_client_get_retries_read(tcp_client this)
+unsigned tcp_client_get_retries_read(tcp_client this)
 {
     assert(this != NULL);
     return this->nretries_read;

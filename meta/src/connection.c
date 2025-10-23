@@ -48,9 +48,9 @@
  */
 
 struct connection_tag {
-    int timeout_reads, timeout_writes;
-    int retries_reads, retries_writes;
-    int persistent;
+    unsigned timeout_reads, timeout_writes;
+    unsigned retries_reads, retries_writes;
+    bool persistent;
     socket_t cn_sock;
     void *arg2;
 
@@ -144,14 +144,17 @@ writebuf_has_room_for(connection this, size_t count)
     return n >= count;
 }
 
-connection connection_new(int socktype, int timeout_reads, int timeout_writes,
-    int retries_reads, int retries_writes, void *arg2)
+connection connection_new(int socktype, unsigned timeout_reads, unsigned timeout_writes,
+    unsigned retries_reads, unsigned retries_writes, void *arg2)
 {
     assert(socktype == SOCKTYPE_TCP || socktype == SOCKTYPE_SSL);
-    assert(timeout_reads >= 0);
-    assert(timeout_writes >= 0);
-    assert(retries_reads >= 0);
-    assert(retries_writes >= 0);
+#if 0
+    // Is 0 OK? I think so
+    assert(timeout_reads > 0);
+    assert(timeout_writes > 0);
+    assert(retries_reads > 0);
+    assert(retries_writes > 0);
+#endif
 
     connection new = calloc(1, sizeof *new);
     if (new == NULL)
@@ -399,13 +402,13 @@ status_t connection_ungetc(connection this, int c)
     return membuf_unget(this->readbuf);
 }
 
-void connection_set_persistent(connection this, int val)
+void connection_set_persistent(connection this, bool val)
 {
     assert(this != NULL);
     this->persistent = val;
 }
 
-int connection_is_persistent(connection this)
+bool connection_is_persistent(connection this)
 {
     assert(this != NULL);
     return this->persistent;
@@ -515,12 +518,12 @@ status_t connection_gets(connection this, char *dest, size_t destsize)
 }
 
 status_t connection_write_big_buffer(connection this, const void *buf,
-    size_t count, int timeout, int nretries)
+    size_t count, unsigned timeout, unsigned nretries)
 {
     assert(this != NULL);
     assert(buf != NULL);
-    assert(timeout >= 0);
-    assert(nretries >= 0);
+    assert(timeout > 0);
+    assert(nretries > 0);
 
     status_t rc = connection_flush(this);
     if (rc)

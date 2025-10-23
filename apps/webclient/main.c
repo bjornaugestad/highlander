@@ -27,8 +27,8 @@ uint16_t g_port = 0;
 const char* g_uri = "/";
 //
 // timeout is in ms.
-int timeout_reads = 200, timeout_writes = 50;
-int nretries_read = 1, nretries_write = 1;
+unsigned timeout_reads = 200, timeout_writes = 50;
+unsigned nretries_read = 1, nretries_write = 1;
 
 
 static void die_error(const char *context, error e)
@@ -70,13 +70,13 @@ static void parse_commandline(int argc, char *argv[])
                 break;
 
             case 'T':
-                if (!isint(optarg) || !toint(optarg, &timeout_writes))
+                if (!isuint(optarg) || !touint(optarg, &timeout_writes))
                     die("Timeout must be an integer\n");
                 timeout_reads = timeout_writes;
                 break;
 
             case 'R':
-                if (!isint(optarg) || !toint(optarg, &nretries_write))
+                if (!isuint(optarg) || !touint(optarg, &nretries_write))
                     die("Retries must be an integer\n");
                 nretries_read = nretries_write;
                 break;

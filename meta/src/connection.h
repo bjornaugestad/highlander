@@ -19,8 +19,8 @@ extern "C" {
 /* Declaration of our connection ADT */
 typedef struct connection_tag* connection;
 
-connection connection_new(int socktype, int timeout_reads, int timeout_writes,
-    int retries_reads, int retries_writes, void *arg2)
+connection connection_new(int socktype, unsigned timeout_reads, unsigned timeout_writes,
+    unsigned retries_reads, unsigned retries_writes, void *arg2)
     __attribute__((warn_unused_result))
     __attribute__((malloc));
 
@@ -54,7 +54,7 @@ status_t connection_write(connection conn, const void *buf, size_t count)
     __attribute__((nonnull, warn_unused_result));
 
 status_t connection_write_big_buffer(connection conn, const void *buf,
-    size_t count, int timeout, int retries)
+    size_t count, unsigned timeout, unsigned retries)
     __attribute__((nonnull, warn_unused_result));
 
 status_t connection_flush(connection conn)
@@ -75,10 +75,10 @@ status_t connection_ungetc(connection conn, int c)
 status_t connection_close(connection conn)
     __attribute__((nonnull, warn_unused_result));
 
-int	 connection_is_persistent(connection conn)
+bool connection_is_persistent(connection conn)
     __attribute__((nonnull, warn_unused_result));
 
-void connection_set_persistent(connection conn, int val)
+void connection_set_persistent(connection conn, bool val)
     __attribute__((nonnull));
 
 void connection_set_params(connection conn, struct sockaddr_storage* paddr)
