@@ -55,89 +55,84 @@ META_TESTS=$(OUTDIR)/array_check $(OUTDIR)/bitset_check $(OUTDIR)/cache_check \
 	$(OUTDIR)/slotbuf_check $(OUTDIR)/stack_check $(OUTDIR)/stringmap_check \
 	$(OUTDIR)/tcp_client_check $(OUTDIR)/tcp_server_check $(OUTDIR)/wlock_check 
 
+# Testing highlander is a bit more complicated so we add some macros.
+# COMMON_SRC is shared between http_server_check and http_client_check
+HIGHLANDER_COMMON_SRC=\
+	http/src/http.c http/src/request.c http/src/response.c\
+	http/src/general_header.c http/src/entity_header.c http/src/cookies.c\
+	http/src/parse_http.c http/src/parse_time.c http/src/dynamic_page.c\
+	http/src/rfc1738.c http/src/send_status_code.c http/src/attribute.c\
+
+HIGHLANDER_TESTS=$(OUTDIR)/http_server_check $(OUTDIR)/http_client_check
+
+$(OUTDIR)/http_server_check: meta/src/tcp_server.c $(HIGHLANDER_COMMON_SRC)
+	$(CC) $(CFLAGS) -DCHECK_TCP_SERVER -o $@ $^ $(OUTDIR)/libmeta.a -lssl -lcrypto
+
+$(OUTDIR)/http_client_check: meta/src/tcp_client.c $(HIGHLANDER_COMMON_SRC)
+	$(CC) $(CFLAGS) -DCHECK_TCP_CLIENT -o $@ $^ $(OUTDIR)/libmeta.a -lssl -lcrypto
+
 $(OUTDIR)/array_check: meta/src/meta_array.c
 	$(CC) $(CFLAGS) -DCHECK_ARRAY -o $@ $^
-	$@ # run it too
 
 $(OUTDIR)/bitset_check : meta/src/meta_bitset.c
 	$(CC) $(CFLAGS) -DCHECK_BITSET -o $@ $^
-	$@ # run it too
 
 $(OUTDIR)/cache_check : meta/src/meta_cache.c meta/src/meta_list.c meta/src/meta_common.c
 	$(CC) $(CFLAGS) -DCHECK_CACHE -o $@ $^
-	$@ # run it too
 
 $(OUTDIR)/configfile_check : meta/src/meta_configfile.c meta/src/meta_common.c
 	$(CC) $(CFLAGS) -DCHECK_CONFIGFILE -o $@ $^
-	# broken $@ # run it too
 
 $(OUTDIR)/convert_check : meta/src/meta_convert.c meta/src/meta_common.c
 	$(CC) $(CFLAGS) -DCHECK_CONVERT -o $@ $^
-	$@ # run it too
 
 $(OUTDIR)/cstring_check : meta/src/cstring.c meta/src/meta_common.c
 	$(CC) $(CFLAGS) -DCHECK_CSTRING -o $@ $^
-	$@ # run it too
 
 $(OUTDIR)/fifo_check : meta/src/meta_fifo.c meta/src/meta_wlock.c meta/src/meta_common.c
 	$(CC) $(CFLAGS) -DCHECK_FIFO -o $@ $^
-	$@ # run it too
 
 $(OUTDIR)/filecache_check : meta/src/meta_filecache.c meta/src/meta_stringmap.c meta/src/meta_cache.c meta/src/meta_list.c  meta/src/meta_common.c
 	$(CC) $(CFLAGS) -DCHECK_FILECACHE -o $@ $^
-	$@ # run it too
 
 $(OUTDIR)/list_check : meta/src/meta_list.c
 	$(CC) $(CFLAGS) -DCHECK_LIST -o $@ $^
-	$@ # run it too
 
 $(OUTDIR)/membuf_check : meta/src/meta_membuf.c
 	$(CC) $(CFLAGS) -DCHECK_MEMBUF -o $@ $^
-	$@ # run it too
 
 $(OUTDIR)/miscfunc_check : meta/src/meta_misc.c meta/src/meta_common.c
 	$(CC) $(CFLAGS) -DCHECK_MISCFUNC -o $@ $^
-	$@ # run it too
 
 $(OUTDIR)/pair_check : meta/src/meta_pair.c
 	$(CC) $(CFLAGS) -DCHECK_PAIR -o $@ $^
-	$@ # run it too
 
 $(OUTDIR)/pool_check : meta/src/meta_pool.c meta/src/meta_common.c
 	$(CC) $(CFLAGS) -DCHECK_POOL -o $@ $^
-	$@ # run it too
 
 $(OUTDIR)/regex_check : meta/src/meta_regex.c meta/src/meta_common.c
 	$(CC) $(CFLAGS) -DCHECK_REGEX -o $@ $^
-	$@ # run it too
 
 $(OUTDIR)/sampler_check : meta/src/meta_sampler.c meta/src/meta_common.c
 	$(CC) $(CFLAGS) -DCHECK_SAMPLER -o $@ $^
-	$@ # run it too
 
 $(OUTDIR)/slotbuf_check : meta/src/meta_slotbuf.c meta/src/meta_common.c
 	$(CC) $(CFLAGS) -DCHECK_SLOTBUF -o $@ $^
-	$@ # run it too
 
 $(OUTDIR)/stack_check : meta/src/meta_stack.c meta/src/meta_list.c meta/src/meta_common.c
 	$(CC) $(CFLAGS) -DCHECK_STACK -o $@ $^
-	$@ # run it too
 
 $(OUTDIR)/stringmap_check : meta/src/meta_stringmap.c meta/src/meta_list.c meta/src/meta_common.c
 	$(CC) $(CFLAGS) -DCHECK_STRINGMAP -o $@ $^
-	$@ # run it too
 
 $(OUTDIR)/tcp_client_check : meta/src/tcp_client.c meta/src/threadpool.c meta/src/meta_membuf.c meta/src/gensocket.c meta/src/connection.c meta/src/cstring.c meta/src/meta_common.c
 	$(CC) $(CFLAGS) -DCHECK_TCP_CLIENT -o $@ $^ -lssl -lcrypto
-	$@ # run it too
 
 $(OUTDIR)/tcp_server_check : meta/src/tcp_server.c meta/src/threadpool.c meta/src/meta_membuf.c meta/src/meta_pool.c meta/src/gensocket.c meta/src/connection.c meta/src/meta_process.c meta/src/cstring.c meta/src/meta_common.c
 	$(CC) $(CFLAGS) -DCHECK_TCP_SERVER -o $@ $^ -lssl -lcrypto
-	$@ # run it too
 
 $(OUTDIR)/wlock_check : meta/src/meta_wlock.c meta/src/meta_common.c
 	$(CC) $(CFLAGS) -DCHECK_WLOCK -o $@ $^
-	$@ # run it too
 
 # Convert list of source files to list of object files
 LIBMETA_O=$(patsubst %.c, $(OUTDIR)/%.o, $(LIBMETA_SOURCES))
@@ -151,8 +146,8 @@ $(OUTDIR)/%.o: %.c | $(OUTDIR)
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Start with building libmeta.a
-TARGETS=$(OUTDIR)/libmeta.a $(OUTDIR)/libhighlander.a $(META_TESTS)
+# Start here...
+TARGETS=$(OUTDIR)/libmeta.a $(OUTDIR)/libhighlander.a $(META_TESTS) $(HIGHLANDER_TESTS)
 all: $(TARGETS)
 
 $(OUTDIR)/libmeta.a: $(LIBMETA_O)
@@ -162,4 +157,4 @@ $(OUTDIR)/libhighlander.a: $(LIBHIGHLANDER_O)
 	$(AR) rcs $@ $^
 
 clean:
-	rm $(LIBMETA_O) $(LIBHIGHLANDER_O) $(TARGETS)
+	-@rm $(LIBMETA_O) $(LIBHIGHLANDER_O) $(TARGETS) >& /dev/null
