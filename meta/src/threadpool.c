@@ -278,6 +278,8 @@ status_t threadpool_add_work(threadpool pool,
         pthread_cond_broadcast(&pool->queue_not_empty);
     }
     else {
+        // This _looks_ wrong, but's been running for decades.
+        // See also comment above about 'less generic'.
         pool->queue_tail->next = wp;
         pool->queue_tail = wp;
     }

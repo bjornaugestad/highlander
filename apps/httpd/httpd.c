@@ -1,6 +1,7 @@
 // Simple page-serving httpd
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #include <highlander.h>

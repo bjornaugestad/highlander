@@ -6,9 +6,7 @@
 #ifndef META_MEMBUF_H
 #define META_MEMBUF_H
 
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
+#include <stddef.h>
 
 #include <meta_common.h>
 
@@ -40,76 +38,24 @@ extern "C" {
 /* The membuf adt */
 typedef struct membuf_tag *membuf;
 
-/*
- * The two members written and read are used when reading and writing
- * from/to the buffer. We always append data to the buffer
- * and we always read from the start of the buffer. So
- * Bytes available for reading is written - read, and bytes
- * available for writing is size - written. If we try to
- * write more than there's room for at the end of the buffer
- * *and* written == read, then the membuf_write() function will
- * do an automatic reset of the buffer and start writing
- * from the beginning of the buffer.
- */
-struct membuf_tag {
-    size_t size;
-    size_t nwritten;
-    size_t nread;
-    char *data;
-};
-
 // Creates a new membuf buffer. The buffer will have room for size bytes.
 membuf membuf_new(size_t size) __attribute__((malloc, warn_unused_result));
 
 // Frees a membuf buffer.
-static inline void membuf_free(membuf this)
-{
-    if (this != NULL) {
-        free(this->data);
-        free(this);
-    }
-}
+void membuf_free(membuf this);
 
-static inline void membuf_freev(void *p) { membuf_free(p); }
+void membuf_freev(void *p);
 
 // Return the number of bytes available for reading from the membuf buffer.
-__attribute__((warn_unused_result, nonnull))
-static inline size_t membuf_canread(membuf mb)
-{
-    assert(mb != NULL);
-    assert(mb->nwritten >= mb->nread);
-    assert(mb->nwritten - mb->nread <= mb->size);
+size_t membuf_canread(membuf mb) __attribute__((warn_unused_result, nonnull));
 
-    return mb->nwritten - mb->nread;
-}
-
-__attribute__((nonnull))
-static inline void membuf_set_written(membuf mb, size_t cb)
-{
-    assert(mb->nwritten == 0);
-    mb->nwritten = cb;
-}
+void membuf_set_written(membuf mb, size_t cb) __attribute__((nonnull));
 
 // Return the number of bytes available for writing.
-__attribute__((warn_unused_result, nonnull))
-static inline size_t membuf_canwrite(membuf mb)
-{
-    assert(mb != NULL);
-
-    /* Report full size if next write will reset anyway */
-    if (mb->nread == mb->nwritten)
-        return mb->size;
-    else
-        return mb->size - mb->nwritten;
-}
+size_t membuf_canwrite(membuf mb) __attribute__((warn_unused_result, nonnull));
 
 /* Empties the content of the buffer.  */
-__attribute__((nonnull))
-static inline void membuf_reset(membuf mb)
-{
-    assert(mb != NULL);
-    mb->nread = mb->nwritten = 0;
-}
+void membuf_reset(membuf mb) __attribute__((nonnull));
 
 /*
  * Ungets a previous read of one character. It will fail if the e.g.
@@ -118,18 +64,7 @@ static inline void membuf_reset(membuf mb)
  * membuf, you can unget more than one character, but this
  * version supports one character only.
  */
-__attribute__((warn_unused_result, nonnull))
-static inline status_t membuf_unget(membuf mb)
-{
-    assert(mb != NULL);
-
-    if (mb->nread > 0) {
-        mb->nread--;
-        return success;
-    }
-
-    return failure;
-}
+status_t membuf_unget(membuf mb) __attribute__((warn_unused_result, nonnull));
 
 /*
  * Returns a pointer to the data in the buffer. Nice to have
@@ -137,12 +72,7 @@ static inline status_t membuf_unget(membuf mb)
  * to a different function like write(2). The buffer must contain some
  * data.
  */
-__attribute__((warn_unused_result, nonnull))
-static inline void* membuf_data(membuf mb)
-{
-    assert(mb != NULL);
-    return mb->data;
-}
+void* membuf_data(membuf mb) __attribute__((warn_unused_result, nonnull));
 
 // Sets the entire content of the buffer to the character c. This function does
 // not change any internal status pointers, and is useful if you want to
@@ -150,72 +80,20 @@ static inline void* membuf_data(membuf mb)
 // set the entire buffer to '\0', then write data to the buffer. Remember not to
 // write to the last byte in the buffer, since that will overwrite the last '\0'
 // added by membuf_set().
-__attribute__((nonnull))
-static inline void membuf_set(membuf mb, int c)
-{
-    assert(mb != NULL);
-    memset(mb->data, c, mb->size);
-}
+void membuf_set(membuf mb, int c) __attribute__((nonnull));
 
 // Returns the total size of the buffer, which is the same
 // as the size parameter to the membuf_new() function.
-__attribute__((warn_unused_result, nonnull))
-static inline size_t membuf_size(membuf mb)
-{
-    assert(mb != NULL);
-    return mb->size;
-}
+size_t membuf_size(membuf mb) __attribute__((warn_unused_result, nonnull));
 
 // Read up to count bytes from the buffer and place them in dest.
 // Returns the number of bytes read, or 0 if no data was available to read.
-__attribute__((warn_unused_result, nonnull))
-static inline size_t
-membuf_read(membuf this, void *dest, size_t count)
-{
-    size_t navail;
-
-    assert(this != NULL);
-    assert(dest != NULL);
-    assert(count != 0);
-    assert(this->nwritten >= this->nread);
-
-    navail = membuf_canread(this);
-    if (navail < count)
-        count = navail;
-
-    memcpy(dest, &this->data[this->nread], count);
-    this->nread += count;
-
-    assert(this->nread <= this->nwritten);
-
-    // Reset offset counters if all bytes written also have been read
-    if (this->nwritten == this->nread)
-        this->nwritten = this->nread = 0;
-
-    return count;
-}
+size_t membuf_read(membuf this, void *dest, size_t count) __attribute__((warn_unused_result, nonnull));
 
 // Appends count bytes to the buffer. Returns the number of bytes actually added
 // to the buffer. If the returned value is less than the count parameter, it
 // means that the buffer was too small to store the data.
-__attribute__((warn_unused_result, nonnull))
-static inline size_t
-membuf_write(membuf this, const void *src, size_t count)
-{
-    size_t navail;
-
-    assert(this != NULL);
-    assert(src != NULL);
-
-    navail = membuf_canwrite(this);
-    if (count > navail)
-        count = navail;
-
-    memcpy(&this->data[this->nwritten], src, count);
-    this->nwritten += count;
-
-    return count;
-}
+size_t membuf_write(membuf this, const void *src, size_t count) __attribute__((warn_unused_result, nonnull));
 
 #ifdef __cplusplus
 }

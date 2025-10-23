@@ -7,6 +7,8 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
 #include <meta_common.h>
 #include <meta_convert.h>
 #include <highlander.h>
@@ -145,7 +147,7 @@ static void* threadfunc(void* arg)
     error e = error_new();
 
     connection_assign_read_buffer(conn, rb);
-    connection_assign_write_buffer(conn, wb);
+     connection_assign_write_buffer(conn, wb);
 
     verbose(1, "Connecting to host %s at port %d\n", g_hostname, g_port);
     if (!connection_connect(conn, g_hostname, g_port)) {
