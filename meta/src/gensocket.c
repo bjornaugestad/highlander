@@ -400,7 +400,18 @@ status_t socket_close(socket_t p)
 
     status_t rc;
     if (p->socktype == SOCKTYPE_TCP) {
+#if 1
         shutdown(p->fd, SHUT_RDWR);
+#else
+        // Try to push the TIME_WAIT to the client by not being the active closer
+        // shutdown(p->fd, SHUT_RDWR);
+
+        // Drain receive
+        char buf[256];
+        while (read(p->fd, buf, sizeof buf) > 0)
+            ;
+        
+#endif
         rc = close(p->fd) == 0 ? success : failure;
     }
     else
