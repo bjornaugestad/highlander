@@ -414,7 +414,7 @@ int main(void)
 
     stop = clock();
     diff = (stop - start) * 1.0 / CLOCKS_PER_SEC;
-    fprintf(stderr, "inserts: %lu items in %f seconds\n", (unsigned long)nelem, diff);
+    if (0) fprintf(stderr, "inserts: %lu items in %f seconds\n", (unsigned long)nelem, diff);
 
     start = clock();
     for (i = 0; i < nelem; i++) {
@@ -430,7 +430,7 @@ int main(void)
 
     stop = clock();
     diff = (stop - start) * 1.0 / CLOCKS_PER_SEC;
-    fprintf(stderr, "seq. read: %lu items in %f seconds\n", (unsigned long)nelem, diff);
+    if (0) fprintf(stderr, "seq. read: %lu items in %f seconds\n", (unsigned long)nelem, diff);
 
     /* Random retrieval */
     start = clock();
@@ -445,7 +445,7 @@ int main(void)
 
     stop = clock();
     diff = (stop - start) * 1.0 / CLOCKS_PER_SEC;
-    fprintf(stderr, "random read: %lu items in %f seconds\n", (unsigned long)nelem, diff);
+    if (0) fprintf(stderr, "random read: %lu items in %f seconds\n", (unsigned long)nelem, diff);
 
     /* Remove all items, one by one */
     start = clock();
@@ -456,7 +456,7 @@ int main(void)
 
     stop = clock();
     diff = (stop - start) * 1.0 / CLOCKS_PER_SEC;
-    fprintf(stderr, "Removed items: %lu items in %f seconds\n", (unsigned long)nelem, diff);
+    if (0) fprintf(stderr, "Removed items: %lu items in %f seconds\n", (unsigned long)nelem, diff);
 
 #endif
 

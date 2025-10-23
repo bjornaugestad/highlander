@@ -234,14 +234,14 @@ static void *writer(void *arg)
 
         sprintf(s, "writer %d", i);
         if (!fifo_write_signal(f, s)) {
-            fprintf(stderr, "fifo_write_signal failed!\n");
+            if (0) fprintf(stderr, "fifo_write_signal failed!\n");
             return NULL;
         }
 
         sleep(1);
     }
 
-    fprintf(stderr, "Exiting %s...\n", __func__);
+    if (0) fprintf(stderr, "Exiting %s...\n", __func__);
     return NULL;
 }
 
@@ -253,7 +253,7 @@ static void *reader(void *arg)
         char *s;
 
         while ((s = fifo_get(f)) != NULL) {
-            fprintf(stderr, "From reader, who read: %s\n", s);
+            if (0) fprintf(stderr, "From reader, who read: %s\n", s);
             free(s);
         }
 
@@ -261,7 +261,7 @@ static void *reader(void *arg)
             break;
     }
 
-    fprintf(stderr, "Exiting %s...\n", __func__);
+    if (0) fprintf(stderr, "Exiting %s...\n", __func__);
     return NULL;
 }
 
@@ -289,7 +289,7 @@ int main(void)
 
     stop = clock();
     duration = (stop - start) * 1.0 / CLOCKS_PER_SEC;
-    printf("%s: Added %lu elements in %f seconds\n", __FILE__, (unsigned long)nelem, duration);
+    if (0) printf("%s: Added %lu elements in %f seconds\n", __FILE__, (unsigned long)nelem, duration);
 
     assert(fifo_nelem(f) == nelem);
 
@@ -336,7 +336,7 @@ int main(void)
     }
     stop = clock();
     duration = (stop - start) * 1.0 / CLOCKS_PER_SEC;
-    printf("%s: Got %lu elements in %f seconds\n", __FILE__, (unsigned long)nelem, duration);
+    if (0) printf("%s: Got %lu elements in %f seconds\n", __FILE__, (unsigned long)nelem, duration);
 
 #endif
 

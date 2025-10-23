@@ -507,11 +507,11 @@ static void *reader(void *arg)
             long long val;
 
             if (!sampler_avg(sampled_data, i, 0, csamples, &val)) {
-                fprintf(stderr, "reader(%d), entity %zu: No data\n", *id, i);
+                if (0) fprintf(stderr, "reader(%d), entity %zu: No data\n", *id, i);
             }
             #if 0
             else {
-                fprintf(stderr, "reader(%d), entity %zu: avg: %lld\n",
+                if (0) fprintf(stderr, "reader(%d), entity %zu: avg: %lld\n",
                     *id, i, val);
             }
             #else
@@ -583,11 +583,11 @@ int main(void)
 
         /* Verify that we have data for all 3600 seconds. */
         #if 1
-        fprintf(stderr, "Secs: Sample count:%zu, nvalue %zu\n",
+        if (0) fprintf(stderr, "Secs: Sample count:%zu, nvalue %zu\n",
             secs->samplecount, secs->nvalue);
         for (i = 0; i < 3600; i++) {
             if (secs->entities[0].data[i] == LLONG_MIN) {
-                fprintf(stderr, "WTF?\n");
+                if (0) fprintf(stderr, "WTF?\n");
                 abort();
             }
         }
@@ -595,31 +595,33 @@ int main(void)
         /* Now we know that we have values for each and every second */
         #endif
 
-        fprintf(stderr, "Aggregating secs->minutes\n");
+        if (0) fprintf(stderr, "Aggregating secs->minutes\n");
         sampler_aggregate(minutes, secs, 60, 60, SAMPLER_AGG_AVG);
 
         #if 1
-        fprintf(stderr, "Dumping minutes for eid 0\n");
-        fprintf(stderr, "Minutes: Sample count:%zu, nvalue %zu\n",
+        if (0) fprintf(stderr, "Dumping minutes for eid 0\n");
+        if (0) fprintf(stderr, "Minutes: Sample count:%zu, nvalue %zu\n",
             minutes->samplecount, minutes->nvalue);
         for (i = sampler_samplecount(minutes) - 3; i < sampler_samplecount(minutes); i++) {
-            if (sampler_get(minutes, 0, i, &val))
-                fprintf(stderr, "Minute: %zu:  Value: %lld\n", i, val);
+            if (sampler_get(minutes, 0, i, &val)) {
+                if (0) fprintf(stderr, "Minute: %zu:  Value: %lld\n", i, val);
+            }
             else
-                fprintf(stderr, "Minute: %zu: No value found\n", i);
+                if (0) fprintf(stderr, "Minute: %zu: No value found\n", i);
         }
         #endif
 
-        fprintf(stderr, "Aggregating minutes->hour\n");
+        if (0) fprintf(stderr, "Aggregating minutes->hour\n");
         sampler_aggregate(hour, minutes, 1, 60, SAMPLER_AGG_AVG);
 
-        fprintf(stderr, "Dumping hour for eid 0\n");
+        if (0) fprintf(stderr, "Dumping hour for eid 0\n");
         sleep(1);
         for (i = 0; i < sampler_samplecount(hour); i++) {
-            if (sampler_get(hour, 0, i, &val))
-                fprintf(stderr, "Hour: %zu:  Value: %lld\n", i, val);
+            if (sampler_get(hour, 0, i, &val)) {
+                if (0) fprintf(stderr, "Hour: %zu:  Value: %lld\n", i, val);
+            }
             else
-                fprintf(stderr, "Hour: %zu: No value found\n", i);
+                if (0) fprintf(stderr, "Hour: %zu: No value found\n", i);
         }
 
         sampler sdup = sampler_dup(secs);
@@ -643,9 +645,9 @@ int main(void)
         pthread_create(&reader1, NULL, reader, &id1);
         pthread_create(&reader2, NULL, reader, &id2);
 
-        fprintf(stderr, "Main thread sleeping\n");
+        if (0) fprintf(stderr, "Main thread sleeping\n");
         sleep(5);
-        fprintf(stderr, "Main thread shutting down\n");
+        if (0) fprintf(stderr, "Main thread shutting down\n");
         atomic_store_explicit(&shutting_down, true, memory_order_relaxed);
 
         pthread_join(writerthread, NULL);
