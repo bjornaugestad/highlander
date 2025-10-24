@@ -54,8 +54,15 @@ META_TESTS=$(OUTDIR)/array_check $(OUTDIR)/bitset_check $(OUTDIR)/cache_check \
 	$(OUTDIR)/stack_check $(OUTDIR)/stringmap_check \
 	$(OUTDIR)/tcp_client_check $(OUTDIR)/tcp_server_check
 
+# What are apps? They're basically demo programs in ~/apps/. They depend on
+# both libraries, but have their own source file, typically main.c. Some
+# apps have more source files.
+APPS=$(OUTDIR)/echoserver $(OUTDIR)/helloworld
+
+HIGHLANDER_TESTS=$(OUTDIR)/http_server_check $(OUTDIR)/http_client_check
+
 # Start here...
-TARGETS=$(OUTDIR)/libmeta.a $(OUTDIR)/libhighlander.a $(META_TESTS) $(HIGHLANDER_TESTS)
+TARGETS=$(OUTDIR)/libmeta.a $(OUTDIR)/libhighlander.a $(META_TESTS) $(HIGHLANDER_TESTS) $(APPS)
 all: $(TARGETS)
 
 # dependency tracking. Include the .o.d files for this build
@@ -73,13 +80,18 @@ HIGHLANDER_COMMON_SRC=\
 	http/src/parse_http.c http/src/parse_time.c http/src/dynamic_page.c\
 	http/src/rfc1738.c http/src/send_status_code.c http/src/attribute.c\
 
-HIGHLANDER_TESTS=$(OUTDIR)/http_server_check $(OUTDIR)/http_client_check
+$(OUTDIR)/echoserver: apps/echoserver/main.c $(OUTDIR)/libhighlander.a $(OUTDIR)/libmeta.a
+	$(CC) $(CFLAGS) -o $@ $^ -lssl -lcrypto
+
+$(OUTDIR)/helloworld: apps/helloworld/main.c $(OUTDIR)/libhighlander.a $(OUTDIR)/libmeta.a
+	$(CC) $(CFLAGS) -o $@ $^ -lssl -lcrypto
+
 
 $(OUTDIR)/http_server_check: meta/src/tcp_server.c $(HIGHLANDER_COMMON_SRC) $(OUTDIR)/libmeta.a
-	$(CC) $(CFLAGS) -DCHECK_TCP_SERVER -o $@ $^ $(OUTDIR)/libmeta.a -lssl -lcrypto
+	$(CC) $(CFLAGS) -DCHECK_TCP_SERVER -o $@ $^ -lssl -lcrypto
 
 $(OUTDIR)/http_client_check: meta/src/tcp_client.c $(HIGHLANDER_COMMON_SRC) $(OUTDIR)/libmeta.a
-	$(CC) $(CFLAGS) -DCHECK_TCP_CLIENT -o $@ $^ $(OUTDIR)/libmeta.a -lssl -lcrypto
+	$(CC) $(CFLAGS) -DCHECK_TCP_CLIENT -o $@ $^ -lssl -lcrypto
 
 $(OUTDIR)/array_check: meta/src/meta_array.c
 	$(CC) $(CFLAGS) -DCHECK_ARRAY -o $@ $(filter-out %.h, $^)
