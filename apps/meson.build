@@ -1,5 +1,0 @@
-# Auto-converted from Makefile.am (best-effort)
-subdir('helloworld')
-subdir('echoserver')
-subdir('webclient')
-subdir('httpd')
