@@ -82,67 +82,67 @@ $(OUTDIR)/http_client_check: meta/src/tcp_client.c $(HIGHLANDER_COMMON_SRC)
 	$(CC) $(CFLAGS) -DCHECK_TCP_CLIENT -o $@ $^ $(OUTDIR)/libmeta.a -lssl -lcrypto
 
 $(OUTDIR)/array_check: meta/src/meta_array.c
-	$(CC) $(CFLAGS) -DCHECK_ARRAY -o $@ $^
+	$(CC) $(CFLAGS) -DCHECK_ARRAY -o $@ $(filter-out %.h, $^)
 
 $(OUTDIR)/bitset_check : meta/src/meta_bitset.c
-	$(CC) $(CFLAGS) -DCHECK_BITSET -o $@ $^
+	$(CC) $(CFLAGS) -DCHECK_BITSET -o $@ $(filter-out %.h, $^)
 
 $(OUTDIR)/cache_check : meta/src/meta_cache.c meta/src/meta_list.c meta/src/meta_common.c
-	$(CC) $(CFLAGS) -DCHECK_CACHE -o $@ $^
+	$(CC) $(CFLAGS) -DCHECK_CACHE -o $@ $(filter-out %.h, $^)
 
 $(OUTDIR)/configfile_check : meta/src/meta_configfile.c meta/src/meta_common.c
-	$(CC) $(CFLAGS) -DCHECK_CONFIGFILE -o $@ $^
+	$(CC) $(CFLAGS) -DCHECK_CONFIGFILE -o $@ $(filter-out %.h, $^)
 
 $(OUTDIR)/convert_check : meta/src/meta_convert.c meta/src/meta_common.c
-	$(CC) $(CFLAGS) -DCHECK_CONVERT -o $@ $^
+	$(CC) $(CFLAGS) -DCHECK_CONVERT -o $@ $(filter-out %.h, $^)
 
 $(OUTDIR)/cstring_check : meta/src/cstring.c meta/src/meta_common.c
-	$(CC) $(CFLAGS) -DCHECK_CSTRING -o $@ $^
+	$(CC) $(CFLAGS) -DCHECK_CSTRING -o $@ $(filter-out %.h, $^)
 
 $(OUTDIR)/fifo_check : meta/src/meta_fifo.c meta/src/meta_wlock.c meta/src/meta_common.c
-	$(CC) $(CFLAGS) -DCHECK_FIFO -o $@ $^
+	$(CC) $(CFLAGS) -DCHECK_FIFO -o $@ $(filter-out %.h, $^)
 
 $(OUTDIR)/filecache_check : meta/src/meta_filecache.c meta/src/meta_stringmap.c meta/src/meta_cache.c meta/src/meta_list.c  meta/src/meta_common.c
-	$(CC) $(CFLAGS) -DCHECK_FILECACHE -o $@ $^
+	$(CC) $(CFLAGS) -DCHECK_FILECACHE -o $@ $(filter-out %.h, $^)
 
 $(OUTDIR)/list_check : meta/src/meta_list.c
-	$(CC) $(CFLAGS) -MMD -MP -MF $(@D)/$(@F).d -DCHECK_LIST -o $@ $^
+	$(CC) $(CFLAGS) -MMD -MP -MF $(@D)/$(@F).d -DCHECK_LIST -o $@ $(filter-out %.h, $^)
 
 $(OUTDIR)/membuf_check : meta/src/meta_membuf.c
-	$(CC) $(CFLAGS) -DCHECK_MEMBUF -o $@ $^
+	$(CC) $(CFLAGS) -DCHECK_MEMBUF -o $@ $(filter-out %.h, $^)
 
 $(OUTDIR)/miscfunc_check : meta/src/meta_misc.c meta/src/meta_common.c
-	$(CC) $(CFLAGS) -DCHECK_MISCFUNC -o $@ $^
+	$(CC) $(CFLAGS) -DCHECK_MISCFUNC -o $@ $(filter-out %.h, $^)
 
 $(OUTDIR)/pair_check : meta/src/meta_pair.c
-	$(CC) $(CFLAGS) -DCHECK_PAIR -o $@ $^
+	$(CC) $(CFLAGS) -DCHECK_PAIR -o $@ $(filter-out %.h, $^)
 
 $(OUTDIR)/pool_check : meta/src/meta_pool.c meta/src/meta_common.c
-	$(CC) $(CFLAGS) -DCHECK_POOL -o $@ $^
+	$(CC) $(CFLAGS) -DCHECK_POOL -o $@ $(filter-out %.h, $^)
 
 $(OUTDIR)/regex_check : meta/src/meta_regex.c meta/src/meta_common.c
-	$(CC) $(CFLAGS) -DCHECK_REGEX -o $@ $^
+	$(CC) $(CFLAGS) -DCHECK_REGEX -o $@ $(filter-out %.h, $^)
 
 $(OUTDIR)/sampler_check : meta/src/meta_sampler.c meta/src/meta_common.c
-	$(CC) $(CFLAGS) -DCHECK_SAMPLER -o $@ $^
+	$(CC) $(CFLAGS) -DCHECK_SAMPLER -o $@ $(filter-out %.h, $^)
 
 $(OUTDIR)/slotbuf_check : meta/src/meta_slotbuf.c meta/src/meta_common.c
-	$(CC) $(CFLAGS) -DCHECK_SLOTBUF -o $@ $^
+	$(CC) $(CFLAGS) -DCHECK_SLOTBUF -o $@ $(filter-out %.h, $^)
 
 $(OUTDIR)/stack_check : meta/src/meta_stack.c meta/src/meta_list.c meta/src/meta_common.c
-	$(CC) $(CFLAGS) -DCHECK_STACK -o $@ $^
+	$(CC) $(CFLAGS) -DCHECK_STACK -o $@ $(filter-out %.h, $^)
 
 $(OUTDIR)/stringmap_check : meta/src/meta_stringmap.c meta/src/meta_list.c meta/src/meta_common.c
-	$(CC) $(CFLAGS) -DCHECK_STRINGMAP -o $@ $^
+	$(CC) $(CFLAGS) -DCHECK_STRINGMAP -o $@ $(filter-out %.h, $^)
 
 $(OUTDIR)/tcp_client_check : meta/src/tcp_client.c meta/src/threadpool.c meta/src/meta_membuf.c meta/src/gensocket.c meta/src/connection.c meta/src/cstring.c meta/src/meta_common.c
-	$(CC) $(CFLAGS) -DCHECK_TCP_CLIENT -o $@ $^ -lssl -lcrypto
+	$(CC) $(CFLAGS) -DCHECK_TCP_CLIENT -o $@ $(filter-out %.h, $^) -lssl -lcrypto
 
 $(OUTDIR)/tcp_server_check : meta/src/tcp_server.c meta/src/threadpool.c meta/src/meta_membuf.c meta/src/meta_pool.c meta/src/gensocket.c meta/src/connection.c meta/src/meta_process.c meta/src/cstring.c meta/src/meta_common.c
-	$(CC) $(CFLAGS) -DCHECK_TCP_SERVER -o $@ $^ -lssl -lcrypto
+	$(CC) $(CFLAGS) -DCHECK_TCP_SERVER -o $@ $(filter-out %.h, $^) -lssl -lcrypto
 
 $(OUTDIR)/wlock_check : meta/src/meta_wlock.c meta/src/meta_common.c
-	$(CC) $(CFLAGS) -DCHECK_WLOCK -o $@ $^
+	$(CC) $(CFLAGS) -DCHECK_WLOCK -o $@ $(filter-out %.h, $^)
 
 # Convert list of source files to list of object files
 LIBMETA_O=$(patsubst %.c, $(OUTDIR)/%.o, $(LIBMETA_SOURCES))
