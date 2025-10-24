@@ -1,4 +1,5 @@
-# Just a simple Makefile without those nightmareish build systems(Automake, Meson)
+# Just a simple Makefile without those nightmarish build systems(Automake, Meson)
+# Use the build script to build, not the make command.
 # boa@20251023
 #
 
@@ -42,10 +43,6 @@ LIBHIGHLANDER_SOURCES=\
 	http/src/http.c http/src/response.c http/src/html_template.c\
 	http/src/http_server.c meta/src/tcp_server.c
 
-# Start here...
-TARGETS=$(OUTDIR)/libmeta.a $(OUTDIR)/libhighlander.a $(META_TESTS) $(HIGHLANDER_TESTS)
-all: $(TARGETS)
-
 # Test programs for meta. We build them from source and place them in OUTDIR.
 # We need rules per program due to the -DCHECK_foo argument, but we can
 # compile directly from multiple source files to one executable.
@@ -56,6 +53,17 @@ META_TESTS=$(OUTDIR)/array_check $(OUTDIR)/bitset_check $(OUTDIR)/cache_check \
 	$(OUTDIR)/pool_check $(OUTDIR)/regex_check $(OUTDIR)/sampler_check \
 	$(OUTDIR)/slotbuf_check $(OUTDIR)/stack_check $(OUTDIR)/stringmap_check \
 	$(OUTDIR)/tcp_client_check $(OUTDIR)/tcp_server_check $(OUTDIR)/wlock_check 
+
+# Start here...
+TARGETS=$(OUTDIR)/libmeta.a $(OUTDIR)/libhighlander.a $(META_TESTS) $(HIGHLANDER_TESTS)
+all: $(TARGETS)
+
+# dependency tracking. Include the .o.d files for this build
+-include $(OUTDIR)/*/*/*.d
+
+# dependency files for test programs end up in $(OUTDIR) since
+# $(@D) for the executable is $(OUTDIR). We include those too.
+-include $(OUTDIR)/*.d
 
 # Testing highlander is a bit more complicated so we add some macros.
 # COMMON_SRC is shared between http_server_check and http_client_check
@@ -98,7 +106,7 @@ $(OUTDIR)/filecache_check : meta/src/meta_filecache.c meta/src/meta_stringmap.c 
 	$(CC) $(CFLAGS) -DCHECK_FILECACHE -o $@ $^
 
 $(OUTDIR)/list_check : meta/src/meta_list.c
-	$(CC) $(CFLAGS) -DCHECK_LIST -o $@ $^
+	$(CC) $(CFLAGS) -MMD -MP -MF $(@D)/$(@F).d -DCHECK_LIST -o $@ $^
 
 $(OUTDIR)/membuf_check : meta/src/meta_membuf.c
 	$(CC) $(CFLAGS) -DCHECK_MEMBUF -o $@ $^
@@ -146,7 +154,7 @@ $(OUTDIR):
 
 $(OUTDIR)/%.o: %.c | $(OUTDIR)
 	@mkdir -p $(@D)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -MMD -MP -MF $(@D)/$(@F).d -c $< -o $@
 
 $(OUTDIR)/libmeta.a: $(LIBMETA_O)
 	$(AR) rcs $@ $^
@@ -156,5 +164,6 @@ $(OUTDIR)/libhighlander.a: $(LIBHIGHLANDER_O)
 
 check: $(META_TESTS) $(HIGHLANDER_TESTS)
 	@for i in $^; do echo "running $$i"; $$i; done
+
 clean:
 	-@rm $(LIBMETA_O) $(LIBHIGHLANDER_O) $(TARGETS) >& /dev/null
