@@ -7,6 +7,7 @@
 #define META_BITSET_H
 
 #include <assert.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
@@ -114,7 +115,7 @@ static inline __attribute__((nonnull)) void bitset_set(bitset this, size_t i)
     this->data[i / CHAR_BIT] |= (unsigned char)(1u << (i % CHAR_BIT));
 }
 
-static inline int bitset_is_set(const bitset this, size_t i)
+static inline bool bitset_is_set(const bitset this, size_t i)
 {
     assert(this != NULL);
     assert(i < this->size * CHAR_BIT);

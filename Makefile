@@ -12,11 +12,11 @@ actual=makefile.actual
 COMMON_CFLAGS=-Wall -Wextra -Wpedantic -Werror -std=gnu2x -Wstrict-prototypes \
 	-Wmissing-prototypes -Wwrite-strings -Wshadow -Wcast-align -Wpointer-arith\
 	-Wformat-security -Wdouble-promotion -Wuninitialized -Wvla -Wmisleading-indentation\
-	-Wconversion
+	-Wconversion -Wsign-conversion
 
 COMMON_INCLUDE=-Imeta/src -I http/src
 
-COMMON_GCC_CFLAGS=$(COMMON_CFLAGS) $(COMMON_INCLUDE)
+COMMON_GCC_CFLAGS=$(COMMON_CFLAGS) $(COMMON_INCLUDE) -Warith-conversion
 CFLAGS_GCC_DEBUG=$(COMMON_GCC_CFLAGS) -Og -g -D_FORTIFY_SOURCE=2
 CFLAGS_GCC_SAN=$(COMMON_GCC_CFLAGS) -Og -g -fsanitize=address,undefined,leak -fno-omit-frame-pointer
 CFLAGS_GCC_RELEASE=$(COMMON_GCC_CFLAGS) -O3 -DNDEBUG
