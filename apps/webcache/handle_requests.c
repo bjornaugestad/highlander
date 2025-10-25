@@ -1,8 +1,8 @@
+#include <stdatomic.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
 #include <meta_filecache.h>
-#include <meta_atomic.h>
 
 #include <httpcache.h>
 

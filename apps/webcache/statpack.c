@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <errno.h>
+#include <stdatomic.h>
 
-#include <meta_atomic.h>
 #include <meta_sampler.h>
 
 #include <httpcache.h>

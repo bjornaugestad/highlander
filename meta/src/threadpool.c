@@ -13,10 +13,10 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdatomic.h>
 
 #include <meta_common.h>
 #include <threadpool.h>
-#include <meta_atomic.h>
 
 /*
  * The work queue contains 0..max_queue_size instances of this struct.
@@ -61,9 +61,9 @@ struct threadpool_tag {
     // We count how many times we blocked due to full queue, how many work
     // request that's been added to the queue, how many that's in the queue
     // right now, and more...
-    atomic_ulong sum_work_added; // Successfully added to queue
-    atomic_ulong sum_blocked;    // How many times we blocked
-    atomic_ulong sum_discarded;  // discarded due to queue full and no-block
+    _Atomic unsigned long sum_work_added; // Successfully added to queue
+    _Atomic unsigned long sum_blocked;    // How many times we blocked
+    _Atomic unsigned long sum_discarded;  // discarded due to queue full and no-block
 };
 
 static inline bool queue_empty(threadpool tp)
@@ -207,9 +207,9 @@ threadpool threadpool_new(size_t nthreads, size_t max_queue_size,
     }
 
     /* Initialize stats counters */
-    atomic_ulong_init(&p->sum_work_added);
-    atomic_ulong_init(&p->sum_blocked);
-    atomic_ulong_init(&p->sum_discarded);
+    atomic_init(&p->sum_work_added, 0);
+    atomic_init(&p->sum_blocked, 0);
+    atomic_init(&p->sum_discarded, 0);
     return p;
 }
 
@@ -228,12 +228,12 @@ status_t threadpool_add_work(threadpool pool,
     /* Check for available space and what to do if full */
     if (queue_full(pool) ) {
         if (pool->block_when_full) {
-            atomic_ulong_inc(&pool->sum_blocked);
+            atomic_fetch_add(&pool->sum_blocked, 1);
         }
         else {
             // Can't continue as the queue is full and we cannot block
             pthread_mutex_unlock(&pool->queue_lock);
-            atomic_ulong_inc(&pool->sum_discarded);
+            atomic_fetch_add(&pool->sum_discarded, 1);
             return fail(ENOSPC);
         }
     }
@@ -286,7 +286,7 @@ status_t threadpool_add_work(threadpool pool,
 
     pool->cur_queue_size++;
     pthread_mutex_unlock(&pool->queue_lock);
-    atomic_ulong_inc(&pool->sum_work_added);
+    atomic_fetch_add(&pool->sum_work_added, 1);
     return success;
 }
 
@@ -373,9 +373,6 @@ status_t threadpool_destroy(threadpool pool, bool finish)
     }
 
     pthread_mutex_destroy(&pool->queue_lock);
-    atomic_ulong_destroy(&pool->sum_work_added);
-    atomic_ulong_destroy(&pool->sum_blocked);
-    atomic_ulong_destroy(&pool->sum_discarded);
     free(pool);
     return success;
 }
@@ -383,17 +380,17 @@ status_t threadpool_destroy(threadpool pool, bool finish)
 unsigned long threadpool_sum_blocked(threadpool p)
 {
     assert(p != NULL);
-    return atomic_ulong_get(&p->sum_blocked);
+    return atomic_load(&p->sum_blocked);
 }
 
 unsigned long threadpool_sum_discarded(threadpool p)
 {
     assert(p != NULL);
-    return atomic_ulong_get(&p->sum_discarded);
+    return atomic_load(&p->sum_discarded);
 }
 
 unsigned long threadpool_sum_added(threadpool p)
 {
     assert(p != NULL);
-    return atomic_ulong_get(&p->sum_work_added);
+    return atomic_load(&p->sum_work_added);
 }

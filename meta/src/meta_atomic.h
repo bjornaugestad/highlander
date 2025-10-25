@@ -6,6 +6,7 @@
 #ifndef META_ATOMIC_H
 #define META_ATOMIC_H
 
+#if 0
 #include <stdint.h>
 #include <pthread.h>
 
@@ -95,4 +96,5 @@ ATOMIC_TYPE(uint32_t, u32)
 ATOMIC_TYPE(int, int)
 
 
+#endif
 #endif
