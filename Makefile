@@ -9,6 +9,7 @@
 
 actual=makefile.actual
 
+# Shared between gcc and clang.
 COMMON_CFLAGS=-Wall -Wextra -Wpedantic -Werror -std=gnu2x -Wstrict-prototypes \
 	-Wmissing-prototypes -Wwrite-strings -Wshadow -Wcast-align -Wpointer-arith\
 	-Wformat-security -Wdouble-promotion -Wuninitialized -Wvla -Wmisleading-indentation\
@@ -16,24 +17,43 @@ COMMON_CFLAGS=-Wall -Wextra -Wpedantic -Werror -std=gnu2x -Wstrict-prototypes \
 
 COMMON_INCLUDE=-Imeta/src -I http/src
 
+# GCC specific stuff
 COMMON_GCC_CFLAGS=$(COMMON_CFLAGS) $(COMMON_INCLUDE) -Warith-conversion
 CFLAGS_GCC_DEBUG=$(COMMON_GCC_CFLAGS) -Og -g -D_FORTIFY_SOURCE=2
 CFLAGS_GCC_SAN=$(COMMON_GCC_CFLAGS) -Og -g -fsanitize=address,undefined,leak -fno-omit-frame-pointer
 CFLAGS_GCC_RELEASE=$(COMMON_GCC_CFLAGS) -O3 -DNDEBUG
 
+# clang specific stuff
 COMMON_CLANG_CFLAGS=$(COMMON_CFLAGS) $(COMMON_INCLUDE) -Wnull-dereference
 CFLAGS_CLANG_DEBUG=$(COMMON_CLANG_CFLAGS) -Og -g -D_FORTIFY_SOURCE=2
 CFLAGS_CLANG_SAN=$(COMMON_CLANG_CFLAGS) -Og -g -fsanitize=address,undefined,leak -fno-omit-frame-pointer
 CFLAGS_CLANG_TSAN=$(COMMON_CLANG_CFLAGS) -Og -g -fsanitize=thread -fno-omit-frame-pointer
 CFLAGS_CLANG_RELEASE=$(COMMON_CLANG_CFLAGS) -O3 -DNDEBUG
 
-all:
-	@make -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_DEBUG)" OUTDIR=.build/gcc/debug all # && exit 0
-	@make -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_SAN)" OUTDIR=.build/gcc/san all
+all: gcc_all clang_all
+
+gcc_all: gcc_debug gcc_release gcc_san
+clang_all: clang_debug clang_release clang_san clang_tsan
+
+gcc_debug:
+	@make -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_DEBUG)" OUTDIR=.build/gcc/debug all
+
+gcc_san:
+	@make -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_SAN)" OUTDIR=.build/gcc/san all 
+
+gcc_release:
 	@make -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_RELEASE)" OUTDIR=.build/gcc/release all
+
+clang_debug :
 	@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_DEBUG)" OUTDIR=.build/clang/debug all
+
+clang_san :
 	@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_SAN)" OUTDIR=.build/clang/san all
+
+clang_tsan:
 	@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_TSAN)" OUTDIR=.build/clang/tsan all
+
+clang_release :
 	@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_RELEASE)" OUTDIR=.build/clang/release all
 
 clean:
