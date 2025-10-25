@@ -213,6 +213,7 @@ void tcp_server_free(tcp_server this)
         this->pattern_compiled = false;
     }
 
+    socket_close(this->listener);
     socket_free(this->listener);
     pthread_mutex_destroy(&this->buflock);
     free(this);
