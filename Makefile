@@ -12,7 +12,7 @@ actual=makefile.actual
 COMMON_CFLAGS=-Wall -Wextra -Wpedantic -Werror -std=gnu2x -Wstrict-prototypes \
 	-Wmissing-prototypes -Wwrite-strings -Wshadow -Wcast-align -Wpointer-arith\
 	-Wformat-security -Wdouble-promotion -Wuninitialized -Wvla -Wmisleading-indentation\
-	-Wconversion -Wsign-conversion
+	-Wconversion -Wsign-conversion -Wbad-function-cast 
 
 COMMON_INCLUDE=-Imeta/src -I http/src
 
