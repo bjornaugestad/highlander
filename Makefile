@@ -30,10 +30,10 @@ CFLAGS_CLANG_SAN=$(COMMON_CLANG_CFLAGS) -Og -g -fsanitize=address,undefined,leak
 CFLAGS_CLANG_TSAN=$(COMMON_CLANG_CFLAGS) -Og -g -fsanitize=thread -fno-omit-frame-pointer
 CFLAGS_CLANG_RELEASE=$(COMMON_CLANG_CFLAGS) -O3 -DNDEBUG
 
-all: gcc_all clang_all
+all: gcc clang
 
-gcc_all: gcc_debug gcc_release gcc_san
-clang_all: clang_debug clang_release clang_san clang_tsan
+gcc: gcc_debug gcc_release gcc_san
+clang: clang_debug clang_release clang_san clang_tsan
 
 gcc_debug:
 	@make -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_DEBUG)" OUTDIR=.build/gcc/debug all
@@ -56,10 +56,14 @@ clang_tsan:
 clang_release :
 	@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_RELEASE)" OUTDIR=.build/clang/release all
 
-clean:
+clean: gcc_clean clang_clean
+
+gcc_clean:
 	-@make -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_DEBUG)" OUTDIR=.build/gcc/debug clean
 	-@make -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_SAN)" OUTDIR=.build/gcc/san clean
 	-@make -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_RELEASE)" OUTDIR=.build/gcc/release clean
+
+clang_clean:
 	-@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_DEBUG)" OUTDIR=.build/clang/debug clean
 	-@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_SAN)" OUTDIR=.build/clang/san clean
 	-@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_TSAN)" OUTDIR=.build/clang/tsan clean
