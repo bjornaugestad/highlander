@@ -594,7 +594,6 @@ int cstring_findstr(cstring s, const char *str)
 int main(void)
 {
     cstring s, dest, *pstr;
-    int rc;
     const char *start = "This is a string";
     const char *end = start + strlen(start);
     status_t status;
@@ -613,8 +612,11 @@ int main(void)
         status = cstring_set(s, "Hello");
         assert(status == success);
 
-        rc = cstring_compare(s, "Hello");
+        int rc = cstring_compare(s, "Hello");
         assert(rc == 0);
+#ifdef NDEBUG
+        (void)rc; // silence the compiler
+#endif
 
         rc = cstring_compare(s, "hello");
         assert(rc != 0);
@@ -720,24 +722,24 @@ int main(void)
         cstring_free(s);
 
         /* cstring_split() */
-        rc = cstring_split(&pstr, "foo bar baz", " ");
-        assert(rc == 3);
-        cstring_multifree(pstr, rc);
+        size_t n = cstring_split(&pstr, "foo bar baz", " ");
+        assert(n == 3);
+        cstring_multifree(pstr, n);
         free(pstr);
 
-        rc = cstring_split(&pstr, "          foo bar baz", " ");
-        assert(rc == 3);
-        cstring_multifree(pstr, rc);
+        n = cstring_split(&pstr, "          foo bar baz", " ");
+        assert(n == 3);
+        cstring_multifree(pstr, n);
         free(pstr);
 
-        rc = cstring_split(&pstr, "       foo bar baz      ", " ");
-        assert(rc == 3);
-        cstring_multifree(pstr, rc);
+        n = cstring_split(&pstr, "       foo bar baz      ", " ");
+        assert(n == 3);
+        cstring_multifree(pstr, n);
         free(pstr);
 
-        rc = cstring_split(&pstr, "       foo ", " ");
-        assert(rc == 1);
-        cstring_multifree(pstr, rc);
+        n = cstring_split(&pstr, "       foo ", " ");
+        assert(n == 1);
+        cstring_multifree(pstr, n);
         free(pstr);
 
         // Test the printf functions

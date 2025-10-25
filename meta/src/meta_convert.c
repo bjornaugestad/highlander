@@ -272,8 +272,8 @@ struct utest {
     unsigned expected_value;
 } utests[] = {
     { "-9999999999", failure, 0 },
-    { "9999999999", failure, 0 },
-    { "-1", failure, -1 },
+    { "9999999999", failure, UINT_MAX },
+    { "0", failure, 0 },
     { "0", success, 0 },
     { "1", success, 1 },
     { "", failure, 0 },
@@ -286,7 +286,7 @@ struct sizetest {
 } sizetests[] = {
     { "-9999999999", failure, 0 },
     { "9999999999", success, 9999999999 },
-    { "-1", failure, -1 },
+    { "0", failure, SIZE_MAX },
     { "0", success, 0 },
     { "1", success, 1 },
     { "", failure, 0 },

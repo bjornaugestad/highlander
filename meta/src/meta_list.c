@@ -528,8 +528,13 @@ static void item_dtor(void *p)
 static int item_cmp(const void *p1, const void *p2)
 {
     const struct item *i1 = p1, *i2 = p2;
+    if (i1->value > i2->value)
+        return 1;
 
-    return i1->value - i2->value;
+    if (i1->value == i2->value)
+        return 0;
+
+    return -1;
 }
 
 static void *item_dup(const void *arg)
