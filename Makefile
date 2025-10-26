@@ -35,6 +35,10 @@ all: gcc clang
 gcc: gcc_debug gcc_release gcc_san
 clang: clang_debug clang_release clang_san clang_tsan
 
+debug: gcc_debug clang_debug
+release: gcc_release clang_release
+san: gcc_san clang_san clang_tsan
+
 gcc_debug:
 	@make -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_DEBUG)" OUTDIR=.build/gcc/debug all
 

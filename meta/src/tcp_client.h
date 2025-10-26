@@ -29,10 +29,21 @@ status_t tcp_client_connect(tcp_client this, const char *host, uint16_t port);
 // We need these properties when we create SSL sockets, so
 // set them before calling tcp_client_get_root_resources(),
 // which is the function creating an SSL client socket.
-status_t tcp_client_set_rootcert(tcp_client p, const char *path);
-status_t tcp_client_set_private_key(tcp_client p, const char *path);
-status_t tcp_client_set_ciphers(tcp_client p, const char *ciphers);
-status_t tcp_client_set_ca_directory(tcp_client p, const char *path);
+status_t tcp_client_set_rootcert(tcp_client p, const char *path)
+    __attribute__((warn_unused_result))
+    __attribute__((nonnull));
+
+status_t tcp_client_set_private_key(tcp_client p, const char *path)
+    __attribute__((warn_unused_result))
+    __attribute__((nonnull));
+
+status_t tcp_client_set_ciphers(tcp_client p, const char *ciphers)
+    __attribute__((warn_unused_result))
+    __attribute__((nonnull));
+
+status_t tcp_client_set_ca_directory(tcp_client p, const char *path)
+    __attribute__((warn_unused_result))
+    __attribute__((nonnull));
 
 connection tcp_client_connection(tcp_client p);
 status_t tcp_client_close(tcp_client p);

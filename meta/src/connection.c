@@ -148,13 +148,6 @@ connection connection_new(int socktype, unsigned timeout_reads, unsigned timeout
     unsigned retries_reads, unsigned retries_writes, void *arg2)
 {
     assert(socktype == SOCKTYPE_TCP || socktype == SOCKTYPE_SSL);
-#if 0
-    // Is 0 OK? I think so
-    assert(timeout_reads > 0);
-    assert(timeout_writes > 0);
-    assert(retries_reads > 0);
-    assert(retries_writes > 0);
-#endif
 
     connection new = calloc(1, sizeof *new);
     if (new == NULL)
@@ -187,10 +180,7 @@ status_t connection_connect(connection this, const char *host, uint16_t port)
 {
     assert(this != NULL);
 
-    if (!socket_create_client_socket(this->cn_sock, this->arg2, host, port))
-        return failure;
-
-    return success;
+    return socket_create_client_socket(this->cn_sock, this->arg2, host, port);
 }
 
 membuf connection_reclaim_read_buffer(connection this)

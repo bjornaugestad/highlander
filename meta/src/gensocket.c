@@ -10,6 +10,7 @@
 #include <sys/poll.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
+#include <arpa/inet.h>
 
 #include <gensocket.h>
 
@@ -217,6 +218,17 @@ static status_t tcp_create_server_socket(socket_t sock, const char *host, uint16
 }
 
 
+static bool is_ip_literal(const char *s)
+{
+    assert(s != NULL);
+    assert(strlen(s) > 0);
+
+    struct in6_addr a6;
+    struct in_addr a4;
+
+    return inet_pton(AF_INET, s, &a4) == 1 || inet_pton(AF_INET6, s, &a6) == 1;
+}
+
 static status_t tcp_create_client_socket(socket_t this, const char *host, uint16_t port)
 {
     assert(this != NULL);
@@ -234,8 +246,9 @@ static status_t tcp_create_client_socket(socket_t this, const char *host, uint16
     hints.ai_flags    = AI_ADDRCONFIG | AI_NUMERICSERV;
 
     int rc = getaddrinfo(host, serv, &hints, &res);
-    if (rc)
+    if (rc) {
         return failure;
+    }
 
     for (ai = res; ai; ai = ai->ai_next) {
         if (!socket_socket(this, ai))
@@ -250,6 +263,51 @@ static status_t tcp_create_client_socket(socket_t this, const char *host, uint16
     freeaddrinfo(res);
     if (this->fd == -1)
         return failure;
+
+
+    return success;
+}
+
+// THis one is a bit tricky as tcp_create_client_socket() calls socket_close() which will
+// try to shutdown an unconnected SSL object. That fails, so everything else fails.
+// TBH, I think we need to merge tcp_client_connect() with this code. Naming is poor at best ATM
+static status_t ssl_create_client_socket(socket_t this, void *context, const char *host, uint16_t port)
+{
+
+    status_t rc = tcp_create_client_socket(this, host, port);
+    if (rc == failure)
+        return rc;
+
+    assert(this->socktype == SOCKTYPE_SSL);
+    assert(this->ssl == NULL);
+    assert(this->fd != -1);
+
+    this->ssl = SSL_new(context);
+    if (this->ssl == NULL) {
+        // why not socket_close() ?
+        close(this->fd);
+        this->fd = -1;
+        return failure;
+    }
+
+    SSL_set_fd(this->ssl, this->fd);
+
+    // We do not set SSL_*host() for IP addrs
+    bool is_ip = is_ip_literal(host);
+    if (!is_ip) {
+        SSL_set_tlsext_host_name(this->ssl, host);
+        SSL_set1_host(this->ssl, host);
+    }
+
+    int res = SSL_connect(this->ssl);
+    if (res != 1) {
+        int err = SSL_get_error(this->ssl, res);
+        fprintf(stderr, "%s() X4: res == %d err == %d\n", __func__, res, err);
+        ERR_print_errors_fp(stderr);
+
+        socket_close(this);
+        return failure;
+    }
 
     if (!socket_set_nonblock(this)) {
         socket_close(this);
@@ -276,15 +334,11 @@ status_t socket_create_client_socket(socket_t this, void *context,
     assert(this->socktype == SOCKTYPE_TCP || context != NULL);
     assert(this->fd == -1 && "You're leaking fd's, bro");
 
-#ifdef NDEBUG
-    (void)context;
-#endif
-
-    if (this->socktype == SOCKTYPE_TCP)
+    if (this->socktype == SOCKTYPE_TCP) {
         return tcp_create_client_socket(this, host, port);
+    }
     else { 
-        // SSL - work in progress. BIO related...
-        return failure;
+        return ssl_create_client_socket(this, context, host, port);
     }
 }
 
