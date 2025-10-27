@@ -9,6 +9,7 @@ typedef struct page_attribute_tag*	page_attribute;
 
 page_attribute attribute_new(void) __attribute__((malloc, warn_unused_result));
 void attribute_free(page_attribute a);
+page_attribute attribute_dup(page_attribute a);
 
 status_t attribute_set_media_type   (page_attribute a, const char *val) __attribute__((nonnull, warn_unused_result)); 
 status_t attribute_set_language     (page_attribute a, const char *val) __attribute__((nonnull, warn_unused_result)); 

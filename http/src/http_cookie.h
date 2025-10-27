@@ -15,6 +15,10 @@ typedef struct cookie_tag *cookie;
 
 /* Cookies */
 cookie cookie_new(void) __attribute__((malloc));
+void cookie_free(cookie c);
+static inline void cookie_freev(void *p) { cookie_free(p); }
+status_t cookie_dump(cookie c,  void *file)
+    __attribute__((nonnull, warn_unused_result));
 
 status_t cookie_set_name(cookie c, const char *s) __attribute__((nonnull, warn_unused_result)); 
 status_t cookie_set_value(cookie c, const char *s) __attribute__((nonnull, warn_unused_result)); 
@@ -48,7 +52,6 @@ int cookie_get_secure(cookie c)
 
 int cookie_get_max_age(cookie c)
     __attribute__((nonnull, warn_unused_result));
-
 
 #ifdef __cplusplus
 }

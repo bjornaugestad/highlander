@@ -6,9 +6,7 @@
 #include <general_header.h>
 #include <entity_header.h>
 
-#ifndef CHOPPED
 #include <http_cookie.h>
-#endif
 
 #ifdef __cplusplus
 extern "C" {

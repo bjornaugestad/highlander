@@ -45,7 +45,7 @@ LIBHIGHLANDER_SOURCES=\
 	http/src/attribute.c http/src/request.c http/src/dynamic_page.c\
 	http/src/html_buffer.c http/src/general_header.c http/src/html_menu.c\
 	http/src/http.c http/src/response.c http/src/html_template.c\
-	http/src/http_server.c meta/src/tcp_server.c
+	http/src/http_server.c http/src/internals.c meta/src/tcp_server.c 
 
 # We need a separate output directory since files have same names
 OUTDIR_CHOPPED := $(OUTDIR)/chopped
@@ -58,6 +58,7 @@ LIBCHOPPED_SOURCES=\
 	http/src/general_header.c \
 	http/src/http.c http/src/response.c\
 	http/src/http_server.c \
+	http/src/internals.c \
 	meta/src/tcp_server.c\
 	meta/src/connection.c\
 	meta/src/meta_membuf.c\
@@ -113,6 +114,7 @@ HIGHLANDER_COMMON_SRC=\
 	http/src/general_header.c http/src/entity_header.c http/src/cookies.c\
 	http/src/parse_http.c http/src/parse_time.c http/src/dynamic_page.c\
 	http/src/rfc1738.c http/src/send_status_code.c http/src/attribute.c\
+	http/src/internals.c
 
 $(OUTDIR)/echoserver: apps/echoserver/main.c $(OUTDIR)/libhighlander.a $(OUTDIR)/libmeta.a
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ -lssl -lcrypto

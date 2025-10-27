@@ -12,8 +12,11 @@
 #include <meta_error.h>
 #include <meta_common.h>
 
+#if 1
 #include <highlander.h>
 #include <http_server.h>
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -34,51 +37,45 @@ extern "C" {
 #define CCH_FIELDNAME_MAX	30
 #define CCH_FIELDVALUE_MAX	10000
 
-#if 0 // deleteme?
-/*
- * Quality is not used in http 1.0.
- * It is used in conjunction with accept-xxx to prioritize the different formats
- * a client accepts. My guess is that it is not used a lot... We support it anyway.
- * The format is q=float where float is limited by me to be 0.nnn
- * This means that we need 8 bytes. We safe a little and size for 12.
- */
-#define CCH_QUALITY_MAX		12
-#endif
 
-void *serviceConnection(void *psa);
+status_t http_send_field(connection conn, const char *name, cstring value)
+    __attribute__((nonnull, warn_unused_result));
+status_t http_send_date(connection conn, const char *name, time_t value)
+    __attribute__((nonnull, warn_unused_result));
+status_t http_send_ulong(connection conn, const char *name, unsigned long value)
+    __attribute__((nonnull, warn_unused_result));
+status_t http_send_int(connection conn, const char *name, int value)
+    __attribute__((nonnull, warn_unused_result));
+status_t http_send_unsigned_int(connection conn, const char *name, unsigned int value)
+    __attribute__((nonnull, warn_unused_result));
+status_t http_send_string(connection conn, const char *s)
+    __attribute__((nonnull, warn_unused_result));
 
-status_t http_send_field(connection conn, const char *name, cstring value) __attribute__((nonnull, warn_unused_result));
-status_t http_send_date(connection conn, const char *name, time_t value) __attribute__((nonnull, warn_unused_result));
-status_t http_send_ulong(connection conn, const char *name, unsigned long value) __attribute__((nonnull, warn_unused_result));
-status_t http_send_int(connection conn, const char *name, int value) __attribute__((nonnull, warn_unused_result));
-status_t http_send_unsigned_int(connection conn, const char *name, unsigned int value) __attribute__((nonnull, warn_unused_result));
-status_t http_send_string(connection conn, const char *s) __attribute__((nonnull, warn_unused_result));
-
-status_t read_line(connection conn, char *buf, size_t cchMax, error e) __attribute__((nonnull, warn_unused_result));
+status_t read_line(connection conn, char *buf, size_t cchMax, error e)
+    __attribute__((nonnull, warn_unused_result));
 /*
  * A field name, in HTTP, is everything to the left of : in
  * header fields like "name: value". We copy the name part here.
  */
-status_t get_field_name(const char *buf, char *name, size_t cchNameMax) __attribute__((nonnull, warn_unused_result));
-status_t get_field_value(const char *buf, char *value, size_t cchValueMax) __attribute__((nonnull, warn_unused_result));
+status_t get_field_name(const char *buf, char *name, size_t cchNameMax)
+    __attribute__((nonnull, warn_unused_result));
+status_t get_field_value(const char *buf, char *value, size_t cchValueMax)
+    __attribute__((nonnull, warn_unused_result));
 
 
 dynamic_page dynamic_new(const char *uri, handlerfn f, page_attribute a);
 void dynamic_free(dynamic_page p);
 void dynamic_set_handler(dynamic_page p, handlerfn func);
-status_t dynamic_set_uri(dynamic_page p, const char *value) __attribute__((nonnull, warn_unused_result));
+status_t dynamic_set_uri(dynamic_page p, const char *value)
+    __attribute__((nonnull, warn_unused_result));
 int dynamic_run(dynamic_page p, const http_request, http_response);
-status_t dynamic_set_attributes(dynamic_page p, page_attribute a) __attribute__((nonnull, warn_unused_result));
+status_t dynamic_set_attributes(dynamic_page p, page_attribute a)
+    __attribute__((nonnull, warn_unused_result));
 page_attribute dynamic_get_attributes(dynamic_page p);
 const char*	dynamic_get_uri(dynamic_page p);
 
 
-page_attribute attribute_dup(page_attribute a);
-
-
 #ifndef CHOPPED
-void cookie_free(cookie c);
-static inline void cookie_freev(void *p) { cookie_free(p); }
 
 /* Function prototypes for handler functions */
 status_t parse_cookie(http_request r, const char *s, error e)
@@ -90,7 +87,6 @@ status_t parse_new_cookie(http_request r, const char *s, error e)
 status_t parse_old_cookie(http_request r, const char *s, error e)
     __attribute__((nonnull, warn_unused_result));
 
-status_t cookie_dump(cookie c,  void *file) __attribute__((nonnull, warn_unused_result));
 
 #endif
 

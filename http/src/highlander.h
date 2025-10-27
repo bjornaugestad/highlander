@@ -65,6 +65,8 @@ typedef int http_method;
 enum _http_version {VERSION_UNKNOWN, VERSION_09, VERSION_10, VERSION_11};
 typedef int http_version;
 
+void *serviceConnection(void *psa);
+
 #ifdef __cplusplus
 }
 #endif
