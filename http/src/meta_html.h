@@ -12,6 +12,7 @@
 
 #include <cstring.h>
 #include <highlander.h>
+#include <http_response.h>
 
 #ifdef __cplusplus
 extern "C" {

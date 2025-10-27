@@ -26,6 +26,10 @@
 #include <meta_convert.h>
 
 #include "internals.h"
+
+/* Max length of a HTTP status line */
+#define CCH_STATUSLINE_MAX 256
+
 /*
  * NOTE: Since we are an originating server, there is no need
  * to send Age. Only caches send this one.
@@ -1512,7 +1516,7 @@ static status_t read_response_status_line(http_response response, connection con
     if (!read_line(conn, buf, sizeof buf - 1, e))
         return failure;
 
-    enum http_version version;
+    http_version version;
     /* The string must start with either HTTP/1.0 or HTTP/1.1 SP */
     if (strstr(buf, "HTTP/1.0 ") == buf)
         version = VERSION_10;

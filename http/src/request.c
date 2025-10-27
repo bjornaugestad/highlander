@@ -16,9 +16,25 @@
 #include <meta_list.h>
 #include <meta_convert.h>
 
-#include "highlander.h"
-#include "internals.h"
-#include "rfc1738.h"
+#include <highlander.h>
+#include <internals.h>
+#include <rfc1738.h>
+#include <http_request.h>
+
+// Params are here parameters to the uri
+#define CCH_PARAMNAME_MAX	100
+#define CCH_PARAMVALUE_MAX	500
+
+// Max len of a request keyword, e.g. GET, HEAD
+#define CCH_METHOD_MAX	256
+
+/* Max len of a request line, regardless of version */
+#define CCH_REQUESTLINE_MAX 10240
+
+// Max length of a language, as in en, no, se
+// These are defined by IANA
+#define CCH_LANGUAGE_MAX	100
+
 
 typedef unsigned long flagtype;
 static int request_flag_is_set(http_request r, flagtype flag);
@@ -59,8 +75,8 @@ static void request_clear_flags(http_request request);
 #endif
 
 struct http_request_tag {
-    enum http_method method;
-    enum http_version version;
+    http_method method;
+    http_version version;
 
     // Set to true if we want do delay the read of posted content,
     // and to false if we want to read it automagically. Default is false
@@ -1690,7 +1706,7 @@ static http_method get_method(const char *str)
 {
     static const struct {
         const char *str;
-        const enum http_method id;
+        const http_method id;
     } methods[] = {
         { "GET", METHOD_GET, },
         { "HEAD",METHOD_HEAD, },
@@ -1716,7 +1732,7 @@ static http_version get_version(const char *s)
 {
     static struct {
         const char *str;
-        const enum http_version id;
+        const http_version id;
     } versions[] = {
         { "HTTP/1.0", VERSION_10, },
         { "HTTP/1.1", VERSION_11, }

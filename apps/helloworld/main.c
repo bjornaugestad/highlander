@@ -4,6 +4,8 @@
 
 #include <highlander.h>
 #include <miscssl.h>
+#include <http_response.h>
+#include <http_server.h>
 
 static int page_handler(http_request req, http_response page)
 {

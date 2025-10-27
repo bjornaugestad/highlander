@@ -34,7 +34,8 @@ CFLAGS_CLANG_RELEASE=$(COMMON_CLANG_CFLAGS) -O3 -DNDEBUG
 CFLAGS_CLANG_COV=-Werror -Wall -Wextra -std=gnu2x -O0 -g -fno-inline -fprofile-instr-generate -fcoverage-mapping $(COMMON_INCLUDE)
 LDFLAGS_CLANG_COV=-fprofile-instr-generate 
 
-all:  gcc clang cov
+all:  gcc_san # gcc clang cov
+#all:   gcc clang cov
 
 gcc: gcc_debug gcc_release gcc_san
 clang: clang_debug clang_release clang_san clang_tsan

@@ -7,6 +7,9 @@
 #include <highlander.h>
 #include <miscssl.h>
 #include <tcp_client.h>
+#include <http_request.h>
+#include <http_response.h>
+#include <http_client.h>
 
 struct http_client_tag {
     tcp_client tcpclient;
