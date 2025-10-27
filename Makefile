@@ -30,7 +30,11 @@ CFLAGS_CLANG_SAN=$(COMMON_CLANG_CFLAGS) -Og -g -fsanitize=address,undefined,leak
 CFLAGS_CLANG_TSAN=$(COMMON_CLANG_CFLAGS) -Og -g -fsanitize=thread -fno-omit-frame-pointer
 CFLAGS_CLANG_RELEASE=$(COMMON_CLANG_CFLAGS) -O3 -DNDEBUG
 
-all: gcc clang
+# Coverage with clang/llvm. COMMON_CFLAGS are a bit over the top here, so we use our own.
+CFLAGS_CLANG_COV=-Werror -Wall -Wextra -std=gnu2x -O0 -g -fno-inline -fprofile-instr-generate -fcoverage-mapping $(COMMON_INCLUDE)
+LDFLAGS_CLANG_COV=-fprofile-instr-generate 
+
+all: gcc clang cov
 
 gcc: gcc_debug gcc_release gcc_san
 clang: clang_debug clang_release clang_san clang_tsan
@@ -50,6 +54,9 @@ gcc_release:
 
 clang_debug :
 	@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_DEBUG)" OUTDIR=.build/clang/debug all
+
+cov:
+	@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_COV)" OUTDIR=.build/clang/cov all
 
 clang_san :
 	@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_SAN)" OUTDIR=.build/clang/san all

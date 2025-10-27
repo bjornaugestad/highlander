@@ -6,7 +6,7 @@
 #ifndef CONNECTION_H
 #define CONNECTION_H
 
-struct sockaddr_in;
+#include <stdbool.h>
 
 #include <meta_membuf.h>
 #include <gensocket.h>
