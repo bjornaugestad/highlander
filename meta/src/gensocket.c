@@ -102,19 +102,17 @@ static status_t ssl_write(socket_t this, const char *buf, size_t count,
 
 status_t socket_poll_for(socket_t this, unsigned timeout, short poll_for)
 {
-    struct pollfd pfd;
-    int rc;
-    status_t status = failure;
-
     assert(this != NULL);
     assert(this->fd >= 0);
     assert(poll_for == POLLIN || poll_for == POLLOUT);
 
+    struct pollfd pfd;
     pfd.fd = this->fd;
     pfd.events = poll_for;
 
     /* NOTE: poll is XPG4, not POSIX */
-    rc = poll(&pfd, 1, (int)timeout);
+    int rc = poll(&pfd, 1, (int)timeout);
+    status_t status = failure;
     if (rc == 1) {
         /* We have info in pfd */
         if (pfd.revents & POLLHUP) {
@@ -186,35 +184,43 @@ static status_t socket_socket(socket_t this, struct addrinfo *ai)
     return success;
 }
 
-static status_t tcp_create_server_socket(socket_t sock, const char *host, uint16_t port)
+status_t socket_create_server_socket(socket_t sock, const char *host, uint16_t port)
 {
-    struct addrinfo hints = {0}, *res, *ai;
-    char serv[6];
+    assert(sock != NULL);
+    assert(sock->socktype == SOCKTYPE_TCP || sock->socktype == SOCKTYPE_SSL);
+    assert(host != NULL);
+    assert(port > 0);
 
+    char serv[6];
     snprintf(serv, sizeof serv, "%u", (unsigned)port);
+
+    struct addrinfo hints = {0}, *res, *ai;
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG | AI_NUMERICSERV;
 
     if (getaddrinfo(host, serv, &hints, &res) != 0)
-        return NULL;
+        return failure;
 
     for (ai = res; ai; ai = ai->ai_next) {
-        if (!socket_socket(sock, ai))
-            continue;
-
-        if (socket_set_reuse_addr(sock)
-        && socket_bind_inet(sock, ai)
-        && socket_listen(sock, 100)) {
-            freeaddrinfo(res);
-            return success;
-        }
+        if (socket_socket(sock, ai))
+            goto yay;
     }
 
     // Unable to bind
     freeaddrinfo(res);
     socket_close(sock);
     return failure;
+
+yay:
+    status_t status = failure;
+    if (socket_set_reuse_addr(sock) 
+    && socket_bind_inet(sock, ai) 
+    && socket_listen(sock, 100)) 
+        status = success;
+
+    freeaddrinfo(res);
+    return status;
 }
 
 
@@ -246,24 +252,20 @@ static status_t tcp_create_client_socket(socket_t this, const char *host, uint16
     hints.ai_flags    = AI_ADDRCONFIG | AI_NUMERICSERV;
 
     int rc = getaddrinfo(host, serv, &hints, &res);
-    if (rc) {
+    if (rc)
         return failure;
-    }
 
     for (ai = res; ai; ai = ai->ai_next) {
         if (!socket_socket(this, ai))
             continue;
 
-        if (connect(this->fd, ai->ai_addr, ai->ai_addrlen) == 0)
-            break;
-
-        socket_close(this);
+        if (connect(this->fd, ai->ai_addr, ai->ai_addrlen) != 0)
+            socket_close(this);
     }
 
     freeaddrinfo(res);
     if (this->fd == -1)
         return failure;
-
 
     return success;
 }
@@ -273,7 +275,6 @@ static status_t tcp_create_client_socket(socket_t this, const char *host, uint16
 // TBH, I think we need to merge tcp_client_connect() with this code. Naming is poor at best ATM
 static status_t ssl_create_client_socket(socket_t this, void *context, const char *host, uint16_t port)
 {
-
     status_t rc = tcp_create_client_socket(this, host, port);
     if (rc == failure)
         return rc;
@@ -317,14 +318,6 @@ static status_t ssl_create_client_socket(socket_t this, void *context, const cha
     return success;
 }
 
-status_t socket_create_server_socket(socket_t sock, const char *host, uint16_t port)
-{
-    assert(sock != NULL);
-    assert(sock->socktype == SOCKTYPE_TCP || sock->socktype == SOCKTYPE_SSL);
-
-    return tcp_create_server_socket(sock, host, port);
-}
-
 // A ctor function. Context iss ssl_ctx. We return status_t and use
 // the memory in socket_t arg to store fd et. al. It's preallocated.
 status_t socket_create_client_socket(socket_t this, void *context, 
@@ -334,12 +327,10 @@ status_t socket_create_client_socket(socket_t this, void *context,
     assert(this->socktype == SOCKTYPE_TCP || context != NULL);
     assert(this->fd == -1 && "You're leaking fd's, bro");
 
-    if (this->socktype == SOCKTYPE_TCP) {
+    if (this->socktype == SOCKTYPE_TCP)
         return tcp_create_client_socket(this, host, port);
-    }
-    else { 
+    else
         return ssl_create_client_socket(this, context, host, port);
-    }
 }
 
 __attribute__((nonnull, warn_unused_result))
