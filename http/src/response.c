@@ -17,15 +17,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
 #include <meta_list.h>
 #include <meta_misc.h>
 #include <meta_convert.h>
 
 #include "internals.h"
+#include <highlander.h>
+#include <http_response.h>
 
 /* Max length of a HTTP status line */
 #define CCH_STATUSLINE_MAX 256

@@ -10,6 +10,7 @@
 #include <assert.h>
 
 #include "internals.h"
+#include <highlander.h>
 
 typedef struct http_status_struct {
     int code;
@@ -79,7 +80,7 @@ static http_status m_http_status11[] = {
     { 505, "HTTP/1.1 505 HTTP Version not supported\r\n" },
 };
 
-status_t send_status_code(connection conn, int status_code, http_version version)
+status_t send_status_code(connection conn, int status_code, int version)
 {
     size_t i, cb, n;
     http_status* pstatus;

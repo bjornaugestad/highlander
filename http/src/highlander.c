@@ -15,6 +15,7 @@
 #include <assert.h>
 
 #include <meta_misc.h>
+#include <highlander.h>
 
 #include "internals.h"
 

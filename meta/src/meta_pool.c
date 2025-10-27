@@ -3,9 +3,10 @@
  * All Rights Reserved. See COPYING for license details
  */
 
+#include <assert.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <assert.h>
 #include <pthread.h>
 
 #include <meta_pool.h>

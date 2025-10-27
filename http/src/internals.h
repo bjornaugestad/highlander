@@ -12,9 +12,9 @@
 #include <meta_error.h>
 #include <meta_common.h>
 
-#if 1
-#include <highlander.h>
 #include <http_server.h>
+#if 0
+#include <highlander.h>
 #endif
 
 #ifdef __cplusplus
@@ -92,7 +92,7 @@ status_t parse_old_cookie(http_request r, const char *s, error e)
 
 time_t parse_rfc822_date(const char *s);
 status_t send_status_code(connection conn, int status_code,
-    http_version version) __attribute__((nonnull, warn_unused_result));
+    int version) __attribute__((nonnull, warn_unused_result));
 
 int http_status_code(int error);
 

@@ -11,6 +11,7 @@
 
 #include "internals.h"
 #include <meta_convert.h>
+#include <highlander.h>
 
 struct cookie_tag {
     cstring name;

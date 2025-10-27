@@ -21,6 +21,7 @@
 #include <meta_configfile.h>
 #include <meta_misc.h>
 #include "internals.h"
+#include <highlander.h>
 
 /*
  * NOTE:

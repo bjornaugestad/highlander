@@ -19,7 +19,7 @@ static inline void response_freev(void *p) { response_free(p); }
 
 void response_recycle(http_response response)
     __attribute__((nonnull));
-void response_set_version(http_response response, http_version version)
+void response_set_version(http_response response, int version)
     __attribute__((nonnull));
 void response_set_status(http_response response, int status)
     __attribute__((nonnull));

@@ -5,8 +5,6 @@
 #define META_COMMON_H
 
 #include <stdarg.h> /* for va_list */
-#include <stddef.h>
-#include <errno.h>
 
 #ifdef __cplusplus
 extern "C" {
