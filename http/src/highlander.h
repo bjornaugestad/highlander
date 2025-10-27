@@ -3,18 +3,8 @@
  * All Rights Reserved. See COPYING for license details
  */
 
-
 #ifndef HIGHLANDER_H
 #define HIGHLANDER_H
-
-#include <stdbool.h>
-#include <stdint.h>
-#include <time.h>
-
-#include <meta_process.h>
-#include <meta_error.h>
-#include <connection.h>
-#include <http_request.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -75,25 +65,6 @@ typedef int http_method;
 enum _http_version {VERSION_UNKNOWN, VERSION_09, VERSION_10, VERSION_11};
 typedef int http_version;
 
-typedef struct dynamic_page_tag*	dynamic_page;
-typedef struct page_attribute_tag*	page_attribute;
-
-
-
-/* attributes */
-page_attribute attribute_new(void) __attribute__((malloc, warn_unused_result));
-void attribute_free(page_attribute a);
-
-status_t attribute_set_media_type   (page_attribute a, const char *val) __attribute__((nonnull, warn_unused_result)); 
-status_t attribute_set_language     (page_attribute a, const char *val) __attribute__((nonnull, warn_unused_result)); 
-status_t attribute_set_charset      (page_attribute a, const char *val) __attribute__((nonnull, warn_unused_result)); 
-status_t attribute_set_authorization(page_attribute a, const char *val) __attribute__((nonnull, warn_unused_result)); 
-status_t attribute_set_encoding     (page_attribute a, const char *val) __attribute__((nonnull, warn_unused_result)); 
-
-const char*	attribute_get_language  (page_attribute a) __attribute__((nonnull, warn_unused_result)); 
-const char*	attribute_get_charset   (page_attribute a) __attribute__((nonnull, warn_unused_result)); 
-const char*	attribute_get_encoding  (page_attribute a) __attribute__((nonnull, warn_unused_result)); 
-const char*	attribute_get_media_type(page_attribute a) __attribute__((nonnull, warn_unused_result));
 #ifdef __cplusplus
 }
 #endif

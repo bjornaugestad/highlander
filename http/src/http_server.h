@@ -1,8 +1,12 @@
 #ifndef HTTP_SERVER_H
 #define HTTP_SERVER_H
 
+#include <meta_process.h>
 #include <http_request.h>
 #include <http_response.h>
+
+#include <page_attribute.h>
+#include <dynamic_page.h>
 
 #ifdef __cplusplus
 extern "C" {

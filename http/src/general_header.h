@@ -3,6 +3,9 @@
 
 #include <stddef.h>
 
+#include <connection.h>
+#include <meta_error.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

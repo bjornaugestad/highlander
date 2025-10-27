@@ -2,6 +2,8 @@
 #define HTTP_RESPONSE_H
 
 #include <http_cookie.h>
+#include <general_header.h>
+#include <entity_header.h>
 
 #ifdef __cplusplus
 extern "C" {

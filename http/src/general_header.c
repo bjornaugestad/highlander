@@ -9,6 +9,7 @@
 #include <highlander.h>
 #include <internals.h>
 #include <meta_convert.h>
+#include <time.h>
 
 /*
  * TODO (2007-05-25):
