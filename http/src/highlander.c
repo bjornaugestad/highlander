@@ -18,6 +18,8 @@
 #include "internals.h"
 
 /* Local helper functions */
+
+#ifndef CHOPPED
 static int check_attributes(http_request request, page_attribute a)
 {
     const char *page_val;
@@ -32,10 +34,12 @@ static int check_attributes(http_request request, page_attribute a)
 
     return 1;
 }
+#endif
 
 /* Checks to see if incoming accept limits fits the page attributes */
 static int fs_can_run(http_server srv, http_request request, dynamic_page p)
 {
+#ifndef CHOPPED
     page_attribute a;
 
     assert(srv != NULL);
@@ -51,6 +55,11 @@ static int fs_can_run(http_server srv, http_request request, dynamic_page p)
         return 1;
 
     return check_attributes(request, a);
+#else
+    (void)srv; (void)request;(void)p;
+    return 1;
+
+#endif
 }
 
 /*
@@ -73,7 +82,6 @@ static status_t send_disk_file(
     const char *uri, *docroot;
     char filename[CCH_URI_MAX + DOCUMENTROOT_MAX + 2];
     struct stat st;
-    page_attribute a;
     const char *content_type;
 
     assert(srv != NULL);
@@ -129,14 +137,17 @@ static status_t send_disk_file(
     else
         return set_http_error(e, HTTP_400_BAD_REQUEST);
 
+#ifndef CHOPPED
     /* We must check page_attributes even for files loaded from disk. */
     /* NOTE: Trengs dette for HTTP 1.0 ?*/
 
+    page_attribute a;
     if ((a = http_server_get_default_attributes(srv)) != NULL
     && !check_attributes(req, a)) {
         response_set_status(response, HTTP_406_NOT_ACCEPTABLE);
         return set_http_error(e, HTTP_406_NOT_ACCEPTABLE);
     }
+#endif
 
     content_type = get_mime_type(filename);
 
@@ -166,8 +177,12 @@ status_t handle_dynamic(http_server srv, dynamic_page p,
         return set_http_error(e, HTTP_406_NOT_ACCEPTABLE);
     }
 
+#ifndef CHOPPED
     response_set_version(response, version);
     response_set_last_modified(response, time(NULL));
+#else
+    (void)version;
+#endif
 
     /* Run the dynamic function. It is supposed to return 0 for OK,
      * but we accept any legal HTTP status code. Illegal status codes

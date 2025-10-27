@@ -255,7 +255,9 @@ void http_server_free(http_server this)
         http_server_free_response_pool(this);
         http_server_free_page_structs(this);
 
+#ifndef CHOPPED
         attribute_free(this->default_attributes);
+#endif
         free(this->host);
 
         if (this->logfile != NULL)
@@ -612,6 +614,7 @@ void http_server_recycle_response(http_server this, http_response response)
     pool_recycle(this->responses, response);
 }
 
+#ifndef CHOPPED
 status_t http_server_set_default_page_attributes(http_server this, page_attribute a)
 {
     assert(this != NULL);
@@ -635,6 +638,7 @@ page_attribute http_server_get_default_attributes(http_server this)
 
     return this->default_attributes;
 }
+#endif
 
 status_t http_server_set_host(http_server this, const char *host)
 {

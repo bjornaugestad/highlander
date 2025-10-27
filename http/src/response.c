@@ -36,6 +36,10 @@
  * group of flags. use response_set_flag() and response_is_flag_set()
  * anyway, in case the number of flags grow.
  */
+#ifdef CHOPPED
+#define CONTENT_LENGTH		(0x80)
+#define SERVER				(0x100000)
+#else
 #define ACCEPT_RANGES		(0x1)
 #define AGE					(0x2)
 #define ALLOW				(0x4)
@@ -59,6 +63,7 @@
 #define UPGRADE				(0x800000)
 #define VARY				(0x1000000)
 #define WWW_AUTHENTICATE	(0x2000000)
+#endif
 
 /* Here is the response we are creating */
 struct http_response_tag {
@@ -83,22 +88,23 @@ struct http_response_tag {
      * commonly used as an extension of http 1.0, e.g. Host
      */
 
+    cstring server;				/* §14.39 */
+    cstring entity;
+
+#ifndef CHOPPED
     unsigned long age;
     int accept_ranges;			/* §14.5 */
     cstring etag;				/* §14.19 */
     cstring location;			/* §14.30 */
     cstring proxy_authenticate;	/* §14.33 */
     time_t retry_after;			/* §14.38 */
-    cstring server;				/* §14.39 */
     cstring vary;				/* §14.44 */
     cstring www_authenticate;	/* §14.47 */
 
     /* Outgoing cookies */
     list cookies;
 
-    /* We unfortunately need to store everything here to
-     * support cookies properly */
-    cstring entity;
+#endif
 
     /* The page function can assign its own content buffer.	 */
     void* content_buffer;
@@ -131,11 +137,6 @@ general_header response_get_general_header(http_response r)
     return r->general_header;
 }
 
-entity_header response_get_entity_header(http_response r)
-{
-    return r->entity_header;
-}
-
 const char* response_get_entity(http_response p)
 {
     assert(p != NULL);
@@ -146,10 +147,18 @@ const char* response_get_entity(http_response p)
         return c_str(p->entity);
 }
 
+entity_header response_get_entity_header(http_response r)
+{
+    return r->entity_header;
+}
+
+#ifndef CHOPPED
 void response_set_version(http_response r, http_version v)
 {
     r->version = v;
 }
+
+#endif
 
 http_response response_new(void)
 {
@@ -170,6 +179,7 @@ http_response response_new(void)
         return NULL;
     }
 
+#ifndef CHOPPED
     if ((p->cookies = list_new()) == NULL) {
         general_header_free(p->general_header);
         entity_header_free(p->entity_header);
@@ -178,12 +188,7 @@ http_response response_new(void)
         return NULL;
     }
 
-    p->version = VERSION_UNKNOWN;
-    p->status = 0;
-    p->flags = 0;
     p->retry_after = (time_t)-1;
-    p->send_file = 0;
-
     p->etag = strings[0];
     p->location = strings[1];
     p->proxy_authenticate = strings[2];
@@ -192,10 +197,20 @@ http_response response_new(void)
     p->www_authenticate = strings[5];
     p->entity = strings[6];
     p->path = strings[7];
+#else
+    p->server = strings[3];
+    p->entity = strings[6];
+#endif
+
+    p->version = VERSION_UNKNOWN;
+    p->status = 0;
+    p->flags = 0;
+    p->send_file = 0;
+
 
     /* Some defaults */
     if (!response_set_content_type(p, "text/html")
-    || !response_set_server(p, "Highlander")) {
+    || !response_set_server(p, "chopped")) {
         response_free(p);
         p = NULL;
     }
@@ -210,12 +225,15 @@ void response_set_status(http_response r, int status)
     r->status = status;
 }
 
+#ifndef CHOPPED
 void response_set_age(http_response r, unsigned long age)
 {
     assert(r != NULL);
     r->age = age;
     response_set_flag(r, AGE);
 }
+
+#endif
 
 int response_get_status(http_response r)
 {
@@ -224,6 +242,7 @@ int response_get_status(http_response r)
     return r->status;
 }
 
+#ifndef CHOPPED
 static status_t send_age(connection c, http_response p)
 {
     return http_send_ulong(c, "Age: ", p->age);
@@ -242,11 +261,6 @@ static status_t send_location(connection conn, http_response p)
 static status_t send_proxy_authenticate(connection conn, http_response p)
 {
     return http_send_field(conn, "Proxy-Authenticate: ", p->proxy_authenticate);
-}
-
-static status_t send_server(connection conn, http_response p)
-{
-    return http_send_field(conn, "Server: ", p->server);
 }
 
 static status_t send_vary(connection conn, http_response p)
@@ -279,6 +293,13 @@ static status_t send_accept_ranges(connection conn, http_response p)
     return connection_write(conn, s, cch);
 }
 
+#endif
+
+static status_t send_server(connection conn, http_response p)
+{
+    return http_send_field(conn, "Server: ", p->server);
+}
+
 
 static status_t response_send_header_fields(http_response p, connection conn)
 {
@@ -289,6 +310,7 @@ static status_t response_send_header_fields(http_response p, connection conn)
         size_t flag;
         status_t (*func)(connection, http_response);
     } fields[] = {
+#ifndef CHOPPED
         { AGE,					send_age },
         { ETAG,					send_etag },
         { LOCATION,				send_location },
@@ -298,17 +320,22 @@ static status_t response_send_header_fields(http_response p, connection conn)
         { WWW_AUTHENTICATE,		send_www_authenticate },
         { ACCEPT_RANGES,		send_accept_ranges },
         { RETRY_AFTER,			send_retry_after },
+#else
+        { SERVER,				send_server },
+#endif
     };
 
     assert(p != NULL);
     assert(conn != NULL);
 
+#ifndef CHOPPED
     /*
      * Some fields are required by http. We add them if the
      * user hasn't added them manually.
      */
     if (!general_header_date_isset(p->general_header))
         general_header_set_date(p->general_header, time(NULL));
+#endif
 
     if (!general_header_send_fields(p->general_header, conn)
     ||  !entity_header_send_fields(p->entity_header, conn))
@@ -329,6 +356,7 @@ static status_t response_send_header_fields(http_response p, connection conn)
     return status;
 }
 
+#ifndef CHOPPED
 /* return 1 if string needs to be quoted, 0 if not */
 static bool need_quote(const char *s)
 {
@@ -370,7 +398,9 @@ static status_t strcat_quoted(cstring dest, const char *s)
 
     return cstring_charcat(dest, '\'');
 }
+#endif
 
+#ifndef CHOPPED
 /*
  * Creates a string consisting of the misc elements in a cookie.
  * String must have been new'ed.
@@ -477,6 +507,7 @@ static status_t response_send_cookies(http_response p, connection conn,
 
     return success;
 }
+#endif
 
 static status_t response_send_header(http_response response,
     connection conn, error e)
@@ -487,17 +518,22 @@ static status_t response_send_header(http_response response,
 
     /* Special stuff to support pers. conns in HTTP 1.0 */
     if (connection_is_persistent(conn)
+#ifndef CHOPPED
     && response->version == VERSION_10
+#endif
     && !response_set_connection(response, "Keep-Alive"))
         return set_os_error(e, errno);
 
     if (!response_send_header_fields(response, conn))
         return set_tcpip_error(e, errno);
 
+
+#ifndef CHOPPED
     /* Send cookies, if any */
     if (response->cookies != NULL
     && !response_send_cookies(response, conn, e))
         return failure;
+#endif
 
     /* Send the \r\n separating all headers from an optional entity */
     if (!connection_write(conn, "\r\n", 2))
@@ -528,11 +564,13 @@ status_t response_add_end(http_response response, const char *start, const char 
 void response_free(http_response p)
 {
     if (p != NULL) {
+        general_header_free(p->general_header);
+        entity_header_free(p->entity_header);
+
+#ifndef CHOPPED
         /* Free cookies */
         list_free(p->cookies, (void(*)(void*))cookie_free);
 
-        general_header_free(p->general_header);
-        entity_header_free(p->entity_header);
         cstring_free(p->etag);
         cstring_free(p->location);
         cstring_free(p->proxy_authenticate);
@@ -541,6 +579,7 @@ void response_free(http_response p)
         cstring_free(p->www_authenticate);
         cstring_free(p->entity);
         cstring_free(p->path);
+#endif
 
         if (p->content_free_when_done)
             free(p->content_buffer);
@@ -565,6 +604,7 @@ status_t response_printf(http_response page, const char *fmt, ...)
 }
 
 
+#ifndef CHOPPED
 status_t response_set_cookie(http_response response, cookie new_cookie)
 {
     list_iterator i;
@@ -589,6 +629,7 @@ status_t response_set_cookie(http_response response, cookie new_cookie)
 
     return success;
 }
+#endif
 
 status_t http_send_date(connection conn, const char *name, time_t value)
 {
@@ -700,6 +741,7 @@ status_t response_set_connection(http_response response, const char *value)
     return general_header_set_connection(response->general_header, value);
 }
 
+#ifndef CHOPPED
 void response_set_date(http_response response, time_t value)
 {
     assert(response != NULL);
@@ -855,6 +897,7 @@ void response_set_retry_after(http_response response, time_t value)
     response->retry_after = value;
     response_set_flag(response, RETRY_AFTER);
 }
+#endif
 
 status_t response_set_server(http_response response, const char *value)
 {
@@ -867,6 +910,20 @@ status_t response_set_server(http_response response, const char *value)
     response_set_flag(response, SERVER);
     return success;
 }
+
+void response_set_content_length(http_response response, size_t value)
+{
+    assert(response != NULL);
+    entity_header_set_content_length(response->entity_header, value);
+}
+
+status_t response_set_content_type(http_response response, const char *value)
+{
+    assert(response != NULL);
+    return entity_header_set_content_type(response->entity_header, value);
+}
+
+#ifndef CHOPPED
 
 status_t response_set_vary(http_response response, const char *value)
 {
@@ -910,12 +967,6 @@ status_t response_set_content_language(http_response response, const char *value
     return entity_header_set_content_language(response->entity_header, value, e);
 }
 
-void response_set_content_length(http_response response, size_t value)
-{
-    assert(response != NULL);
-    entity_header_set_content_length(response->entity_header, value);
-}
-
 status_t response_set_content_location(http_response response, const char *value)
 {
     assert(response != NULL);
@@ -934,12 +985,6 @@ status_t response_set_content_range(http_response response, const char *value)
     return entity_header_set_content_range(response->entity_header, value);
 }
 
-status_t response_set_content_type(http_response response, const char *value)
-{
-    assert(response != NULL);
-    return entity_header_set_content_type(response->entity_header, value);
-}
-
 void response_set_expires(http_response response, time_t value)
 {
     assert(response != NULL);
@@ -951,21 +996,32 @@ void response_set_last_modified(http_response response, time_t value)
     assert(response != NULL);
     entity_header_set_last_modified(response->entity_header, value);
 }
+#endif
 
 void response_recycle(http_response p)
 {
     assert(p != NULL);
 
+    general_header_recycle(p->general_header);
+    entity_header_recycle(p->entity_header);
+
+#ifndef CHOPPED
     /* Free cookies */
     if (p->cookies) {
         list_free(p->cookies, cookie_freev);
         p->cookies = list_new();
     }
 
-    general_header_recycle(p->general_header);
-    entity_header_recycle(p->entity_header);
     cstring_recycle(p->entity);
     cstring_recycle(p->path);
+    cstring_recycle(p->etag);
+    cstring_recycle(p->location);
+    cstring_recycle(p->proxy_authenticate);
+    cstring_recycle(p->server);
+    cstring_recycle(p->vary);
+    cstring_recycle(p->www_authenticate);
+#endif
+
     response_clear_flags(p);
     if (!response_set_content_type(p, "text/html"))
         warning("Probably out of memory\n");
@@ -974,12 +1030,6 @@ void response_recycle(http_response p)
     p->content_free_when_done = 0;
     p->send_file = 0;
 
-    cstring_recycle(p->etag);
-    cstring_recycle(p->location);
-    cstring_recycle(p->proxy_authenticate);
-    cstring_recycle(p->server);
-    cstring_recycle(p->vary);
-    cstring_recycle(p->www_authenticate);
 }
 
 void response_set_content_buffer(http_response p, void* data, size_t cb)
@@ -1283,6 +1333,7 @@ status_t response_js_messagebox(http_response response, const char *text)
     return cstring_concat3(response->entity, start, text, end);
 }
 
+#ifndef CHOPPED
 /* response field functions */
 static status_t parse_age(http_response r, const char *value, error e)
 {
@@ -1329,6 +1380,7 @@ static status_t parse_www_authenticate(http_response r, const char *value, error
 
     return success;
 }
+#endif
 
 static status_t parse_server(http_response r, const char *value, error e)
 {
@@ -1341,6 +1393,7 @@ static status_t parse_server(http_response r, const char *value, error e)
     return success;
 }
 
+#ifndef CHOPPED
 /*
  * §14.5: Accept-Ranges is either "bytes", "none", or range-units(section 3.12)
  * The only range unit defined by HTTP 1.1 is "bytes", and we MAY ignore
@@ -1406,11 +1459,13 @@ static status_t parse_vary(http_response r, const char *value, error e)
 
     return success;
 }
+#endif
 
 static const struct {
     const char *name;
     status_t (*handler)(http_response req, const char *value, error e);
 } response_header_fields[] = {
+#ifndef CHOPPED
     { "accept-ranges",      parse_accept_ranges },
     { "age",                parse_age },
     { "etag",               parse_etag },
@@ -1420,6 +1475,10 @@ static const struct {
     { "server",             parse_server },
     { "vary",               parse_vary },
     { "www-authenticate",   parse_www_authenticate }
+#else
+    { "server",             parse_server },
+#endif
+
 };
 
 int find_response_header(const char *name)
@@ -1449,11 +1508,11 @@ static status_t read_response_status_line(http_response response, connection con
 {
     char *s, buf[CCH_STATUSLINE_MAX + 1];
     int status_code;
-    enum http_version version;
 
     if (!read_line(conn, buf, sizeof buf - 1, e))
         return failure;
 
+    enum http_version version;
     /* The string must start with either HTTP/1.0 or HTTP/1.1 SP */
     if (strstr(buf, "HTTP/1.0 ") == buf)
         version = VERSION_10;
@@ -1487,7 +1546,11 @@ static status_t read_response_status_line(http_response response, connection con
         return set_http_error(e, HTTP_400_BAD_REQUEST);
 
     response_set_status(response, status_code);
+#ifndef CHOPPED
     response_set_version(response, version);
+#else
+    (void)version;
+#endif
     return success;
 }
 
@@ -1695,12 +1758,15 @@ void response_dump(http_response r, void *file)
     fprintf(f, "Version: %s\n", version);
     fprintf(f, "Status-Code: %d\n", r->status);
 
+#ifndef CHOPPED
     if (response_flag_isset(r, AGE))
         fprintf(f, "Age: %lu\n", r->age);
+#endif
 
     general_header_dump(r->general_header, f);
     entity_header_dump(r->entity_header, f);
 
+#ifndef CHOPPED
     if (response_flag_isset(r, ACCEPT_RANGES))
         fprintf(f, "Accept-Ranges: %d\n", r->accept_ranges);
 
@@ -1731,4 +1797,5 @@ void response_dump(http_response r, void *file)
         if (!cookie_dump(c, f))
             continue;
     }
+#endif
 }

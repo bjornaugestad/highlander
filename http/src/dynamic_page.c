@@ -12,8 +12,12 @@
 /* Stores info for one dynamic page */
 struct dynamic_page_tag {
     cstring uri;
-    page_attribute attr;
     handlerfn handler;
+
+#ifndef CHOPPED
+    page_attribute attr;
+#endif
+
 };
 
 dynamic_page dynamic_new(const char *uri, handlerfn handler, page_attribute a)
@@ -24,17 +28,21 @@ dynamic_page dynamic_new(const char *uri, handlerfn handler, page_attribute a)
         return NULL;
 
     p->handler = handler;
-    p->attr = NULL;
     if ((p->uri = cstring_dup(uri)) == NULL) {
         free(p);
         return NULL;
     }
 
+#ifndef CHOPPED
+    p->attr = NULL;
     if (a != NULL && (p->attr = attribute_dup(a)) == NULL) {
         cstring_free(p->uri);
         free(p);
         return NULL;
     }
+#else
+    (void)a;
+#endif
 
     return p;
 }
@@ -44,7 +52,9 @@ void dynamic_free(dynamic_page p)
     assert(p != NULL);
 
     if (p != NULL) {
+#ifndef CHOPPED
         attribute_free(p->attr);
+#endif
         cstring_free(p->uri);
         free(p);
     }
@@ -78,6 +88,7 @@ int dynamic_run(dynamic_page p, const http_request req, http_response response)
     return (*p->handler)(req, response);
 }
 
+#ifndef CHOPPED
 status_t dynamic_set_attributes(dynamic_page p, page_attribute a)
 {
     attribute_free(p->attr);
@@ -92,6 +103,7 @@ page_attribute dynamic_get_attributes(dynamic_page p)
     assert(p != NULL);
     return p->attr;
 }
+#endif
 
 #ifdef CHECK_DYNAMIC_PAGE
 

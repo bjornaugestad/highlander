@@ -15,6 +15,10 @@
 #   .build/gcc/{release,debug,san}
 #   .build/clang/{release,debug,tsan,san}
 #
+# UPDATE 20251027: We' building libchopped now: http for tor. Chopped is
+# what we need and without the shit we don't need, which is a lot. We don't quite
+# know which files we can exclude and which files needing -DHIGHLANDER_CHOPPED=1
+# so we start with http_server and go from there.
 
 # Naming of libraries: We have two libs, meta and highlander. They're built in
 # seven ways. Do we want seven names? What do we install? Let's install
@@ -43,6 +47,34 @@ LIBHIGHLANDER_SOURCES=\
 	http/src/http.c http/src/response.c http/src/html_template.c\
 	http/src/http_server.c meta/src/tcp_server.c
 
+# We need a separate output directory since files have same names
+OUTDIR_CHOPPED := $(OUTDIR)/chopped
+LIBCHOPPED_SOURCES=\
+	http/src/parse_time.c http/src/rfc1738.c\
+	http/src/send_status_code.c http/src/highlander.c\
+	http/src/entity_header.c\
+	http/src/parse_http.c \
+	http/src/request.c http/src/dynamic_page.c\
+	http/src/general_header.c \
+	http/src/http.c http/src/response.c\
+	http/src/http_server.c \
+	meta/src/tcp_server.c\
+	meta/src/connection.c\
+	meta/src/meta_membuf.c\
+	meta/src/meta_common.c\
+	meta/src/meta_pool.c\
+	meta/src/meta_process.c\
+	meta/src/meta_misc.c\
+	meta/src/meta_convert.c\
+	meta/src/meta_configfile.c\
+	meta/src/meta_error.c\
+	meta/src/meta_pair.c\
+	meta/src/miscssl.c\
+	meta/src/cstring.c\
+	meta/src/threadpool.c\
+	meta/src/gensocket.c
+
+
 # Test programs for meta. We build them from source and place them in OUTDIR.
 # We need rules per program due to the -DCHECK_foo argument, but we can
 # compile directly from multiple source files to one executable.
@@ -57,16 +89,18 @@ META_TESTS=$(OUTDIR)/array_check $(OUTDIR)/bitset_check $(OUTDIR)/cache_check \
 # What are apps? They're basically demo programs in ~/apps/. They depend on
 # both libraries, but have their own source file, typically main.c. Some
 # apps have more source files.
-APPS=$(OUTDIR)/echoserver $(OUTDIR)/helloworld
+APPS=$(OUTDIR)/echoserver $(OUTDIR)/helloworld $(OUTDIR)/choppedworld
 
-HIGHLANDER_TESTS=$(OUTDIR)/http_server_check $(OUTDIR)/http_client_check
+HIGHLANDER_TESTS=$(OUTDIR)/http_chopped_check $(OUTDIR)/http_server_check $(OUTDIR)/http_client_check
 
 # Start here...
-TARGETS=$(OUTDIR)/libmeta.a $(OUTDIR)/libhighlander.a $(META_TESTS) $(HIGHLANDER_TESTS) $(APPS)
+TARGETS=$(OUTDIR)/libmeta.a $(OUTDIR)/libhighlander.a $(OUTDIR_CHOPPED)/libchopped.a \
+	$(META_TESTS) $(HIGHLANDER_TESTS) $(APPS)
 all: $(TARGETS)
 
 # dependency tracking. Include the .o.d files for this build
 -include $(OUTDIR)/*/*/*.d
+-include $(OUTDIR_CHOPPED)/*/*/*.d
 
 # dependency files for test programs end up in $(OUTDIR) since
 # $(@D) for the executable is $(OUTDIR). We include those too.
@@ -86,6 +120,11 @@ $(OUTDIR)/echoserver: apps/echoserver/main.c $(OUTDIR)/libhighlander.a $(OUTDIR)
 $(OUTDIR)/helloworld: apps/helloworld/main.c $(OUTDIR)/libhighlander.a $(OUTDIR)/libmeta.a
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ -lssl -lcrypto
 
+$(OUTDIR)/choppedworld: apps/helloworld/main.c $(OUTDIR_CHOPPED)/libchopped.a
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ -lssl -lcrypto
+
+$(OUTDIR)/http_chopped_check: meta/src/tcp_server.c $(OUTDIR_CHOPPED)/libchopped.a
+	$(CC) $(CFLAGS) $(LDFLAGS) -DCHECK_TCP_SERVER -o $@ $^ -lssl -lcrypto
 
 $(OUTDIR)/http_server_check: meta/src/tcp_server.c $(HIGHLANDER_COMMON_SRC) $(OUTDIR)/libmeta.a
 	$(CC) $(CFLAGS) $(LDFLAGS) -DCHECK_TCP_SERVER -o $@ $^ -lssl -lcrypto
@@ -147,6 +186,8 @@ $(OUTDIR)/tcp_server_check : meta/src/tcp_server.c meta/src/threadpool.c meta/sr
 # Convert list of source files to list of object files
 LIBMETA_O=$(patsubst %.c, $(OUTDIR)/%.o, $(LIBMETA_SOURCES))
 LIBHIGHLANDER_O=$(patsubst %.c, $(OUTDIR)/%.o, $(LIBHIGHLANDER_SOURCES))
+LIBCHOPPED_O=$(patsubst %.c, $(OUTDIR_CHOPPED)/%.o, $(LIBCHOPPED_SOURCES))
+
 
 # Create output directory if needed
 $(OUTDIR):
@@ -155,6 +196,13 @@ $(OUTDIR):
 $(OUTDIR)/%.o: %.c | $(OUTDIR)
 	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -MMD -MP -MF $(@D)/$(@F).d -c $< -o $@
+
+$(OUTDIR_CHOPPED)/%.o: %.c | $(OUTDIR)
+	@mkdir -p $(@D)
+	$(CC) $(CFLAGS) -DCHOPPED=1 -MMD -MP -MF $(@D)/$(@F).d -c $< -o $@
+
+$(OUTDIR_CHOPPED)/libchopped.a: $(LIBCHOPPED_O)
+	$(AR) rcs $@ $^
 
 $(OUTDIR)/libmeta.a: $(LIBMETA_O)
 	$(AR) rcs $@ $^
@@ -166,4 +214,4 @@ check: $(META_TESTS) $(HIGHLANDER_TESTS)
 	@for i in $^; do echo "running $$i"; $$i; done
 
 clean:
-	rm -f $(LIBMETA_O) $(LIBHIGHLANDER_O) $(TARGETS) # >& /dev/null
+	rm -f $(LIBMETA_O) $(LIBCHOPPED) $(LIBHIGHLANDER_O) $(TARGETS) # >& /dev/null

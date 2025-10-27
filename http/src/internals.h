@@ -108,8 +108,12 @@ const char*	dynamic_get_uri(dynamic_page p);
 
 page_attribute attribute_dup(page_attribute a);
 
+
+#ifndef CHOPPED
 void cookie_free(cookie c);
 static inline void cookie_freev(void *p) { cookie_free(p); }
+
+#endif
 
 time_t parse_rfc822_date(const char *s);
 status_t send_status_code(connection conn, int status_code,
