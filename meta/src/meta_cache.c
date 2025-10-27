@@ -108,7 +108,7 @@ static void cache_entry_freev(void *vp)
  * if cleanup != NULL, call cleanup for each entry and set p->data to NULL
  * else just call free(p->data) in the cache_entry_free() function.
  */
-void cache_free(cache c, dtor cleanup)
+void cache_free(cache c, dtor_t cleanup)
 {
     size_t i;
 

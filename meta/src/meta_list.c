@@ -472,7 +472,7 @@ bool list_last(list_iterator li)
     return 0;
 }
 
-list list_copy(list lst, void*(*copier)(const void*), dtor dtor_fn)
+list list_copy(list lst, void*(*copier)(const void*), dtor_t dtor_fn)
 {
     list node = NULL, new = NULL;
 

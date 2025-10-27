@@ -16,7 +16,6 @@
 extern "C" {
 #endif
 
-/* Declaration of our connection ADT */
 typedef struct connection_tag* connection;
 
 connection connection_new(int socktype, unsigned timeout_reads, unsigned timeout_writes,
@@ -26,9 +25,9 @@ connection connection_new(int socktype, unsigned timeout_reads, unsigned timeout
 
 void connection_free(connection conn);
 static inline void connection_freev(void *p) { connection_free(p); }
+
 socket_t connection_socket(connection conn)
     __attribute__((nonnull, warn_unused_result));
-
 
 void connection_recycle(connection conn)
     __attribute__((nonnull));
@@ -60,13 +59,13 @@ status_t connection_write_big_buffer(connection conn, const void *buf,
 status_t connection_flush(connection conn)
     __attribute__((nonnull, warn_unused_result));
 
-ssize_t  connection_read  (connection conn, void *buf, size_t bufsize)
+ssize_t  connection_read(connection conn, void *buf, size_t bufsize)
     __attribute__((nonnull, warn_unused_result));
 
-status_t connection_getc  (connection conn, char* pchar)
+status_t connection_getc(connection conn, char* pchar)
     __attribute__((nonnull, warn_unused_result));
 
-status_t connection_gets  (connection conn, char *buf, size_t bufsize)
+status_t connection_gets(connection conn, char *buf, size_t bufsize)
     __attribute__((nonnull, warn_unused_result));
 
 status_t connection_ungetc(connection conn, int c)
@@ -91,24 +90,24 @@ int data_on_socket(connection conn)
     __attribute__((nonnull, warn_unused_result));
 
 size_t connection_readbuf_size(connection conn)
-    __attribute__((nonnull, warn_unused_result)); 
+    __attribute__((nonnull, warn_unused_result));
 
 size_t connection_writebuf_size(connection conn)
     __attribute__((nonnull, warn_unused_result));
 
 membuf connection_reclaim_read_buffer(connection conn)
-    __attribute__((nonnull, warn_unused_result)); 
+    __attribute__((nonnull, warn_unused_result));
 
 membuf connection_reclaim_write_buffer(connection conn)
     __attribute__((nonnull, warn_unused_result));
 
 void connection_assign_read_buffer(connection conn, membuf buf)
-    __attribute__((nonnull)); 
+    __attribute__((nonnull));
 
 void connection_assign_write_buffer(connection conn, membuf buf)
-    __attribute__((nonnull)); 
+    __attribute__((nonnull));
 
-int  connection_get_fd(connection conn)
+int connection_get_fd(connection conn)
     __attribute__((nonnull, warn_unused_result));
 
 #ifdef __cplusplus

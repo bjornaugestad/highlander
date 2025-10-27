@@ -541,7 +541,7 @@ void cstring_cut(cstring s, size_t offset, size_t n)
     memmove(&s->data[offset], &s->data[offset + n], s->len - offset);
     s->len -= n;
 }
-    
+
 status_t cstring_replace(cstring s, size_t offset, size_t n, const char *to)
 {
     assert(s != NULL);
@@ -583,7 +583,7 @@ int cstring_findstr(cstring s, const char *str)
 
     assert(s != NULL);
     assert(str != NULL);
-    
+
     if ((p = strstr(s->data, str)) == NULL)
         return -1;
 
@@ -774,7 +774,7 @@ int main(void)
         if (!cstring_equal(dest, s))
             exit(2);
 
-        // cstring insert. 
+        // cstring insert.
         if (!cstring_set(dest, "is the source"))
             exit(1);
 
@@ -785,7 +785,7 @@ int main(void)
             printf("Got: %s\n", c_str(dest));
             exit(2);
         }
-        
+
         cstring_cut(dest, 5, 7);
         if (cstring_compare(dest, "This source") != 0)
             exit(123);

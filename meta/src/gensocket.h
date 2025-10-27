@@ -18,7 +18,6 @@ extern "C" {
 // our generic object. Since the types requires different
 // options, ssl requires certs and shit, we may have to add
 // type-specific functions too.
-//
 #define SOCKTYPE_TCP    1
 #define SOCKTYPE_SSL    2
 
@@ -40,7 +39,7 @@ status_t socket_create_client_socket(socket_t this, void *context, const char *h
     __attribute__((warn_unused_result, nonnull(1,3)));
 
 status_t socket_accept(socket_t listener, socket_t newsock, void *context,
-    struct sockaddr_storage *addr, socklen_t *addrsize) 
+    struct sockaddr_storage *addr, socklen_t *addrsize)
     __attribute__((warn_unused_result, nonnull(1,2,4,5)));
 
 status_t socket_close(socket_t p)

@@ -91,7 +91,7 @@ static inline bool queue_full(threadpool tp)
 //
 // I think there are too many states here and a shared condvar.
 // We have queue_empty, queue_full, queue_closed, and shutting_down.
-// queue_not_full as well. Also, we only broadcast/signal 
+// queue_not_full as well. Also, we only broadcast/signal
 // queue_not_full and queue_empty even if state is different. Hmm.
 // OTOH, we can only cond_wait for one condvar at a time. eventfd FTW?
 static void *threadpool_exec_thread(void *arg)
@@ -253,10 +253,10 @@ status_t threadpool_add_work(threadpool pool,
         return fail(EINVAL);
     }
 
-    // Now add a new entry to the queue. Note that this malloc() can be 
+    // Now add a new entry to the queue. Note that this malloc() can be
     // avoided without performance loss if we make the threadpool less
     // generic. For example, we could add the values to the connection
-    // object and totally avoid the malloc/free cycling of objects. The 
+    // object and totally avoid the malloc/free cycling of objects. The
     // downside is that then the threadpool would only work with connection
     // objects.
     struct work* wp = malloc(sizeof *wp);

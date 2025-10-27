@@ -35,7 +35,7 @@ typedef struct map_iterator_tag {
  * of freeing the value argument. If it is NULL, no memory will
  * be freed.
  */
-map map_new(dtor free_fn) __attribute__((malloc));
+map map_new(dtor_t free_fn) __attribute__((malloc));
 
 /*
  * Deletes a map.

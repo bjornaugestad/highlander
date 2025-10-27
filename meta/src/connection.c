@@ -348,7 +348,7 @@ ssize_t connection_read(connection this, void *buf, size_t count)
     assert(buf != NULL);
 
     // First copy data from the read buffer.
-    // Were all bytes copied from buf? If so, return. 
+    // Were all bytes copied from buf? If so, return.
     ssize_t ncopied = copy_from_readbuf(this, buf, count);
     if (ncopied == (ssize_t)count)
         return ncopied;
@@ -369,7 +369,7 @@ ssize_t connection_read(connection this, void *buf, size_t count)
     }
 
     // If we end up here, we must first fill the read buffer
-    // and then read from it. 
+    // and then read from it.
     if (!fill_read_buffer(this))
         return -1;
 

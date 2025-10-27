@@ -29,7 +29,7 @@ array array_new(size_t nmemb, int can_grow)
     return p;
 }
 
-void array_free(array a, dtor free_fn)
+void array_free(array a, dtor_t free_fn)
 {
     if (a != NULL) {
         if (free_fn) {

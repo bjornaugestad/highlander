@@ -275,7 +275,7 @@ static status_t parse_cookie_attr(
 
     if (!get_cookie_attribute(input, look_for, str, e)) {
         cstring_free(str);
-        return 0;
+        return failure;
     }
 
     set_attr(c, c_str(str));
@@ -352,7 +352,7 @@ static status_t parse_new_cookie_secure(cookie c, const char *value, error e)
 
     if (!get_cookie_attribute(value, "$Secure", str, e)) {
         cstring_free(str);
-        return 0;
+        return failure;
     }
 
     const char *s = c_str(str);
@@ -389,7 +389,7 @@ static status_t parse_new_cookie_version(cookie c, const char *value, error e)
 
     if (!get_cookie_attribute(value, "$Version", str, e)) {
         cstring_free(str);
-        return 0;
+        return failure;
     }
 
 
@@ -480,7 +480,7 @@ status_t parse_old_cookie(http_request req, const char *input, error e)
     if (!request_add_cookie(req, c)) {
         set_os_error(e, errno);
         cookie_free(c);
-        return 0;
+        return failure;
     }
 
     return success;
@@ -514,7 +514,6 @@ status_t cookie_dump(cookie c, void *file)
 
 int main(void)
 {
-    cookie c;
     size_t i, niter = 10000;
     const char *name = "name";
     const char *value = "value";
@@ -526,6 +525,8 @@ int main(void)
     int version = 1;
 
     for (i = 0; i < niter; i++) {
+        cookie c;
+
         if ((c = cookie_new()) == NULL)
             return 77;
 
@@ -550,7 +551,7 @@ int main(void)
         cookie_free(c);
     }
 
-    return 0;
+    return failure;
 }
 
 #endif

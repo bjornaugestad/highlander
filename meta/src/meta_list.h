@@ -49,9 +49,9 @@ list list_new(void)
     __attribute__((warn_unused_result))
     __attribute__((malloc));
 
-void list_free(list lst, dtor free_fn);
+void list_free(list lst, dtor_t free_fn);
 
-list list_copy(list lst, void*(*copier)(const void*), dtor dtor_fn)
+list list_copy(list lst, void*(*copier)(const void*), dtor_t dtor_fn)
     __attribute__((warn_unused_result));
 
 list list_add(list lst, void *data)
@@ -70,7 +70,7 @@ size_t list_size(list lst)
     __attribute__((warn_unused_result))
     __attribute__((nonnull));
 
-list_iterator list_delete(list lst, list_iterator i, dtor dtor_fn)
+list_iterator list_delete(list lst, list_iterator i, dtor_t dtor_fn)
     __attribute__((nonnull(1)));
 
 list_iterator list_remove_node(list lst, list_iterator i)

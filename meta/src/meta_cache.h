@@ -15,7 +15,7 @@ cache cache_new(size_t nelem, size_t hotlist_nelem, size_t cb)
     __attribute__((malloc))
     __attribute__((warn_unused_result));
 
-void cache_free(cache c, dtor cleanup);
+void cache_free(cache c, dtor_t cleanup);
 
 int cache_exists(cache c, size_t id)
     __attribute__((nonnull))

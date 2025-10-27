@@ -109,7 +109,7 @@ tcp_client tcp_client_new(int socktype)
     if ((new->ciphers = cstring_dup(CIPHER_LIST)) == NULL)
         goto memerr;
 
-    if (socktype == SOCKTYPE_SSL 
+    if (socktype == SOCKTYPE_SSL
     && (new->tc_context = create_client_context()) == NULL)
         die("Could not create ssl client context\n");
 

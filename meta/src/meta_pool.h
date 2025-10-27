@@ -20,7 +20,7 @@ pool pool_new(size_t nelem)
     __attribute__((warn_unused_result))
     __attribute__((malloc));
 
-void pool_free(pool p, dtor cleanup);
+void pool_free(pool p, dtor_t cleanup);
 
 status_t pool_add(pool p, void *resource)
     __attribute__((warn_unused_result))

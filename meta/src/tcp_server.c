@@ -224,11 +224,11 @@ void tcp_server_free(tcp_server this)
 //
 // boa@20251022: "current connection"? What's that? We leak here. There is no current
 // connection. What was I thinking 20+ years ago? Let's recap:
-// - queue_size is size of the work queue. 
+// - queue_size is size of the work queue.
 // - nthreads is number of worker threads which read work off the queue.
 //
 // What's the current connection for? An extra for accept in case all others are in use?
-// 
+//
 static status_t _init_connections(tcp_server this)
 {
     size_t count = this->queue_size + this->nthreads + 1;
@@ -446,7 +446,7 @@ static status_t accept_new_connections(tcp_server this)
             return success;
 
         connection conn;
-        if (!tcp_server_get_connection(this, &conn)) 
+        if (!tcp_server_get_connection(this, &conn))
             return failure;
 
         socket_t sock = connection_socket(conn);
@@ -487,7 +487,7 @@ static status_t accept_new_connections(tcp_server this)
         status_t rc = threadpool_add_work(this->queue, assign_rw_buffers, this,
             this->service_func, conn, tcp_server_recycle_connection, this);
 
-        // The queue was full, so we couldn't add the new connection to the 
+        // The queue was full, so we couldn't add the new connection to the
         // queue. We must therefore close the connection and do some cleanup.
         if (!rc) {
             tcp_server_recycle_connection(this, conn);
@@ -548,7 +548,7 @@ static status_t setup_server_ctx(tcp_server this)
     const char *cadir = NULL;
     if (this->cadir != NULL)
         cadir = c_str(this->cadir);
-        
+
     int rc;
     if (cadir != NULL) {
         rc = SSL_CTX_load_verify_locations(this->server_context, NULL, cadir);
@@ -591,7 +591,7 @@ static status_t setup_server_ctx(tcp_server this)
 
     // Verify that private key matches cert
     if (SSL_CTX_check_private_key(this->server_context) != 1) {
-        die("Private key %s does not match with cert %s\n", 
+        die("Private key %s does not match with cert %s\n",
             c_str(this->private_key), c_str(this->cert_chain_file));
     }
 

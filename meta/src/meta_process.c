@@ -79,7 +79,7 @@ process process_new(const char *appname)
     || (new->appname = cstring_dup(appname)) == NULL
     || (new->username = cstring_new()) == NULL)
         goto memerr;
-    
+
     new->nservices = 0;
     atomic_store_explicit(&new->shutting_down, false, memory_order_relaxed);
     return new;
@@ -215,7 +215,7 @@ static status_t write_pid(process this, pid_t pid)
     return success;
 }
 
-// This thread waits for SIGTERM. 
+// This thread waits for SIGTERM.
 static void *shutdown_thread(void *arg)
 {
     sigset_t catch;
@@ -231,7 +231,7 @@ static void *shutdown_thread(void *arg)
     sigemptyset(&catch);
     sigaddset(&catch, SIGTERM);
 
-    // Wait, wait, wait for SIGTERM 
+    // Wait, wait, wait for SIGTERM
     sigwait(&catch, &caught);
     atomic_store_explicit(&proc->shutting_down, true, memory_order_relaxed);
 
@@ -282,7 +282,7 @@ static void *launcher(void *args)
     return (void*)(intptr_t)exitcode;
 }
 
-// Handle the thread creation needed to create a thread 
+// Handle the thread creation needed to create a thread
 // which starts the actual service.
 static status_t start_one_service(struct service *s)
 {
@@ -469,7 +469,7 @@ status_t process_start(process this, int fork_and_close)
 // but we must let them finish before we join the thread. IOW, pthread_join()
 // will be our sync point.
 //
-// Note that shutdown != free. It just means "stop running", 
+// Note that shutdown != free. It just means "stop running",
 // not "free memory and resources."
 status_t process_wait_for_shutdown(process this)
 {
@@ -517,7 +517,7 @@ int process_get_exitcode(process this, void *object)
 
 // 20251007: Time to test this fucker. It's a tricky one, so let's start as
 // simple as we can.
-// 1. Create a dummy object to start and stop. We want to test that 
+// 1. Create a dummy object to start and stop. We want to test that
 //    semantics are fine and that SIGTERM works as expected!
 //
 // 2. Test invariants with usernames and chroot, both successful and broken.
@@ -621,4 +621,3 @@ int main(void)
 }
 
 #endif
-

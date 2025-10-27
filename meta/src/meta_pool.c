@@ -44,7 +44,7 @@ pool pool_new(size_t size)
 }
 
 // Free entries if we have a dtor and the entry is not NULL
-void pool_free(pool this, dtor dtorfn)
+void pool_free(pool this, dtor_t dtorfn)
 {
     if (this == NULL)
         return;
@@ -94,7 +94,7 @@ status_t pool_get(pool this, void **ppres)
     if (error)
         return fail(error);
 
-    // Find a free resource 
+    // Find a free resource
     size_t i, nelem = this->nelem; // avoid race conds and holding mutex for too long
     void *resource = NULL;
     for (i = 0; i < nelem; i++) {

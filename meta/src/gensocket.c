@@ -214,9 +214,9 @@ status_t socket_create_server_socket(socket_t sock, const char *host, uint16_t p
 
 yay:
     status_t status = failure;
-    if (socket_set_reuse_addr(sock) 
-    && socket_bind_inet(sock, ai) 
-    && socket_listen(sock, 100)) 
+    if (socket_set_reuse_addr(sock)
+    && socket_bind_inet(sock, ai)
+    && socket_listen(sock, 100))
         status = success;
 
     freeaddrinfo(res);
@@ -320,7 +320,7 @@ static status_t ssl_create_client_socket(socket_t this, void *context, const cha
 
 // A ctor function. Context iss ssl_ctx. We return status_t and use
 // the memory in socket_t arg to store fd et. al. It's preallocated.
-status_t socket_create_client_socket(socket_t this, void *context, 
+status_t socket_create_client_socket(socket_t this, void *context,
     const char *host, uint16_t port)
 {
     assert(this != NULL);
@@ -350,7 +350,7 @@ static status_t tcp_accept(socket_t listener, socket_t client, struct sockaddr_s
 }
 
 // Accept a new TLS connection, similar to accept().
-static status_t ssl_accept(socket_t listener, socket_t client, void *context, 
+static status_t ssl_accept(socket_t listener, socket_t client, void *context,
     struct sockaddr_storage *addr, socklen_t *addrsize)
 {
     assert(listener != NULL);
@@ -395,7 +395,7 @@ status_t socket_accept(socket_t listener, socket_t newsock, void *context,
 
     if (listener->socktype == SOCKTYPE_TCP)
         return tcp_accept(listener, newsock, addr, addrsize);
-    else 
+    else
         return ssl_accept(listener, newsock, context, addr, addrsize);
 }
 
@@ -456,7 +456,7 @@ status_t socket_close(socket_t p)
         char buf[256];
         while (read(p->fd, buf, sizeof buf) > 0)
             ;
-        
+
 #endif
         rc = close(p->fd) == 0 ? success : failure;
     }
@@ -679,4 +679,3 @@ status_t socket_set_reuse_addr(socket_t this)
 
     return success;
 }
-

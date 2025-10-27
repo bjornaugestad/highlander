@@ -29,7 +29,7 @@ array array_new(size_t nmemb, int can_grow)
     __attribute__((warn_unused_result))
     __attribute__((malloc));
 
-void array_free(array a, dtor cln);
+void array_free(array a, dtor_t cln);
 
 status_t array_extend(array a, size_t nmemb)
     __attribute__((warn_unused_result))

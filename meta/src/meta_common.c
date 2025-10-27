@@ -114,4 +114,3 @@ status_t fail(int cause)
     errno = cause;
     return failure;
 }
-

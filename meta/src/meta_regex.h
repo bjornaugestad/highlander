@@ -23,7 +23,7 @@ status_t regex_comp(regex p, const char *expr)
 // and "foobar" will both match "xxfoobarxx", but the first
 // expression will return 3, whereas the second will return 1.
 // The reason for this is that each () is a submatch in
-// extended POSIX regexp. The first has two, so regexec() 
+// extended POSIX regexp. The first has two, so regexec()
 // returns 3 values, the whole and the two subexpressions.
 int regex_exec(regex p, const char *haystack)
     __attribute__((nonnull))

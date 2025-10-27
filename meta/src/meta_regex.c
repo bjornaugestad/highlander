@@ -138,7 +138,7 @@ int main(void)
         const char *re;
         const char *haystack;
 
-        // We expect a compilation result (most times 0), and an 
+        // We expect a compilation result (most times 0), and an
         // execution result. The latter varies with the expression.
         status_t compres;
         int expected;
@@ -177,7 +177,7 @@ int main(void)
 
         if (regex_comp(p, tests[i].re) != tests[i].compres) {
             regex_error(p, errbuf, sizeof errbuf);
-            fprintf(stderr, "Failed to compile %s. Error: %s\n", 
+            fprintf(stderr, "Failed to compile %s. Error: %s\n",
                 tests[i].re, errbuf);
             retcode = 77;
             continue;
@@ -207,7 +207,7 @@ int main(void)
                 fprintf(stderr, "Failed to retrieve result for test %zu, elem %d\n", i, j);
                 retcode = 77;
             }
-                
+
             memcpy(buf, &tests[i].haystack[so], eo - so);
             if (tests[i].matches[j] != NULL && strcmp(tests[i].matches[j], buf) != 0) {
                 fprintf(stderr, "test %zu: buf(%d): expected %s, got %s\n",

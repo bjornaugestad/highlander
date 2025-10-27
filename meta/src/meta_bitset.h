@@ -21,7 +21,7 @@ typedef struct bitset_tag* bitset;
 
 // Implementation of the bitset ADT.
 // The bits are stored in an array of unsigned char
-// TODO: Consider using bigger units, e.g. uint64_t for 
+// TODO: Consider using bigger units, e.g. uint64_t for
 // much faster processing. We store bitcount, so it should be
 // easy to use a bigger unit.
 struct bitset_tag {
@@ -142,14 +142,14 @@ size_t bitset_bitcount(bitset this)
     return this->bitcount;
 }
 
-static inline __attribute__((nonnull, warn_unused_result)) 
+static inline __attribute__((nonnull, warn_unused_result))
 void *bitset_data(bitset this)
 {
     assert(this != NULL);
     return this->data;
 }
 
-static inline __attribute__((nonnull)) 
+static inline __attribute__((nonnull))
 void bitset_clear(bitset this, size_t i)
 {
     assert(this != NULL);

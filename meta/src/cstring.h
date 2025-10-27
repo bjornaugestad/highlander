@@ -217,7 +217,7 @@ void cstring_upper(cstring s) __attribute__((nonnull));
  * intention is to combine cstring with meta_regex to do regular expression
  * search and replace. */
 
-// Insert src in dest at offset. 
+// Insert src in dest at offset.
 status_t cstring_insert(cstring dest, size_t offset, const char *src)
     __attribute__((nonnull))
     __attribute__((warn_unused_result));
