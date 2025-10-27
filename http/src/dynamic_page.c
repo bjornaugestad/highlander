@@ -12,7 +12,7 @@
 /* Stores info for one dynamic page */
 struct dynamic_page_tag {
     cstring uri;
-    handlerfn handler;
+    int (*handlerfn)(http_request, http_response);
 
 #ifndef CHOPPED
     page_attribute attr;
@@ -20,14 +20,14 @@ struct dynamic_page_tag {
 
 };
 
-dynamic_page dynamic_new(const char *uri, handlerfn handler, page_attribute a)
+dynamic_page dynamic_new(const char *uri, int (*handlerfn)(http_request, http_response), page_attribute a)
 {
     dynamic_page p;
 
     if ((p = malloc(sizeof *p)) == NULL)
         return NULL;
 
-    p->handler = handler;
+    p->handlerfn = handlerfn;
     if ((p->uri = cstring_dup(uri)) == NULL) {
         free(p);
         return NULL;
@@ -74,18 +74,18 @@ status_t dynamic_set_uri(dynamic_page p, const char *value)
     return cstring_set(p->uri, value);
 }
 
-void dynamic_set_handler(dynamic_page p, handlerfn func)
+void dynamic_set_handler(dynamic_page p, int (*handlerfn)(http_request, http_response))
 {
     assert(p != NULL);
-    assert(func != NULL);
-    p->handler = func;
+    assert(handlerfn != NULL);
+    p->handlerfn = handlerfn;
 }
 
 int dynamic_run(dynamic_page p, const http_request req, http_response response)
 {
     assert(p != NULL);
 
-    return (*p->handler)(req, response);
+    return (*p->handlerfn)(req, response);
 }
 
 #ifndef CHOPPED

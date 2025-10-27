@@ -13,7 +13,6 @@ extern "C" {
 #endif
 
 typedef struct http_server_tag *http_server;
-typedef int (*handlerfn)(http_request, http_response);
 
 http_server http_server_new(int socktype) __attribute__((warn_unused_result));
 void http_server_free(http_server s);
@@ -48,7 +47,7 @@ int http_server_shutting_down(http_server s)
 status_t http_server_shutdown(http_server s)
     __attribute__((nonnull, warn_unused_result));
 
-status_t http_server_add_page(http_server s, const char *uri, handlerfn pf, page_attribute attr)
+status_t http_server_add_page(http_server s, const char *uri, int (*pfn)(http_request, http_response), page_attribute attr)
     __attribute__((nonnull(1,2,3)))
     __attribute__((warn_unused_result));
 
@@ -70,7 +69,7 @@ size_t http_server_get_post_limit(http_server s)
 const char* http_server_get_documentroot(http_server s)
     __attribute__((nonnull, warn_unused_result));
 
-void http_server_set_default_page_handler(http_server s, handlerfn pf)
+void http_server_set_default_page_handler(http_server s, int (*pfn)(http_request, http_response))
     __attribute__((nonnull));
 
 status_t http_server_set_default_page_attributes(http_server s, page_attribute a)

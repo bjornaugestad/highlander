@@ -13,9 +13,6 @@
 #include <meta_common.h>
 
 #include <http_server.h>
-#if 0
-#include <highlander.h>
-#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -63,21 +60,9 @@ status_t get_field_value(const char *buf, char *value, size_t cchValueMax)
     __attribute__((nonnull, warn_unused_result));
 
 
-dynamic_page dynamic_new(const char *uri, handlerfn f, page_attribute a);
-void dynamic_free(dynamic_page p);
-void dynamic_set_handler(dynamic_page p, handlerfn func);
-status_t dynamic_set_uri(dynamic_page p, const char *value)
-    __attribute__((nonnull, warn_unused_result));
-int dynamic_run(dynamic_page p, const http_request, http_response);
-status_t dynamic_set_attributes(dynamic_page p, page_attribute a)
-    __attribute__((nonnull, warn_unused_result));
-page_attribute dynamic_get_attributes(dynamic_page p);
-const char*	dynamic_get_uri(dynamic_page p);
-
 
 #ifndef CHOPPED
 
-/* Function prototypes for handler functions */
 status_t parse_cookie(http_request r, const char *s, error e)
     __attribute__((nonnull, warn_unused_result));
 

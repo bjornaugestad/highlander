@@ -1614,52 +1614,6 @@ static status_t read_posted_content(size_t max_post_content,
     return success;
 }
 
-status_t get_field_name(const char *src, char *dest, size_t destsize)
-{
-    assert(src != NULL);
-    assert(dest != NULL);
-    assert(destsize > 0);
-
-    const char *s = strchr(src, ':');
-    if (s == NULL)
-        return failure;
-
-    size_t span = (size_t)(s - src);
-    if (span + 1 >= destsize)
-        return failure;
-
-    memcpy(dest, src, span);
-    dest[span] = '\0';
-    return success;
-}
-
-/*
- * See get_field_name() for more info.
- */
-status_t get_field_value(const char *src, char *dest, size_t destsize)
-{
-    assert(src != NULL);
-    assert(dest != NULL);
-    assert(destsize > 0);
-
-    /* Locate separator as in name: value */
-    const char *s = strchr(src, ':');
-    if (s == NULL)
-        return failure;
-
-    /* Skip : and any spaces after separator */
-    s++;
-    while (isspace((int)*s))
-        s++;
-
-    size_t len = strlen(s);
-    if (len >= destsize)
-        return failure;
-
-    memcpy(dest, s, len + 1);
-    return success;
-}
-
 /*
  * Input is normally "name: value"
  * as in Host: www.veryfast.com
@@ -2110,3 +2064,4 @@ int request_get_defered_read(http_request req)
     assert(req != NULL);
     return req->defered_read;
 }
+

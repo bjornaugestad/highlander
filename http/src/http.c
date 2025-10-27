@@ -58,3 +58,4 @@ status_t read_line(connection conn, char *dest, size_t destsize, error e)
     /* The buffer provided was too small. */
     return set_app_error(e, ENOSPC);
 }
+
