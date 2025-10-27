@@ -2,6 +2,8 @@
 #define HTTP_REQUEST_H
 
 #include <stddef.h>
+#include <meta_common.h>
+#include <meta_error.h>
 
 #include <general_header.h>
 #include <entity_header.h>
@@ -14,6 +16,7 @@ extern "C" {
 
 typedef struct http_request_tag *http_request;
 
+status_t parse_cookie(http_request req, const char *value, error e);
 const char* request_get_uri(http_request request)
     __attribute__((nonnull, warn_unused_result));
 

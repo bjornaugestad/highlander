@@ -5,7 +5,9 @@
 
 #include <stdlib.h>
 
-#include "internals.h"
+#include <cstring.h>
+
+#include <page_attribute.h>
 
 struct page_attribute_tag {
     cstring media_type;
@@ -81,8 +83,7 @@ status_t attribute_set_charset(page_attribute a, const char *value)
 
 status_t attribute_set_authorization(page_attribute a, const char *value)
 {
-    UNUSED(a);
-    UNUSED(value);
+    (void)a; (void)value;
     return success;
 }
 

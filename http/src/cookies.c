@@ -9,9 +9,13 @@
 #include <errno.h>
 #include <assert.h>
 
-#include "internals.h"
 #include <meta_convert.h>
+#include <meta_error.h>
+#include <cstring.h>
+
 #include <highlander.h>
+#include <http_cookie.h>
+#include <http_request.h>
 
 struct cookie_tag {
     cstring name;
@@ -236,32 +240,6 @@ static status_t get_cookie_attribute(
  *	   so that we can switch the support for illegal cookie tags on and off.
  *	   To summarize; we now support "Cookie: \r\n".
  */
-status_t parse_cookie(http_request req, const char *value, error e)
-{
-    /* Locate version */
-    char *s;
-
-#define SUPPORT_EMPTY_COOKIES 1
-#ifdef SUPPORT_EMPTY_COOKIES
-    if (strcmp(value, "") == 0) {
-        return success;
-    }
-#endif
-
-    if ((s = strstr(value, "$Version")) != NULL)
-        return parse_new_cookie(req, value, e);
-    else
-        return parse_old_cookie(req, value, e);
-}
-
-static const char *find_first_non_space(const char *s)
-{
-    while (*s != '\0' && (*s == ' ' || *s == '\t'))
-        s++;
-
-    return s;
-}
-
 static status_t parse_cookie_attr(
     cookie c,
     const char *input,
@@ -282,6 +260,50 @@ static status_t parse_cookie_attr(
     set_attr(c, c_str(str));
     cstring_free(str);
     return success;
+}
+
+static status_t parse_new_cookie_domain(cookie c, const char *value, error e)
+{
+    return parse_cookie_attr(c, value, "$Domain", cookie_set_domain, e);
+}
+
+static status_t parse_new_cookie_path(cookie c, const char *value, error e)
+{
+    return parse_cookie_attr(c, value, "$Path", cookie_set_path, e);
+}
+
+static status_t parse_new_cookie_version(cookie c, const char *value, error e)
+{
+    int version;
+    cstring str;
+
+    if ((str = cstring_new()) == NULL)
+        return set_os_error(e, ENOMEM);
+
+    if (!get_cookie_attribute(value, "$Version", str, e)) {
+        cstring_free(str);
+        return failure;
+    }
+
+
+    const char *s = c_str(str);
+    if (!isint(s) || !toint(s, &version))
+        return set_http_error(e, HTTP_400_BAD_REQUEST);
+    cstring_free(str);
+
+    if (version != 1)
+        return set_http_error(e, HTTP_400_BAD_REQUEST);
+
+    cookie_set_version(c, version);
+    return success;
+}
+
+static const char *find_first_non_space(const char *s)
+{
+    while (*s != '\0' && (*s == ' ' || *s == '\t'))
+        s++;
+
+    return s;
 }
 
 /*
@@ -370,43 +392,7 @@ static status_t parse_new_cookie_secure(cookie c, const char *value, error e)
     return success;
 }
 
-static status_t parse_new_cookie_domain(cookie c, const char *value, error e)
-{
-    return parse_cookie_attr(c, value, "$Domain", cookie_set_domain, e);
-}
-
-static status_t parse_new_cookie_path(cookie c, const char *value, error e)
-{
-    return parse_cookie_attr(c, value, "$Path", cookie_set_path, e);
-}
-
-static status_t parse_new_cookie_version(cookie c, const char *value, error e)
-{
-    int version;
-    cstring str;
-
-    if ((str = cstring_new()) == NULL)
-        return set_os_error(e, ENOMEM);
-
-    if (!get_cookie_attribute(value, "$Version", str, e)) {
-        cstring_free(str);
-        return failure;
-    }
-
-
-    const char *s = c_str(str);
-    if (!isint(s) || !toint(s, &version))
-        return set_http_error(e, HTTP_400_BAD_REQUEST);
-    cstring_free(str);
-
-    if (version != 1)
-        return set_http_error(e, HTTP_400_BAD_REQUEST);
-
-    cookie_set_version(c, version);
-    return success;
-}
-
-status_t parse_new_cookie(http_request req, const char *value, error e)
+static status_t parse_new_cookie(http_request req, const char *value, error e)
 {
     cookie c;
 
@@ -444,7 +430,7 @@ status_t parse_new_cookie(http_request req, const char *value, error e)
  * The old cookie format is (hopefully) name=value
  * where value may be quoted.
  */
-status_t parse_old_cookie(http_request req, const char *input, error e)
+static status_t parse_old_cookie(http_request req, const char *input, error e)
 {
     cookie c = NULL;
     cstring name = NULL, value = NULL;
@@ -491,6 +477,24 @@ memerr:
     cstring_free(value);
     cookie_free(c);
     return set_os_error(e, ENOMEM);
+}
+
+status_t parse_cookie(http_request req, const char *value, error e)
+{
+    /* Locate version */
+    char *s;
+
+#define SUPPORT_EMPTY_COOKIES 1
+#ifdef SUPPORT_EMPTY_COOKIES
+    if (strcmp(value, "") == 0) {
+        return success;
+    }
+#endif
+
+    if ((s = strstr(value, "$Version")) != NULL)
+        return parse_new_cookie(req, value, e);
+    else
+        return parse_old_cookie(req, value, e);
 }
 
 status_t cookie_dump(cookie c, void *file)

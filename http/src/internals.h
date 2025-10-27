@@ -60,21 +60,6 @@ status_t get_field_value(const char *buf, char *value, size_t cchValueMax)
     __attribute__((nonnull, warn_unused_result));
 
 
-
-#ifndef CHOPPED
-
-status_t parse_cookie(http_request r, const char *s, error e)
-    __attribute__((nonnull, warn_unused_result));
-
-status_t parse_new_cookie(http_request r, const char *s, error e)
-    __attribute__((nonnull, warn_unused_result));
-
-status_t parse_old_cookie(http_request r, const char *s, error e)
-    __attribute__((nonnull, warn_unused_result));
-
-
-#endif
-
 time_t parse_rfc822_date(const char *s);
 status_t send_status_code(connection conn, int status_code,
     int version) __attribute__((nonnull, warn_unused_result));

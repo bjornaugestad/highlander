@@ -3,7 +3,6 @@
  * All Rights Reserved. See COPYING for license details
  */
 
-
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -78,11 +77,7 @@ static status_t send_disk_file(
     http_response response,
     error e)
 {
-    size_t i;
     const char *uri, *docroot;
-    char filename[CCH_URI_MAX + DOCUMENTROOT_MAX + 2];
-    struct stat st;
-    const char *content_type;
 
     assert(srv != NULL);
     assert(conn != NULL);
@@ -102,7 +97,7 @@ static status_t send_disk_file(
     if ((docroot = http_server_get_documentroot(srv)) == NULL)
         return set_http_error(e, HTTP_400_BAD_REQUEST);
 
-    i = strlen(docroot);
+    size_t i = strlen(docroot);
     if (i < 1
     || (i == 1 && *docroot != '/')
     || (i == 2 && strcmp(docroot, "./") != 0)
@@ -111,6 +106,8 @@ static status_t send_disk_file(
         return set_http_error(e, HTTP_400_BAD_REQUEST);
 
     /* We need space for the absolute path */
+    char filename[CCH_URI_MAX + DOCUMENTROOT_MAX + 2];
+
     i += strlen(uri) + 2; /* 2 is one for slash and one for \0 */
     if (i >= sizeof filename)
         return set_http_error(e, HTTP_400_BAD_REQUEST);
@@ -120,6 +117,7 @@ static status_t send_disk_file(
     strcat(filename, uri);
 
     /* Does the file exist? */
+    struct stat st;
     if (stat(filename, &st))
         return set_http_error(e, HTTP_404_NOT_FOUND);
 
@@ -149,7 +147,7 @@ static status_t send_disk_file(
     }
 #endif
 
-    content_type = get_mime_type(filename);
+    const char *content_type = get_mime_type(filename);
 
     /* This function does not actually send the file, just stats it
      * and stores the path. The contents will be sent later when
@@ -196,47 +194,6 @@ status_t handle_dynamic(http_server srv, dynamic_page p,
     return success;
 }
 
-/* uri params are separated by =, so if there are any = in the string,
- * we have more params */
-
-#if 0
-/*
- * Call this function if the request ended in some kind of HTTP error.
- * Typical errors are 404 not found, 400 bad request.
- * Do not call it for other errors.
- *
- * The function sends the proper HTTP headers back to the client
- * if possible. It also logs the error to the servers log file.
- */
-static void handle_http_error(
-    http_server srv,
-    connection conn,
-    http_request req,
-    int error)
-{
-    http_version v;
-    assert(http_status_code(error));
-
-    v = request_get_version(req);
-    send_status_code(conn, error, v);
-    http_server_add_logentry(srv, conn, req, error, 0);
-}
-
-static int semantic_error(http_request request)
-{
-    /*
-     * Now for some semantic stuff.
-     * a) rfc2616 requires that all 1.1 messages includes a Host:
-     * and that servers MUST respond with 400 if Host: is missing.
-     */
-    http_version v = request_get_version(request);
-    if (v == VERSION_11 && request_get_host(request) == NULL)
-        return 1;
-
-    /* OK */
-    return 0;
-}
-#endif
 
 // boa@20251017: Weird semantics. We return failure without setting e.
 static status_t serviceConnection2(http_server srv, connection conn,

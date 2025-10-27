@@ -7,7 +7,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "internals.h"
+#include <cstring.h>
+#include <dynamic_page.h>
 
 /* Stores info for one dynamic page */
 struct dynamic_page_tag {

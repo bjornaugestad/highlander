@@ -1,6 +1,8 @@
 #ifndef PAGE_ATTRIBUTE_H
 #define PAGE_ATTRIBUTE_H
 
+#include <meta_common.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
