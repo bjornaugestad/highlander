@@ -6,6 +6,8 @@
 # Notes:
 # - gcc does not like -Wnull-reference. Either that or I have a bug in membuf. clang is silent.
 # - -Wunreachable-code is nonsense to use as it doesn't get that "if (1)" is intentional.
+#
+#.PHONY: all gcc clang debug gcc_debug clang_debug san clang_san gcc_san clang_tsan
 
 actual=makefile.actual
 

@@ -1,6 +1,12 @@
 #ifndef ENTITY_HEADER_H
 #define ENTITY_HEADER_H
 
+#include <time.h>
+
+#include <meta_common.h>
+#include <meta_error.h>
+#include <connection.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

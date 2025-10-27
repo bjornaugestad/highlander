@@ -20,6 +20,7 @@
 #include <meta_list.h>
 #include <meta_misc.h>
 #include <meta_convert.h>
+#include <cstring.h>
 
 #include "internals.h"
 #include <highlander.h>
@@ -165,23 +166,26 @@ void response_set_version(http_response r, http_version v)
 http_response response_new(void)
 {
     http_response p;
-    cstring strings[8];
-    size_t nstrings = sizeof strings / sizeof *strings;
 
-    if ((p = calloc(1, sizeof *p)) == NULL || !cstring_multinew(strings, nstrings)) {
-        free(p);
+    if ((p = calloc(1, sizeof *p)) == NULL)
         return NULL;
-    }
 
     if ((p->general_header = general_header_new()) == NULL
     ||	(p->entity_header = entity_header_new()) == NULL) {
         general_header_free(p->general_header);
-        cstring_multifree(strings, nstrings);
         free(p);
         return NULL;
     }
 
 #ifndef CHOPPED
+    cstring strings[8];
+    size_t nstrings = sizeof strings / sizeof *strings;
+
+    if (!cstring_multinew(strings, nstrings)) {
+        free(p);
+        return NULL;
+    }
+
     if ((p->cookies = list_new()) == NULL) {
         general_header_free(p->general_header);
         entity_header_free(p->entity_header);
@@ -200,8 +204,8 @@ http_response response_new(void)
     p->entity = strings[6];
     p->path = strings[7];
 #else
-    p->server = strings[3];
-    p->entity = strings[6];
+    p->server = cstring_new();
+    p->entity = cstring_new();
 #endif
 
     p->version = VERSION_UNKNOWN;
@@ -227,16 +231,6 @@ void response_set_status(http_response r, int status)
     r->status = status;
 }
 
-#ifndef CHOPPED
-void response_set_age(http_response r, unsigned long age)
-{
-    assert(r != NULL);
-    r->age = age;
-    response_set_flag(r, AGE);
-}
-
-#endif
-
 int response_get_status(http_response r)
 {
     assert(r != NULL);
@@ -245,6 +239,13 @@ int response_get_status(http_response r)
 }
 
 #ifndef CHOPPED
+void response_set_age(http_response r, unsigned long age)
+{
+    assert(r != NULL);
+    r->age = age;
+    response_set_flag(r, AGE);
+}
+
 static status_t send_age(connection c, http_response p)
 {
     return http_send_ulong(c, "Age: ", p->age);
@@ -569,6 +570,9 @@ void response_free(http_response p)
         general_header_free(p->general_header);
         entity_header_free(p->entity_header);
 
+        cstring_free(p->server);
+        cstring_free(p->entity);
+
 #ifndef CHOPPED
         /* Free cookies */
         list_free(p->cookies, (void(*)(void*))cookie_free);
@@ -576,10 +580,8 @@ void response_free(http_response p)
         cstring_free(p->etag);
         cstring_free(p->location);
         cstring_free(p->proxy_authenticate);
-        cstring_free(p->server);
         cstring_free(p->vary);
         cstring_free(p->www_authenticate);
-        cstring_free(p->entity);
         cstring_free(p->path);
 #endif
 

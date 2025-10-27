@@ -153,11 +153,14 @@ void request_free(http_request p)
     }
 
     cstring_free(p->host);
+    cstring_free(p->uri);
+
     general_header_free(p->general_header);
     entity_header_free(p->entity_header);
 
     if (p->entity_buf != NULL)
         free(p->entity_buf);
+
 
 #ifndef CHOPPED
     if (p->cookies != NULL) {
@@ -165,7 +168,6 @@ void request_free(http_request p)
         p->cookies = NULL;
     }
 
-    cstring_free(p->uri);
     cstring_free(p->accept);
     cstring_free(p->accept_charset);
     cstring_free(p->accept_encoding);
@@ -659,11 +661,11 @@ http_request request_new(void)
     p->method = METHOD_UNKNOWN;
     p->entity_buf = NULL;
 
+#ifndef CHOPPED
     cstring arr[18];
     if (!cstring_multinew(arr, sizeof arr / sizeof *arr))
         goto err;
 
-#ifndef CHOPPED
     p->uri = arr[0];
     p->accept = arr[1];
     p->accept_charset = arr[2];
@@ -683,8 +685,8 @@ http_request request_new(void)
     p->if_none_match = arr[16];
     p->if_range = arr[17];
 #else
-    p->uri = arr[0];
-    p->host = arr[14];
+    p->uri = cstring_new();
+    p->host = cstring_new();
 #endif
 
     return p;

@@ -7,7 +7,10 @@
 #include <string.h>
 
 #include <meta_common.h>
+#include <meta_error.h>
+#include <connection.h>
 
+#include <http_request.h>
 #include "internals.h"
 
 /* Ungrouped handlers */
@@ -16,7 +19,7 @@ static status_t parse_connection(connection conn, const char *value, error e)
     assert(conn != NULL);
     assert(value != NULL);
     assert(value != NULL);
-    UNUSED(e);
+    (void)e;
 
     if (strstr(value, "keep-alive"))
         connection_set_persistent(conn, 1);
@@ -84,8 +87,6 @@ status_t parse_request_headerfield(connection conn, const char *name,
 status_t parse_response_headerfield(const char *name, const char *value,
     http_response req, error e)
 {
-    int idx;
-
     assert(name != NULL);
     assert(value != NULL);
     assert(req != NULL);
@@ -95,6 +96,7 @@ status_t parse_response_headerfield(const char *name, const char *value,
     general_header gh = response_get_general_header(req);
 
     /* Is it a general header field? */
+    int idx;
     if ((idx = find_general_header(name)) != -1)
         return parse_general_header(idx, gh, value, e);
 

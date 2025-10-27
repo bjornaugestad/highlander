@@ -10,9 +10,11 @@
 
 #include <meta_misc.h>
 #include <meta_convert.h>
+#include <cstring.h>
 
 #include <highlander.h>
 #include <internals.h>
+#include <entity_header.h>
 
 typedef unsigned long flagtype;
 

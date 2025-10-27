@@ -9,6 +9,9 @@
 #include <string.h>
 #include <assert.h>
 
+#include <meta_common.h>
+#include <connection.h>
+
 #include "internals.h"
 #include <highlander.h>
 
@@ -17,7 +20,7 @@ typedef struct http_status_struct {
     const char *text;
  } http_status;
 
-static http_status m_http_status10[] = {
+static const http_status m_http_status10[] = {
      { 200, "HTTP/1.0 200 OK\r\n" },
      { 201, "HTTP/1.0 201 Created\r\n" },
      { 202, "HTTP/1.0 202 Accepted\r\n" },
@@ -37,7 +40,7 @@ static http_status m_http_status10[] = {
      { 503, "HTTP/1.0 503 Service Unavailable\r\n" },
  };
 
-static http_status m_http_status11[] = {
+static const http_status m_http_status11[] = {
     { 100, "HTTP/1.1 100 Continue\r\n" },
     { 101, "HTTP/1.1 101 Switching Protocols\r\n" },
     { 200, "HTTP/1.1 200 OK\r\n" },
@@ -82,8 +85,8 @@ static http_status m_http_status11[] = {
 
 status_t send_status_code(connection conn, int status_code, int version)
 {
-    size_t i, cb, n;
-    http_status* pstatus;
+    size_t n;
+    const http_status* pstatus;
 
     assert(conn != NULL);
 
@@ -96,9 +99,9 @@ status_t send_status_code(connection conn, int status_code, int version)
         n = sizeof m_http_status11 / sizeof *m_http_status11;
     }
 
-    for (i = 0; i < n; i++) {
+    for (size_t i = 0; i < n; i++) {
         if (pstatus[i].code == status_code) {
-            cb = strlen(pstatus[i].text);
+            size_t cb = strlen(pstatus[i].text);
             return connection_write(conn, pstatus[i].text, cb);
         }
     }
