@@ -6,6 +6,8 @@
 #ifndef HIGHLANDER_H
 #define HIGHLANDER_H
 
+#include <http_server.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -66,6 +68,9 @@ enum _http_version {VERSION_UNKNOWN, VERSION_09, VERSION_10, VERSION_11};
 typedef int http_version;
 
 void *serviceConnection(void *psa);
+status_t handle_dynamic(http_server srv, dynamic_page p,
+    http_request req, http_response response, error e) __attribute__((nonnull, warn_unused_result));
+
 
 #ifdef __cplusplus
 }

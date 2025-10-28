@@ -146,6 +146,12 @@ static status_t send_disk_file(http_server srv, http_request req,
     return success;
 }
 
+static inline bool is_http_status_code(int iserror)
+{
+    return iserror >= HTTP_STATUS_MIN && iserror <= HTTP_STATUS_MAX;
+}
+
+
 /* Call the callback function for the page */
 status_t handle_dynamic(http_server srv, dynamic_page p,
     http_request req, http_response response, error e)
@@ -309,11 +315,11 @@ void* serviceConnection(void* psa)
 {
     assert(psa != NULL);
 
-    connection conn = psa;
     error e = error_new(); // We alloc in inner loop. TODO: Avoid that.
     if (e == NULL)
         return NULL;
 
+    connection conn = psa;
     http_server srv = connection_arg2(conn);
     http_request request = http_server_get_request(srv);
     request_set_defered_read(request, http_server_get_defered_read(srv));
@@ -330,10 +336,5 @@ void* serviceConnection(void* psa)
 
     error_free(e);
     return ok;
-}
-
-bool is_http_status_code(int iserror)
-{
-    return iserror >= HTTP_STATUS_MIN && iserror <= HTTP_STATUS_MAX;
 }
 

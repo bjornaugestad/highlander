@@ -1720,3 +1720,33 @@ void response_dump(http_response r, void *file)
     }
 #endif
 }
+
+
+status_t parse_response_headerfield(const char *name, const char *value,
+    http_response response, error e)
+{
+    assert(name != NULL);
+    assert(value != NULL);
+    assert(response != NULL);
+    assert(e != NULL);
+
+    entity_header eh = response_get_entity_header(response);
+    general_header gh = response_get_general_header(response);
+
+    /* Is it a general header field? */
+    int idx;
+    if ((idx = find_general_header(name)) != -1)
+        return parse_general_header(idx, gh, value, e);
+
+    /* Is it an entity header field? */
+    if ((idx = find_entity_header(name)) != -1)
+        return parse_entity_header(idx, eh, value, e);
+
+    if ((idx = find_response_header(name)) != -1)
+        return parse_response_header(idx, response, value, e);
+
+    // We have an unknown fieldname if we reach this point
+    // Silently ignore the unknown field
+    return success;
+}
+

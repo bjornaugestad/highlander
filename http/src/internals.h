@@ -13,7 +13,8 @@
 #include <meta_error.h>
 #include <meta_common.h>
 
-#include <http_server.h>
+#include <http_request.h>
+#include <http_response.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,19 +38,25 @@ extern "C" {
 
 status_t http_send_field(connection conn, const char *name, cstring value)
     __attribute__((nonnull, warn_unused_result));
+
 status_t http_send_date(connection conn, const char *name, time_t value)
     __attribute__((nonnull, warn_unused_result));
+
 status_t http_send_ulong(connection conn, const char *name, unsigned long value)
     __attribute__((nonnull, warn_unused_result));
+
 status_t http_send_int(connection conn, const char *name, int value)
     __attribute__((nonnull, warn_unused_result));
+
 status_t http_send_unsigned_int(connection conn, const char *name, unsigned int value)
     __attribute__((nonnull, warn_unused_result));
+
 status_t http_send_string(connection conn, const char *s)
     __attribute__((nonnull, warn_unused_result));
 
 status_t read_line(connection conn, char *buf, size_t cchMax, error e)
     __attribute__((nonnull, warn_unused_result));
+
 /*
  * A field name, in HTTP, is everything to the left of : in
  * header fields like "name: value". We copy the name part here.
@@ -64,17 +71,6 @@ time_t parse_rfc822_date(const char *s);
 status_t send_status_code(connection conn, int status_code,
     int version) __attribute__((nonnull, warn_unused_result));
 
-bool is_http_status_code(int error);
-
-
-status_t handle_dynamic(http_server srv, dynamic_page p,
-    http_request req, http_response response, error e) __attribute__((nonnull, warn_unused_result));
-
-status_t parse_request_headerfield(connection conn, const char *fieldname,
-    const char *value, http_request req, error e) __attribute__((nonnull, warn_unused_result));
-
-status_t parse_response_headerfield(const char *name, const char *value,
-    http_response req, error e) __attribute__((nonnull, warn_unused_result));
 
 int find_request_header(const char *name);
 status_t parse_request_header(int idx, http_request req, const char *value, error e) __attribute__((nonnull, warn_unused_result));

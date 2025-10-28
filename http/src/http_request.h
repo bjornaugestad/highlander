@@ -229,6 +229,10 @@ status_t request_receive(http_request r, connection c, size_t max_posted_content
     __attribute__((nonnull(1, 2)))
     __attribute__((warn_unused_result));
 
+status_t parse_request_headerfield(connection conn, const char *fieldname,
+    const char *value, http_request req, error e) 
+    __attribute__((nonnull, warn_unused_result));
+
 
 general_header request_get_general_header(http_request r) __attribute__((nonnull, warn_unused_result));
 entity_header request_get_entity_header(http_request r) __attribute__((nonnull, warn_unused_result));

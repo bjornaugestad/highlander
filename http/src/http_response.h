@@ -192,6 +192,10 @@ status_t response_h8(http_response response, const char *s) __attribute__((nonnu
 status_t response_h9(http_response response, const char *s) __attribute__((nonnull, warn_unused_result)); 
 status_t response_td(http_response response, const char *text) __attribute__((nonnull, warn_unused_result)); 
 
+status_t parse_response_headerfield(const char *name, const char *value,
+    http_response response, error e)
+    __attribute__((nonnull))
+    __attribute__((warn_unused_result));
 
 #ifdef __cplusplus
 }

@@ -100,7 +100,6 @@ struct http_request_tag {
     /* NOTE: (2004-07-24) The pair adt can probably be replaced with meta_map*/
     pair params;
 
-
     // We always have these fields, chopped or not
     cstring host;				/* v1.1 §14.23 */
 
@@ -139,7 +138,6 @@ struct http_request_tag {
 #endif
 
 };
-
 
 void request_free(http_request p)
 {
@@ -203,8 +201,6 @@ void request_recycle(http_request p)
         p->cookies = NULL;
     }
 
-    /* These columns are multivalued and must be set
-     * using cstring_concat(), and read using some other method. */
     cstring_recycle(p->accept);
     cstring_recycle(p->accept_charset);
     cstring_recycle(p->accept_encoding);
@@ -468,37 +464,6 @@ status_t request_set_user_agent(http_request r, const char *value)
     return success;
 }
 #endif
-
-#if 0
-Tue Feb 12 18:20:04 CET 2002
-Not in use?
-
-int request_set_link(http_request r, const char *value)
-{
-    assert(r != NULL);
-    assert(value != NULL);
-
-    if (!cstring_set(r->link, value))
-        return set_os_error(e, ENOMEM);
-
-    request_set_flag(r, REQUEST_LINK_SET);
-    return success;
-}
-
-int request_set_title(http_request r, const char *value)
-{
-    assert(r != NULL);
-    assert(value != NULL);
-
-    if (!cstring_set(r->title, value))
-        return set_os_error(e, ENOMEM);
-
-    request_set_flag(r, REQUEST_TITLE_SET);
-    return success;
-}
-
-#endif
-
 
 #ifndef CHOPPED
 
@@ -2051,4 +2016,74 @@ int request_get_defered_read(http_request req)
     assert(req != NULL);
     return req->defered_read;
 }
+
+/* Ungrouped handlers */
+static status_t parse_connection(connection conn, const char *value)
+{
+    assert(conn != NULL);
+    assert(value != NULL);
+
+    if (strstr(value, "keep-alive"))
+        connection_set_persistent(conn, 1);
+
+    if (strstr(value, "close"))
+        connection_set_persistent(conn, 0);
+
+    return success;
+}
+
+/*
+ * Here we map header fields to handling functions. We need separate functions
+ * for each version of HTTP as there may be differences between each version.
+ * This is v1, so I keep it simple. It may be a little slow, though...
+ */
+static const struct connection_mapper {
+    const char *name;
+    status_t (*handler)(connection req, const char *value);
+} connection_map[] = {
+    { "connection",			parse_connection },
+};
+
+
+// Some of the properties received belongs to the connection object
+// instead of the request object, as one connection may "live" longer
+// than the request.
+status_t parse_request_headerfield(connection conn, const char *name,
+    const char *value, http_request req, error e)
+{
+    assert(name != NULL);
+    assert(value != NULL);
+    assert(req != NULL);
+    assert(e != NULL);
+
+    entity_header eh = request_get_entity_header(req);
+    general_header gh = request_get_general_header(req);
+
+    // Is it a general header field?
+    int idx;
+    if ((idx = find_general_header(name)) != -1)
+        return parse_general_header(idx, gh, value, e);
+
+    // Is it an entity header field?
+    if ((idx = find_entity_header(name)) != -1)
+        return parse_entity_header(idx, eh, value, e);
+
+    // Now locate the handling function.
+    // Go for the connection_map first as it is smaller
+    size_t n = sizeof connection_map / sizeof *connection_map;
+    for (size_t i = 0; i < n; i++) {
+        if (strcmp(name, connection_map[i].name) == 0)
+            return connection_map[i].handler(conn, value);
+    }
+
+    if ((idx = find_request_header(name)) != -1)
+        return parse_request_header(idx, req, value, e);
+
+    // We have an unknown fieldname if we reach this point
+    debug("%s: unknown header field: %s\n", __func__, name);
+
+    // ignore the unknown field
+    return success; 
+}
+
 
