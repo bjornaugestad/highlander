@@ -41,7 +41,7 @@ LIBHIGHLANDER_SOURCES=\
 	http/src/cookies.c http/src/parse_time.c http/src/rfc1738.c\
 	http/src/send_status_code.c http/src/highlander.c\
 	http/src/html_template_repository.c http/src/entity_header.c\
-	http/src/html_section.c http/src/parse_http.c http/src/http_client.c\
+	http/src/html_section.c http/src/http_client.c\
 	http/src/attribute.c http/src/request.c http/src/dynamic_page.c\
 	http/src/html_buffer.c http/src/general_header.c http/src/html_menu.c\
 	http/src/http.c http/src/response.c http/src/html_template.c\
@@ -53,7 +53,6 @@ LIBCHOPPED_SOURCES=\
 	http/src/parse_time.c http/src/rfc1738.c\
 	http/src/send_status_code.c http/src/highlander.c\
 	http/src/entity_header.c\
-	http/src/parse_http.c \
 	http/src/request.c http/src/dynamic_page.c\
 	http/src/general_header.c \
 	http/src/http.c http/src/response.c\
@@ -112,7 +111,7 @@ all: $(TARGETS)
 HIGHLANDER_COMMON_SRC=\
 	http/src/http.c http/src/request.c http/src/response.c\
 	http/src/general_header.c http/src/entity_header.c http/src/cookies.c\
-	http/src/parse_http.c http/src/parse_time.c http/src/dynamic_page.c\
+	http/src/parse_time.c http/src/dynamic_page.c\
 	http/src/rfc1738.c http/src/send_status_code.c http/src/attribute.c\
 	http/src/internals.c
 
