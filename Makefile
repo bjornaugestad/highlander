@@ -17,7 +17,9 @@ COMMON_CFLAGS=-Wall -Wextra -Wpedantic -Werror -std=gnu2x -Wstrict-prototypes \
 	-Wformat-security -Wdouble-promotion -Wuninitialized -Wvla -Wmisleading-indentation\
 	-Wconversion -Wsign-conversion -Wbad-function-cast 
 
-COMMON_INCLUDE=-Imeta/src -I http/src
+# Self-built openssl from now on
+COMMON_INCLUDE=-Imeta/src -I http/src -I $(HOME)/opt/openssl-3.3.5/include
+COMMON_LDFLAGS=-L $(HOME)/opt/openssl-3.3.5/lib
 
 # GCC specific stuff
 COMMON_GCC_CFLAGS=$(COMMON_CFLAGS) $(COMMON_INCLUDE) -Warith-conversion
@@ -47,49 +49,49 @@ release: gcc_release clang_release
 san: gcc_san clang_san clang_tsan
 
 gcc_debug:
-	@make -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_DEBUG)" OUTDIR=.build/gcc/debug all
+	@make -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_DEBUG)" LDFLAGS="$(COMMON_LDFLAGS)"  OUTDIR=.build/gcc/debug all
 
 gcc_san:
-	@make -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_SAN)" OUTDIR=.build/gcc/san all 
+	@make -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_SAN)" LDFLAGS="$(COMMON_LDFLAGS)"  OUTDIR=.build/gcc/san all 
 
 gcc_release:
-	@make -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_RELEASE)" OUTDIR=.build/gcc/release all
+	@make -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_RELEASE)" LDFLAGS="$(COMMON_LDFLAGS)"  OUTDIR=.build/gcc/release all
 
 clang_debug :
-	@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_DEBUG)" OUTDIR=.build/clang/debug all
+	@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_DEBUG)" LDFLAGS="$(COMMON_LDFLAGS)"  OUTDIR=.build/clang/debug all
 
 cov:
-	@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_COV)" OUTDIR=.build/clang/cov all
+	@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_COV)" LDFLAGS="$(COMMON_LDFLAGS)"  OUTDIR=.build/clang/cov all
 
 clang_san :
-	@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_SAN)" OUTDIR=.build/clang/san all
+	@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_SAN)" LDFLAGS="$(COMMON_LDFLAGS)"  OUTDIR=.build/clang/san all
 
 clang_tsan:
-	@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_TSAN)" OUTDIR=.build/clang/tsan all
+	@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_TSAN)" LDFLAGS="$(COMMON_LDFLAGS)"  OUTDIR=.build/clang/tsan all
 
 clang_release :
-	@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_RELEASE)" OUTDIR=.build/clang/release all
+	@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_RELEASE)" LDFLAGS="$(COMMON_LDFLAGS)"  OUTDIR=.build/clang/release all
 
 clean: gcc_clean clang_clean
 
 gcc_clean:
-	-@make -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_DEBUG)" OUTDIR=.build/gcc/debug clean
-	-@make -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_SAN)" OUTDIR=.build/gcc/san clean
-	-@make -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_RELEASE)" OUTDIR=.build/gcc/release clean
+	-@make -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_DEBUG)" LDFLAGS="$(COMMON_LDFLAGS)"  OUTDIR=.build/gcc/debug clean
+	-@make -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_SAN)" LDFLAGS="$(COMMON_LDFLAGS)"  OUTDIR=.build/gcc/san clean
+	-@make -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_RELEASE)" LDFLAGS="$(COMMON_LDFLAGS)"  OUTDIR=.build/gcc/release clean
 
 clang_clean:
-	-@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_DEBUG)" OUTDIR=.build/clang/debug clean
-	-@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_SAN)" OUTDIR=.build/clang/san clean
-	-@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_TSAN)" OUTDIR=.build/clang/tsan clean
-	-@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_RELEASE)" OUTDIR=.build/clang/release clean
+	-@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_DEBUG)" LDFLAGS="$(COMMON_LDFLAGS)"  OUTDIR=.build/clang/debug clean
+	-@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_SAN)" LDFLAGS="$(COMMON_LDFLAGS)"  OUTDIR=.build/clang/san clean
+	-@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_TSAN)" LDFLAGS="$(COMMON_LDFLAGS)"  OUTDIR=.build/clang/tsan clean
+	-@make -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_RELEASE)" LDFLAGS="$(COMMON_LDFLAGS)"  OUTDIR=.build/clang/release clean
 
 
 # Let check depend on all, and then run checks with -j1 to avoid raceconds on port numbers
 check: all
-	-@make -j1 -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_DEBUG)" OUTDIR=.build/gcc/debug check
-	-@make -j1 -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_SAN)" OUTDIR=.build/gcc/san check
-	-@make -j1 -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_RELEASE)" OUTDIR=.build/gcc/release check
-	-@make -j1 -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_DEBUG)" OUTDIR=.build/clang/debug check
-	-@make -j1 -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_SAN)" OUTDIR=.build/clang/san check
-	-@make -j1 -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_TSAN)" OUTDIR=.build/clang/tsan check
-	-@make -j1 -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_RELEASE)" OUTDIR=.build/clang/release check
+	-@make -j1 -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_DEBUG)" LDFLAGS="$(COMMON_LDFLAGS)"  OUTDIR=.build/gcc/debug check
+	-@make -j1 -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_SAN)" LDFLAGS="$(COMMON_LDFLAGS)"  OUTDIR=.build/gcc/san check
+	-@make -j1 -f $(actual) CC=gcc CFLAGS="$(CFLAGS_GCC_RELEASE)" LDFLAGS="$(COMMON_LDFLAGS)"  OUTDIR=.build/gcc/release check
+	-@make -j1 -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_DEBUG)" LDFLAGS="$(COMMON_LDFLAGS)"  OUTDIR=.build/clang/debug check
+	-@make -j1 -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_SAN)" LDFLAGS="$(COMMON_LDFLAGS)"  OUTDIR=.build/clang/san check
+	-@make -j1 -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_TSAN)" LDFLAGS="$(COMMON_LDFLAGS)"  OUTDIR=.build/clang/tsan check
+	-@make -j1 -f $(actual) CC=clang CFLAGS="$(CFLAGS_CLANG_RELEASE)" LDFLAGS="$(COMMON_LDFLAGS)"  OUTDIR=.build/clang/release check

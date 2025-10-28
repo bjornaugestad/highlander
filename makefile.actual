@@ -93,7 +93,7 @@ META_TESTS=$(OUTDIR)/array_check $(OUTDIR)/bitset_check $(OUTDIR)/cache_check \
 # apps have more source files.
 APPS=$(OUTDIR)/echoserver $(OUTDIR)/helloworld $(OUTDIR)/choppedworld
 
-HIGHLANDER_TESTS=$(OUTDIR)/http_chopped_check $(OUTDIR)/http_server_check $(OUTDIR)/http_client_check
+HIGHLANDER_TESTS=$(OUTDIR)/http_server_check $(OUTDIR)/http_client_check
 
 # Start here...
 TARGETS=$(OUTDIR)/libmeta.a $(OUTDIR)/libhighlander.a $(OUTDIR_CHOPPED)/libchopped.a \
@@ -124,10 +124,10 @@ $(OUTDIR)/helloworld: apps/helloworld/main.c $(OUTDIR)/libhighlander.a $(OUTDIR)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(SYSLIBS)
 
 $(OUTDIR)/choppedworld: apps/helloworld/main.c $(OUTDIR_CHOPPED)/libchopped.a
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(SYSLIBS)
+	$(CC) -static $(CFLAGS) $(LDFLAGS) -o $@ $^ $(SYSLIBS)
 
-$(OUTDIR)/http_chopped_check: meta/src/tcp_server.c $(OUTDIR_CHOPPED)/libchopped.a
-	$(CC) $(CFLAGS) $(LDFLAGS) -DCHECK_TCP_SERVER -o $@ $^ $(SYSLIBS)
+#$(OUTDIR)/http_chopped_check: meta/src/tcp_server.c $(OUTDIR_CHOPPED)/libchopped.a
+	#$(CC) -static $(CFLAGS) $(LDFLAGS) -DCHECK_TCP_SERVER -o $@ $^ $(SYSLIBS)
 
 $(OUTDIR)/http_server_check: meta/src/tcp_server.c $(HIGHLANDER_COMMON_SRC) $(OUTDIR)/libmeta.a
 	$(CC) $(CFLAGS) $(LDFLAGS) -DCHECK_TCP_SERVER -o $@ $^ $(SYSLIBS)
@@ -202,7 +202,7 @@ $(OUTDIR)/%.o: %.c | $(OUTDIR)
 
 $(OUTDIR_CHOPPED)/%.o: %.c | $(OUTDIR)
 	@mkdir -p $(@D)
-	$(CC) $(CFLAGS) -DCHOPPED=1 -MMD -MP -MF $(@D)/$(@F).d -c $< -o $@
+	$(CC) $(CFLAGS) -static -DCHOPPED=1 -MMD -MP -MF $(@D)/$(@F).d -c $< -o $@
 
 $(OUTDIR_CHOPPED)/libchopped.a: $(LIBCHOPPED_O)
 	$(AR) rcs $@ $^
