@@ -186,24 +186,6 @@ static int main_seccomp[] = {
     -1                      // Sentinel value, end of array
 };
 
-static int worker_seccomp[] = {
-    SCMP_SYS(read),
-    SCMP_SYS(write),
-    SCMP_SYS(close),
-    SCMP_SYS(shutdown),
-    SCMP_SYS(poll),
-    SCMP_SYS(ppoll),
-    SCMP_SYS(futex),
-    SCMP_SYS(rt_sigprocmask),
-    SCMP_SYS(rt_sigaction),
-    SCMP_SYS(restart_syscall),
-    SCMP_SYS(clock_gettime),
-    SCMP_SYS(clock_nanosleep),
-    SCMP_SYS(getpid),
-    SCMP_SYS(gettid),
-    SCMP_SYS(tgkill),
-    -1                      // Sentinel value, end of array
-};
 
 int main(int argc, char *argv[])
 {
@@ -239,7 +221,7 @@ int main(int argc, char *argv[])
 
     // setup seccomp stuff. The process object has the full view, so
     // we use that one. Note the sentinel value -1 in all arrays.
-    process_set_seccomp(p, main_seccomp, NULL, worker_seccomp);
+    process_set_seccomp(p, main_seccomp);
 
     if (!process_start(p, 0))
         exit(3);

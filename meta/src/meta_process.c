@@ -103,14 +103,10 @@ void process_free(process this)
     }
 }
 
-void process_set_seccomp(process p, const int *main_perms,
-    const int *accept_perms,
-    const int *worker_perms)
+void process_set_seccomp(process p, const int *main_perms)
 {
     assert(p != NULL);
     p->main_perms = main_perms;
-    p->accept_perms = accept_perms;
-    p->worker_perms = worker_perms;
 }
 
 status_t process_set_rootdir(process this, const char *path)

@@ -94,6 +94,11 @@ static inline bool queue_full(threadpool tp)
 // queue_not_full as well. Also, we only broadcast/signal
 // queue_not_full and queue_empty even if state is different. Hmm.
 // OTOH, we can only cond_wait for one condvar at a time. eventfd FTW?
+//
+// seccomp notes 20251028: We can't really drop permissions in
+// here as that affects the callback functions and we don't know
+// what they need. They can basically do anything.
+//
 static void *threadpool_exec_thread(void *arg)
 {
     threadpool pool = arg;

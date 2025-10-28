@@ -95,7 +95,7 @@ struct http_server_tag {
     size_t post_limit;
 
 
-    int tracelevel;
+    int tracelevel; // unused in 2025
 };
 
 static void set_server_defaults(http_server this)
