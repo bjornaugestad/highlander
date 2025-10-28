@@ -3,7 +3,6 @@
  * All Rights Reserved. See COPYING for license details
  */
 
-
 #ifndef INTERNALS_H
 #define INTERNALS_H
 
@@ -20,8 +19,6 @@
 extern "C" {
 #endif
 
-#define UNUSED(x)	(void)x
-
 // Max length of version part, HTTP/x.x . 20 should do for a while...
 #define CCH_VERSION_MAX	20
 
@@ -33,8 +30,9 @@ extern "C" {
 
 // The max # of characters for a http header fieldname.
 // The longest in http 1.1 is If-Unmodified-Since which is 19 bytes (+ 1 for '\0')
-#define CCH_FIELDNAME_MAX	30
-#define CCH_FIELDVALUE_MAX	10000
+// Bump field name for ... reasons.
+#define CCH_FIELDNAME_MAX	64
+#define CCH_FIELDVALUE_MAX	8192
 
 
 status_t http_send_field(connection conn, const char *name, cstring value)

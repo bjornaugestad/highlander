@@ -146,7 +146,6 @@ void request_free(http_request p)
     if (p == NULL)
         return;
 
-
     if (p->params != NULL) {
         pair_free(p->params);
         p->params = NULL;
@@ -502,14 +501,13 @@ int request_set_title(http_request r, const char *value)
 
 
 #ifndef CHOPPED
-status_t request_set_mime_version(http_request r, int major, int minor, error e)
+
+// boa@20251028: The 400 return is a pita as it enforces use of the
+// error object. Let's drop it and asser that version is 1.0 instead.
+status_t request_set_mime_version(http_request r, int major, int minor)
 {
     assert(r != NULL);
-    assert(major);
-
-    /* We only understand MIME 1.0 */
-    if (major != 1 || minor != 0)
-        return set_http_error(e, HTTP_400_BAD_REQUEST);
+    assert(major == 1 && minor == 0);
 
     r->mime_version_major = major;
     r->mime_version_minor = minor;
@@ -1207,10 +1205,9 @@ static status_t parse_mime_version(http_request r, const char *value, error e)
         value++;
     }
 
-    /* NOTE: The code above allows for "1." which is incorrect.
-     * We will not fail, though
-     */
-    return request_set_mime_version(r, major, minor, e);
+    // NOTE: The code above allows for "1." which is incorrect.
+    // We will not fail, though
+    return request_set_mime_version(r, major, minor);
 }
 #endif
 
@@ -1266,7 +1263,6 @@ static status_t parse_accept_language(http_request req, const char *value, error
 static status_t send_request_line(http_request r, connection c, error e)
 {
     cstring s;
-    const char *p;
 
     if ((s = cstring_new()) == NULL)
         return set_os_error(e, errno);
@@ -1295,7 +1291,8 @@ static status_t send_request_line(http_request r, connection c, error e)
             return set_http_error(e, HTTP_400_BAD_REQUEST);
     }
 
-    if ((p = request_get_uri(r)) == NULL) {
+    const char *p = request_get_uri(r);
+    if (p == NULL) {
         cstring_free(s);
         return set_http_error(e, HTTP_400_BAD_REQUEST);
     }
@@ -1607,7 +1604,6 @@ static status_t read_posted_content(size_t max_post_content,
         return set_os_error(e, ENOSPC);
     }
 
-    /* success */
     free(buf);
     return success;
 }
@@ -1631,7 +1627,7 @@ static status_t parse_one_field(connection conn, http_request request,
 }
 
 
-/* Reads all (if any) http header fields */
+// Reads all (if any) http header fields 
 static status_t
 read_request_header_fields(connection conn, http_request request, error e)
 {
@@ -1641,11 +1637,9 @@ read_request_header_fields(connection conn, http_request request, error e)
         if (!read_line(conn, buf, sizeof buf, e))
             return failure;
 
-        /*
-         * An empty buffer means that we have read the \r\n sequence
-         * separating header fields from entities or terminating the
-         * message. This means that there is no more header fields to read.
-         */
+        // An empty buffer means that we have read the \r\n sequence
+        // separating header fields from entities or terminating the
+        // message. This means that there is no more header fields to read.
         if (strlen(buf) == 0)
             return success;
 
@@ -1709,12 +1703,12 @@ static status_t
 parse_request_method(const char *line, http_request request, error e)
 {
     char strMethod[CCH_METHOD_MAX + 1];
-    http_method method;
 
     if (!get_word_from_string(line, strMethod, sizeof strMethod, 0))
         return set_http_error(e, HTTP_400_BAD_REQUEST);
 
-    if ((method = get_method(strMethod)) == METHOD_UNKNOWN)
+    http_method method = get_method(strMethod);
+    if (method == METHOD_UNKNOWN)
         return set_http_error(e, HTTP_501_NOT_IMPLEMENTED);
 
     request_set_method(request, method);
@@ -1834,12 +1828,10 @@ static inline int uri_has_params(const char *uri)
 
 static status_t set_uri_and_params(http_request request, char *uri, error e)
 {
-    char *s;
-
     assert(uri_has_params(uri));
 
     /* Look for parameters */
-    s = strchr(uri, '?');
+    char *s = strchr(uri, '?');
     assert(s != NULL);
 
     /* Cut here to terminate uri */
@@ -1859,14 +1851,13 @@ static status_t set_uri_and_params(http_request request, char *uri, error e)
 static status_t
 parse_request_uri(const char *line, http_request request, error e)
 {
-    char uri[CCH_URI_MAX + 1];
-
     assert(line != NULL);
     assert(request != NULL);
 
     if (strlen(line) >= CCH_URI_MAX)
         return set_http_error(e, HTTP_414_REQUEST_URI_TOO_LARGE);
 
+    char uri[CCH_URI_MAX + 1];
     if (!get_word_from_string(line, uri, sizeof uri, 1))
         return set_http_error(e, HTTP_400_BAD_REQUEST);
 
@@ -1882,14 +1873,11 @@ parse_request_uri(const char *line, http_request request, error e)
 static status_t
 parse_request_version(const char *line, http_request request, error e)
 {
-    int iword;
-    char strVersion[CCH_VERSION_MAX + 1];
-    http_version version;
-
     assert(line != NULL);
     assert(request != NULL);
     assert(e != NULL);
 
+    int iword;
     if ((iword = find_word(line, 2)) == -1) {
         /* No version info == HTTP 0.9 */
         request_set_version(request, VERSION_09);
@@ -1899,16 +1887,17 @@ parse_request_version(const char *line, http_request request, error e)
     if (strlen(&line[iword]) > CCH_VERSION_MAX)
         return set_http_error(e, HTTP_400_BAD_REQUEST);
 
+    char strVersion[CCH_VERSION_MAX + 1];
     if (!get_word_from_string(line, strVersion, sizeof strVersion, 2))
         return set_http_error(e, HTTP_400_BAD_REQUEST);
 
+    http_version version;
     if ((version = get_version(strVersion)) == VERSION_UNKNOWN)
         return set_http_error(e, HTTP_505_HTTP_VERSION_NOT_SUPPORTED);
 
     request_set_version(request, version);
     return success;
 }
-
 
 /*
  * Input is Method SP Request-URI SP [ HTTP-Version ]
@@ -1980,8 +1969,8 @@ static const struct {
  * the field was not found. */
 int find_request_header(const char *name)
 {
-    int i, n = sizeof request_header_fields / sizeof *request_header_fields;
-    for (i = 0; i < n; i++) {
+    int n = sizeof request_header_fields / sizeof *request_header_fields;
+    for (int i = 0; i < n; i++) {
         if (strcmp(request_header_fields[i].name, name) == 0)
             return i;
     }

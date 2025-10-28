@@ -826,12 +826,9 @@ static inline status_t send_cachecontrol(general_header gh, connection conn)
 
 status_t general_header_send_fields(general_header gh, connection c)
 {
-    status_t rc = success;
-    size_t i, nelem;
-
     static const struct {
         size_t flag;
-        status_t (*func)(general_header, connection);
+        status_t (*sendfunc)(general_header, connection);
     } fields[] = {
         { GENERAL_HEADER_PRAGMA_SET,			send_pragma },
         { GENERAL_HEADER_DATE_SET,				send_date },
@@ -844,10 +841,11 @@ status_t general_header_send_fields(general_header gh, connection c)
     };
 
 
-    nelem = sizeof fields / sizeof *fields;
-    for (i = 0; i < nelem; i++) {
+    status_t rc = success;
+    size_t nelem = sizeof fields / sizeof *fields;
+    for (size_t i = 0; i < nelem; i++) {
         if (general_header_flag_is_set(gh, fields[i].flag))
-            if ((rc = fields[i].func(gh, c)) == failure)
+            if ((rc = fields[i].sendfunc(gh, c)) == failure)
                 break;
     }
 
@@ -901,10 +899,9 @@ static status_t set_cache_control(general_header gh, const char *s, error e)
         { "min-fresh",	general_header_set_min_fresh, },
     };
 
-    size_t i;
 
     /* Now look for type1 request-directives */
-    for (i = 0; i < sizeof type1 / sizeof *type1; i++) {
+    for (size_t i = 0; i < sizeof type1 / sizeof *type1; i++) {
         if (strstr(s, type1[i].directive) == s) {
             /* NOTE: There MAY slip in a bug here, in case
              * a new directive starts with the same name
@@ -918,7 +915,7 @@ static status_t set_cache_control(general_header gh, const char *s, error e)
     }
 
     /* Not a type1 directive, try type2 */
-    for (i = 0; i < sizeof type2 / sizeof *type2; i++) {
+    for (size_t i = 0; i < sizeof type2 / sizeof *type2; i++) {
         if (strstr(s, type2[i].directive) == s) {
             /* NOTE: Same 'bug' as above */
             char *eq = strchr(s, '=');
@@ -953,7 +950,7 @@ static inline status_t parse_transfer_encoding(general_header gh, const char *va
 
 static inline status_t parse_pragma(general_header gh, const char *value, error e)
 {
-    UNUSED(e);
+    (void)e;
 
     /* The only pragma we understand is no-cache */
     if (strstr(value, "no-cache") == value)
@@ -1003,9 +1000,8 @@ parse_cache_control(general_header gh, const char *value, error e)
     assert(gh != NULL);
     assert(value != NULL);
 
-    /* Loop through the values looking for separating space.
-     * Then look for the actual word
-     */
+    // Loop through the values looking for separating space.
+    // Then look for the actual word
     for (;*value != '\0';) {
         if ((s = strchr(value, ' ')) == NULL)
             break;
@@ -1025,12 +1021,12 @@ parse_cache_control(general_header gh, const char *value, error e)
 static inline status_t
 parse_date(general_header gh, const char *value, error e)
 {
-    time_t d;
     assert(gh != NULL);
     assert(value != NULL);
 
     /* Parse date and create a time_t */
-    if ((d = parse_rfc822_date(value)) == -1)
+    time_t d = parse_rfc822_date(value);
+    if (d == -1)
         return set_http_error(e, HTTP_400_BAD_REQUEST);
 
     general_header_set_date(gh, d);
@@ -1069,19 +1065,19 @@ static inline status_t parse_trailer(general_header gh, const char *value, error
     return success;
 }
 
+// Since we only understand http 1.0 and 1.1, I see
+// no reason whatsoever to support Upgrade.
+//
+// NOTE: Sat Apr 28 18:51:36 CEST 2001
+// Hmmh, maybe we should? How else do we support SSL/SHTTP?
+// If we decide to support Upgrade, the proper return status is
+//		101 Switching Protocols
+//
 static inline status_t parse_upgrade(general_header gh, const char *value, error e)
 {
     assert(gh != NULL);
     assert(value != NULL);
 
-    /* Since we only understand http 1.0 and 1.1, I see
-     * no reason whatsoever to support Upgrade.
-     *
-     * NOTE: Sat Apr 28 18:51:36 CEST 2001
-     * Hmmh, maybe we should? How else do we support SSL/SHTTP?
-     * If we decide to support Upgrade, the proper return status is
-     *		101 Switching Protocols
-     */
     if (!general_header_set_upgrade(gh, value))
         return set_os_error(e, errno);
 
@@ -1119,14 +1115,15 @@ static const struct {
  * or -1 if the field was not found. */
 int find_general_header(const char *name)
 {
-    int i, nelem = sizeof general_header_fields / sizeof *general_header_fields;
-    for (i = 0; i < nelem; i++) {
+    int nelem = sizeof general_header_fields / sizeof *general_header_fields;
+    for (int i = 0; i < nelem; i++) {
         if (strcmp(general_header_fields[i].name, name) == 0)
             return i;
     }
 
     return -1;
 }
+
 status_t parse_general_header(int idx, general_header gh, const char *value, error e)
 {
     assert(idx >= 0);
@@ -1177,3 +1174,4 @@ void general_header_dump(general_header gh, void *file)
     if (general_header_warning_isset(gh))
         fprintf(f, "\twarning: %s\n", c_str(gh->warning));
 }
+

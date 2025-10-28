@@ -1187,6 +1187,7 @@ if (1) { // debugging memleak, possible race cond
     if (!http_client_get(p, hostname, uri, e)) {
         fprintf(stderr, "Could not get %s from %s\n", uri, hostname);
         http_client_disconnect(p);
+        die_error("http_client_get() failed:", e);
         exit(1);
     }
 }

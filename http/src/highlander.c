@@ -16,8 +16,6 @@
 
 #include "internals.h"
 
-/* Local helper functions */
-
 #ifndef CHOPPED
 static bool check_attributes(http_request request, page_attribute a)
 {
@@ -195,7 +193,6 @@ static status_t serviceConnection2(http_server srv, connection conn,
 
     dynamic_page dp;
     size_t cbSent;
-    int iserror = 0;
     size_t max_posted_content = http_server_get_post_limit(srv);
 
     while (!http_server_shutting_down(srv)) {
@@ -207,7 +204,7 @@ static status_t serviceConnection2(http_server srv, connection conn,
         // protocol error, we try to send a response back to the client
         // and close the connection. If it is anything else(tcp/ip, os)
         // we stop processing.
-        iserror = !request_receive(request, conn, max_posted_content, e);
+        int iserror = !request_receive(request, conn, max_posted_content, e);
 
         // So far, so good. We have a valid HTTP request. Now see if we can
         // locate a page handler function for it. If we do, call it. If not,

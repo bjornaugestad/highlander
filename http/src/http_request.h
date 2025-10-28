@@ -133,7 +133,7 @@ status_t request_set_host(http_request r, const char *value)
     __attribute__((nonnull, warn_unused_result));
 
 #ifndef CHOPPED
-status_t request_set_mime_version(http_request request, int major, int minor, error e)
+status_t request_set_mime_version(http_request request, int major, int minor)
     __attribute__((nonnull, warn_unused_result));
 
 status_t request_set_accept_ranges(http_request r, const char *value)
