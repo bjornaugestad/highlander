@@ -219,9 +219,9 @@ threadpool threadpool_new(size_t nthreads, size_t max_queue_size,
 }
 
 status_t threadpool_add_work(threadpool pool,
-    status_t (*initfn)(void *initarg, void *workarg), void *initarg,
-    void *(*workfn)(void*), void *workarg,
-    void (*cleanupfn)(void *cleanuparg, void *workarg), void *cleanup_arg)
+    status_t (*initfn)   (void *initarg, void *workarg), void *initarg,
+    void *   (*workfn)   (void*), void *workarg,
+    void     (*cleanupfn)(void *cleanuparg, void *workarg), void *cleanup_arg)
 {
     assert(pool != NULL);
     assert(workfn != NULL);
