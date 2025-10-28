@@ -7,6 +7,8 @@
 #ifndef INTERNALS_H
 #define INTERNALS_H
 
+#include <stdbool.h>
+
 #include <cstring.h>
 #include <connection.h>
 #include <meta_error.h>
@@ -64,7 +66,7 @@ time_t parse_rfc822_date(const char *s);
 status_t send_status_code(connection conn, int status_code,
     int version) __attribute__((nonnull, warn_unused_result));
 
-int http_status_code(int error);
+bool is_http_status_code(int error);
 
 
 status_t handle_dynamic(http_server srv, dynamic_page p,

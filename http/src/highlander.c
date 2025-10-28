@@ -186,7 +186,7 @@ status_t handle_dynamic(http_server srv, dynamic_page p,
      * but we accept any legal HTTP status code. Illegal status codes
      * are mapped to 500. */
     if ((status = dynamic_run(p, req, response)))
-        status = http_status_code(status) ? status : HTTP_500_INTERNAL_SERVER_ERROR;
+        status = is_http_status_code(status) ? status : HTTP_500_INTERNAL_SERVER_ERROR;
     else
         status = HTTP_200_OK;
 
@@ -221,11 +221,10 @@ static status_t serviceConnection2(http_server srv, connection conn,
         // we stop processing.
         iserror = !request_receive(request, conn, max_posted_content, e);
 
-        // So far, so good. We have a valid HTTP request.
-        // Now see if we can locate a page handler function for it.
-        // If we do, call it. If not, see if it on disk or if the
-        // http_server has a default page handler. If neither is true,
-        // then the page was not found(404).
+        // So far, so good. We have a valid HTTP request. Now see if we can
+        // locate a page handler function for it. If we do, call it. If not,
+        // see if it on disk or if the http_server has a default page handler.
+        // If neither is true, then the page was not found(404).
         if (iserror)
             ;
         else if ((dp = http_server_lookup(srv, request)) != NULL) {
@@ -263,10 +262,10 @@ static status_t serviceConnection2(http_server srv, connection conn,
             return failure;
         }
 
-        /* Some extra stuff for HTTP 1.0 clients. If client is 1.0
-         * and connection_close() == 1 and connection header field
-         * isn't set, then we set the connection flag to close.
-         * Done so that 1.0 clients (Lynx) can detect closure.  */
+        // Some extra stuff for HTTP 1.0 clients. If client is 1.0 and
+        // connection_close() == 1 and connection header field isn't set,
+        // then we set the connection flag to close.  Done so that 1.0
+        // clients (Lynx) can detect closure.
         if (request_get_version(request) != VERSION_11
         && !connection_is_persistent(conn)
         && strlen(response_get_connection(response)) == 0) {
@@ -277,17 +276,10 @@ static status_t serviceConnection2(http_server srv, connection conn,
         if (!response_send(response, conn, e, &cbSent))
             return failure;
 
-        http_server_add_logentry(srv, conn, request, response_get_status(response), cbSent);
+        int status = response_get_status(response) ;
+        http_server_add_logentry(srv, conn, request, status, cbSent);
 
-        // 20251017: bug! We can send headers without entities. We even do that
-        // as a "quick fix" written in 2003. see response_send() for details.
-        // I'm not sure if I have a good fix ATM as the bug manifests itself
-        // as a SIGSEGV, so "return failure" seems to be wrong.
-        // OTOH, cbSent is used for logging only.
-        // if (cbSent == 0)
-            // return failure;
-
-        /* Did the user set the Connection header field to "close" */
+        // Did the user set the Connection header field to "close"
         if (strcmp(response_get_connection(response), "close") == 0)
             return success;
 
@@ -304,6 +296,7 @@ static status_t serviceConnection2(http_server srv, connection conn,
          * persistent connections, havner alle nye connections i kø.
          * De får aldri kjøretid. Så disconnect-regelen over gjelder derfor
          * kun om køen har > 0 entries.
+         * 20251028: That comment is like 25 year old, but still a good idea
          */
 
         if (!connection_flush(conn))
@@ -313,7 +306,7 @@ static status_t serviceConnection2(http_server srv, connection conn,
         response_recycle(response);
     }
 
-    /* Shutdown detected */
+    // Shutdown detected 
     return success;
 }
 
@@ -326,9 +319,7 @@ static status_t serviceConnection2(http_server srv, connection conn,
 // a myriad of error conditions.
 //
 // Fun fact: The socket's closed when this function exits, so there's
-// no need to close it here. WTF, my man, WTF have I been thinking 
-// for so many years? The tricky part is of course if we want do
-// send to client or not. IOW, when do we flush the connection's buffers?
+// no need to close it here. 
 void* serviceConnection(void* psa)
 {
     assert(psa != NULL);
@@ -345,7 +336,7 @@ void* serviceConnection(void* psa)
 
     status_t ok = serviceConnection2(srv, conn, request, response, e);
 
-    // Note that there's a possible race condition here. If 
+    // NOTE that there's a possible race condition here. If 
     // serviceConnection2() recycled the objects just before it
     // returns with success, like if server shuts down at the same time,
     // then we may try to recycle the same objects twice. Not ideal...
@@ -356,7 +347,8 @@ void* serviceConnection(void* psa)
     return ok;
 }
 
-int http_status_code(int iserror)
+bool is_http_status_code(int iserror)
 {
     return iserror >= HTTP_STATUS_MIN && iserror <= HTTP_STATUS_MAX;
 }
+
