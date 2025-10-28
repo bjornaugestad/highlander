@@ -74,6 +74,7 @@ LIBCHOPPED_SOURCES=\
 	meta/src/threadpool.c\
 	meta/src/gensocket.c
 
+SYSLIBS=-lseccomp -lssl -lcrypto
 
 # Test programs for meta. We build them from source and place them in OUTDIR.
 # We need rules per program due to the -DCHECK_foo argument, but we can
@@ -116,22 +117,22 @@ HIGHLANDER_COMMON_SRC=\
 	http/src/internals.c
 
 $(OUTDIR)/echoserver: apps/echoserver/main.c $(OUTDIR)/libhighlander.a $(OUTDIR)/libmeta.a
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ -lssl -lcrypto
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(SYSLIBS)
 
 $(OUTDIR)/helloworld: apps/helloworld/main.c $(OUTDIR)/libhighlander.a $(OUTDIR)/libmeta.a
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ -lssl -lcrypto
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(SYSLIBS)
 
 $(OUTDIR)/choppedworld: apps/helloworld/main.c $(OUTDIR_CHOPPED)/libchopped.a
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ -lssl -lcrypto
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(SYSLIBS)
 
 $(OUTDIR)/http_chopped_check: meta/src/tcp_server.c $(OUTDIR_CHOPPED)/libchopped.a
-	$(CC) $(CFLAGS) $(LDFLAGS) -DCHECK_TCP_SERVER -o $@ $^ -lssl -lcrypto
+	$(CC) $(CFLAGS) $(LDFLAGS) -DCHECK_TCP_SERVER -o $@ $^ $(SYSLIBS)
 
 $(OUTDIR)/http_server_check: meta/src/tcp_server.c $(HIGHLANDER_COMMON_SRC) $(OUTDIR)/libmeta.a
-	$(CC) $(CFLAGS) $(LDFLAGS) -DCHECK_TCP_SERVER -o $@ $^ -lssl -lcrypto
+	$(CC) $(CFLAGS) $(LDFLAGS) -DCHECK_TCP_SERVER -o $@ $^ $(SYSLIBS)
 
 $(OUTDIR)/http_client_check: meta/src/tcp_client.c $(HIGHLANDER_COMMON_SRC) $(OUTDIR)/libmeta.a
-	$(CC) $(CFLAGS) $(LDFLAGS) -DCHECK_TCP_CLIENT -o $@ $^ -lssl -lcrypto
+	$(CC) $(CFLAGS) $(LDFLAGS) -DCHECK_TCP_CLIENT -o $@ $^ $(SYSLIBS)
 
 $(OUTDIR)/array_check: meta/src/meta_array.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -DCHECK_ARRAY -o $@ $(filter-out %.h, $^)
@@ -179,10 +180,10 @@ $(OUTDIR)/stringmap_check : meta/src/meta_stringmap.c meta/src/meta_list.c meta/
 	$(CC) $(CFLAGS) $(LDFLAGS) -DCHECK_STRINGMAP -o $@ $(filter-out %.h, $^)
 
 $(OUTDIR)/tcp_client_check : meta/src/tcp_client.c meta/src/threadpool.c meta/src/meta_membuf.c meta/src/gensocket.c meta/src/connection.c meta/src/cstring.c meta/src/meta_common.c meta/src/miscssl.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -DCHECK_TCP_CLIENT -o $@ $(filter-out %.h, $^) -lssl -lcrypto
+	$(CC) $(CFLAGS) $(LDFLAGS) -DCHECK_TCP_CLIENT -o $@ $(filter-out %.h, $^) $(SYSLIBS)
 
 $(OUTDIR)/tcp_server_check : meta/src/tcp_server.c meta/src/threadpool.c meta/src/meta_membuf.c meta/src/meta_pool.c meta/src/gensocket.c meta/src/connection.c meta/src/meta_process.c meta/src/cstring.c meta/src/meta_common.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -DCHECK_TCP_SERVER -o $@ $(filter-out %.h, $^) -lssl -lcrypto
+	$(CC) $(CFLAGS) $(LDFLAGS) -DCHECK_TCP_SERVER -o $@ $(filter-out %.h, $^) $(SYSLIBS)
 
 # Convert list of source files to list of object files
 LIBMETA_O=$(patsubst %.c, $(OUTDIR)/%.o, $(LIBMETA_SOURCES))

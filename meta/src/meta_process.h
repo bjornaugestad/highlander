@@ -54,6 +54,10 @@ status_t process_wait_for_shutdown(process p)
 int process_get_exitcode(process p, void *object)
     __attribute__((nonnull));
 
+// Set seccomp permissions for misc thread classes. The pointer
+// can be NULL, but arrays MUST end with -1.
+void process_set_seccomp(process p, const int *main_perms, 
+    const int *accept_perms, const int *worker_perms);
 
 #ifdef __cplusplus
 }

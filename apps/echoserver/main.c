@@ -186,24 +186,6 @@ static int main_seccomp[] = {
     -1                      // Sentinel value, end of array
 };
 
-static int shutdown_seccomp[] = {
-    SCMP_SYS(futex),
-    SCMP_SYS(rt_sigprocmask),
-    SCMP_SYS(rt_sigaction),
-    SCMP_SYS(restart_syscall),
-    SCMP_SYS(getpid),
-    SCMP_SYS(gettid),
-    SCMP_SYS(tgkill),
-    SCMP_SYS(rt_sigtimedwait),
-    SCMP_SYS(clock_gettime),
-    SCMP_SYS(clock_nanosleep),
-    SCMP_SYS(write),          // optional logging
-    SCMP_SYS(close),
-    SCMP_SYS(exit),
-    SCMP_SYS(exit_group),
-    -1                      // Sentinel value, end of array
-};
-
 static int accept_seccomp[] = {
     SCMP_SYS(accept4),
     SCMP_SYS(poll),
@@ -249,12 +231,6 @@ int main(int argc, char *argv[])
     process p;
     tcp_server srv;
 
-    // work in progress
-    (void)main_seccomp;
-    (void)shutdown_seccomp;
-    (void)accept_seccomp;
-    (void)worker_seccomp;
-
     parse_command_line(argc, argv);
 
     if (m_servertype == SOCKTYPE_SSL && !openssl_init())
@@ -281,6 +257,10 @@ int main(int argc, char *argv[])
 
     tcp_server_set_service_function(srv, fn, NULL);
     tcp_server_start_via_process(p, srv);
+
+    // setup seccomp stuff. The process object has the full view, so
+    // we use that one. Note the sentinel value -1 in all arrays.
+    process_set_seccomp(p, main_seccomp, accept_seccomp, worker_seccomp);
 
     if (!process_start(p, 0))
         exit(3);

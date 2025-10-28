@@ -5,6 +5,7 @@
 
 #define _GNU_SOURCE
 #include <unistd.h>
+#include <seccomp.h>
 
 #include <assert.h>
 #include <stdlib.h>
@@ -63,6 +64,9 @@ struct process_tag {
 
     /* The shutdown thread */
     pthread_t sdt;
+
+    // seccomp perms
+    const int *main_perms, *accept_perms, *shutdown_perms, *worker_perms;
 };
 
 process process_new(const char *appname)
@@ -97,6 +101,16 @@ void process_free(process this)
         cstring_free(this->rootdir);
         free(this);
     }
+}
+
+void process_set_seccomp(process p, const int *main_perms,
+    const int *accept_perms,
+    const int *worker_perms)
+{
+    assert(p != NULL);
+    p->main_perms = main_perms;
+    p->accept_perms = accept_perms;
+    p->worker_perms = worker_perms;
 }
 
 status_t process_set_rootdir(process this, const char *path)
@@ -215,23 +229,76 @@ static status_t write_pid(process this, pid_t pid)
     return success;
 }
 
+// drop perms for thread calling this function
+static scmp_filter_ctx drop_perms(const int *p)
+{
+    scmp_filter_ctx ctx = seccomp_init(SCMP_ACT_TRAP);
+    if (p == NULL)
+        return ctx; // null is fine
+
+    while (*p != -1) {
+        seccomp_rule_add(ctx, SCMP_ACT_ALLOW, *p, 0);
+        p++;
+    }
+
+    seccomp_load(ctx);
+    return ctx;
+}
+
+// Permissions for the shutdown thread
+static int shutdown_seccomp_perms[] = {
+#ifndef __SANITIZER_UNDEFINED__
+    SCMP_SYS(mmap),           // Memory allocation, needed by sanitizers to allocate memory regions (e.g., ASan, MSan)
+    SCMP_SYS(munmap),         // Memory deallocation, needed by sanitizers to free memory regions (e.g., ASan, MSan)
+    SCMP_SYS(mprotect),       // Memory protection, used by ASan to mark memory as readable/writable/executable
+    SCMP_SYS(futex),          // Thread synchronization, needed by TSan for detecting race conditions and synchronization errors
+    SCMP_SYS(gettid),         // Thread ID, needed by TSan for distinguishing between threads
+    SCMP_SYS(clock_gettime),  // Time fetching, used by TSan for tracking time-related events in threads
+    SCMP_SYS(clock_nanosleep),// Time sleeping, necessary for TSan to track thread sleep/wait events
+    SCMP_SYS(exit),           // Exit system call, needed to terminate a thread or process (e.g., after a sanitizer error)
+    SCMP_SYS(exit_group),     // Exit group, used to terminate all threads in the process (e.g., after a sanitizer error)
+    SCMP_SYS(getpid),         // Process ID, used to identify the process (important for error reporting and tracking)
+    SCMP_SYS(rt_sigaction),   // Signal handling, necessary for UBSan and ASan to handle errors via signals
+    SCMP_SYS(rt_sigprocmask), // Signal masking, used by sanitizers to block or unblock signals (important for error reporting)
+    SCMP_SYS(write),          // Used for logging error messages (important for ASan, UBSan, etc.)
+    SCMP_SYS(open),           // File access, may be needed for logging or error reporting
+    SCMP_SYS(close),          // Closing file descriptors, used by sanitizers when cleaning up resources
+    SCMP_SYS(read),           // Reading input, can be used by sanitizers for logging or input-related checks
+    SCMP_SYS(brk),            // Adjust heap size, used in systems that rely on brk/sbrk for memory management
+    SCMP_SYS(sigaltstack),
+
+#endif
+    // What poor little shutdown thread needs.
+    SCMP_SYS(futex),
+    SCMP_SYS(rt_sigprocmask),
+    SCMP_SYS(rt_sigaction),
+    SCMP_SYS(restart_syscall),
+    SCMP_SYS(rt_sigtimedwait),
+    SCMP_SYS(clock_gettime),
+    SCMP_SYS(clock_nanosleep),
+    SCMP_SYS(exit),             // Needed for pthread_exit, a.k.a. clone()
+    SCMP_SYS(madvise),          // Needed as pthread_create needs it.
+    -1                          // Sentinel value, end of array
+};
+
 // This thread waits for SIGTERM.
 static void *shutdown_thread(void *arg)
 {
-    sigset_t catch;
-    int caught;
     process proc = arg;
-
     assert(proc != NULL);
 
     pid_t my_pid = gettid();
     if (!write_pid(proc, my_pid))
         warning("Unable to write pid %lu to the pid file.", (unsigned long)my_pid);
 
+    scmp_filter_ctx ctx = drop_perms(shutdown_seccomp_perms);
+
+    sigset_t catch;
     sigemptyset(&catch);
     sigaddset(&catch, SIGTERM);
 
     // Wait, wait, wait for SIGTERM
+    int caught;
     sigwait(&catch, &caught);
     atomic_store_explicit(&proc->shutting_down, true, memory_order_relaxed);
 
@@ -242,6 +309,7 @@ static void *shutdown_thread(void *arg)
         s->shutdown_func(s->object);
     }
 
+    seccomp_release(ctx);
     return NULL;
 }
 
