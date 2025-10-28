@@ -5,7 +5,7 @@
 #include <meta_seccomp.h>
 
 // create a permission list, call init() and rule_add(), load(),  and return ctx. 
-scmp_filter_ctx drop_perms(const int *perms_to_keep)
+scmp_filter_ctx meta_drop_perms(const int *perms_to_keep)
 {
     // Permissions for the shutdown thread. As we can see, 
     // sanitizers are not ideal as they're greedy perm bastards.
@@ -49,7 +49,7 @@ scmp_filter_ctx drop_perms(const int *perms_to_keep)
     return ctx;
 }
 
-void  release_perms(void *vctx)
+void  meta_release_perms(void *vctx)
 {
     assert(vctx != NULL);
     seccomp_release(vctx);

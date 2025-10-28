@@ -6,6 +6,18 @@
 
 #include <stdarg.h> /* for va_list */
 
+// boa@20251028: seccomp.h includes audit.h which has a field
+// named failure. If someone includes meta_common.h before
+// including meta_seccomp.h, then audit.h's failure field is
+// redefined to 0 because of our status_t and success/failure.
+// To avoid that, we include seccomp.h here to guarantee that
+// it's included before we define failure.
+// The alternative is to NOT include seccomp.h in meta_seccomp.h.
+// Then ordering of our headers are insignificant, but users must
+// include seccomp.h themselves to get the macros. Let's see 
+// how many places we end up using meta_seccomp. If few, add include-statements
+#include <seccomp.h> 
+
 #ifdef __cplusplus
 extern "C" {
 #endif

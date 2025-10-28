@@ -22,6 +22,7 @@
 #include <openssl/dh.h>
 
 #include <meta_pool.h>
+#include <meta_seccomp.h>
 #include <threadpool.h>
 #include <tcp_server.h>
 #include <connection.h>
@@ -631,11 +632,41 @@ static status_t tcp_server_get_root_resourcesv(void *p) { return tcp_server_get_
 // cleanup nicely.
 // IOW, a return from this function just means that we've stopped accepting
 // new connection requests.
+//
+// NOTE that this function is a thread function called by meta_process.
+// IOW, we can drop permissions here so that accept() just uses a minimal
+// set of permissions to accept new threads and place them in the worker queue.
+// Let's try :) boa@20251028
+static const int accept_seccomp[] = {
+    SCMP_SYS(accept4),
+    SCMP_SYS(poll),
+    SCMP_SYS(socket),
+    SCMP_SYS(setsockopt),
+    SCMP_SYS(getsockopt),
+    SCMP_SYS(accept),
+    SCMP_SYS(fcntl),
+    SCMP_SYS(read),
+    SCMP_SYS(write),
+    SCMP_SYS(close),
+    SCMP_SYS(shutdown),
+    SCMP_SYS(futex),
+    SCMP_SYS(rt_sigprocmask),
+    SCMP_SYS(rt_sigaction),
+    SCMP_SYS(restart_syscall),
+    SCMP_SYS(clock_gettime),
+    SCMP_SYS(clock_nanosleep),
+    SCMP_SYS(madvise),          // Needed as pthread_create needs it.
+    -1                          // Sentinel value, end of array
+};
+
 status_t tcp_server_start(tcp_server this)
 {
     assert(this != NULL);
 
+    void *ctx = meta_drop_perms(accept_seccomp);
+
     status_t rc = accept_new_connections(this);
+    meta_release_perms(ctx);
     return rc;
 }
 

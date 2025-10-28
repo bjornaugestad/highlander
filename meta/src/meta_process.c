@@ -253,7 +253,7 @@ static void *shutdown_thread(void *arg)
     if (!write_pid(proc, my_pid))
         warning("Unable to write pid %lu to the pid file.", (unsigned long)my_pid);
 
-    void *ctx = drop_perms(shutdown_seccomp_perms);
+    void *ctx = meta_drop_perms(shutdown_seccomp_perms);
 
     sigset_t catch;
     sigemptyset(&catch);
@@ -270,7 +270,7 @@ static void *shutdown_thread(void *arg)
         s->shutdown_func(s->object);
     }
 
-    release_perms(ctx);
+    meta_release_perms(ctx);
     return NULL;
 }
 
