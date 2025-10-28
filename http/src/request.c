@@ -1009,11 +1009,8 @@ static status_t req_parse_multivalued_fields(
     assert(value != NULL);
 
     while ((s = strchr(value, sep)) != NULL) {
-        /* The correct type would be ptrdiff_t,
-         * but -ansi -pedantic complains */
         size_t span = (size_t)(s - value);
         if (span + 1 > sizeof buf) {
-            /* We don't want buffer overflow... */
             value = s + 1;
             continue;
         }
@@ -1021,7 +1018,7 @@ static status_t req_parse_multivalued_fields(
         memcpy(buf, value, span);
         buf[span] = '\0';
         if (!set_func(req, buf, e))
-            return 0;
+            return failure;
 
         value = s + 1;
     }
@@ -1552,7 +1549,6 @@ status_t request_send(http_request r, connection conn, error e)
 {
     assert(r != NULL);
     assert(conn != NULL);
-    (void)e; /* for now, we may want to add semantic checks later */
 
     if (!send_request_line(r, conn, e))
         return failure;

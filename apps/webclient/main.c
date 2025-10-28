@@ -25,7 +25,7 @@ int g_print_header = 0;
 const char*g_hostname = NULL;
 uint16_t g_port = 0;
 const char* g_uri = "/";
-//
+  
 // timeout is in ms.
 unsigned timeout_reads = 200, timeout_writes = 50;
 unsigned nretries_read = 1, nretries_write = 1;
@@ -204,11 +204,11 @@ int main(int argc, char *argv[])
     if (g_nthreads == 1)
         threadfunc(NULL);
     else {
-        /* allocate space for n thread id's, start threads and then join them */
-        pthread_t *threads;
+        // allocate space for n thread id's, start threads and then join them
 
         size_t cb = sizeof *threads * g_nthreads;
-        if ( (threads = malloc(cb)) == NULL)
+        pthread_t *threads = malloc(cb);
+        if ( (threads == NULL)
             die("Out of memory\n");
 
         for (size_t i = 0; i < g_nthreads; i++) {
@@ -216,7 +216,7 @@ int main(int argc, char *argv[])
                 die("Could not start thread\n");
         }
 
-        /* Join the threads */
+        // Join the threads
         for (size_t i = 0; i < g_nthreads; i++) {
             if (pthread_join(threads[i], NULL))
                 die("Could not join thread\n");

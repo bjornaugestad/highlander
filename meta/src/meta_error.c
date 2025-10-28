@@ -13,6 +13,8 @@
 #include <meta_error.h>
 #include <meta_misc.h>
 
+#define META_ERROR_MESSAGE_MAX 1024
+
 enum error_group {
     meg_unknown,
     meg_tcpip,		/* network related error */
@@ -23,9 +25,6 @@ enum error_group {
     meg_other		/* Other errors */
 };
 
-/*
- * Implementation of the error ADT.
- */
 struct error_tag {
     enum error_group group;
     int code;

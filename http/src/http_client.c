@@ -63,7 +63,8 @@ status_t http_client_connect(http_client this, const char *host, uint16_t port)
     return tcp_client_connect(this->tcpclient, host, port);
 }
 
-status_t http_client_get(http_client this, const char *host, const char *uri, error e)
+status_t http_client_get(http_client this, const char *host, const char *uri,
+    error e)
 {
     assert(this != NULL);
 
@@ -145,8 +146,6 @@ void http_client_set_retries_write(http_client this, unsigned count)
 
 int main(void)
 {
-    error e = error_new();
-
     const char *hostname = "www.random.org";
     uint16_t port = 80;
     const char *uri = "/cgi-bin/randbyte?nbytes=32&format=h";
@@ -161,10 +160,12 @@ int main(void)
     if (!http_client_connect(p, hostname, port))
         die("Could not connect to %s\n", hostname);
 
+    error e = error_new();
     if (!http_client_get(p, hostname, uri, e)) {
         http_client_disconnect(p);
         die("Could not get %s from %s\n", uri, hostname);
     }
+    error_free(e);
 
     int status = http_client_http_status(p);
     printf("Server returned %d\n", status);
@@ -186,7 +187,6 @@ int main(void)
         die("Could not disconnect from %s\n", hostname);
 
     http_client_free(p);
-    error_free(e);
     return 0;
 }
 #endif

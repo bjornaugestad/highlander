@@ -19,44 +19,40 @@
 /* Local helper functions */
 
 #ifndef CHOPPED
-static int check_attributes(http_request request, page_attribute a)
+static bool check_attributes(http_request request, page_attribute a)
 {
-    const char *page_val;
-
     assert(request != NULL);
     assert(a != NULL);
 
-    /* See if the client understands us */
-    page_val = attribute_get_media_type(a);
+    // See if the client understands us 
+    const char *page_val = attribute_get_media_type(a);
     if (page_val && !request_accepts_media_type(request, page_val))
-        return 0;
+        return false;
 
-    return 1;
+    return true;
 }
 #endif
 
 /* Checks to see if incoming accept limits fits the page attributes */
-static int fs_can_run(http_server srv, http_request request, dynamic_page p)
+static bool fs_can_run(http_server srv, http_request request, dynamic_page p)
 {
-#ifndef CHOPPED
-    page_attribute a;
-
     assert(srv != NULL);
     assert(request != NULL);
     assert(p != NULL);
 
-    a = dynamic_get_attributes(p);
-    if (NULL == a)
+#ifndef CHOPPED
+    page_attribute a = dynamic_get_attributes(p);
+    if (a == NULL)
         a = http_server_get_default_attributes(srv);
 
     /* None set, run anything */
-    if (NULL == a)
-        return 1;
+    if (a == NULL)
+        return true;
 
     return check_attributes(request, a);
 #else
     (void)srv; (void)request;(void)p;
-    return 1;
+    return true;
 
 #endif
 }
@@ -69,32 +65,24 @@ static int fs_can_run(http_server srv, http_request request, dynamic_page p)
  *	  documentroots allowed. Minimum docroot is 2 characters, and
  *	  it cannot contain "..". The docroot must either be ./ or / or
  *	  something longer.
+ * TODO: we probably want realpath() here
  */
-static status_t send_disk_file(
-    http_server srv,
-    connection conn,
-    http_request req,
-    http_response response,
-    error e)
+static status_t send_disk_file(http_server srv, http_request req,
+    http_response response, error e)
 {
-    const char *uri, *docroot;
-
     assert(srv != NULL);
-    assert(conn != NULL);
     assert(req != NULL);
     assert(response != NULL);
     assert(e != NULL);
 
-    (void)conn; /* TODO: Sjekk hvorfor funksjonen ikke sender fila??? */
-
-    /* We need a valid uri */
-    if ((uri = request_get_uri(req)) == NULL
-    || strlen(uri) == 0
-    || strstr(uri, ".."))
+    // We need a valid URI 
+    const char *uri = request_get_uri(req);
+    if (uri == NULL || strlen(uri) == 0 || strstr(uri, ".."))
         return set_http_error(e, HTTP_400_BAD_REQUEST);
 
-    /* We need a valid documentroot */
-    if ((docroot = http_server_get_documentroot(srv)) == NULL)
+    // We need a valid documentroot
+    const char *docroot = http_server_get_documentroot(srv);
+    if (docroot == NULL)
         return set_http_error(e, HTTP_400_BAD_REQUEST);
 
     size_t i = strlen(docroot);
@@ -105,8 +93,9 @@ static status_t send_disk_file(
     || strstr(docroot, "..") != NULL )
         return set_http_error(e, HTTP_400_BAD_REQUEST);
 
-    /* We need space for the absolute path */
-    char filename[CCH_URI_MAX + DOCUMENTROOT_MAX + 2];
+    // We need space for the absolute path 
+    // Add room for "/index.html'(11 chars)
+    char filename[CCH_URI_MAX + DOCUMENTROOT_MAX + 2 + 11];
 
     i += strlen(uri) + 2; /* 2 is one for slash and one for \0 */
     if (i >= sizeof filename)
@@ -124,7 +113,6 @@ static status_t send_disk_file(
     if (S_ISREG(st.st_mode))
         ;
     else if (S_ISDIR(st.st_mode)) {
-        /* BUG? If docroot+uri+index.html > sizeof filename we have issues */
         strcat(filename, "/index.html");
         if (stat(filename, &st))
             return set_http_error(e, HTTP_404_NOT_FOUND);
@@ -232,7 +220,7 @@ static status_t serviceConnection2(http_server srv, connection conn,
                 iserror = 1;
         }
         else if (http_server_can_read_files(srv)) {
-            if (!send_disk_file(srv, conn, request, response, e))
+            if (!send_disk_file(srv, request, response, e))
                 iserror = 1;
         }
         else if (http_server_has_default_page_handler(srv)) {
@@ -325,7 +313,7 @@ void* serviceConnection(void* psa)
     assert(psa != NULL);
 
     connection conn = psa;
-    error e = error_new();
+    error e = error_new(); // We alloc in inner loop. TODO: Avoid that.
     if (e == NULL)
         return NULL;
 

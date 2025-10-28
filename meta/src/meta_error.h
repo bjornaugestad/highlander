@@ -32,7 +32,6 @@ extern "C" {
  * Functions then must accept a error* as a param and return failure
  * on failure and fill out the proper values in the param.
  */
-#define META_ERROR_MESSAGE_MAX 1024
 typedef struct error_tag* error;
 error error_new(void);
 void error_free(error e);
