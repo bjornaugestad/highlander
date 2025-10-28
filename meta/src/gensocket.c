@@ -162,6 +162,7 @@ void socket_free(socket_t this)
     }
 }
 
+#ifndef CHOPPED
 // Binds a socket to an address
 static status_t socket_bind_inet(socket_t this, struct addrinfo *ai)
 {
@@ -170,6 +171,7 @@ static status_t socket_bind_inet(socket_t this, struct addrinfo *ai)
 
     return success;
 }
+#endif
 
 // call socket()
 static status_t socket_socket(socket_t this, struct addrinfo *ai)
@@ -190,6 +192,52 @@ status_t socket_create_server_socket(socket_t sock, const char *host, uint16_t p
     assert(sock->socktype == SOCKTYPE_TCP || sock->socktype == SOCKTYPE_SSL);
     assert(host != NULL);
     assert(port > 0);
+
+#ifdef CHOPPED
+    // Chopped builds are for static builds, which means that we
+    // cannot use getaddrinfo() and DNS. That's cool, we can bind
+    // to localhost and listen to some port there. Later we can
+    // configure tord to talk with us, no changes needed here.
+    // Alternatives, like AF_UNIX, may be faster, but I prefer to
+    // be able to run the program in the devVM which has no tord
+    //
+    // This version is old-school and borderline trivial. The hard part
+    // is to get the socket ADT to play along. socket_socket() wants
+    // a struct addrinfo, we nake a struct sockaddr_in. We can skip
+    // that function and just set fd directly.
+    assert(sock->fd == -1);
+    (void)host; // Always localhost
+
+    sock->fd = socket(AF_INET, SOCK_STREAM|SOCK_CLOEXEC, 0);
+    if (sock->fd == -1)
+        goto err;
+
+    if (!socket_set_reuse_addr(sock))
+        goto err;
+
+    struct sockaddr_in sa;
+    sa.sin_family = AF_INET;
+    sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    sa.sin_port        = htons(port);
+
+    int res = bind(sock->fd, (struct sockaddr *)&sa, sizeof sa);
+    if (res == -1)
+        goto err;
+
+    if (!socket_listen(sock, 100))
+        goto err;
+
+    return success;
+
+err:
+    if (sock->fd != -1) {
+        close(sock->fd);
+        sock->fd = -1;
+    }
+
+    return failure;
+
+#else
 
     char serv[6];
     snprintf(serv, sizeof serv, "%u", (unsigned)port);
@@ -221,6 +269,7 @@ yay:
 
     freeaddrinfo(res);
     return status;
+#endif
 }
 
 
