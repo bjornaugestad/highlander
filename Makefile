@@ -40,7 +40,7 @@ release: gcc_release
 san: gcc_san 
 
 gcc_debug:
-	@make -f $(actual) CFLAGS="$(CFLAGS_GCC_DEBUG)" LDFLAGS="$(COMMON_LDFLAGS) $(STATIC_LDFLAGS)"  OUTDIR=.build/gcc/debug all
+	@make -f $(actual) CFLAGS="$(CFLAGS_GCC_DEBUG)" LDFLAGS="$(COMMON_LDFLAGS)"  OUTDIR=.build/gcc/debug all
 
 gcc_san:
 	@make -f $(actual) CFLAGS="$(CFLAGS_GCC_SAN)" LDFLAGS="$(COMMON_LDFLAGS)"  OUTDIR=.build/gcc/san all 

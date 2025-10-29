@@ -20,6 +20,7 @@
 #include <meta_common.h>
 #include <cstring.h>
 #include <meta_misc.h>
+#include <meta_convert.h>
 
 #include <meta_process.h>
 
@@ -420,6 +421,40 @@ static status_t process_change_rootdir(process this)
     return success;
 }
 
+// The brain-dead getpwnam in glibc cannot be linked statically.
+// format: user:passwd:uid:gid:gecos:home:shell 
+// So look for name in column 0, and return column 2.
+static status_t get_uid_from_etc_passwd(const cstring name, uid_t *puid)
+{
+    FILE *f = fopen("/etc/passwd", "r");
+    if (f == NULL)
+        return fail(errno);
+
+    char line[1024];
+    cstring *dest = NULL;
+
+    while (fgets(line, sizeof line, f) != NULL) {
+        size_t n = cstring_split(&dest, line, ":");
+        if (n != 7)
+            die("Internal format error\n");
+
+        if (cstring_equal(name, dest[0]) == 0) {
+            const char *suid = c_str(dest[2]);
+            if (isuint(suid) && touint(suid, puid)) {
+                cstring_multifree(dest, n);
+                break;
+            }
+
+            die("Internal format error\n");
+        }
+
+        cstring_multifree(dest, n);
+    }
+
+    fclose(f);
+    return success;
+}
+
 status_t process_start(process this, int fork_and_close)
 {
     assert(this != NULL);
@@ -449,27 +484,20 @@ status_t process_start(process this, int fork_and_close)
 
     // Set current directory and user id if supplied by the caller
     if (cstring_length(this->username) > 0) {
-        struct passwd* pw;
-        errno = 0; // TODO: Save old value of errno
-        if ((pw = getpwnam(c_str(this->username))) == NULL) {
+        uid_t uid;
+        status_t found = get_uid_from_etc_passwd(this->username, &uid);
+        if (!found) {
             stop_shutdown_thread(this);
             process_run_undo_functions(this, NULL);
 
-            // Hmm, either the user didn't exist in /etc/passwd or we didn't
-            // have permission to read it or we ran out of memory. The Linux
-            // man page doesn't mention any other errno value than ENOMEM,
-            // which is why we set and test errno before return.
-            if (errno == 0)
-                errno = ENOENT;
-
-            debug("Could not get username. getpwnam() failed\n");
+            debug("Could not get username.\n");
             return failure;
         }
 
         if (!process_change_rootdir(this))
             return failure;
 
-        if (setuid(pw->pw_uid)) {
+        if (setuid(uid)) {
             // Oops, unable to change user id. This is serious since the
             // process may continue running as e.g. root. The safest thing
             // to do is therefore to stop the process.
