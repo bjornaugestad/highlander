@@ -171,7 +171,6 @@ static status_t socket_bind_inet(socket_t this, struct addrinfo *ai)
 
     return success;
 }
-#endif
 
 // call socket()
 static status_t socket_socket(socket_t this, struct addrinfo *ai)
@@ -185,7 +184,19 @@ static status_t socket_socket(socket_t this, struct addrinfo *ai)
 
     return success;
 }
+#endif
 
+// Chopped builds are for static builds, which means that we
+// cannot use getaddrinfo() and DNS. That's cool, we can bind
+// to localhost and listen to some port there. Later we can
+// configure tord to talk with us, no changes needed here.
+// Alternatives, like AF_UNIX, may be faster, but I prefer to
+// be able to run the program in the devVM which has no tord
+//
+// This version is old-school and borderline trivial. The hard part
+// is to get the socket ADT to play along. socket_socket() wants
+// a struct addrinfo, we nake a struct sockaddr_in. We can skip
+// that function and just set fd directly.
 status_t socket_create_server_socket(socket_t sock, const char *host, uint16_t port)
 {
     assert(sock != NULL);
@@ -194,17 +205,6 @@ status_t socket_create_server_socket(socket_t sock, const char *host, uint16_t p
     assert(port > 0);
 
 #ifdef CHOPPED
-    // Chopped builds are for static builds, which means that we
-    // cannot use getaddrinfo() and DNS. That's cool, we can bind
-    // to localhost and listen to some port there. Later we can
-    // configure tord to talk with us, no changes needed here.
-    // Alternatives, like AF_UNIX, may be faster, but I prefer to
-    // be able to run the program in the devVM which has no tord
-    //
-    // This version is old-school and borderline trivial. The hard part
-    // is to get the socket ADT to play along. socket_socket() wants
-    // a struct addrinfo, we nake a struct sockaddr_in. We can skip
-    // that function and just set fd directly.
     assert(sock->fd == -1);
     (void)host; // Always localhost
 
@@ -284,6 +284,10 @@ static bool is_ip_literal(const char *s)
     return inet_pton(AF_INET, s, &a4) == 1 || inet_pton(AF_INET6, s, &a6) == 1;
 }
 
+// So we want to connect to a server, but we're maybe built statically and
+// have no access to DNS. Use the CHOPPED macro to decide, just like for
+// socket_create_server_socket(). Chopped versions will only work with IP addresses,
+// so we utilize inet_aton
 static status_t tcp_create_client_socket(socket_t this, const char *host, uint16_t port)
 {
     assert(this != NULL);
@@ -292,6 +296,37 @@ static status_t tcp_create_client_socket(socket_t this, const char *host, uint16
     assert(host != NULL);
     assert(port > 0);
 
+#ifdef CHOPPED
+    assert(this->fd == -1);
+    (void)host; // Always localhost
+
+    this->fd = socket(AF_INET, SOCK_STREAM|SOCK_CLOEXEC, 0);
+    if (this->fd == -1)
+        goto err;
+
+    if (!socket_set_reuse_addr(this))
+        goto err;
+
+    struct sockaddr_in sa;
+    sa.sin_family = AF_INET;
+    sa.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    sa.sin_port        = htons(port);
+
+    int res = connect(this->fd, (struct sockaddr *)&sa, sizeof sa);
+    if (res == -1)
+        goto err;
+
+    return success;
+
+err:
+    if (this->fd != -1) {
+        close(this->fd);
+        this->fd = -1;
+    }
+
+    return failure;
+
+#else
     char serv[6];
     snprintf(serv, sizeof serv, "%u", (unsigned)port);
 
@@ -317,6 +352,7 @@ static status_t tcp_create_client_socket(socket_t this, const char *host, uint16
         return failure;
 
     return success;
+#endif
 }
 
 // THis one is a bit tricky as tcp_create_client_socket() calls socket_close() which will
