@@ -124,10 +124,10 @@ $(OUTDIR)/helloworld: apps/helloworld/main.c $(OUTDIR)/libhighlander.a $(OUTDIR)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(SYSLIBS)
 
 $(OUTDIR)/choppedworld: apps/helloworld/main.c $(OUTDIR_CHOPPED)/libchopped.a
-	$(CC) -static $(CFLAGS) $(LDFLAGS) -o $@ $^ $(SYSLIBS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(SYSLIBS)
 
 #$(OUTDIR)/http_chopped_check: meta/src/tcp_server.c $(OUTDIR_CHOPPED)/libchopped.a
-	#$(CC) -static $(CFLAGS) $(LDFLAGS) -DCHECK_TCP_SERVER -o $@ $^ $(SYSLIBS)
+	#$(CC) $(CFLAGS) $(LDFLAGS) -DCHECK_TCP_SERVER -o $@ $^ $(SYSLIBS)
 
 $(OUTDIR)/http_server_check: meta/src/tcp_server.c $(HIGHLANDER_COMMON_SRC) $(OUTDIR)/libmeta.a
 	$(CC) $(CFLAGS) $(LDFLAGS) -DCHECK_TCP_SERVER -o $@ $^ $(SYSLIBS)
@@ -202,7 +202,7 @@ $(OUTDIR)/%.o: %.c | $(OUTDIR)
 
 $(OUTDIR_CHOPPED)/%.o: %.c | $(OUTDIR)
 	@mkdir -p $(@D)
-	$(CC) $(CFLAGS) -static -DCHOPPED=1 -MMD -MP -MF $(@D)/$(@F).d -c $< -o $@
+	$(CC) $(CFLAGS) -DCHOPPED=1 -MMD -MP -MF $(@D)/$(@F).d -c $< -o $@
 
 $(OUTDIR_CHOPPED)/libchopped.a: $(LIBCHOPPED_O)
 	$(AR) rcs $@ $^
