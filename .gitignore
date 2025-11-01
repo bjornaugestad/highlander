@@ -12,3 +12,4 @@
 .gdbinit
 cscope.out
 cscope.files
+.build
