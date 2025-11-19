@@ -18,27 +18,12 @@
 #include <meta_common.h>
 #include <threadpool.h>
 
-/*
- * The work queue contains 0..max_queue_size instances of this struct.
- * It is basically a single-linked list, where each node contains pointers
- * to functions plus arguments to the functions.
- *
- * initfn and cleanupfn accept two args, their own arg plus
- * the workarg.
- *
- * 20251119: Let's get rid of the malloc/free. How? Preallocate 
- * struct work objects and put them in a meta_pool. Then we can
- * ditch the list. We still need the full/empty/not_empty semantics,
- * which meta_pool has no concept of. 
- *
- * No worries, it's super simple to add pool_full().
- *
- * pool_empty() is a bit tricker as it involves locking and we risk race conditions.
- * We need to do the locking here, not in meta_pool. We already have the locks+condvars,
- * so all we need is to replace threadpool_tag's queue pointers with an array. We skip
- * meta_pool as that adds redundant locking and possible race conditions.
- *
- */
+// 20251119: Work queue's been replaced with an array of pointers to
+// struct work objects, as well as a state array(in_use). No more malloc
+// and no more queue. Things look solid even if we hold the lock for
+// shorter periods. 
+//
+// Naming is still off and will be fixed in a separate commit.
 struct work {
     void *(*workfn)(void*);
     void *workarg;
@@ -48,8 +33,6 @@ struct work {
 
     void (*cleanupfn)(void*, void*);
     void *cleanup_arg;
-
-    struct work* next;
 };
 
 struct threadpool_tag {
@@ -58,8 +41,19 @@ struct threadpool_tag {
 
     size_t max_queue_size;
     size_t cur_queue_size;
-    struct work *queue_head;
-    struct work *queue_tail;
+
+    // Allocate this once in _new() and free it in _destroy().
+    // Same goes for the in_use array.
+    struct work **queue;
+
+    // For performance reasons, we need three states. A slot entry may be
+    // free to use by _add_work(), running as in used by work_thread(), or
+    // waiting to be executed by work_thread().
+    unsigned *in_use;
+    #define QUEUE_UNUSED 0x01
+    #define QUEUE_RUNNING 0x02
+    #define QUEUE_WAITING 0x04
+
 
     pthread_mutex_t queue_lock;
     pthread_cond_t queue_not_empty;
@@ -93,21 +87,6 @@ static inline bool queue_full(threadpool tp)
 // They all wait for work to arrive in the work queue, or for the
 // shutting_down flag to be true.
 //
-// NOTE 20251022: Looks wrong as the work is discarded.
-// The work is still in the queue, so ideally threadpool_destroy()
-// should let the work be done if finish is true, but since
-// the thread just exits, no work will be performed.
-// BUG/FIXME/TODO
-// OTOH, threadpool_destroy() does not set the shutdown flag until
-// the queue is empty, so perhaps we're all good after all? We
-// still have that one memleak which proves we're not all good.
-//
-// I think there are too many states here and a shared condvar.
-// We have queue_empty, queue_full, queue_closed, and shutting_down.
-// queue_not_full as well. Also, we only broadcast/signal
-// queue_not_full and queue_empty even if state is different. Hmm.
-// OTOH, we can only cond_wait for one condvar at a time. eventfd FTW?
-//
 // seccomp notes 20251028: We can't really drop permissions in
 // here as that affects the callback functions and we don't know
 // what they need. They can basically do anything.
@@ -135,26 +114,24 @@ static void *threadpool_exec_thread(void *arg)
             return NULL;
         }
 
-        // Remove one item from the queue
-        struct work* wp = pool->queue_head;
-        pool->cur_queue_size--;
-
-        // Link or clear the queue node pointers, as needed
-        if (queue_empty(pool))
-            pool->queue_head = pool->queue_tail = NULL;
-        else
-            pool->queue_head = wp->next;
-
-        if (pool->block_when_full
-        && pool->cur_queue_size == pool->max_queue_size - 1) {
-            // Tell producer(s) that there now is room in the queue
-            pthread_cond_signal(&pool->queue_not_full);
+        // Find pending work
+        struct work* wp = NULL;
+        size_t idx;
+        for (idx = 0; idx < pool->max_queue_size; idx++) {
+            if (pool->in_use[idx] == QUEUE_WAITING) {
+                wp = pool->queue[idx];
+                break;
+            }
         }
 
-        if (queue_empty(pool))
-            pthread_cond_signal(&pool->queue_empty);
+        // Did we find work? If not, just continue. 
+        if (wp == NULL) {
+            pthread_mutex_unlock(&pool->queue_lock);
+            continue;
+        }
 
         // Unlock the queue so that new entries can be added
+        pool->in_use[idx] = QUEUE_RUNNING;
         pthread_mutex_unlock(&pool->queue_lock);
 
         // Call initfn, if present
@@ -170,7 +147,25 @@ static void *threadpool_exec_thread(void *arg)
         if (wp->cleanupfn != 0)
             wp->cleanupfn(wp->cleanup_arg, wp->workarg);
 
-        free(wp);
+        // Reaquire the lock so we can toggle the flag. If queue is full, we must
+        // also broadcast that there's room.
+        pthread_mutex_lock(&pool->queue_lock);
+        pool->in_use[idx] = QUEUE_UNUSED;
+        pool->cur_queue_size--;
+
+        if (pool->block_when_full
+        && pool->cur_queue_size == pool->max_queue_size - 1) {
+            // Tell producer(s) that there now is room in the queue
+            pthread_cond_signal(&pool->queue_not_full);
+        }
+
+        if (queue_empty(pool))
+            pthread_cond_signal(&pool->queue_empty);
+
+        if (queue_full(pool))
+            pthread_cond_broadcast(&pool->queue_not_full);
+
+        pthread_mutex_unlock(&pool->queue_lock);
     }
 
     return NULL;
@@ -184,21 +179,36 @@ threadpool threadpool_new(size_t nthreads, size_t max_queue_size,
 
     threadpool p = malloc(sizeof *p);
     if (p == NULL)
-        return NULL;
+        goto memerr;
 
     p->threads = calloc(nthreads, sizeof *p->threads);
-    if (p->threads == NULL) {
-        free(p);
-        return NULL;
+    if (p->threads == NULL)
+        goto memerr;
+
+    // Allocate room for pointers
+    p->queue = calloc(max_queue_size, sizeof *p->queue);
+    if (p->queue == NULL)
+        goto memerr;
+
+    // allocate room for work structs
+    for (size_t i = 0; i < max_queue_size; i++) {
+        p->queue[i] = malloc(sizeof *p->queue[i]);
+        if (p->queue[i] == NULL)
+            goto memerr;
     }
+
+    p->in_use = calloc(max_queue_size, sizeof *p->in_use);
+    if (p->in_use == NULL)
+        goto memerr;
+
+    for (size_t i = 0; i < max_queue_size; i++)
+        p->in_use[i] = QUEUE_UNUSED;
 
     p->nthreads = nthreads;
     p->max_queue_size = max_queue_size;
     p->block_when_full = block_when_full;
 
     p->cur_queue_size = 0;
-    p->queue_head = NULL;
-    p->queue_tail = NULL;
     p->queue_closed = false;
     p->shutting_down = false;
 
@@ -207,6 +217,12 @@ threadpool threadpool_new(size_t nthreads, size_t max_queue_size,
     ||	(err = pthread_cond_init(&p->queue_not_empty, NULL))
     ||	(err = pthread_cond_init(&p->queue_not_full, NULL))
     ||	(err = pthread_cond_init(&p->queue_empty, NULL))) {
+        free(p->in_use);
+        if (p->queue) {
+            for (size_t i = 0; i < max_queue_size; i++)
+                free(p->queue[i]);
+            free(p->queue);
+        }
         free(p->threads);
         free(p);
         errno = err;
@@ -229,6 +245,24 @@ threadpool threadpool_new(size_t nthreads, size_t max_queue_size,
     atomic_init(&p->sum_blocked, 0);
     atomic_init(&p->sum_discarded, 0);
     return p;
+
+memerr:
+    if (p != NULL) {
+        free(p->threads);
+
+        if (p->queue != NULL) {
+            for (size_t i = 0; i < max_queue_size; i++) {
+                free(p->queue[i]);
+            }
+
+            free(p->queue);
+        }
+
+        free(p->in_use);
+        free(p);
+    }
+
+    return NULL;
 }
 
 status_t threadpool_add_work(threadpool pool,
@@ -271,14 +305,21 @@ status_t threadpool_add_work(threadpool pool,
         return fail(EINVAL);
     }
 
-    // Now add a new entry to the queue. Note that this malloc() can be
-    // avoided without performance loss if we make the threadpool less
-    // generic. For example, we could add the values to the connection
-    // object and totally avoid the malloc/free cycling of objects. The
-    // downside is that then the threadpool would only work with connection
-    // objects.
-    struct work* wp = malloc(sizeof *wp);
+    // Find an unused slot or die trying
+    struct work* wp = NULL;
+    for (size_t i = 0; i < pool->max_queue_size; i++) {
+        if (pool->in_use[i] == QUEUE_UNUSED) {
+            wp = pool->queue[i];
+            pool->in_use[i] = QUEUE_WAITING;
+            break;
+        }
+    }
+
     if (wp == NULL) {
+        // We didn't find a free slot. That's odd since the queue is not full and we hold
+        // the lock. What's going on?.
+        // Return gracefully, but WTF?
+        die("No free slots!\n");
         pthread_mutex_unlock(&pool->queue_lock);
         return failure;
     }
@@ -289,18 +330,9 @@ status_t threadpool_add_work(threadpool pool,
     wp->workarg = workarg;
     wp->cleanupfn = cleanupfn;
     wp->cleanup_arg = cleanup_arg;
-    wp->next = NULL;
 
-    if (queue_empty(pool)) {
-        pool->queue_tail = pool->queue_head = wp;
+    if (queue_empty(pool))
         pthread_cond_broadcast(&pool->queue_not_empty);
-    }
-    else {
-        // This _looks_ wrong, but's been running for decades.
-        // See also comment above about 'less generic'.
-        pool->queue_tail->next = wp;
-        pool->queue_tail = wp;
-    }
 
     pool->cur_queue_size++;
     pthread_mutex_unlock(&pool->queue_lock);
@@ -331,10 +363,6 @@ status_t threadpool_destroy(threadpool pool, bool finish)
         }
     }
 
-#if 0
-    // This is wrong. Do it later, with the lock.
-    pool->shutting_down = true;
-#endif
 
     // Wake up any sleeping worker threads so that they
     // check the shutting_down flag
@@ -350,10 +378,7 @@ status_t threadpool_destroy(threadpool pool, bool finish)
     if ((err = pthread_mutex_unlock(&pool->queue_lock)))
         return fail(err);
 
-#if 1
-    // Now get the lock back so we can shut down properly. But will
-    // it work at all? I doubt it, we can always wait for queue_empty
-    // Get the lock so that we can do a cond_wait later
+    // Now get the lock back so we can shut down properly.
     pthread_mutex_lock(&pool->queue_lock);
 
     // Wait for entries in the queue
@@ -364,11 +389,8 @@ status_t threadpool_destroy(threadpool pool, bool finish)
     pool->shutting_down = true;
     pthread_cond_broadcast(&pool->queue_not_empty);
     pthread_mutex_unlock(&pool->queue_lock);
-#endif
 
     // Now wait for each thread to finish
-    // NOTE boa@20251022: We need the lock back, right? Or do we since we
-    // block on pthread_join()?
     for (size_t i = 0; i < pool->nthreads; i++) {
         // Don't join NULL threads.
         if (pool->threads[i] == 0)
@@ -379,16 +401,13 @@ status_t threadpool_destroy(threadpool pool, bool finish)
     }
 
     free(pool->threads);
+    if (pool->queue != NULL) {
+        for (size_t i = 0; i < pool->max_queue_size; i++)
+            free(pool->queue[i]);
 
-    // Free the queue. The queue should be empty since all the worker
-    // threads remove entries from here, still we free it. The queue
-    // may have been closed just after a new entry was added, but before
-    // a worker thread could process the work.
-    while (pool->queue_head != NULL) {
-        struct work* wp = pool->queue_head;
-        pool->queue_head = pool->queue_head->next;
-        free(wp);
+        free(pool->queue);
     }
+    free(pool->in_use);
 
     pthread_mutex_destroy(&pool->queue_lock);
     free(pool);
@@ -512,6 +531,7 @@ static void *workfn(void *workarg)
     assert(workarg != NULL);
 
     struct dummy *p = workarg;
+    assert(p->str != NULL);
 
     // It should be possible to read the integer value in the str member.
     // if not, we die.
@@ -533,6 +553,7 @@ static void cleanupfn(void *cleanuparg, void *workarg)
     struct dummy *p = workarg;
     assert(p->str != NULL);
     free(p->str);
+    p->str = NULL;
 
     pool dpool = cleanuparg;
     if (!pool_recycle(dpool, p))
@@ -573,7 +594,7 @@ static void add_work(void)
 
         status_t ok = threadpool_add_work(tp, initfn, initarg, workfn, pdummy, cleanupfn, dummypool);
         if (!ok)
-            die("Could not add work");
+            die("Could not add work to blocking queue");
     }
 
 
