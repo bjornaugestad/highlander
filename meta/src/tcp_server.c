@@ -655,6 +655,7 @@ static const int accept_seccomp[] = {
     SCMP_SYS(restart_syscall),
     SCMP_SYS(clock_gettime),
     SCMP_SYS(clock_nanosleep),
+    SCMP_SYS(getrandom),        // SSL wants this one
     SCMP_SYS(madvise),          // Needed as pthread_create needs it.
     -1                          // Sentinel value, end of array
 };

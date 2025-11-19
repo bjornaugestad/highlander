@@ -14,6 +14,7 @@ extern "C" {
 
 /*
  * Generalized error handling.
+ * TODO: Add SSL specific error handling
  *
  * There can be multiple sources of errors in a server like metaweb.
  * 1. Socket errors due to network failure/hacking

@@ -35,14 +35,13 @@ int socket_get_fd(socket_t this)
 static status_t ssl_write(socket_t this, const char *buf, size_t count,
     unsigned timeout, unsigned nretries)
 {
-    size_t nwritten = 0;
-
     assert(this != NULL);
     assert(this->socktype == SOCKTYPE_SSL);
     assert(this->ssl != NULL);
     assert(this->fd >= 0);
     assert(buf != NULL);
 
+    size_t nwritten = 0;
     do {
         if (!socket_poll_for(this, timeout, POLLOUT)) {
             if (errno != EAGAIN)
@@ -93,7 +92,7 @@ static status_t ssl_write(socket_t this, const char *buf, size_t count,
         }
     } while(count > 0 && nretries--);
 
-    /* If not able to write and no errors detected, we have a timeout */
+    // If not able to write and no errors detected, we have a timeout
     if (count != 0)
         return fail(EAGAIN);
 
@@ -106,13 +105,10 @@ status_t socket_poll_for(socket_t this, unsigned timeout, short poll_for)
     assert(this->fd >= 0);
     assert(poll_for == POLLIN || poll_for == POLLOUT);
 
-    struct pollfd pfd;
-    pfd.fd = this->fd;
-    pfd.events = poll_for;
+    struct pollfd pfd = { this->fd, poll_for, 0};
 
-    /* NOTE: poll is XPG4, not POSIX */
-    int rc = poll(&pfd, 1, (int)timeout);
     status_t status = failure;
+    int rc = poll(&pfd, 1, (int)timeout);
     if (rc == 1) {
         /* We have info in pfd */
         if (pfd.revents & POLLHUP) {
@@ -287,7 +283,7 @@ static bool is_ip_literal(const char *s)
 // So we want to connect to a server, but we're maybe built statically and
 // have no access to DNS. Use the CHOPPED macro to decide, just like for
 // socket_create_server_socket(). Chopped versions will only work with IP addresses,
-// so we utilize inet_aton
+// so we utilize inet_aton (above)
 static status_t tcp_create_client_socket(socket_t this, const char *host, uint16_t port)
 {
     assert(this != NULL);
@@ -360,17 +356,16 @@ err:
 // TBH, I think we need to merge tcp_client_connect() with this code. Naming is poor at best ATM
 static status_t ssl_create_client_socket(socket_t this, void *context, const char *host, uint16_t port)
 {
+    assert(this->socktype == SOCKTYPE_SSL);
+    assert(this->ssl == NULL);
+    assert(this->fd == -1);
+
     status_t rc = tcp_create_client_socket(this, host, port);
     if (rc == failure)
         return rc;
 
-    assert(this->socktype == SOCKTYPE_SSL);
-    assert(this->ssl == NULL);
-    assert(this->fd != -1);
-
     this->ssl = SSL_new(context);
     if (this->ssl == NULL) {
-        // why not socket_close() ?
         close(this->fd);
         this->fd = -1;
         return failure;
@@ -388,7 +383,7 @@ static status_t ssl_create_client_socket(socket_t this, void *context, const cha
     int res = SSL_connect(this->ssl);
     if (res != 1) {
         int err = SSL_get_error(this->ssl, res);
-        fprintf(stderr, "%s() X4: res == %d err == %d\n", __func__, res, err);
+        (void)err;
         ERR_print_errors_fp(stderr);
 
         socket_close(this);
@@ -488,9 +483,8 @@ status_t socket_accept(socket_t listener, socket_t newsock, void *context,
 static status_t ssl_close(socket_t this)
 {
     // No object or no fd
-    if (this == NULL || this->fd == -1) {
+    if (this == NULL || this->fd == -1)
         return success;
-    }
 
     assert(this->socktype == SOCKTYPE_TCP || this->socktype == SOCKTYPE_SSL);
     if (this->ssl != NULL) {
@@ -532,6 +526,10 @@ status_t socket_close(socket_t p)
     status_t rc;
     if (p->socktype == SOCKTYPE_TCP) {
 #if 1
+        // TODO: We need to be smarter here to avoid the TIME_WAIT on 
+        // the server side(see below). Servers should not be active closer,
+        // but clients should. Perhaps add a flag to the socket object?
+        // boa@20251103
         shutdown(p->fd, SHUT_RDWR);
 #else
         // Try to push the TIME_WAIT to the client by not being the active closer
@@ -568,7 +566,7 @@ status_t socket_wait_for_data(socket_t p, unsigned timeout)
     if (p->socktype == SOCKTYPE_SSL && sslsocket_pending(p))
         return success;
 
-    return  socket_poll_for(p, timeout, POLLIN);
+    return socket_poll_for(p, timeout, POLLIN);
 }
 
 static status_t tcp_write(socket_t this, const char *buf, size_t count, unsigned timeout, unsigned nretries)
@@ -594,7 +592,7 @@ static status_t tcp_write(socket_t this, const char *buf, size_t count, unsigned
         count -= (size_t)nwritten;
     } while(count > 0 && nretries--);
 
-    /* If not able to write and no errors detected, we have a timeout */
+    // If not able to write and no errors detected, we have a timeout
     if (count != 0)
         return fail(EAGAIN);
 
@@ -708,12 +706,10 @@ ssize_t socket_read(socket_t p, char *buf, size_t count, unsigned timeout, unsig
 
 status_t socket_set_nonblock(socket_t this)
 {
-    int flags;
-
     assert(this != NULL);
     assert(this->fd >= 0);
 
-    flags = fcntl(this->fd, F_GETFL);
+    int flags = fcntl(this->fd, F_GETFL);
     if (flags == -1)
         return failure;
 
@@ -726,11 +722,9 @@ status_t socket_set_nonblock(socket_t this)
 
 status_t socket_clear_nonblock(socket_t this)
 {
-    int flags;
-
     assert(this->fd >= 0);
 
-    flags = fcntl(this->fd, F_GETFL);
+    int flags = fcntl(this->fd, F_GETFL);
     if (flags == -1)
         return failure;
 

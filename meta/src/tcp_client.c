@@ -4,6 +4,7 @@
  */
 
 #include <assert.h>
+#include <unistd.h>
 
 #include <openssl/ssl.h>
 #include <openssl/err.h>
@@ -11,6 +12,7 @@
 #include <connection.h>
 #include <gensocket.h>
 #include <cstring.h>
+#include <meta_convert.h>
 
 #include <miscssl.h>
 #include <tcp_client.h>
@@ -67,6 +69,9 @@ static int verify_callback(int ok, X509_STORE_CTX *store)
 
 // Initialize stuff for SSL context
 // Beware: We may want only one context per process
+// TODO: Don't just die. Return a proper error. Perhaps not return a pointer?
+// Do we even need to deal with certs here? We do call set_root_cert elsewhere.
+// If we can avoid load_verify_locations here, we can also avoid calling die().
 static SSL_CTX* create_client_context(void)
 {
     const SSL_METHOD* method = TLS_client_method();
@@ -75,7 +80,7 @@ static SSL_CTX* create_client_context(void)
 
     SSL_CTX *ctx = SSL_CTX_new(method);
     if (ctx == NULL)
-        die("Unable to create ssl context\n");
+        return NULL;
 
     SSL_CTX_set_min_proto_version(ctx, TLS1_3_VERSION);
     SSL_CTX_set_max_proto_version(ctx, TLS1_3_VERSION);
@@ -88,19 +93,23 @@ static SSL_CTX* create_client_context(void)
     const uint64_t flags = SSL_OP_IGNORE_UNEXPECTED_EOF | SSL_OP_NO_COMPRESSION;
     SSL_CTX_set_options(ctx, flags);
 
+#if 0
     // TODO boa@20221125: This can't be hardcoded
+    // It should be cadir, but tcp_client doesn't have that attribute. tcp_server has.
     long res = SSL_CTX_load_verify_locations(ctx, "/etc/pki/tls/certs/ca-bundle.trust.crt", NULL);
     if (res != 1)
         die("Could not load verify locations\n");
+#endif
 
     return ctx;
 }
 
 tcp_client tcp_client_new(int socktype)
 {
-    tcp_client new;
+    assert(socktype == SOCKTYPE_TCP || socktype == SOCKTYPE_SSL);
 
-    if ((new = calloc(1, sizeof *new)) == NULL)
+    tcp_client new = calloc(1, sizeof *new);
+    if (new == NULL)
         return NULL;
 
     // save it so setters know if SSL or not
@@ -111,7 +120,7 @@ tcp_client tcp_client_new(int socktype)
 
     if (socktype == SOCKTYPE_SSL
     && (new->tc_context = create_client_context()) == NULL)
-        die("Could not create ssl client context\n");
+        goto memerr;
 
     new->readbuf_size = new->writebuf_size = 10 * 1024;
     if ((new->readbuf = membuf_new(new->readbuf_size)) == NULL)
@@ -325,24 +334,10 @@ static inline int test_tcp_client(void)
     if (p == NULL)
         return 77;
 
-    tcp_client_set_timeout_write(p, 5);
-    if (tcp_client_get_timeout_write(p) != 5)
-        goto err;
-
-    tcp_client_set_timeout_read(p, 5);
-    if (tcp_client_get_timeout_read(p) != 5)
-        goto err;
-
-    tcp_client_set_retries_write(p, 5);
-    if (tcp_client_get_retries_write(p) != 5)
-        goto err;
-
-    tcp_client_set_retries_read(p, 5);
-    if (tcp_client_get_retries_read(p) != 5)
-        goto err;
-
-    // We're good to go, but where to?
-    status_t rc = tcp_client_connect(p, "www.random.org", 80);
+    // This won't work without DNS.
+    // TBH, this isn't testing tcp, but http. We should test tcp against a
+    // local tcp server like echo server.
+    status_t rc = tcp_client_connect(p, "::0", 3000);
     if (rc != success)
         goto err;
 
@@ -354,7 +349,7 @@ static inline int test_tcp_client(void)
     return 0;
 
 err:
-    fprintf(stderr, "%s() failed\n", __func__);
+    fprintf(stderr, "%s() failed. Do you have a TCP listener?\n", __func__);
     if (p)
         tcp_client_free(p);
     return 77;
@@ -367,7 +362,7 @@ static inline int test_ssl_client(void)
 
     tcp_client p = tcp_client_new(SOCKTYPE_SSL);
     if (p == NULL)
-        return 77;
+        goto err;
 
     // Set certs. We assume we're in project root dir.
     status_t rc = tcp_client_set_rootcert(p, "pki/root/root.crt");
@@ -388,7 +383,7 @@ static inline int test_ssl_client(void)
     return 0;
 
 err:
-    fprintf(stderr, "%s() failed\n", __func__);
+    fprintf(stderr, "%s() failed. Do you have an SSL listener?\n", __func__);
     if (p)
         tcp_client_free(p);
 
@@ -397,11 +392,43 @@ err:
     return 77;
 }
 
+static unsigned g_port = 3000; // -p sets port number
+static int g_ssl = 1; // -t sets tcp instead
 
-int main(void)
+static void parse_commandline(int argc, char *argv[])
 {
-    int rc = test_tcp_client();
-    rc += test_ssl_client();
+    int c;
+
+    while ((c = getopt(argc, argv, "tp:")) != EOF) {
+        switch (c) {
+            case 't':
+                g_ssl = 0;
+                break;
+
+            case 'p':
+                if (!isuint(optarg) || !touint(optarg, &g_port))
+                    die("Port number must be an unsigned short\n");
+
+                break;
+
+            case '?':
+            default:
+                fprintf(stderr, "USAGE: %s [-t] [-p portno]\n", argv[0]);
+                exit(EXIT_FAILURE);
+        }
+    }
+}
+
+int main(int argc, char *argv[])
+{
+    parse_commandline(argc, argv);
+
+    int rc = 0;
+
+    if (!g_ssl)
+        rc = test_tcp_client();
+    else
+        rc = test_ssl_client();
     return rc;
 }
 #endif
