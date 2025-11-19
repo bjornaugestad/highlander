@@ -38,25 +38,6 @@
  * so all we need is to replace threadpool_tag's queue pointers with an array. We skip
  * meta_pool as that adds redundant locking and possible race conditions.
  *
- * Food for thought. 
- * - How do we "get" and "return" work-instances from the array? We need to know
- *   if the object is in use or not. Obvious solution? array of bool flags. in_use(true/false)
- *
- * - What about sequencing of work? The queue was a FIFO queue. The array will be 
- *   an array. We can always treat it as a ring buffer, but that adds complexity and
- *   doesn't give us much functionality.
- *
- * - How to test? We really should add a test program in this file. 
- *   That should be step one, before any changes!
- *
- * - What to test? 
- *   a) adding work.
- *   b) Fill array to max_queue_size
- *   c) Do work. 
- *   d) Proper shutdown
- *   e) block when full (yes/no)
- *   f) Having multiple threads trying to add work to a full queue.
- *
  */
 struct work {
     void *(*workfn)(void*);
@@ -433,10 +414,185 @@ unsigned long threadpool_sum_added(threadpool p)
 }
 
 #ifdef CHECK_THREADPOOL
+#include <string.h>
+#include <meta_pool.h>
+
+/*
+ * Food for thought. 
+ * - How do we "get" and "return" work-instances from the array? We need to know
+ *   if the object is in use or not. Obvious solution? array of bool flags. in_use(true/false)
+ *
+ * - What about sequencing of work? The queue was a FIFO queue. The array will be 
+ *   an array. We can always treat it as a ring buffer, but that adds complexity and
+ *   doesn't give us much functionality.
+ *
+ * - How to test? We really should add a test program in this file. 
+ *   That should be step one, before any changes!
+ *
+ * - What to test? 
+ *   a) adding work.
+ *   b) Fill array to max_queue_size
+ *   c) Do work. 
+ *   d) Proper shutdown
+ *   e) block when full (yes/no)
+ *   f) Having multiple threads trying to add work to a full queue.
+ */
+
+/*
+ * We start with the basics: create and destroy
+ */
+static void create_and_destroy(void)
+{
+    size_t nworkers = 10, max_queue_size = 20;
+    bool block_when_full = false;
+
+    // test 1: nothing special
+    threadpool tp = threadpool_new(nworkers, max_queue_size, block_when_full);
+    if (tp == NULL)
+        die("threadpool_new\n");
+
+    bool finish_all_work = false;
+    status_t ok = threadpool_destroy(tp, finish_all_work);
+    if (!ok)
+        die("threadpool_destroy\n");
+
+    // test 2: let's block when full
+    block_when_full = true;
+    tp = threadpool_new(nworkers, max_queue_size, block_when_full);
+    if (tp == NULL)
+        die("threadpool_new\n");
+
+    ok = threadpool_destroy(tp, finish_all_work);
+    if (!ok)
+        die("threadpool_destroy\n");
+
+    // test 3: let's finish all work
+    tp = threadpool_new(nworkers, max_queue_size, block_when_full);
+    if (tp == NULL)
+        die("threadpool_new\n");
+
+    finish_all_work = true;
+    ok = threadpool_destroy(tp, finish_all_work);
+    if (!ok)
+        die("threadpool_destroy\n");
+}
+
+// worker functions so we can add some work and execute too
+// The init function is called once, just before we call the workfn().
+// Why? I don't remember. It may be because we want to offload init/exit code
+// from the workfn itself.
+// We add a silly struct just to have some data to play with and so
+// valgrind and sanitizers can detect issues.
+struct dummy {
+    char *str;
+};
+
+static status_t initfn(void *initarg, void *workarg)
+{
+    assert(initarg != NULL);
+    assert(workarg != NULL);
+
+    const char *initstr = initarg;
+    struct dummy *p = workarg;
+
+    size_t nbytes = strlen(initstr) + 1;
+    p->str = malloc(nbytes);
+    if (p->str == NULL)
+        return false;
+
+    memcpy(p->str, initstr, nbytes);
+    free(initarg);
+    return success;
+}
+
+// This is the function performing the actual work, like serving a socket.
+// It can do anything (or nothing, like here)
+static void *workfn(void *workarg)
+{
+    assert(workarg != NULL);
+
+    struct dummy *p = workarg;
+
+    // It should be possible to read the integer value in the str member.
+    // if not, we die.
+    int i;
+    if (sscanf(p->str, "%d", &i) != 1)
+        die("scanf: %s\n", p->str);
+    (void)i;
+
+    return NULL; // Which is fine.
+}
+
+// cleanuparg is the metapool, workarg is the struct dummy object.
+static void cleanupfn(void *cleanuparg, void *workarg)
+{
+    assert(cleanuparg != NULL);
+    assert(workarg != NULL);
+
+    // Free the memory allocated by initfn()
+    struct dummy *p = workarg;
+    assert(p->str != NULL);
+    free(p->str);
+
+    pool dpool = cleanuparg;
+    if (!pool_recycle(dpool, p))
+        die("pool_recycle");
+}
+
+static void add_work(void)
+{
+    size_t nworkers = 10, max_queue_size = 20;
+    bool block_when_full = true;
+    size_t dummypool_size = 200;
+
+    threadpool tp = threadpool_new(nworkers, max_queue_size, block_when_full);
+    if (tp == NULL)
+        die("threadpool_new\n");
+
+    // We need buffers to work on which can be freed later.
+    pool dummypool = pool_new(dummypool_size);
+    if (dummypool == NULL)
+        die("pool_new");
+
+    for (size_t i = 0; i < dummypool_size; i++) {
+        struct dummy *p = malloc(sizeof *p);
+        if (!pool_add(dummypool, p))
+            die("pool_add");
+    }
+
+    // Now add a bunch of work to the thread. It should block, so no need to test for errors
+    for (int i = 0; i < 100; i++) {
+        struct dummy *pdummy;
+
+        if (!pool_get(dummypool, (void**)&pdummy))
+            die("pool_get");
+
+        // freed by initfn
+        char *initarg = malloc(16);
+        sprintf(initarg, "%d", i);
+
+        status_t ok = threadpool_add_work(tp, initfn, initarg, workfn, pdummy, cleanupfn, dummypool);
+        if (!ok)
+            die("Could not add work");
+    }
+
+
+    // Now destroy the pool, but finish all work.
+    bool finish_all_work = true;
+    status_t ok = threadpool_destroy(tp, finish_all_work);
+    if (!ok)
+        die("threadpool_destroy\n");
+
+    // Free the dummypool too
+    pool_free(dummypool, free);
+}
+
 
 int main(void)
 {
-    return 77;
+    create_and_destroy();
+    add_work();
+    return 0;
 }
 
 #endif

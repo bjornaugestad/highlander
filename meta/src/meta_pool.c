@@ -15,6 +15,10 @@
  * The implementation of the pool adt. We allocate room for
  * a set of void *pointers, where each pointer points to one
  * element in the pool. We use a mutex to control access to the pool.
+ *
+ * NOTE boa@20251119: Perhaps we should add a condvar in case the
+ * pool runs out of objects? Tough choice as the caller may have other
+ * locks and we don't want deadlocks.
  */
 struct pool_tag {
     void** pdata;			/* Array of void *pointers */
