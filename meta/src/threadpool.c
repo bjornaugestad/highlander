@@ -25,6 +25,38 @@
  *
  * initfn and cleanupfn accept two args, their own arg plus
  * the workarg.
+ *
+ * 20251119: Let's get rid of the malloc/free. How? Preallocate 
+ * struct work objects and put them in a meta_pool. Then we can
+ * ditch the list. We still need the full/empty/not_empty semantics,
+ * which meta_pool has no concept of. 
+ *
+ * No worries, it's super simple to add pool_full().
+ *
+ * pool_empty() is a bit tricker as it involves locking and we risk race conditions.
+ * We need to do the locking here, not in meta_pool. We already have the locks+condvars,
+ * so all we need is to replace threadpool_tag's queue pointers with an array. We skip
+ * meta_pool as that adds redundant locking and possible race conditions.
+ *
+ * Food for thought. 
+ * - How do we "get" and "return" work-instances from the array? We need to know
+ *   if the object is in use or not. Obvious solution? array of bool flags. in_use(true/false)
+ *
+ * - What about sequencing of work? The queue was a FIFO queue. The array will be 
+ *   an array. We can always treat it as a ring buffer, but that adds complexity and
+ *   doesn't give us much functionality.
+ *
+ * - How to test? We really should add a test program in this file. 
+ *   That should be step one, before any changes!
+ *
+ * - What to test? 
+ *   a) adding work.
+ *   b) Fill array to max_queue_size
+ *   c) Do work. 
+ *   d) Proper shutdown
+ *   e) block when full (yes/no)
+ *   f) Having multiple threads trying to add work to a full queue.
+ *
  */
 struct work {
     void *(*workfn)(void*);
@@ -399,3 +431,12 @@ unsigned long threadpool_sum_added(threadpool p)
     assert(p != NULL);
     return atomic_load(&p->sum_work_added);
 }
+
+#ifdef CHECK_THREADPOOL
+
+int main(void)
+{
+    return 77;
+}
+
+#endif

@@ -82,7 +82,7 @@ META_TESTS=$(OUTDIR)/array_check $(OUTDIR)/bitset_check $(OUTDIR)/cache_check \
 	$(OUTDIR)/configfile_check $(OUTDIR)/convert_check $(OUTDIR)/cstring_check \
 	$(OUTDIR)/filecache_check $(OUTDIR)/list_check \
 	$(OUTDIR)/membuf_check $(OUTDIR)/miscfunc_check $(OUTDIR)/pair_check \
-	$(OUTDIR)/pool_check $(OUTDIR)/regex_check \
+	$(OUTDIR)/threadpool_check $(OUTDIR)/pool_check $(OUTDIR)/regex_check \
 	$(OUTDIR)/stack_check $(OUTDIR)/stringmap_check \
 	$(OUTDIR)/tcp_client_check $(OUTDIR)/tcp_server_check
 
@@ -173,6 +173,9 @@ $(OUTDIR)/filecache_check : meta/src/meta_filecache.c meta/src/meta_stringmap.c 
 
 $(OUTDIR)/list_check : meta/src/meta_list.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -MMD -MP -MF $(@D)/$(@F).d -DCHECK_LIST -o $@ $(filter-out %.h, $^)
+
+$(OUTDIR)/threadpool_check : meta/src/threadpool.c meta/src/meta_common.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -DCHECK_THREADPOOL -o $@ $(filter-out %.h, $^)
 
 $(OUTDIR)/membuf_check : meta/src/meta_membuf.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -DCHECK_MEMBUF -o $@ $(filter-out %.h, $^)
