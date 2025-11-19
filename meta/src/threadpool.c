@@ -25,6 +25,14 @@
 //
 // Naming is still off and will be fixed in a separate commit.
 struct work {
+    // For performance reasons, we need three states. A slot entry may be
+    // free to use by _add_work(), running as in used by work_thread(), or
+    // waiting to be executed by work_thread().
+    unsigned in_use;
+    #define QUEUE_UNUSED 0x01
+    #define QUEUE_RUNNING 0x02
+    #define QUEUE_WAITING 0x04
+
     void *(*workfn)(void*);
     void *workarg;
 
@@ -43,17 +51,7 @@ struct threadpool_tag {
     size_t cur_queue_size;
 
     // Allocate this once in _new() and free it in _destroy().
-    // Same goes for the in_use array.
     struct work **queue;
-
-    // For performance reasons, we need three states. A slot entry may be
-    // free to use by _add_work(), running as in used by work_thread(), or
-    // waiting to be executed by work_thread().
-    unsigned *in_use;
-    #define QUEUE_UNUSED 0x01
-    #define QUEUE_RUNNING 0x02
-    #define QUEUE_WAITING 0x04
-
 
     pthread_mutex_t queue_lock;
     pthread_cond_t queue_not_empty;
@@ -118,7 +116,7 @@ static void *threadpool_exec_thread(void *arg)
         struct work* wp = NULL;
         size_t idx;
         for (idx = 0; idx < pool->max_queue_size; idx++) {
-            if (pool->in_use[idx] == QUEUE_WAITING) {
+            if (pool->queue[idx]->in_use == QUEUE_WAITING) {
                 wp = pool->queue[idx];
                 break;
             }
@@ -131,7 +129,7 @@ static void *threadpool_exec_thread(void *arg)
         }
 
         // Unlock the queue so that new entries can be added
-        pool->in_use[idx] = QUEUE_RUNNING;
+        pool->queue[idx]->in_use = QUEUE_RUNNING;
         pthread_mutex_unlock(&pool->queue_lock);
 
         // Call initfn, if present
@@ -150,7 +148,7 @@ static void *threadpool_exec_thread(void *arg)
         // Reaquire the lock so we can toggle the flag. If queue is full, we must
         // also broadcast that there's room.
         pthread_mutex_lock(&pool->queue_lock);
-        pool->in_use[idx] = QUEUE_UNUSED;
+        pool->queue[idx]->in_use = QUEUE_UNUSED;
         pool->cur_queue_size--;
 
         if (pool->block_when_full
@@ -197,12 +195,8 @@ threadpool threadpool_new(size_t nthreads, size_t max_queue_size,
             goto memerr;
     }
 
-    p->in_use = calloc(max_queue_size, sizeof *p->in_use);
-    if (p->in_use == NULL)
-        goto memerr;
-
     for (size_t i = 0; i < max_queue_size; i++)
-        p->in_use[i] = QUEUE_UNUSED;
+        p->queue[i]->in_use = QUEUE_UNUSED;
 
     p->nthreads = nthreads;
     p->max_queue_size = max_queue_size;
@@ -217,7 +211,6 @@ threadpool threadpool_new(size_t nthreads, size_t max_queue_size,
     ||	(err = pthread_cond_init(&p->queue_not_empty, NULL))
     ||	(err = pthread_cond_init(&p->queue_not_full, NULL))
     ||	(err = pthread_cond_init(&p->queue_empty, NULL))) {
-        free(p->in_use);
         if (p->queue) {
             for (size_t i = 0; i < max_queue_size; i++)
                 free(p->queue[i]);
@@ -258,7 +251,6 @@ memerr:
             free(p->queue);
         }
 
-        free(p->in_use);
         free(p);
     }
 
@@ -308,9 +300,9 @@ status_t threadpool_add_work(threadpool pool,
     // Find an unused slot or die trying
     struct work* wp = NULL;
     for (size_t i = 0; i < pool->max_queue_size; i++) {
-        if (pool->in_use[i] == QUEUE_UNUSED) {
+        if (pool->queue[i]->in_use == QUEUE_UNUSED) {
             wp = pool->queue[i];
-            pool->in_use[i] = QUEUE_WAITING;
+            pool->queue[i]->in_use = QUEUE_WAITING;
             break;
         }
     }
@@ -407,7 +399,6 @@ status_t threadpool_destroy(threadpool pool, bool finish)
 
         free(pool->queue);
     }
-    free(pool->in_use);
 
     pthread_mutex_destroy(&pool->queue_lock);
     free(pool);
@@ -438,12 +429,6 @@ unsigned long threadpool_sum_added(threadpool p)
 
 /*
  * Food for thought. 
- * - How do we "get" and "return" work-instances from the array? We need to know
- *   if the object is in use or not. Obvious solution? array of bool flags. in_use(true/false)
- *
- * - What about sequencing of work? The queue was a FIFO queue. The array will be 
- *   an array. We can always treat it as a ring buffer, but that adds complexity and
- *   doesn't give us much functionality.
  *
  * - How to test? We really should add a test program in this file. 
  *   That should be step one, before any changes!
