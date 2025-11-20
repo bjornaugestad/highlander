@@ -214,7 +214,7 @@ threadpool threadpool_new(size_t nworkers, size_t capacity, bool block_when_full
 
     // allocate room for work structs
     for (size_t i = 0; i < capacity; i++) {
-        p->queue[i] = malloc(sizeof *p->queue[i]);
+        p->queue[i] = calloc(1, sizeof *p->queue[i]);
         if (p->queue[i] == NULL)
             goto memerr;
     }
@@ -540,7 +540,7 @@ static void add_work(void)
 {
     size_t nworkers = 10, capacity = 20;
     bool block_when_full = true;
-    size_t dummypool_size = 200;
+    size_t dummypool_size = 20000;
     status_t ok;
 
     threadpool tp = threadpool_new(nworkers, capacity, block_when_full);
@@ -559,7 +559,7 @@ static void add_work(void)
     }
 
     // Now add a bunch of work to the thread. 
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < (int)dummypool_size * 2; i++) {
         struct dummy *pdummy;
 
         if (!pool_get(dummypool, (void**)&pdummy))
