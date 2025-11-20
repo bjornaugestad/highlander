@@ -6,7 +6,6 @@
 #ifndef THREADPOOL_H
 #define THREADPOOL_H
 
-
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -27,17 +26,11 @@ threadpool threadpool_new(
 
 status_t threadpool_add_work(
     threadpool tp,
-    status_t (*initfn)(void*, void*),
-    void *initialize_arg,
-
-    void *(*workfn)(void*),
-    void *workarg,
-
-    void (*cleanupfn)(void*, void*),
-    void *cleanup_arg)
+    status_t (*initfn)(void*, void*),    void *initialize_arg,
+    void     *(*workfn)(void*),          void *workarg,
+    void     (*cleanupfn)(void*, void*), void *cleanup_arg)
     __attribute__((warn_unused_result))
     __attribute__((nonnull(1, 4, 5)));
-
 
 status_t threadpool_destroy(threadpool tp, bool finish)
     __attribute__((warn_unused_result));
