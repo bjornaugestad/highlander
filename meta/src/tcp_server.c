@@ -663,7 +663,6 @@ static const int accept_seccomp[] = {
 status_t tcp_server_start(tcp_server this)
 {
     assert(this != NULL);
-
     void *ctx = meta_drop_perms(accept_seccomp);
 
     status_t rc = accept_new_connections(this);

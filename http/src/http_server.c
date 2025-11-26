@@ -388,6 +388,7 @@ status_t http_server_start(http_server this)
 
     return success;
 }
+
 static status_t http_server_startv(void *p) { return http_server_start(p); }
 
 

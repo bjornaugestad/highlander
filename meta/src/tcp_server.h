@@ -10,6 +10,7 @@
 #include <stdbool.h>
 
 #include <meta_process.h>
+#include <gensocket.h>
 
 #ifdef __cplusplus
 extern "C" {
