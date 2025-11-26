@@ -73,7 +73,7 @@ LIBCHOPPED_SOURCES=\
 	meta/src/gensocket.c\
 	meta/src/meta_seccomp.c
 
-SYSLIBS=-lseccomp -lssl -lcrypto
+SYSLIBS=-lseccomp -lssl -lcrypto -ldb-5.3
 
 # Test programs for meta. We build them from source and place them in OUTDIR.
 # We need rules per program due to the -DCHECK_foo argument, but we can
@@ -89,7 +89,8 @@ META_TESTS=$(OUTDIR)/array_check $(OUTDIR)/bitset_check $(OUTDIR)/cache_check \
 # What are apps? They're basically demo programs in ~/apps/. They depend on
 # both libraries, but have their own source file, typically main.c. Some
 # apps have more source files.
-APPS=$(OUTDIR)/echoserver $(OUTDIR)/helloworld $(OUTDIR)/choppedworld
+APPS=$(OUTDIR)/echoserver $(OUTDIR)/helloworld $(OUTDIR)/choppedworld\
+	$(OUTDIR)/beep
 
 HIGHLANDER_TESTS=$(OUTDIR)/http_server_check $(OUTDIR)/http_client_check
 
@@ -133,6 +134,9 @@ HIGHLANDER_COMMON_SRC=\
 
 
 $(OUTDIR)/echoserver: apps/echoserver/main.c $(OUTDIR)/libhighlander.a 
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(SYSLIBS)
+
+$(OUTDIR)/beep: apps/beep/main.c $(OUTDIR)/libhighlander.a
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(SYSLIBS)
 
 $(OUTDIR)/helloworld: apps/helloworld/main.c $(OUTDIR)/libhighlander.a
