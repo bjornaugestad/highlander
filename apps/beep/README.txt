@@ -6,7 +6,7 @@ without JS(think Pitch) to do 'something'. Something's not defined ATM,
 but we aim for a typical webapp with users and posts and images,
 kinda like Pitch and Twitter.
 
-Remember: this is technolory research, not a final product. We keep
+Remember: this is technology research, not a final product. We keep
 it simple. 
 
 
@@ -31,6 +31,55 @@ and just keep connections between client and server persistent(for performance r
 
 SERIALIZING:
 ------------
-THat's a big one and I have no good answer. We wanna do RPC, but rpcgen
+20251126: Just wrote our own ;-) See cbuf.c. Need to add some semantic parsing eventually,
+but that's no problemo.
+
+LIFE WITH BERKELEYDB:
+---------------------
+Apparantly, we need a checkpoint thread running to checkpoint the db at regular intervals.
+No worries, but we want proper shutdown semantics and error handling. Also, we want
+to run everything by meta_process. 
+
+What will the process look like? Well, it'll have n worker threads serving db requests
+from clients. That's pretty much it. It shuts down on SIGTERM and has a checkpoint 
+thread too. Very similar to the tcp_server architecture, but the connections will be
+persistent so the client can do more than one request per TLS handshake. So we have
+a connection pool like in the echo server. TBH, we'll do just what the echo server does,
+except that we will serialize RPC requests and responses.
+
+The meta_process object will manage both the TCP server and a (new) DB server object.
+This way we can share shutdown semantics and even root resource management if needed.
+The bdb_server will only have one thread though. Calls to the library will be done
+from connection threads. By all means, bdb_server may have more than the checkpoint thread
+eventually, but right now I only see the need for one thread.
+
+So, in order to integrate bdb with meta_process, we need four functions:
+do():
+    setup environment
+    open databases
+    start checkpoint thread
+
+undo():
+    undo whatever do() did in case of failure
+
+run():
+    Not much really, since calls come from other threads
+    AFAICT, just wait for shutdown. We may even be able to just return 0 so that
+    start_one_service() is happy.
+
+shutdown():
+    stop checkpoint thread
+    close databases
+    close env
+
+
+
+
+CLIENTS:
+
+We will also need a client library and some client programs to test serializing and certs.
+That lib will not see bdb, just tcp_client and serializer.
+
+
 
 

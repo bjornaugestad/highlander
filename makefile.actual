@@ -136,8 +136,8 @@ HIGHLANDER_COMMON_SRC=\
 $(OUTDIR)/echoserver: apps/echoserver/main.c $(OUTDIR)/libhighlander.a 
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(SYSLIBS)
 
-$(OUTDIR)/beep: apps/beep/main.c $(OUTDIR)/libhighlander.a
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(SYSLIBS)
+$(OUTDIR)/beep: apps/beep/main.c apps/beep/bdb_server.c $(OUTDIR)/libhighlander.a
+	$(CC) $(CFLAGS) $(LDFLAGS) -I apps/beep -o $@ $^ $(SYSLIBS)
 
 $(OUTDIR)/helloworld: apps/helloworld/main.c $(OUTDIR)/libhighlander.a
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(SYSLIBS)

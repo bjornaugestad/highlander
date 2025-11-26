@@ -28,6 +28,7 @@
 // a thread doing whatever. It has a this pointer, a tid, and four
 // functions: do/undo is used pre-start, run is to start running, and
 // shutdown is for shutting it down.
+//
 // The idea is to be able to plug in different types of services
 // into a common process-object and manage them all at the same time.
 // For example: A process may run two http(s) services and a management
@@ -363,11 +364,9 @@ static status_t process_run_do_functions(process this)
 
 static void process_stop_services(process this, struct service *failed)
 {
-    size_t i;
-    struct service *s;
 
-    for (i = 0; i < this->nservices; i++) {
-        s = &this->services[i];
+    for (size_t i = 0; i < this->nservices; i++) {
+        struct service *s = &this->services[i];
         if (s == failed)
             return;
 
@@ -380,14 +379,12 @@ static void process_stop_services(process this, struct service *failed)
 
 static status_t process_start_services(process this)
 {
-    size_t i;
-    struct service *s;
 
     assert(this != NULL);
 
     // Now start the services
-    for (i = 0; i < this->nservices; i++) {
-        s = &this->services[i];
+    for (size_t i = 0; i < this->nservices; i++) {
+        struct service *s = &this->services[i];
 
         if (!start_one_service(s)) {
             // we failed to start one object. Do not start the rest of the
