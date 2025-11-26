@@ -7,6 +7,16 @@
 
 #include <meta_common.h>
 
+// So for the beep protocol we need a header. What goes in the header?
+// Who knows, but we need a request-id, a version, and the payload.
+// Keep it simple for as long as possible. 
+struct header {
+    uint16_t version;
+    uint16_t request; // As in what we want to do. 
+    uint64_t payload_len;
+    unsigned char *payload;
+};
+
 // We need a character buffer to serialize data to and from.
 // We need access functions, setters and getters, and we need
 // memory management. That's what the cbuf is for.

@@ -12,6 +12,7 @@
 #include <connection.h>
 
 #include <bdb_server.h>
+#include <cbuf.h>
 
 // Default type is SSL. We may enable TCP instead.
 static int m_servertype = SOCKTYPE_SSL;
@@ -36,12 +37,42 @@ static void parse_command_line(int argc, char *argv[])
     }
 }
 
+static status_t read_header(connection c, struct header *h)
+{
+    if (!connection_read_u16(c, &h->version))
+        return failure;
+
+    if (!connection_read_u16(c, &h->request))
+        return failure;
+
+    if (!connection_read_u64(c, &h->payload_len))
+        return failure;
+
+    // Now payload, which needs to be dynamically allocated and freed, as in a readbuf.
+    // If all's well, we have the # of bytes in payload_len. Byte order is still an issue.
+    char *buf = malloc(h->payload_len);
+    if (buf == NULL)
+        return failure;
+
+    if (connection_read(c, buf, h->payload_len) != (ssize_t)h->payload_len)
+        return failure;
+
+
+    fprintf(stderr, "bro, I got a valid-ish request!\n");
+    return success;
+}
+
 // This callback function kinda expects a serial format defined by us. We have our cbuf code
 // already and can amend to that code. We need header parsing, requests, 
 static void *fn(void *arg)
 {
     connection c = arg;
-    (void)c;
+    struct header h;
+
+    while (true) {
+        if (!read_header(c, &h))
+            break;
+    }
 
     return NULL;
 }

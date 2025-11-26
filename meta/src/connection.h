@@ -7,6 +7,7 @@
 #define CONNECTION_H
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include <meta_membuf.h>
 #include <gensocket.h>
@@ -60,6 +61,15 @@ status_t connection_flush(connection conn)
     __attribute__((nonnull, warn_unused_result));
 
 ssize_t  connection_read(connection conn, void *buf, size_t bufsize)
+    __attribute__((nonnull, warn_unused_result));
+
+status_t connection_read_u16(connection conn, uint16_t* val)
+    __attribute__((nonnull, warn_unused_result));
+
+status_t connection_read_u32(connection conn, uint32_t* val)
+    __attribute__((nonnull, warn_unused_result));
+
+status_t connection_read_u64(connection conn, uint64_t* val)
     __attribute__((nonnull, warn_unused_result));
 
 status_t connection_getc(connection conn, char* pchar)

@@ -379,6 +379,40 @@ ssize_t connection_read(connection this, void *buf, size_t count)
     return ncopied + nread;
 }
 
+// Read two bytes, but in which byte order? Let's stick to NBO
+// even if that's silly.
+status_t connection_read_u16(connection conn, uint16_t *val)
+{
+    unsigned char buf[sizeof *val];
+    ssize_t n = connection_read(conn, buf, sizeof buf);
+    if (n != sizeof buf)
+        return failure;
+
+    // OK, we got the number of bytes. Create the int.
+    *val  = (uint16_t)(buf[0] << 8u);
+    *val |= buf[1];
+    return success;
+}
+
+status_t connection_read_u64(connection conn, uint64_t *val)
+{
+    unsigned char buf[sizeof *val];
+    ssize_t n = connection_read(conn, buf, sizeof buf);
+    if (n != sizeof buf)
+        return failure;
+
+    // OK, we got the number of bytes. Create the int.
+    *val  = (uint64_t)buf[0] << 56u;
+    *val |= (uint64_t)buf[1] << 48u;
+    *val |= (uint64_t)buf[2] << 40u;
+    *val |= (uint64_t)buf[3] << 32u;
+    *val |= (uint64_t)buf[4] << 24u;
+    *val |= (uint64_t)buf[5] << 16u;
+    *val |= (uint64_t)buf[6] << 8u;
+    *val |= (uint64_t)buf[7] << 0u;
+
+    return success;
+}
 void *connection_arg2(connection this)
 {
     assert(this != NULL);

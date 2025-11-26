@@ -52,6 +52,7 @@ static void *checkpoint_thread(void *varg)
         }
 
         sleep(1);
+        puts("Checkpointing, bro!");
     }
 
     return NULL;
