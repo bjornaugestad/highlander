@@ -94,7 +94,7 @@ void connection_set_params(connection conn, struct sockaddr_storage* paddr)
     __attribute__((nonnull));
 
 struct sockaddr_storage* connection_get_addr(connection conn)
-    __attribute__((nonnull, warn_unused_result));
+   __attribute__((nonnull, warn_unused_result));
 
 int data_on_socket(connection conn)
     __attribute__((nonnull, warn_unused_result));

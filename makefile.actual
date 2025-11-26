@@ -90,7 +90,7 @@ META_TESTS=$(OUTDIR)/array_check $(OUTDIR)/bitset_check $(OUTDIR)/cache_check \
 # both libraries, but have their own source file, typically main.c. Some
 # apps have more source files.
 APPS=$(OUTDIR)/echoserver $(OUTDIR)/helloworld $(OUTDIR)/choppedworld\
-	$(OUTDIR)/beep
+	$(OUTDIR)/beep $(OUTDIR)/beep_client
 
 HIGHLANDER_TESTS=$(OUTDIR)/http_server_check $(OUTDIR)/http_client_check
 
@@ -137,6 +137,9 @@ $(OUTDIR)/echoserver: apps/echoserver/main.c $(OUTDIR)/libhighlander.a
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(SYSLIBS)
 
 $(OUTDIR)/beep: apps/beep/main.c apps/beep/bdb_server.c $(OUTDIR)/libhighlander.a
+	$(CC) $(CFLAGS) $(LDFLAGS) -I apps/beep -o $@ $^ $(SYSLIBS)
+
+$(OUTDIR)/beep_client: apps/beep/bdb_client.c apps/beep/user.c $(OUTDIR)/libhighlander.a
 	$(CC) $(CFLAGS) $(LDFLAGS) -I apps/beep -o $@ $^ $(SYSLIBS)
 
 $(OUTDIR)/helloworld: apps/helloworld/main.c $(OUTDIR)/libhighlander.a

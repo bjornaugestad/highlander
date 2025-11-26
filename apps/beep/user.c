@@ -28,6 +28,7 @@ void user_set_id(User u, dbid_t id)
 {
     assert(u != NULL);
     assert(id != 0); // reserved
+    u->id = id;
 }
 
 void user_set_name(User u, const char *val)
