@@ -1,0 +1,143 @@
+The database in EAR format.
+
+SOME GROUND RULES:
+------------------
+- We use indices(secondary databases) for all foreign keys
+- We use id PKs as needed, not everywhere. We will typically need the FK values to do lookups,
+    rendering the id-PK redundant.
+
+
+Entities(see below):
+Relations:
+    user has 0..n posts. A post belongs to 1:1 user
+    user has 0..n messages in inbox. A message belongs to 1:1 user
+    user subscribes to posts from 0..n users. user has 0..n subscribers.
+    user blocks 0..n users from sending messages to inbox. user is blocked by 0..n user
+    user allows 0..n users to send messages to inbox. user is allowed by 0..n user
+    user subscribes to posts in 0:n subs. A sub has 0..n subscribers
+
+General rules:
+    - all id columns are 64-bit signed values and indexed.
+    - names, nicks, et al are character fields
+    - "multimedia" resides on disk outside the db. Field is just URI
+
+# Site wide rules and defaults.
+# We need it and will add stuff here as we think of them.
+rules:
+
+user:
+    - id                # unique id
+    - name
+    - nick
+    - email
+    - hashed_password
+    - description
+    - date_created
+    - date_deleted
+    - inbox_rules       # Default ACL
+    - blocked           # Users may be blocked for a time due to misbehaviour
+    - preferences       # wants to view friends, family, subs, whatever
+
+
+# A sub is a subreddit-ish group. 
+sub: All posts are in a sub
+    - id
+    - name
+    - owner_user_id # sub is owned by a user
+
+sub_moderators:
+    - sub_id
+    - user_id
+    - priviledges
+
+sub_rules:
+    - sub_id
+    - rule_number
+    - rule_text
+
+user_subscribes_to_subs:
+    - user_id
+    - sub_id
+    - perms (can_post, et al)
+
+user_knows:
+    - user_id
+    - knows_user_id
+    - type_of_relation (friend, spouse, family)
+    - date_created
+    - date_changed
+
+inbox:
+    - id
+    - userid (owner of inbox)
+    - policy(default_allow, default_block)
+    - status (read/unread)
+    - subject
+    - content
+
+user_inbox_allowed_users:
+    - userid            # owner of inbox
+    - allowed_userid    # Can send messages
+
+user_inbox_blocked_users:
+    - user.id           # (owner of inbox)
+    - blocked_userid    # id of blocked user
+
+post:
+    - id                # unique id
+    - sub_id            # id of sub
+    - user_id           # user.id who made the post
+    - when_posted
+    - last_edited
+    - text              # the post as text
+    - "multimedia"      # Optional multimedia stuff
+    - upvotes
+    - downvotes
+
+
+post_comment:
+    - id                # unique id
+    - post_id           # post.id
+    - commenter_id      # user.id 
+    - parent_id         # if comment was on a comment.
+    - when_posted
+    - last_edited
+    - comment           # some text field
+
+subscriptions:
+    - subscriberid (userid for user who subscribes to posts from another user)
+    - user_id
+
+# A user may block other users so the user won't see other
+# users posts or comments.
+user_blocks:
+    - userid 
+    - id_of_blocked_user
+
+operations:
+    user_add()
+    user_update()
+    user_delete()
+    
+    user_post_subscribe()
+    user_post_unsubscribe()
+
+    user_post_publish()
+    user_post_delete()
+    user_post_update()
+    user_post_upvote()
+    user_post_downvote()
+
+    user_block_user();
+    user_unblock_user();
+
+    user_inbox_add_allowed_user()
+    user_inbox_del_allowed_user()
+
+    user_inbox_add_blocked_user()
+    user_inbox_del_blocked_user()
+
+    user_inbox_del_message()
+    user_inbox_del_all_messages()
+
+
