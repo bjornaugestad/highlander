@@ -7,15 +7,12 @@
 
 #include <meta_common.h>
 
-// So for the beep protocol we need a header. What goes in the header?
-// Who knows, but we need a request-id, a version, and the payload.
-// Keep it simple for as long as possible. 
-struct header {
+#define BEEP_VERSION 0x01
+struct beep_header {
     uint16_t version;
-    uint16_t request; // As in what we want to do. 
-    uint64_t payload_len;
-    unsigned char *payload;
+    uint16_t request;
 };
+
 
 // We need a character buffer to serialize data to and from.
 // We need access functions, setters and getters, and we need
@@ -39,6 +36,7 @@ void writebuf_free(writebuf this);
 static inline const unsigned char *writebuf_buf(writebuf wb) {return wb->buf;}
 static inline size_t writebuf_len(writebuf wb) {return wb->nused;}
 
+status_t writebuf_header(writebuf wb, struct beep_header *val) __attribute__((warn_unused_result));
 status_t writebuf_int8(writebuf wb, int8_t val) __attribute__((warn_unused_result));
 status_t writebuf_uint8(writebuf wb, uint8_t val) __attribute__((warn_unused_result));
 status_t writebuf_int16(writebuf wb, int16_t val) __attribute__((warn_unused_result));

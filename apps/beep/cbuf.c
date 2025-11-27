@@ -54,28 +54,28 @@ static inline status_t makeroom(writebuf this, size_t nrequired)
 
 static inline void write16(writebuf this, uint16_t val)
 {
-    this->buf[this->nused++] = (val & 0xff00) >> 8;
-    this->buf[this->nused++] = val & 0xff;
+    this->buf[this->nused++] = (unsigned char)((val & 0xff00u) >> 8u);
+    this->buf[this->nused++] = (unsigned char)(val & 0xff);
 }
 static inline void write32(writebuf this, uint32_t val)
 {
-    this->buf[this->nused++] = (val & 0xff000000) >> 24;
-    this->buf[this->nused++] = (val & 0xff0000) >> 16;
-    this->buf[this->nused++] = (val & 0xff00) >> 8;
-    this->buf[this->nused++] =  val & 0xff;
+    this->buf[this->nused++] = (unsigned char)((val & 0xff000000) >> 24);
+    this->buf[this->nused++] = (unsigned char)((val & 0xff0000) >> 16);
+    this->buf[this->nused++] = (unsigned char)((val & 0xff00) >> 8);
+    this->buf[this->nused++] = (unsigned char)(val & 0xff);
 }
 
 // Tag is already written. This fn is here to merge redundant code
 static inline void write64(writebuf this, uint64_t val)
 {
-    this->buf[this->nused++] = (val & 0xff00000000000000) >> 56;
-    this->buf[this->nused++] = (val & 0xff000000000000) >> 48;
-    this->buf[this->nused++] = (val & 0xff0000000000) >> 40;
-    this->buf[this->nused++] = (val & 0xff00000000) >> 32;
-    this->buf[this->nused++] = (val & 0xff000000) >> 24;
-    this->buf[this->nused++] = (val & 0xff0000) >> 16;
-    this->buf[this->nused++] = (val & 0xff00) >> 8;
-    this->buf[this->nused++] =  val & 0xff;
+    this->buf[this->nused++] = (unsigned char)((val & 0xff00000000000000) >> 56);
+    this->buf[this->nused++] = (unsigned char)((val & 0xff000000000000) >> 48);
+    this->buf[this->nused++] = (unsigned char)((val & 0xff0000000000) >> 40);
+    this->buf[this->nused++] = (unsigned char)((val & 0xff00000000) >> 32);
+    this->buf[this->nused++] = (unsigned char)((val & 0xff000000) >> 24);
+    this->buf[this->nused++] = (unsigned char)((val & 0xff0000) >> 16);
+    this->buf[this->nused++] = (unsigned char)((val & 0xff00) >> 8);
+    this->buf[this->nused++] = (unsigned char)(val & 0xff);
 }
 
 status_t writebuf_int8(writebuf wb, int8_t val)
@@ -86,7 +86,7 @@ status_t writebuf_int8(writebuf wb, int8_t val)
         return failure;
 
     wb->buf[wb->nused++] = 'c';
-    wb->buf[wb->nused++] = val;
+    wb->buf[wb->nused++] = (unsigned char)val;
     return success;
 }
 
@@ -110,7 +110,7 @@ status_t writebuf_int16(writebuf wb, int16_t val)
         return failure;
 
     wb->buf[wb->nused++] = 'h';
-    write16(wb, val);
+    write16(wb, (uint16_t)val);
     return success;
 }
 
@@ -134,7 +134,7 @@ status_t writebuf_int32(writebuf wb, int32_t val)
         return failure;
 
     wb->buf[wb->nused++] = 'i';
-    write32(wb, val);
+    write32(wb, (uint32_t)val);
     return success;
 }
 
@@ -157,7 +157,7 @@ status_t writebuf_int64(writebuf wb, int64_t val)
     if (!makeroom(wb, sizeof val + 1))
         return failure;
 
-    write64(wb, val);
+    write64(wb, (uint64_t)val);
     return success;
 }
 
@@ -173,6 +173,16 @@ status_t writebuf_uint64(writebuf wb, uint64_t val)
     return success;
 }
 
+status_t writebuf_header(writebuf wb, struct beep_header *h)
+{
+    if (!makeroom(wb, sizeof *h))
+        return failure;
+
+    write16(wb, h->version);
+    write16(wb, h->request);
+    return success;
+}
+
 status_t writebuf_float(writebuf wb, float val)
 {
     assert(wb != NULL);
@@ -180,7 +190,7 @@ status_t writebuf_float(writebuf wb, float val)
     if (!makeroom(wb, sizeof val + 1))
         return failure;
     wb->buf[wb->nused++] = 'f';
-    write32(wb, *(int32_t*)&val);
+    write32(wb, *(uint32_t*)&val);
     return success;
 }
 
@@ -192,7 +202,7 @@ status_t writebuf_double(writebuf wb, double val)
         return failure;
 
     wb->buf[wb->nused++] = 'd';
-    write64(wb, *(int64_t*)&val);
+    write64(wb, *(uint64_t*)&val);
     return success;
 }
 
@@ -204,7 +214,7 @@ status_t writebuf_datetime(writebuf wb, int64_t val)
         return failure;
 
     wb->buf[wb->nused++] = 'D';
-    write64(wb, val);
+    write64(wb, (uint64_t)val);
     return success;
 }
 
@@ -361,7 +371,7 @@ static inline void read16(readbuf rb, uint16_t *dest)
     assert(dest != NULL);
     assert(nunread(rb) >= sizeof *dest);
 
-    *dest = rb->buf[rb->nread++] << 8;
+    *dest = (uint16_t)(rb->buf[rb->nread++] << 8u);
     *dest |= rb->buf[rb->nread++];
 }
 
@@ -401,7 +411,7 @@ status_t readbuf_int8(readbuf rb, int8_t *val)
     if (!expect(rb, 'c'))
         return failure;
 
-    *val = rb->buf[rb->nread++];
+    *val = (int8_t)rb->buf[rb->nread++];
     return success;
 }
 

@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <meta_common.h>
+#include <tcp_client.h>
 
 // Going old-school here, ditching flatcc, xdr, and what else.
 // We can always change our minds later.
@@ -61,10 +62,10 @@ const char * user_email(User);
 size_t user_size_t(User);
 
 // Dispatcher stuff and messages
-int user_add(User);
-int user_del(User);
-int user_get(name_t name, User);
-int user_update(User);
+status_t user_add(User, tcp_client clnt);
+status_t user_del(User);
+status_t user_get(name_t name, User);
+status_t user_update(User);
 
 // Now let us add a new entity, Posts. We want to evaluate 1:n relations
 typedef struct post_tag {

@@ -10,7 +10,7 @@
 
 actual=makefile.actual
 
-CC=gcc
+CC=musl-gcc
 # Shared between gcc and clang. (clang's out. Too many targets: 20251029)
 COMMON_CFLAGS=-Wall -Wextra -Wpedantic -Werror -std=gnu2x -Wstrict-prototypes \
 	-Wmissing-prototypes -Wwrite-strings -Wshadow -Wcast-align -Wpointer-arith\

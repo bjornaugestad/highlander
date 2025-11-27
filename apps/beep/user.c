@@ -24,6 +24,11 @@ void user_free(User u)
     }
 }
 
+size_t user_size_t(User u)
+{
+    return sizeof *u;
+}
+
 void user_set_id(User u, dbid_t id)
 {
     assert(u != NULL);
