@@ -1,8 +1,17 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
-#include "beep_db.h"
+#include <beep_user.h>
+#include <cbuf.h>
+
+struct user_tag {
+    dbid_t id;
+    name_t name;
+    nick_t nick;
+    email_t email;
+};
 
 User user_new(void)
 {
@@ -90,4 +99,37 @@ const char * user_email(User u)
     return u->email;
 }
 
+
+// Send the user to the server for insertion into the database.
+// We need a version, a request id, as well as payload.
+status_t user_add(User u, connection conn)
+{
+    assert(u != NULL);
+
+    struct beep_header h = {BEEP_VERSION, BEEP_USER_ADD};
+
+    if (!writebuf_header(conn, &h))
+        return failure;
+
+    if (!writebuf_object_start(conn)
+    ||  !writebuf_uint64(conn, user_id(u))
+    ||  !writebuf_string(conn, user_name(u))
+    ||  !writebuf_string(conn, user_nick(u))
+    ||  !writebuf_string(conn, user_email(u))
+    ||  !writebuf_object_end(conn))
+        return failure;
+
+    if (!connection_flush(conn))
+        die("Could not flush connection");
+
+    sleep(4);
+
+    // Now read a reply just to see if we're non-blocking or not.
+    char buf[1024];
+    ssize_t nread = connection_read(conn, buf, sizeof buf);
+    if (nread < 0)
+        die("error reading from server\n");
+
+    return success;
+}
 

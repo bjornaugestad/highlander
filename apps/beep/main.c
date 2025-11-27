@@ -14,6 +14,7 @@
 #include <bdb_server.h>
 #include <cbuf.h>
 #include <beep_db.h>
+#include <beep_user.h>
 
 // Default type is SSL. We may enable TCP instead.
 static int m_servertype = SOCKTYPE_SSL;

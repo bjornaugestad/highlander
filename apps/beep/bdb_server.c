@@ -41,18 +41,15 @@ struct bdb_server_tag {
 static void *checkpoint_thread(void *varg)
 {
     bdb_server srv = varg;
-    int ret;
 
-    puts("Right here, bro");
     while (!srv->shutting_down) {
-        ret = srv->envp->txn_checkpoint(srv->envp, 0, 0, 0);
+        int ret = srv->envp->txn_checkpoint(srv->envp, 0, 0, 0);
         if (ret != 0) {
             srv->envp->err(srv->envp, ret, "checkpoint thread");
             exit(1);
         }
 
         sleep(1);
-        puts("Checkpointing, bro!");
     }
 
     return NULL;
