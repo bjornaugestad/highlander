@@ -190,8 +190,10 @@ status_t writebuf_float(writebuf wb, float val)
     if (!makeroom(wb, sizeof val + 1))
         return failure;
     wb->buf[wb->nused++] = 'f';
-    write32(wb, *(uint32_t*)&val);
-    return success;
+
+    char tmp[4];
+    memcpy(tmp, &val, 4);
+    return writebuf_blob(wb, tmp, 4);
 }
 
 status_t writebuf_double(writebuf wb, double val)
@@ -202,8 +204,9 @@ status_t writebuf_double(writebuf wb, double val)
         return failure;
 
     wb->buf[wb->nused++] = 'd';
-    write64(wb, *(uint64_t*)&val);
-    return success;
+    char tmp[8];
+    memcpy(tmp, &val, 8);
+    return writebuf_blob(wb, tmp, 8);
 }
 
 status_t writebuf_datetime(writebuf wb, int64_t val)
