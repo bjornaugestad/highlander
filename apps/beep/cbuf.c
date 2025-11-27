@@ -4,38 +4,6 @@
 
 #include "cbuf.h"
 
-static inline status_t write16(connection conn, uint16_t val)
-{
-    unsigned char buf[2];
-    buf[0] = (unsigned char)((val & 0xff00u) >> 8u);
-    buf[1] = (unsigned char)(val  & 0xff);
-    return connection_write(conn, buf, sizeof buf);
-}
-static inline status_t write32(connection conn, uint32_t val)
-{
-    unsigned char buf[4];
-    buf[0] = (unsigned char)((val & 0xff000000) >> 24);
-    buf[1] = (unsigned char)((val & 0xff0000) >> 16);
-    buf[2] = (unsigned char)((val & 0xff00) >> 8);
-    buf[3] = (unsigned char)(val & 0xff);
-    return connection_write(conn, buf, sizeof buf);
-}
-
-// Tag is already written. This fn is here to merge redundant code
-static inline status_t write64(connection conn, uint64_t val)
-{
-    unsigned char buf[8];
-    buf[0] = (unsigned char)((val & 0xff00000000000000) >> 56);
-    buf[1] = (unsigned char)((val & 0xff000000000000) >> 48);
-    buf[2] = (unsigned char)((val & 0xff0000000000) >> 40);
-    buf[3] = (unsigned char)((val & 0xff00000000) >> 32);
-    buf[4] = (unsigned char)((val & 0xff000000) >> 24);
-    buf[5] = (unsigned char)((val & 0xff0000) >> 16);
-    buf[6] = (unsigned char)((val & 0xff00) >> 8);
-    buf[7] = (unsigned char)(val & 0xff);
-    return connection_write(conn, buf, sizeof buf);
-}
-
 status_t writebuf_int8(connection conn, int8_t val)
 {
     assert(conn != NULL);
@@ -56,7 +24,7 @@ status_t writebuf_int16(connection conn, int16_t val)
     if (!connection_putc(conn, 'h'))
         return failure;
 
-    return write16(conn, (uint16_t)val);
+    return connection_write_u16(conn, (uint16_t)val);
 }
 
 status_t writebuf_uint16(connection conn, uint16_t val)
@@ -65,7 +33,7 @@ status_t writebuf_uint16(connection conn, uint16_t val)
 
     if (!connection_putc(conn, 'H'))
         return failure;
-    return write16(conn, val);
+    return connection_write_u16(conn, val);
 }
 
 status_t writebuf_int32(connection conn, int32_t val)
@@ -75,7 +43,7 @@ status_t writebuf_int32(connection conn, int32_t val)
     if (!connection_putc(conn, 'i'))
         return failure;
 
-    return write32(conn, (uint32_t)val);
+    return connection_write_u32(conn, (uint32_t)val);
 }
 
 status_t writebuf_uint32(connection conn, uint32_t val)
@@ -85,7 +53,7 @@ status_t writebuf_uint32(connection conn, uint32_t val)
     if (!connection_putc(conn, 'I'))
         return failure;
 
-    return write32(conn, (uint32_t)val);
+    return connection_write_u32(conn, (uint32_t)val);
 }
 
 status_t writebuf_int64(connection conn, int64_t val)
@@ -95,7 +63,7 @@ status_t writebuf_int64(connection conn, int64_t val)
     if (!connection_putc(conn, 'l'))
         return failure;
 
-    return write64(conn, (uint64_t)val);
+    return connection_write_u64(conn, (uint64_t)val);
 }
 
 status_t writebuf_uint64(connection conn, uint64_t val)
@@ -105,7 +73,7 @@ status_t writebuf_uint64(connection conn, uint64_t val)
     if (!connection_putc(conn, 'L'))
         return failure;
 
-    return write64(conn, (uint64_t)val);
+    return connection_write_u64(conn, (uint64_t)val);
 }
 
 status_t writebuf_header(connection conn, const struct beep_header *h)
@@ -113,10 +81,10 @@ status_t writebuf_header(connection conn, const struct beep_header *h)
     assert(conn != NULL);
     assert(h != NULL);
 
-    if (!write16(conn, h->version))
+    if (!connection_write_u16(conn, h->version))
         return failure;
 
-    if (!write16(conn, h->request))
+    if (!connection_write_u16(conn, h->request))
         return failure;
 
     return success;
@@ -158,13 +126,13 @@ status_t writebuf_reply(connection conn, const struct beep_reply *r)
     assert(conn != NULL);
     assert(r != NULL);
 
-    if (!write16(conn, r->version))
+    if (!connection_write_u16(conn, r->version))
         return failure;
 
-    if (!write16(conn, r->request))
+    if (!connection_write_u16(conn, r->request))
         return failure;
 
-    if (!write16(conn, r->status))
+    if (!connection_write_u16(conn, r->status))
         return failure;
 
     return connection_flush(conn);
@@ -201,7 +169,7 @@ status_t writebuf_datetime(connection conn, int64_t val)
     if (!connection_putc(conn, 'D'))
         return failure;
 
-    return write64(conn, (uint64_t)val);
+    return connection_write_u64(conn, (uint64_t)val);
 }
 
 status_t writebuf_bool(connection conn, bool val)
@@ -229,7 +197,7 @@ status_t writebuf_string(connection conn, const char *src)
         return failure;
 
     // String length, 4 bytes
-    if (!write32(conn, (uint32_t)cb))
+    if (!connection_write_u32(conn, (uint32_t)cb))
         return failure;
 
     return connection_write(conn, src, cb);
@@ -241,7 +209,7 @@ status_t writebuf_blob(connection conn, const void *buf, size_t buflen)
     if (!connection_putc(conn, 'X'))
         return failure;
 
-    if (!write32(conn, (uint32_t)buflen))
+    if (!connection_write_u32(conn, (uint32_t)buflen))
         return failure;
 
     return connection_write(conn, buf, buflen);
@@ -294,35 +262,6 @@ static inline bool expect(connection conn, int val)
 
     return false;
 }
-
-#if 0
-static inline void read32(connection conn, uint32_t *dest)
-{
-    assert(conn != NULL);
-    assert(dest != NULL);
-
-    *dest  = (uint32_t)rb->buf[rb->nread++] << 24;
-    *dest |= (uint32_t)rb->buf[rb->nread++] << 16;
-    *dest |= (uint32_t)rb->buf[rb->nread++] << 8;
-    *dest |= (uint32_t)rb->buf[rb->nread++];
-}
-
-static inline void read64(connection conn, uint64_t *dest)
-{
-    assert(conn != NULL);
-    assert(dest != NULL);
-
-    *dest  = (uint64_t)rb->buf[rb->nread++] << 56;
-    *dest |= (uint64_t)rb->buf[rb->nread++] << 48;
-    *dest |= (uint64_t)rb->buf[rb->nread++] << 40;
-    *dest |= (uint64_t)rb->buf[rb->nread++] << 32;
-    *dest |= (uint64_t)rb->buf[rb->nread++] << 24;
-    *dest |= (uint64_t)rb->buf[rb->nread++] << 16;
-    *dest |= (uint64_t)rb->buf[rb->nread++] << 8;
-    *dest |= rb->buf[rb->nread++];
-}
-
-#endif
 
 status_t readbuf_int8(connection conn, int8_t *val)
 {

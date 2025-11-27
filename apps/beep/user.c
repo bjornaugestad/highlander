@@ -125,22 +125,12 @@ status_t user_send(User u, connection conn)
 // Read { i X X X } directly for that sweet sweet zero-copy bragging right
 status_t user_recv(User u, connection conn)
 {
-    if (!readbuf_object_start(conn))
-        return failure;
-
-    if (!readbuf_uint64(conn, &u->id))
-        return failure;
-
-    if (!readbuf_string(conn, u->name, sizeof u->name))
-        return failure;
-
-    if (!readbuf_string(conn, u->nick, sizeof u->nick))
-        return failure;
-
-    if (!readbuf_string(conn, u->email, sizeof u->email))
-        return failure;
-
-    if (!readbuf_object_end(conn))
+    if (!readbuf_object_start(conn)
+    ||  !readbuf_uint64(conn, &u->id)
+    ||  !readbuf_string(conn, u->name, sizeof u->name)
+    ||  !readbuf_string(conn, u->nick, sizeof u->nick)
+    ||  !readbuf_string(conn, u->email, sizeof u->email)
+    ||  !readbuf_object_end(conn))
         return failure;
 
     // Cool we now may have a deserialized User object.

@@ -72,6 +72,15 @@ status_t connection_read_u32(connection conn, uint32_t* val)
 status_t connection_read_u64(connection conn, uint64_t* val)
     __attribute__((nonnull, warn_unused_result));
 
+status_t connection_write_u16(connection conn, uint16_t val)
+    __attribute__((nonnull, warn_unused_result));
+
+status_t connection_write_u32(connection conn, uint32_t val)
+    __attribute__((nonnull, warn_unused_result));
+
+status_t connection_write_u64(connection conn, uint64_t val)
+    __attribute__((nonnull, warn_unused_result));
+
 status_t connection_getc(connection conn, char* pchar)
     __attribute__((nonnull, warn_unused_result));
 

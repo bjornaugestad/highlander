@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <time.h>
 #include <errno.h>
+#include <stdint.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -20,6 +21,27 @@
 #include <connection.h>
 #include <gensocket.h>
 #include <cstring.h>
+
+
+// I got bored of shuffling bytes, so here goes
+// 64-bit network to host byte order
+static inline uint64_t ntohll(uint64_t val) {
+    if (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__) {
+        return ((uint64_t)ntohl(val & 0xFFFFFFFF) << 32) | ntohl((uint32_t)(val >> 32));
+    } else {
+        return val;
+    }
+}
+
+// 64-bit host to network byte order
+static inline uint64_t htonll(uint64_t val) {
+    if (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__) {
+        return ((uint64_t)htonl(val & 0xFFFFFFFF) << 32) | htonl((uint32_t)(val >> 32));
+    } else {
+        return val;
+    }
+}
+
 
 /*
  * NOTE: Security
@@ -336,7 +358,6 @@ static ssize_t read_from_socket(connection this, void *buf, size_t count)
     if (nread > 0)
         this->incoming_bytes += (size_t)nread;
 
-    fprintf(stderr, "%s(): returning %d\n", __func__, (int) nread);
     return nread;
 }
 
@@ -384,33 +405,44 @@ ssize_t connection_read(connection this, void *buf, size_t count)
 // even if that's silly.
 status_t connection_read_u16(connection conn, uint16_t *val)
 {
-    unsigned char buf[sizeof *val];
-    ssize_t n = connection_read(conn, buf, sizeof buf);
-    if (n == -1) {
-        return failure;
-    }
+    assert(conn != NULL);
+    assert(val != NULL);
 
-    // OK, we got the number of bytes. Create the int.
-    *val  = (uint16_t)(buf[0] << 8u);
-    *val |= buf[1];
+    ssize_t n = connection_read(conn, val, sizeof *val);
+    if (n != (ssize_t) sizeof *val)
+        return failure;
+
+    *val = ntohs(*val);
     return success;
 }
+
+status_t connection_write_u16(connection conn, uint16_t val)
+{
+    assert(conn != NULL);
+    val = htons(val);
+
+    return connection_write(conn, &val, sizeof val);
+}
+
 
 status_t connection_read_u32(connection conn, uint32_t *val)
 {
-    unsigned char buf[sizeof *val];
-    ssize_t n = connection_read(conn, buf, sizeof buf);
-    if (n != sizeof buf)
+    ssize_t n = connection_read(conn, val, sizeof *val);
+    if (n != sizeof *val)
         return failure;
 
-    // OK, we got the number of bytes. Create the int.
-    *val  = (uint32_t)buf[0] << 24u;
-    *val |= (uint32_t)buf[1] << 16u;
-    *val |= (uint32_t)buf[2] <<  8u;
-    *val |= (uint32_t)buf[3];
-
+    *val = ntohl(*val);
     return success;
 }
+
+status_t connection_write_u32(connection conn, uint32_t val)
+{
+    assert(conn != NULL);
+    val = htonl(val);
+
+    return connection_write(conn, &val, sizeof val);
+}
+
 status_t connection_read_u64(connection conn, uint64_t *val)
 {
     unsigned char buf[sizeof *val];
@@ -418,17 +450,14 @@ status_t connection_read_u64(connection conn, uint64_t *val)
     if (n != sizeof buf)
         return failure;
 
-    // OK, we got the number of bytes. Create the int.
-    *val  = (uint64_t)buf[0] << 56u;
-    *val |= (uint64_t)buf[1] << 48u;
-    *val |= (uint64_t)buf[2] << 40u;
-    *val |= (uint64_t)buf[3] << 32u;
-    *val |= (uint64_t)buf[4] << 24u;
-    *val |= (uint64_t)buf[5] << 16u;
-    *val |= (uint64_t)buf[6] << 8u;
-    *val |= (uint64_t)buf[7] << 0u;
-
+    *val = ntohll(*val);
     return success;
+}
+
+status_t connection_write_u64(connection conn, uint64_t val)
+{
+    val = htonll(val);
+    return connection_write(conn, &val, sizeof val);
 }
 
 void *connection_arg2(connection this)
