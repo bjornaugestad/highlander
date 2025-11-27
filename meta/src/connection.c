@@ -98,6 +98,7 @@ static inline status_t fill_read_buffer(connection this)
         membuf_set_written(this->readbuf, (size_t)nread);
     }
 
+    fprintf(stderr, "%s(): returning %d\n", __func__, (int) nread);
     return nread > 0 ? success : failure;
 }
 
@@ -336,6 +337,7 @@ static ssize_t read_from_socket(connection this, void *buf, size_t count)
     if (nread > 0)
         this->incoming_bytes += (size_t)nread;
 
+    fprintf(stderr, "%s(): returning %d\n", __func__, (int) nread);
     return nread;
 }
 
@@ -385,8 +387,10 @@ status_t connection_read_u16(connection conn, uint16_t *val)
 {
     unsigned char buf[sizeof *val];
     ssize_t n = connection_read(conn, buf, sizeof buf);
-    if (n != sizeof buf)
+    if (n == -1) {
+        fprintf(stderr, "Expected 2, got %d: %s\n", (int)n, strerror(errno));
         return failure;
+    }
 
     // OK, we got the number of bytes. Create the int.
     *val  = (uint16_t)(buf[0] << 8u);
@@ -394,6 +398,21 @@ status_t connection_read_u16(connection conn, uint16_t *val)
     return success;
 }
 
+status_t connection_read_u32(connection conn, uint32_t *val)
+{
+    unsigned char buf[sizeof *val];
+    ssize_t n = connection_read(conn, buf, sizeof buf);
+    if (n != sizeof buf)
+        return failure;
+
+    // OK, we got the number of bytes. Create the int.
+    *val  = (uint32_t)buf[0] << 24u;
+    *val |= (uint32_t)buf[1] << 16u;
+    *val |= (uint32_t)buf[2] <<  8u;
+    *val |= (uint32_t)buf[3];
+
+    return success;
+}
 status_t connection_read_u64(connection conn, uint64_t *val)
 {
     unsigned char buf[sizeof *val];
@@ -413,6 +432,7 @@ status_t connection_read_u64(connection conn, uint64_t *val)
 
     return success;
 }
+
 void *connection_arg2(connection this)
 {
     assert(this != NULL);

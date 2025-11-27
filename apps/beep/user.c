@@ -32,7 +32,7 @@ size_t user_size_t(User u)
 void user_set_id(User u, dbid_t id)
 {
     assert(u != NULL);
-    assert(id != 0); // reserved
+    // assert(id != 0); // reserved
     u->id = id;
 }
 

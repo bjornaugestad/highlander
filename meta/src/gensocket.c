@@ -675,20 +675,24 @@ static ssize_t tcp_read(socket_t this, char *dest, size_t count, unsigned timeou
             if (errno == EAGAIN)
                 continue; // Try again.
 
+            fprintf(stderr, "%s(): 1\n", __func__);
             return -1;
         }
 
         // Return data asap, even if partial
         ssize_t nread = read(this->fd, dest, count);
+        fprintf(stderr, "%s(): 2: nread == %d\n", __func__, (int)nread);
         if (nread > 0)
             return nread;
 
         if (nread == -1 && errno != EAGAIN) {
             /* An error occured. Uncool. */
+            fprintf(stderr, "%s(): 3: error: nread == %d\n", __func__, (int)nread);
             return -1;
         }
     } while (nretries--);
 
+    fprintf(stderr, "%s(): 4:timeout\n", __func__);
     return -1; // We timed out
 }
 
