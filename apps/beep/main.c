@@ -41,13 +41,7 @@ static void parse_command_line(int argc, char *argv[])
 
 static status_t read_header(connection conn, struct beep_header *h)
 {
-    if (!connection_read_u16(conn, &h->version))
-        return failure;
-
-    if (!connection_read_u16(conn, &h->request))
-        return failure;
-
-    return success;
+    return readbuf_header(conn, h);
 }
 
 // Read a User object off the stream. Format is { id name nick email },
@@ -56,33 +50,23 @@ static status_t read_header(connection conn, struct beep_header *h)
 static void* user_add_handler(connection conn)
 {
     User u = user_new();
-    uint64_t id;
-    char buf[1024]; // bigger than all fields in User
-
-    if (!readbuf_object_start(conn))
+    if (u == NULL)
         return NULL;
 
-    if (!readbuf_uint64(conn, &id))
+    if (!user_recv(u, conn)) {
+        user_free(u);
         return NULL;
+    }
 
-    user_set_id(u, id);
+    user_free(u);
 
-    if (!readbuf_string(conn, buf, sizeof buf))
+    // Send a reply to the client. KISS...
+    struct beep_reply r = { BEEP_VERSION, BEEP_USER_ADD, 0};
+
+    if (!writebuf_reply(conn, &r)) {
+        fprintf(stderr, "Could not send reply\n");
         return NULL;
-    user_set_name(u, buf);
-
-    if (!readbuf_string(conn, buf, sizeof buf))
-        return NULL;
-    user_set_nick(u, buf);
-
-    if (!readbuf_string(conn, buf, sizeof buf))
-        return NULL;
-    user_set_email(u, buf);
-
-    if (!readbuf_object_end(conn))
-        return NULL;
-
-    // Cool we now may have a deserialized User object.
+    }
 
     return NULL;
 }
@@ -97,9 +81,6 @@ static void *beep_callback(void *arg)
     if (!read_header(conn, &h))
         return NULL;
 
-    // We got a header
-    printf("header.version %d request: %d\n", h.version, h.request);
-
     if (h.version != BEEP_VERSION) {
         fprintf(stderr, "Unknown protocol version %d\n", h.version);
         return NULL;
@@ -110,10 +91,6 @@ static void *beep_callback(void *arg)
         default:
             fprintf(stderr, "Unknown request %d\n", h.request);
             break;
-    }
-
-    // send something back
-    if (!connection_write(conn, "hello", 5) || !connection_flush(conn)) {
     }
 
     return NULL;

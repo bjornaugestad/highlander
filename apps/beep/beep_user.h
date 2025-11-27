@@ -28,7 +28,9 @@ const char * user_email(User);
 size_t user_size_t(User);
 
 // Dispatcher stuff and messages
-status_t user_add(User, connection clnt);
+status_t user_send(User, connection conn);
+status_t user_recv(User, connection conn);
+
 status_t user_del(User);
 status_t user_get(name_t name, User);
 status_t user_update(User);

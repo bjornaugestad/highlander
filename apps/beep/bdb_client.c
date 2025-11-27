@@ -55,10 +55,16 @@ int main(void)
 
     connection conn = tcp_client_connection(clnt);
 
-    rc = user_add(u, conn);
-
-
+    rc = user_send(u, conn);
     user_free(u);
+    printf("User sent: result: %s\n", rc ? "success" : "failure");
+
+    struct beep_reply r;
+    if (!readbuf_reply(conn, &r))
+        die("Got no reply from server");
+
+    printf("Reply from server: %d\n", (int)r.status);
+
     tcp_client_close(clnt);
     tcp_client_free(clnt);
     return 0;

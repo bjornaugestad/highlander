@@ -108,11 +108,66 @@ status_t writebuf_uint64(connection conn, uint64_t val)
     return write64(conn, (uint64_t)val);
 }
 
-status_t writebuf_header(connection conn, struct beep_header *h)
+status_t writebuf_header(connection conn, const struct beep_header *h)
 {
-    write16(conn, h->version);
-    write16(conn, h->request);
+    assert(conn != NULL);
+    assert(h != NULL);
+
+    if (!write16(conn, h->version))
+        return failure;
+
+    if (!write16(conn, h->request))
+        return failure;
+
     return success;
+}
+
+status_t readbuf_header(connection conn, struct beep_header *h)
+{
+    assert(conn != NULL);
+    assert(h != NULL);
+
+    if (!connection_read_u16(conn, &h->version))
+        return failure;
+
+    if (!connection_read_u16(conn, &h->request))
+        return failure;
+
+    return success;
+}
+
+status_t readbuf_reply(connection conn, struct beep_reply *r)
+{
+    assert(conn != NULL);
+    assert(r != NULL);
+
+    if (!connection_read_u16(conn, &r->version))
+        return failure;
+
+    if (!connection_read_u16(conn, &r->request))
+        return failure;
+
+    if (!connection_read_u16(conn, &r->status))
+        return failure;
+
+    return success;
+}
+
+status_t writebuf_reply(connection conn, const struct beep_reply *r)
+{
+    assert(conn != NULL);
+    assert(r != NULL);
+
+    if (!write16(conn, r->version))
+        return failure;
+
+    if (!write16(conn, r->request))
+        return failure;
+
+    if (!write16(conn, r->status))
+        return failure;
+
+    return connection_flush(conn);
 }
 
 status_t writebuf_float(connection conn, float val)

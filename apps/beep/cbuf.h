@@ -14,7 +14,14 @@ struct beep_header {
     uint16_t request;
 };
 
-status_t writebuf_header(connection conn, struct beep_header *val) __attribute__((warn_unused_result));
+struct beep_reply {
+    uint16_t version;
+    uint16_t request;
+    uint16_t status;
+};
+
+status_t writebuf_header(connection conn, const struct beep_header *val) __attribute__((warn_unused_result));
+status_t writebuf_reply(connection conn, const struct beep_reply *val) __attribute__((warn_unused_result));
 status_t writebuf_int8(connection conn, int8_t val) __attribute__((warn_unused_result));
 status_t writebuf_uint8(connection conn, uint8_t val) __attribute__((warn_unused_result));
 status_t writebuf_int16(connection conn, int16_t val) __attribute__((warn_unused_result));
@@ -36,6 +43,8 @@ status_t writebuf_array_end(connection conn) __attribute__((warn_unused_result))
 status_t writebuf_object_start(connection conn) __attribute__((warn_unused_result));
 status_t writebuf_object_end(connection conn) __attribute__((warn_unused_result));
 
+status_t readbuf_header(connection conn, struct beep_header *val) __attribute__((warn_unused_result));
+status_t readbuf_reply(connection conn, struct beep_reply *val) __attribute__((warn_unused_result));
 status_t readbuf_int8(connection conn, int8_t *val) __attribute__((warn_unused_result));
 status_t readbuf_uint8(connection conn, uint8_t *val) __attribute__((warn_unused_result));
 status_t readbuf_int16(connection conn, int16_t *val) __attribute__((warn_unused_result));

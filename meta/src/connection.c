@@ -98,7 +98,6 @@ static inline status_t fill_read_buffer(connection this)
         membuf_set_written(this->readbuf, (size_t)nread);
     }
 
-    fprintf(stderr, "%s(): returning %d\n", __func__, (int) nread);
     return nread > 0 ? success : failure;
 }
 
@@ -388,7 +387,6 @@ status_t connection_read_u16(connection conn, uint16_t *val)
     unsigned char buf[sizeof *val];
     ssize_t n = connection_read(conn, buf, sizeof buf);
     if (n == -1) {
-        fprintf(stderr, "Expected 2, got %d: %s\n", (int)n, strerror(errno));
         return failure;
     }
 
