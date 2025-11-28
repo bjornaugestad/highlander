@@ -431,7 +431,6 @@ status_t readbuf_object_end(connection conn)
 {
     assert(conn != NULL);
     return expect(conn, '}') ? success : failure;
-
 }
 
 status_t readbuf_string(connection conn, char *dest, size_t destsize)

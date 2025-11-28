@@ -11,8 +11,12 @@
 #include <bdb_server.h>
 
 // Now how do we organize our databases(tables)? We need to refer to them by some ID. 
+// How do we do operations? We need to unify the ops here so we get ACID right. Also,
+// we do NOT want to access ENV all over the places.
+//
 // Sentinel value: 0
 #define DB_USERS 0x01
+
 static struct database {
     int id;
     DB *dbp;
@@ -22,7 +26,7 @@ static struct database {
     uint32_t access_method;
     int filemode;
 } databases[] = {
-    { DB_USERS, NULL, NULL, DB_CREATE, "users.db", DB_BTREE, 0 },
+    { DB_USERS, NULL, NULL, DB_CREATE | DB_THREAD, "users.db", DB_BTREE, 0 },
     { 0, NULL, NULL, 0, 0, DB_BTREE, 0 },
 };
 
@@ -57,6 +61,8 @@ static void *checkpoint_thread(void *varg)
 
 static status_t open_databases(bdb_server p)
 {
+    assert(p != NULL);
+
     // Open the databases
     for (size_t i = 0; p->db[i].id != 0; i++) {
         int ret = db_create(&p[i].db->dbp, p->envp, 0);
@@ -65,7 +71,8 @@ static status_t open_databases(bdb_server p)
             return failure;
         }
 
-        ret = p[i].db->dbp->open(p[i].db->dbp, p[i].db->transaction_pointer, p[i].db->diskfile, NULL, p[i].db->access_method, p[i].db->openflags, p[i].db->filemode);
+        ret = p[i].db->dbp->open(p[i].db->dbp, p[i].db->transaction_pointer, p[i].db->diskfile, NULL,
+            p[i].db->access_method, p[i].db->openflags, p[i].db->filemode);
         if (ret != 0) {
             fprintf(stderr, "Could not open db: %s\n", db_strerror(ret));
             return failure;
@@ -77,6 +84,8 @@ static status_t open_databases(bdb_server p)
 
 static status_t close_databases(bdb_server p)
 {
+    assert(p != NULL);
+
     // Close all databases
     for (size_t i = 0; p->db[i].id != 0; i++) {
         if (p->db[i].dbp != NULL)
@@ -85,6 +94,27 @@ static status_t close_databases(bdb_server p)
 
     return success;
 }
+
+static struct database *find_database(int id)
+{
+    assert(id != 0 && "Bro, 0 is sentinel value"); 
+    size_t i, n = sizeof databases / sizeof *databases;
+
+    for (i = 0; i < n; i++) {
+        if (databases[i].id == id)
+            return databases + i;
+    }
+
+    return NULL;
+}
+
+// Set up the environment
+static const uint32_t env_flags = DB_CREATE 
+    | DB_INIT_LOCK 
+    | DB_INIT_LOG 
+    | DB_INIT_MPOOL 
+    | DB_THREAD 
+    | DB_INIT_TXN;
 
 status_t bdb_server_do_func(void *v)
 {
@@ -99,8 +129,6 @@ status_t bdb_server_do_func(void *v)
     if (ret != 0)
         return failure;
 
-    // Set up the environment
-    const uint32_t env_flags = DB_CREATE | DB_INIT_LOCK | DB_INIT_LOG | DB_INIT_MPOOL | DB_THREAD | DB_INIT_TXN;
     ret = p->envp->open(p->envp, p->homedir, env_flags, 0);
     if (ret != 0)
         return failure;
@@ -115,9 +143,7 @@ status_t bdb_server_do_func(void *v)
 }
 
 // If do_func() failed, we need to reverse whatever do_func() did
-// So kill checkpoint thread, close all databases, close env. Alternative is to
-// have do_func() clean up after itself. Nice idea, but it doesn't fit multi-object process management.
-// Another object may fail even if this do_func() succeeded.
+// So kill checkpoint thread, close all databases, close env. 
 status_t bdb_server_undo_func(void *v)
 {
     bdb_server p = v;
@@ -133,7 +159,7 @@ status_t bdb_server_undo_func(void *v)
     if (ret != 0)
         fprintf(stderr, "env close failed: %s\n", db_strerror(ret));
 
-    return success;
+    return ret == 0 ? success : failure;
 }
 
 status_t bdb_server_run_func(void *v)
@@ -176,8 +202,6 @@ bdb_server bdb_server_new(void)
     return new;
 }
 
-
-
 void bdb_server_free(bdb_server this)
 {
     if (this != NULL) {
@@ -185,3 +209,58 @@ void bdb_server_free(bdb_server this)
         free(this);
     }
 }
+
+
+// When's a user valid for insertion? We need a name and a nick, which
+// should be unique too. Let's just see if insert fails due to duplicates
+// instead of creating a race cond by checking here.
+static bool user_valid_for_insert(User u)
+{
+    assert(u != NULL);
+    if (strlen(user_name(u)) == 0
+    ||  strlen(user_nick(u)) == 0
+    ||  strlen(user_email(u)) == 0)
+        return false;
+
+    if (user_id(u) != 0)
+        return false;
+
+    return true;
+}
+
+// Notes from the western front: Bdb is harder than RMDBS
+// We want to insert one row in the users table
+// We need a DB_SEQUENCE for the users table
+// We need two secondary databases for the two unique columns(name, nick), perhaps even three(email)
+// 
+// No worries: We just need to add whatever to the databases table, and use associate() to
+// connect stuff. Here we just need to
+// a) grab db pointers for each db
+// b) start a transaction 
+// c) get a new sequence id, insert row, update sequence db, commit.
+//
+// First time is always the hardest... ;)
+// 
+// On sequences: They're special. Check out /usr/share/doc/libdb-devel/examples/c/ex_sequence.c.
+// The gist is that they work with db_seq_t numbers, are created with db_sequence_create(),
+// and we should probably use one per unique PK. So users_sequence for users.db, and so forth.
+// NOTE that db_sequence_create() wants a DB*. That's not the users.db in our case, but a "users_sequence.db"
+//
+//
+// On secondary databases: Read more in the tutorial first. It's messy. Not hard, just not elegant.
+status_t bdb_user_add(User u)
+{
+    assert(u != NULL);
+    if (!user_valid_for_insert(u))
+        return failure;
+
+    struct database *db = find_database(DB_USERS);
+    assert(db != NULL);
+    assert(db->dbp != NULL);
+
+    (void)u;
+    (void)db;
+
+    return success;
+}
+

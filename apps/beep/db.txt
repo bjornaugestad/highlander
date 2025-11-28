@@ -5,6 +5,8 @@ SOME GROUND RULES:
 - We use indices(secondary databases) for all foreign keys
 - We use id PKs as needed, not everywhere. We will typically need the FK values to do lookups,
     rendering the id-PK redundant.
+- index overhead is for real, so don't add PKs all over the place unless needed. 
+- sequences are easy to use, but require yet another database for persistence.
 
 
 Entities(see below):

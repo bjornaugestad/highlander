@@ -57,13 +57,13 @@ int main(void)
 
     rc = user_send(u, conn);
     user_free(u);
-    printf("User sent: result: %s\n", rc ? "success" : "failure");
+    // printf("User sent: result: %s\n", rc ? "success" : "failure");
 
     struct beep_reply r;
     if (!readbuf_reply(conn, &r))
         die("Got no reply from server");
 
-    printf("Reply from server: %d\n", (int)r.status);
+    // printf("Reply from server: %d\n", (int)r.status);
 
     tcp_client_close(clnt);
     tcp_client_free(clnt);
