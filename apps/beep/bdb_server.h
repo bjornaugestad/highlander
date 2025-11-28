@@ -18,7 +18,7 @@ status_t bdb_server_run_func(void *v);
 status_t bdb_server_shutdown_func(void *v);
 
 // Insert a new User record.
-status_t bdb_user_add(User u);
+dbid_t bdb_user_add(bdb_server srv, User u);
 
 #endif
 

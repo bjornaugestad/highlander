@@ -210,14 +210,15 @@ static bool user_valid_for_insert(User u)
 //
 //
 // On secondary databases: Read more in the tutorial first. It's messy. Not hard, just not elegant.
-status_t bdb_user_add(User u)
+dbid_t bdb_user_add(bdb_server srv, User u)
 {
     assert(u != NULL);
     if (!user_valid_for_insert(u))
-        return failure;
+        return 0;
 
     (void)u;
+    (void)srv;
 
-    return success;
+    return 1;
 }
 

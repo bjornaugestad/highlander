@@ -15,6 +15,7 @@
 #include <cbuf.h>
 #include <beep_db.h>
 #include <beep_user.h>
+#include <db_user.h>
 
 // Default type is SSL. We may enable TCP instead.
 static int m_servertype = SOCKTYPE_SSL;
@@ -57,6 +58,14 @@ static void* user_add_handler(connection conn)
         user_free(u);
         return NULL;
     }
+
+    // We get the db object via the connection's optional argument arg2.
+    bdb_server db = connection_arg2(conn);
+    assert(db != NULL);
+
+    printf("Here's a good place to call db_user_ins()...\n");
+    dbid_t id = bdb_user_add(db, u);
+    (void)id;
 
     user_free(u);
 
@@ -101,13 +110,15 @@ int main(int argc, char *argv[])
     parse_command_line(argc, argv);
     bdb_server db = bdb_server_new();
     tcp_server srv = tcp_server_new(SOCKTYPE_TCP); // Chill with TLS
+
+    // Set this one early as it's assigned when connection pool is contructed
+    tcp_server_set_service_function(srv, beep_callback, db);
     process p = process_new("beep");
 
     tcp_server_set_port(srv, 3000);
     if (!tcp_server_init(srv))
         die("tcp_server_init");
 
-    tcp_server_set_service_function(srv, beep_callback, NULL);
     tcp_server_start_via_process(p, srv);
 
     status_t rc = process_add_object_to_start(p, db, 
