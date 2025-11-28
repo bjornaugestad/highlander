@@ -137,6 +137,7 @@ $(OUTDIR)/echoserver: apps/echoserver/main.c $(OUTDIR)/libhighlander.a
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(SYSLIBS)
 
 $(OUTDIR)/beep: apps/beep/main.c apps/beep/cbuf.c apps/beep/bdb_server.c apps/beep/user.c \
+	apps/beep/db_user.c \
 	$(OUTDIR)/libhighlander.a
 	$(CC) $(CFLAGS) $(LDFLAGS) -I apps/beep -o $@ $^ $(SYSLIBS)
 

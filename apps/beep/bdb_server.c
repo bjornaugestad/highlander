@@ -9,33 +9,16 @@
 #include <meta_common.h>
 
 #include <bdb_server.h>
-
-// Now how do we organize our databases(tables)? We need to refer to them by some ID. 
-// How do we do operations? We need to unify the ops here so we get ACID right. Also,
-// we do NOT want to access ENV all over the places.
-//
-// Sentinel value: 0
-#define DB_USERS 0x01
-
-static struct database {
-    int id;
-    DB *dbp;
-    void *transaction_pointer;
-    uint32_t openflags;
-    const char *diskfile;
-    uint32_t access_method;
-    int filemode;
-} databases[] = {
-    { DB_USERS, NULL, NULL, DB_CREATE | DB_THREAD, "users.db", DB_BTREE, 0 },
-    { 0, NULL, NULL, 0, 0, DB_BTREE, 0 },
-};
+#include <db_user.h>
 
 struct bdb_server_tag {
     DB_ENV *envp; 
-    struct database *db; // Pointer to the table above
     const char *homedir;
     pthread_t checkpoint_tid;
     _Atomic bool shutting_down;
+
+    // Databases
+    db_user users;
 };
 
 
@@ -63,49 +46,21 @@ static status_t open_databases(bdb_server p)
 {
     assert(p != NULL);
 
-    // Open the databases
-    for (size_t i = 0; p->db[i].id != 0; i++) {
-        int ret = db_create(&p[i].db->dbp, p->envp, 0);
-        if (ret != 0) {
-            fprintf(stderr, "Could not create db: %s\n", db_strerror(ret));
-            return failure;
-        }
+    if (!db_user_open(p->users, p->envp))
+        return failure;
 
-        ret = p[i].db->dbp->open(p[i].db->dbp, p[i].db->transaction_pointer, p[i].db->diskfile, NULL,
-            p[i].db->access_method, p[i].db->openflags, p[i].db->filemode);
-        if (ret != 0) {
-            fprintf(stderr, "Could not open db: %s\n", db_strerror(ret));
-            return failure;
-        }
-    }
-    
     return success;
 }
 
 static status_t close_databases(bdb_server p)
 {
     assert(p != NULL);
+    assert(p->users != NULL);
 
-    // Close all databases
-    for (size_t i = 0; p->db[i].id != 0; i++) {
-        if (p->db[i].dbp != NULL)
-            p->db[i].dbp->close(p->db[i].dbp, 0);
-    }
+    if (!db_user_close(p->users))
+        return failure;
 
     return success;
-}
-
-static struct database *find_database(int id)
-{
-    assert(id != 0 && "Bro, 0 is sentinel value"); 
-    size_t i, n = sizeof databases / sizeof *databases;
-
-    for (i = 0; i < n; i++) {
-        if (databases[i].id == id)
-            return databases + i;
-    }
-
-    return NULL;
 }
 
 // Set up the environment
@@ -191,13 +146,19 @@ status_t bdb_server_shutdown_func(void *v)
 bdb_server bdb_server_new(void)
 {
     bdb_server new = malloc(sizeof *new);
-    if (new != NULL) {
-        new->db = databases;
-        new->homedir = ".";
-        new->checkpoint_tid = 0;
-        new->shutting_down = false;
-        new->envp = NULL;
+    if (new == NULL)
+        return NULL;
+
+    new->users = db_user_new();
+    if (new->users == NULL) {
+        free(new);
+        return NULL;
     }
+
+    new->homedir = ".";
+    new->checkpoint_tid = 0;
+    new->shutting_down = false;
+    new->envp = NULL;
 
     return new;
 }
@@ -206,6 +167,7 @@ void bdb_server_free(bdb_server this)
 {
     if (this != NULL) {
         // Semantics: Do we want the dtor to close everything? Not really
+        db_user_free(this->users);
         free(this);
     }
 }
@@ -254,12 +216,7 @@ status_t bdb_user_add(User u)
     if (!user_valid_for_insert(u))
         return failure;
 
-    struct database *db = find_database(DB_USERS);
-    assert(db != NULL);
-    assert(db->dbp != NULL);
-
     (void)u;
-    (void)db;
 
     return success;
 }
