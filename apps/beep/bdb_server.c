@@ -21,6 +21,11 @@ struct bdb_server_tag {
     db_user users;
 };
 
+db_user bdb_user_database(bdb_server p)
+{
+    assert(p != NULL);
+    return p->users;
+}
 
 // Checkpoint from time to time.
 // Code's from the Core-C-Txn.pdf and needs more love eventually.

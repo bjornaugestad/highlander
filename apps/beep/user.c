@@ -13,6 +13,11 @@ struct user_tag {
     email_t email;
 };
 
+uint32_t user_size(void)
+{
+    return sizeof (struct user_tag);
+}
+
 User user_new(void)
 {
     User new = malloc(sizeof *new);

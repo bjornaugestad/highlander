@@ -207,9 +207,35 @@ dbid_t bdb_user_add(bdb_server srv, User u)
     if (!user_valid_for_insert(u))
         return 0;
 
-    (void)u;
-    (void)srv;
+    db_user dbu = bdb_user_database(srv);
+    
+    // Get a sequence number 
+    db_seq_t dbid;
+    int ret = dbu->seq->get(dbu->seq, NULL, 1, &dbid, 0);
+    if (ret)
+        goto err;
 
-    return 1;
+    // Assign the sequence number as the new PK
+    user_set_id(u, (dbid_t)dbid);
+
+    // Write the record to the database (big moment)
+    DBT key, data;
+    memset(&key, 0, sizeof key);
+    memset(&data, 0, sizeof data);
+    key.data = &dbid;
+    key.size = sizeof dbid;
+
+    data.data = u;
+    data.size = user_size();
+    ret = dbu->dbp->put(dbu->dbp, NULL, &key, &data, DB_NOOVERWRITE);
+    if (ret)
+        goto err;
+
+    return (dbid_t)dbid;
+
+err:
+    fprintf(stderr, "Meh, hit err with ret == %d: %s\n", ret, db_strerror(ret));
+    return 0;
+    
 }
 

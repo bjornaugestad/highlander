@@ -63,7 +63,6 @@ static void* user_add_handler(connection conn)
     bdb_server db = connection_arg2(conn);
     assert(db != NULL);
 
-    printf("Here's a good place to call db_user_ins()...\n");
     dbid_t id = bdb_user_add(db, u);
     (void)id;
 

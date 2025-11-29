@@ -4,6 +4,7 @@
 #include <meta_common.h>
 
 #include <beep_user.h>
+#include <db_user.h>
 
 
 // Stuff we need to integrate bdb_server with meta_process
@@ -19,6 +20,8 @@ status_t bdb_server_shutdown_func(void *v);
 
 // Insert a new User record.
 dbid_t bdb_user_add(bdb_server srv, User u);
+
+db_user bdb_user_database(bdb_server srv);
 
 #endif
 

@@ -1,6 +1,8 @@
 #ifndef BEEP_USER_H
 #define BEEP_USER_H
 
+#include <stdint.h>
+
 #include <meta_common.h>
 #include <connection.h>
 
@@ -11,6 +13,7 @@ typedef struct user_tag *User;
 // Some user functions
 User user_new(void);
 void user_free(User p);
+uint32_t user_size(void);
 
 // Setters
 void user_set_id(User, dbid_t);
