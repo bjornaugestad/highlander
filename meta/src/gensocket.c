@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <fcntl.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <netdb.h>
 #include <unistd.h>
 #include <sys/poll.h>
@@ -744,6 +745,13 @@ status_t socket_listen(socket_t this, int backlog)
         return failure;
 
     return success;
+}
+
+status_t socket_set_tcp_nodelay(socket_t this)
+{
+    int one = 1;
+    int rc = setsockopt(this->fd, IPPROTO_TCP, TCP_NODELAY, &one, sizeof one);
+    return rc == 0 ? success : failure;
 }
 
 status_t socket_set_reuse_addr(socket_t this)

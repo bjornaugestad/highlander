@@ -58,6 +58,7 @@ status_t socket_write(socket_t p, const char *s, size_t count, unsigned timeout,
 ssize_t  socket_read(socket_t p, char *buf, size_t count, unsigned timeout, unsigned retries)
     __attribute__((warn_unused_result, nonnull));
 
+status_t socket_set_tcp_nodelay(socket_t this) __attribute__((warn_unused_result));
 status_t socket_set_nonblock(socket_t p) __attribute__((warn_unused_result));
 status_t socket_set_reuse_addr(socket_t p) __attribute__((warn_unused_result));
 status_t socket_clear_nonblock(socket_t p) __attribute__((warn_unused_result));
