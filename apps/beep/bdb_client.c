@@ -38,33 +38,52 @@
 #include <beep_db.h>
 #include <beep_user.h>
 
+static dbid_t readbuf_read_id(connection conn)
+{
+    dbid_t id;
+
+    if (readbuf_object_start(conn)
+    &&  readbuf_uint64(conn, &id)
+    &&  readbuf_object_end(conn))
+        return id;
+
+    return 0;
+}
+
 int main(void)
 {
+    size_t i, n = 1000;
     tcp_client clnt = tcp_client_new(SOCKTYPE_TCP);
-    //tcp_client_set_hostname(clnt, "localhost");
-    //tcp_client_set_port(clnt, 3000);
 
     status_t rc = tcp_client_connect(clnt, "::1", 3000);
     if (rc != success)
         die("Failed to connect to server");
 
-    User u = user_new();
-    user_set_name(u, "hello");
-    user_set_nick(u, "world");
-    user_set_email(u, "wtf@foo.com");
-
     connection conn = tcp_client_connection(clnt);
 
-    rc = user_send(u, conn);
+    User u = user_new();
+
+    for (i = 0; i < n; i++) {
+        fprintf(stderr, "Iter %zu\n", i + 1);
+        char buf[100];
+        sprintf(buf, "%zu", i);
+        user_set_name(u, buf);
+        user_set_nick(u, buf);
+        user_set_email(u, buf);
+        rc = user_send(u, conn);
+
+        struct beep_reply r;
+        if (!readbuf_reply(conn, &r))
+            die("Got no reply from server");
+
+        if (r.status != 0)
+            break;
+
+        dbid_t newid = readbuf_read_id(conn);
+        (void)newid;
+    }
+
     user_free(u);
-    // printf("User sent: result: %s\n", rc ? "success" : "failure");
-
-    struct beep_reply r;
-    if (!readbuf_reply(conn, &r))
-        die("Got no reply from server");
-
-    // printf("Reply from server: %d\n", (int)r.status);
-
     tcp_client_close(clnt);
     tcp_client_free(clnt);
     return 0;

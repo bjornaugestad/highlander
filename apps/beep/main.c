@@ -48,15 +48,15 @@ static status_t read_header(connection conn, struct beep_header *h)
 // Read a User object off the stream. Format is { id name nick email },
 // but id isn't really needed as we're inserting a new user to the db and will
 // create the unique id using bdb sequence. 
-static void* user_add_handler(connection conn)
+static status_t user_add_handler(connection conn)
 {
     User u = user_new();
     if (u == NULL)
-        return NULL;
+        return failure;
 
     if (!user_recv(u, conn)) {
         user_free(u);
-        return NULL;
+        return failure;
     }
 
     // We get the db object via the connection's optional argument arg2.
@@ -64,7 +64,6 @@ static void* user_add_handler(connection conn)
     assert(db != NULL);
 
     dbid_t id = bdb_user_add(db, u);
-    (void)id;
 
     user_free(u);
 
@@ -73,31 +72,50 @@ static void* user_add_handler(connection conn)
 
     if (!writebuf_reply(conn, &r)) {
         fprintf(stderr, "Could not send reply\n");
-        return NULL;
+        return failure;
     }
 
-    return NULL;
+    // Gotta write the new dbid too.
+    if (!writebuf_object_start(conn)
+    ||  !writebuf_uint64(conn, id)
+    ||  !writebuf_object_end(conn)
+    ||  !connection_flush(conn)) {
+        fprintf(stderr, "Could not send new id\n");
+        return failure;
+    }
+
+
+    printf("Sent id: %lu\n", (unsigned long)id);
+    return success;
 }
 
 // This callback function kinda expects a serial format defined by us. We have our cbuf code
 // already and can amend to that code. We need header parsing, requests, 
+//
 static void *beep_callback(void *arg)
 {
     connection conn = arg;
     struct beep_header h;
 
-    if (!read_header(conn, &h))
-        return NULL;
+    while (read_header(conn, &h)) {
 
-    if (h.version != BEEP_VERSION) {
-        fprintf(stderr, "Unknown protocol version %d\n", h.version);
-        return NULL;
-    }
+        if (h.version != BEEP_VERSION) {
+            fprintf(stderr, "Unknown protocol version %d\n", h.version);
+            return NULL;
+        }
 
-    switch(h.request) {
-        case BEEP_USER_ADD: return user_add_handler(conn);
-        default:
-            fprintf(stderr, "Unknown request %d\n", h.request);
+        status_t status = failure;
+        switch(h.request) {
+            case BEEP_USER_ADD: 
+                status = user_add_handler(conn);
+                break;
+
+            default:
+                fprintf(stderr, "Unknown request %d\n", h.request);
+                break;
+        }
+
+        if (status != success)
             break;
     }
 

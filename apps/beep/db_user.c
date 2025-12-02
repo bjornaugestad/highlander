@@ -7,9 +7,39 @@
 
 // Lots of databases. One primary, dbp, three secondary ones for unique constraints,
 // and finally a place for the user sequence to be stored.
-//
+// 20251202: We need a unified way of dealing with databases, as there will be lots of them.
+// So we're back to the good old database struct and will add functions do deal with them.
+
+struct database {
+    DB *dbp; 
+    void *txp;                   // Transaction pointer
+    const char *diskfile; 
+    const char *logical_db_name; // Optional
+    int access;     // BTREE/QUEUE/HASH
+    uint32_t flags;
+    int mode; // File's mode on disk (think umask)
+};
+
+// So for our user database, we need the following databases. Primary is always zero.
+// Be precise for array indices!
+#define DB_USER_USER     0x00   // primary db
+#define DB_USER_NAME     0x01   // The secondary db
+#define DB_USER_NICK     0x02   // also secondary db
+#define DB_USER_EMAIL    0x03   // also secondary db
+#define DB_USER_SEQUENCE 0x04   // The sequence database to generate user.id
+
+static struct database user_databases[] = {
+    { NULL, NULL, "users.db",          NULL, DB_BTREE, DB_CREATE | DB_THREAD, 0 },
+    { NULL, NULL, "users_name.db",     NULL, DB_BTREE, DB_CREATE | DB_THREAD, 0 },
+    { NULL, NULL, "users_nick.db",     NULL, DB_BTREE, DB_CREATE | DB_THREAD, 0 },
+    { NULL, NULL, "users_email.db",    NULL, DB_BTREE, DB_CREATE | DB_THREAD, 0 },
+    { NULL, NULL, "users_sequence.db", NULL, DB_BTREE, DB_CREATE | DB_THREAD, 0 },
+};
+
 struct db_user {
-    DB *dbp, *dbnamep, *dbnickp, *dbemailp, *dbseqp;
+    struct database *dbs;
+    size_t ndb;
+
     DB_SEQUENCE *seq;
     DBT seqkey;
 };
@@ -20,6 +50,8 @@ db_user db_user_new(void)
     if (new == NULL)
         return NULL;
 
+    new->dbs = user_databases;
+    new->ndb = sizeof user_databases / sizeof *user_databases;
     return new;
 }
 
@@ -28,10 +60,6 @@ void db_user_free(db_user u)
     if (u == NULL)
         return;
 
-    // Now for some hard questions: We want to keep the new->open->close->free idiom,
-    // so what if close hasn't been called? As always, assert() FTW 
-    //
-    assert(u->dbp == NULL);
     free(u);
 }
 
@@ -95,51 +123,46 @@ static int get_user_email(DB *dbemailp, const DBT *pkey, const DBT *pdata, DBT *
 status_t db_user_open(db_user u, DB_ENV *envp)
 {
     assert(u != NULL);
-
     int ret;
 
     // Create the databases
-    if ((ret = db_create(&u->dbp, envp, 0))
-    ||  (ret = db_create(&u->dbnamep, envp, 0))
-    ||  (ret = db_create(&u->dbnickp, envp, 0))
-    ||  (ret = db_create(&u->dbemailp, envp, 0))
-    ||  (ret = db_create(&u->dbseqp, envp, 0))) {
-        fprintf(stderr, "Could not create db: %s\n", db_strerror(ret));
-        return failure;
+    for (size_t i = 0; i < u->ndb; i++) {
+        ret = db_create(&u->dbs[i].dbp, envp, 0);
+        if (ret)
+            goto die;
     }
 
-    uint32_t flags = DB_CREATE | DB_THREAD;
-    ret = u->dbp->open(u->dbp, NULL, "users.db", NULL, DB_BTREE, flags, 0);
-    ret = !ret && u->dbnamep->open(u->dbnamep, NULL, "users.db", NULL, DB_BTREE, flags, 0);
-    ret = !ret && u->dbnickp->open(u->dbnickp, NULL, "users.db", NULL, DB_BTREE, flags, 0);
-    ret = !ret && u->dbemailp->open(u->dbemailp, NULL, "users.db", NULL, DB_BTREE, flags, 0);
-    ret = !ret && u->dbseqp->open(u->dbseqp, NULL, "users.db", NULL, DB_BTREE, flags, 0);
-    if (ret != 0) {
-        fprintf(stderr, "Could not open db: %s\n", db_strerror(ret));
-        return failure;
+    // Now open the databases
+    for (size_t i = 0; i < u->ndb; i++) {
+        struct database *p = u->dbs + i;
+        ret = p->dbp->open(p->dbp, p->txp, p->diskfile, p->logical_db_name,
+            p->access, p->flags, p->mode);
+
+        if (ret)
+            goto die;
     }
 
-    // Associate primary db with secondary ones
-    u->dbp->associate(u->dbp, NULL, u->dbnamep,  get_user_name,  0);
-    u->dbp->associate(u->dbp, NULL, u->dbnickp,  get_user_nick,  0);
-    u->dbp->associate(u->dbp, NULL, u->dbemailp, get_user_email, 0);
+    // Associate primary db with secondary ones. 
+    u->dbs[DB_USER_USER].dbp->associate(u->dbs[DB_USER_USER].dbp, NULL, u->dbs[DB_USER_NAME].dbp,  get_user_name,  0);
+    u->dbs[DB_USER_USER].dbp->associate(u->dbs[DB_USER_USER].dbp, NULL, u->dbs[DB_USER_NICK].dbp,  get_user_nick,  0);
+    u->dbs[DB_USER_USER].dbp->associate(u->dbs[DB_USER_USER].dbp, NULL, u->dbs[DB_USER_EMAIL].dbp, get_user_email, 0);
 
     // Deal with the sequence too
-    ret = db_sequence_create(&u->seq, u->dbseqp, 0);
+    ret = db_sequence_create(&u->seq, u->dbs[DB_USER_SEQUENCE].dbp, 0);
     if (ret != 0)
         goto monster_err;
 
-    char seqname[] = "user_sequence"; // NOTE: lifespan looks fishy. Move to ADT?
+    static char seqname[] = "user_sequence"; // NOTE: lifespan looks fishy. Move to ADT?
     memset(&u->seqkey, 0, sizeof u->seqkey);
     u->seqkey.data = seqname;
     u->seqkey.size = sizeof seqname;
-    ret = u->seq->open(u->seq, NULL, &u->seqkey, flags);
+    ret = u->seq->open(u->seq, NULL, &u->seqkey, DB_CREATE);
     if (ret != 0)
         goto monster_err;
 
-
     return success;
 
+die:
 monster_err: // A hell of a lot to clean up
     fprintf(stderr, "Meh, hit monster err with ret == %d: %s\n", ret, db_strerror(ret));
     return failure;
@@ -148,16 +171,14 @@ monster_err: // A hell of a lot to clean up
 status_t db_user_close(db_user u)
 {
     assert(u != NULL);
-    assert(u->dbp != NULL);
+    assert(u->dbs != NULL);
 
-    // Tear it all down, in reverse order.
-    u->seq->close(u->seq, 0);
-    u->dbseqp->close(u->dbseqp, 0);
-    u->dbnamep->close(u->dbnamep, 0);
-    u->dbnickp->close(u->dbnickp, 0);
-    u->dbemailp->close(u->dbemailp, 0);
-    u->dbp->close(u->dbp, 0);
-    u->dbp = NULL;
+    size_t n = u->ndb;
+    while (n) {
+        struct database *db = &u->dbs[--n];
+        db->dbp->close(db->dbp, 0);
+        u->dbs[n].dbp = NULL;
+    }
 
     return success;
 }
@@ -179,28 +200,6 @@ static bool user_valid_for_insert(User u)
     return true;
 }
 
-
-// Notes from the western front: Bdb is harder than RMDBS
-// We want to insert one row in the users table
-// We need a DB_SEQUENCE for the users table
-// We need two secondary databases for the two unique columns(name, nick), perhaps even three(email)
-// We need a number sorter function for the id field.
-// 
-// No worries: We just need to add whatever to the databases table, and use associate() to
-// connect stuff. Here we just need to
-// a) grab db pointers for each db
-// b) start a transaction 
-// c) get a new sequence id, insert row, update sequence db, commit.
-//
-// First time is always the hardest... ;)
-// 
-// On sequences: They're special. Check out /usr/share/doc/libdb-devel/examples/c/ex_sequence.c.
-// The gist is that they work with db_seq_t numbers, are created with db_sequence_create(),
-// and we should probably use one per unique PK. So users_sequence for users.db, and so forth.
-// NOTE that db_sequence_create() wants a DB*. That's not the users.db in our case, but a "users_sequence.db"
-//
-//
-// On secondary databases: Read more in the tutorial first. It's messy. Not hard, just not elegant.
 dbid_t bdb_user_add(bdb_server srv, User u)
 {
     assert(u != NULL);
@@ -227,10 +226,11 @@ dbid_t bdb_user_add(bdb_server srv, User u)
 
     data.data = u;
     data.size = user_size();
-    ret = dbu->dbp->put(dbu->dbp, NULL, &key, &data, DB_NOOVERWRITE);
+    ret = dbu->dbs[DB_USER_USER].dbp->put(dbu->dbs[DB_USER_USER].dbp, NULL, &key, &data, DB_NOOVERWRITE);
     if (ret)
         goto err;
 
+    printf("%s(): returning id: %lu\n", __func__, (unsigned long)dbid);
     return (dbid_t)dbid;
 
 err:

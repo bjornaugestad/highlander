@@ -647,6 +647,8 @@ static const int accept_seccomp[] = {
     SCMP_SYS(fcntl),
     SCMP_SYS(read),
     SCMP_SYS(write),
+    SCMP_SYS(pread64),
+    SCMP_SYS(pwrite64),
     SCMP_SYS(close),
     SCMP_SYS(shutdown),
     SCMP_SYS(futex),

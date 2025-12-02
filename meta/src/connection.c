@@ -445,9 +445,8 @@ status_t connection_write_u32(connection conn, uint32_t val)
 
 status_t connection_read_u64(connection conn, uint64_t *val)
 {
-    unsigned char buf[sizeof *val];
-    ssize_t n = connection_read(conn, buf, sizeof buf);
-    if (n != sizeof buf)
+    ssize_t n = connection_read(conn, val, sizeof *val);
+    if (n != sizeof *val)
         return failure;
 
     *val = ntohll(*val);

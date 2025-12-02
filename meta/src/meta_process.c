@@ -236,6 +236,14 @@ static const int shutdown_seccomp_perms[] = {
     SCMP_SYS(rt_sigtimedwait),
     SCMP_SYS(clock_gettime),
     SCMP_SYS(clock_nanosleep),
+
+    // BDB needs to be able do close itself
+    SCMP_SYS(fsync),
+    SCMP_SYS(close),
+    SCMP_SYS(fdatasync),
+    SCMP_SYS(pread64),
+    SCMP_SYS(pwrite64),
+
     SCMP_SYS(exit),             // Needed for pthread_exit, a.k.a. clone()
     SCMP_SYS(madvise),          // Needed as pthread_create needs it.
     -1                          // Sentinel value, end of array
