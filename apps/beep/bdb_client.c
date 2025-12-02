@@ -52,7 +52,7 @@ static dbid_t readbuf_read_id(connection conn)
 
 int main(void)
 {
-    size_t i, n = 100;
+    size_t i, n = 10000;
     tcp_client clnt = tcp_client_new(SOCKTYPE_TCP);
 
     status_t rc = tcp_client_connect(clnt, "::1", 3000);
@@ -64,7 +64,6 @@ int main(void)
     User u = user_new();
 
     for (i = 0; i < n; i++) {
-        fprintf(stderr, "Iter %zu\n", i + 1);
         char buf[100];
         sprintf(buf, "%zu", i);
         user_set_name(u, buf);

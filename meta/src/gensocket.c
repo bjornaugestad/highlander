@@ -301,6 +301,9 @@ static status_t tcp_create_client_socket(socket_t this, const char *host, uint16
     if (this->fd == -1)
         goto err;
 
+    if (!socket_set_tcp_nodelay(this))
+        goto err;
+
     if (!socket_set_reuse_addr(this))
         goto err;
 
@@ -427,7 +430,7 @@ static status_t tcp_accept(socket_t listener, socket_t client, struct sockaddr_s
     if (client->fd == -1)
         return failure;
 
-    return success;
+    return socket_set_tcp_nodelay(client);
 }
 
 // Accept a new TLS connection, similar to accept().

@@ -54,19 +54,16 @@ static status_t user_add_handler(connection conn)
     assert(sizeof buf >= user_size());
     User u = user_init(buf);
 
-    clock_t start = clock(), now, top = start; double d;
 
     if (!user_recv(u, conn)) {
         return failure;
     }
-    now = clock(); d = (double)(now - start) * 1.0 / CLOCKS_PER_SEC; printf("recv dur: %0.9g\n", d); start = now;
 
     // We get the db object via the connection's optional argument arg2.
     bdb_server db = connection_arg2(conn);
     assert(db != NULL);
 
     dbid_t id = bdb_user_add(db, u);
-    now = clock(); d = (double)(now - start) * 1.0 / CLOCKS_PER_SEC; printf("dbin dur: %0.9g\n", d); start = now;
 
     // Send a reply to the client. KISS...
     struct beep_reply r = { BEEP_VERSION, BEEP_USER_ADD, 0};
@@ -75,7 +72,6 @@ static status_t user_add_handler(connection conn)
         fprintf(stderr, "Could not send reply\n");
         return failure;
     }
-    now = clock(); d = (double)(now - start) * 1.0 / CLOCKS_PER_SEC; printf("repl dur: %0.9g\n", d); start = now;
 
     // Gotta write the new dbid too.
     if (!writebuf_object_start(conn)
@@ -86,8 +82,6 @@ static status_t user_add_handler(connection conn)
         return failure;
     }
 
-    now = clock(); d = (double)(now - start) * 1.0 / CLOCKS_PER_SEC; printf("send dur: %0.9g\n", d); start = now;
-    now = clock(); d = (double)(now - top) * 1.0 / CLOCKS_PER_SEC; printf("total dur: %0.9g\n", d);
     return success;
 }
 
