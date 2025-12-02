@@ -52,7 +52,7 @@ static dbid_t readbuf_read_id(connection conn)
 
 int main(void)
 {
-    size_t i, n = 1000;
+    size_t i, n = 100;
     tcp_client clnt = tcp_client_new(SOCKTYPE_TCP);
 
     status_t rc = tcp_client_connect(clnt, "::1", 3000);

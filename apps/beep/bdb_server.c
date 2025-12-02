@@ -41,7 +41,7 @@ static void *checkpoint_thread(void *varg)
             exit(1);
         }
 
-        sleep(1);
+        sleep(5);
     }
 
     return NULL;
