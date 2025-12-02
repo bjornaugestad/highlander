@@ -31,6 +31,18 @@ User user_new(void)
     return new;
 }
 
+// TODO: Use inplace_ instead and share init fn
+User user_init(void *mem)
+{
+    User u = mem;
+
+    u->id = 0;
+    u->name[0] = '\0';
+    u->nick[0] = '\0';
+    u->email[0] = '\0';
+    return u;
+}
+
 void user_free(User u)
 {
     if (u) {

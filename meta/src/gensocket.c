@@ -256,8 +256,8 @@ err:
     socket_close(sock);
     return failure;
 
-yay:
     status_t status = failure;
+yay:
     if (socket_set_reuse_addr(sock)
     && socket_bind_inet(sock, ai)
     && socket_listen(sock, 100))

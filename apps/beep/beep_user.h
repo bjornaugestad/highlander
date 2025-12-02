@@ -14,6 +14,7 @@ typedef struct user_tag *User;
 User user_new(void);
 void user_free(User p);
 uint32_t user_size(void);
+User user_init(void *mem);
 
 // Setters
 void user_set_id(User, dbid_t);

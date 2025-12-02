@@ -319,7 +319,7 @@ status_t threadpool_add_work(threadpool pool,
     wp->cleanup_arg = cleanup_arg;
 
     if (queue_empty(pool))
-        pthread_cond_broadcast(&pool->queue_not_empty);
+        pthread_cond_signal(&pool->queue_not_empty);
 
     pool->nentries++;
     pthread_mutex_unlock(&pool->queue_lock);

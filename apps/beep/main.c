@@ -50,12 +50,11 @@ static status_t read_header(connection conn, struct beep_header *h)
 // create the unique id using bdb sequence. 
 static status_t user_add_handler(connection conn)
 {
-    User u = user_new();
-    if (u == NULL)
-        return failure;
+    char buf[1024];
+    assert(sizeof buf >= user_size());
+    User u = user_init(buf);
 
     if (!user_recv(u, conn)) {
-        user_free(u);
         return failure;
     }
 
@@ -64,8 +63,6 @@ static status_t user_add_handler(connection conn)
     assert(db != NULL);
 
     dbid_t id = bdb_user_add(db, u);
-
-    user_free(u);
 
     // Send a reply to the client. KISS...
     struct beep_reply r = { BEEP_VERSION, BEEP_USER_ADD, 0};
@@ -84,8 +81,6 @@ static status_t user_add_handler(connection conn)
         return failure;
     }
 
-
-    printf("Sent id: %lu\n", (unsigned long)id);
     return success;
 }
 
@@ -127,6 +122,7 @@ int main(int argc, char *argv[])
     parse_command_line(argc, argv);
     bdb_server db = bdb_server_new();
     tcp_server srv = tcp_server_new(SOCKTYPE_TCP); // Chill with TLS
+    tcp_server_set_worker_threads(srv, 4);
 
     // Set this one early as it's assigned when connection pool is contructed
     tcp_server_set_service_function(srv, beep_callback, db);

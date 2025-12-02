@@ -12,7 +12,7 @@ actual=makefile.actual
 
 CC=musl-gcc
 # Shared between gcc and clang. (clang's out. Too many targets: 20251029)
-COMMON_CFLAGS=-Wall -Wextra -Wpedantic -Werror -std=gnu2x -Wstrict-prototypes \
+COMMON_CFLAGS=-Wall -Wextra -Wpedantic -Werror -std=gnu17 -Wstrict-prototypes \
 	-Wmissing-prototypes -Wwrite-strings -Wshadow -Wcast-align -Wpointer-arith\
 	-Wformat-security -Wdouble-promotion -Wuninitialized -Wvla -Wmisleading-indentation\
 	-Wconversion -Wsign-conversion -Wbad-function-cast 
@@ -27,7 +27,7 @@ COMMON_LDFLAGS=-L $(HOME)/opt/openssl-3.3.5/lib
 
 # GCC specific stuff
 COMMON_GCC_CFLAGS=$(COMMON_CFLAGS) $(COMMON_INCLUDE) -Warith-conversion
-CFLAGS_GCC_DEBUG=$(COMMON_GCC_CFLAGS) -O0 -g -pg
+CFLAGS_GCC_DEBUG=$(COMMON_GCC_CFLAGS) -O0 -g 
 CFLAGS_GCC_SAN=$(COMMON_GCC_CFLAGS) -Og -g -fsanitize=address,undefined,leak -fno-omit-frame-pointer
 CFLAGS_GCC_RELEASE=$(COMMON_GCC_CFLAGS) -O3 -DNDEBUG -fomit-frame-pointer -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-exceptions -fno-stack-protector
 

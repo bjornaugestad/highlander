@@ -160,8 +160,8 @@ tcp_server tcp_server_new(int socktype)
     }
 
     /* Some defaults */
-    new->timeout_reads = 1000;
-    new->timeout_writes = 1000;
+    new->timeout_reads = 100;
+    new->timeout_writes = 100;
     new->timeout_accepts = 800;
     new->retries_writes = 10;
 

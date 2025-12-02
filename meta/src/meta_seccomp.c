@@ -7,6 +7,10 @@
 // create a permission list, call init() and rule_add(), load(),  and return ctx. 
 scmp_filter_ctx meta_drop_perms(const int *perms_to_keep)
 {
+#if 1
+    (void)perms_to_keep;
+    return NULL;
+#else
     // Permissions for the shutdown thread. As we can see, 
     // sanitizers are not ideal as they're greedy perm bastards.
     static const int analyzer_perms[] = {
@@ -47,10 +51,13 @@ scmp_filter_ctx meta_drop_perms(const int *perms_to_keep)
 
     seccomp_load(ctx);
     return ctx;
+#endif
 }
 
 void  meta_release_perms(void *vctx)
 {
-    assert(vctx != NULL);
-    seccomp_release(vctx);
+    (void)vctx;
+    return; 
+    //assert(vctx != NULL);
+    //seccomp_release(vctx);
 }
