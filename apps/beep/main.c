@@ -155,6 +155,7 @@ int main(int argc, char *argv[])
         die("process_wait_for_shutdown");
 
     bdb_server_free(db);
+    tcp_server_free(srv);
     process_free(p);
     return 0;
 }

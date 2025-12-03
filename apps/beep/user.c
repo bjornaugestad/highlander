@@ -43,6 +43,7 @@ User user_new(void)
 User user_init(void *mem)
 {
     User u = mem;
+    memset(u, 0, sizeof *u);
 
     u->id = 0;
     u->name[0] = '\0';

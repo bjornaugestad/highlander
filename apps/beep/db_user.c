@@ -173,6 +173,9 @@ status_t db_user_close(db_user u)
     assert(u != NULL);
     assert(u->dbs != NULL);
 
+    // Close sequences before primary database
+    u->seq->close(u->seq, 0);
+
     size_t n = u->ndb;
     while (n) {
         struct database *db = &u->dbs[--n];
