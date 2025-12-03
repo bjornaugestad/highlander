@@ -11,7 +11,14 @@ struct user_tag {
     name_t name;
     nick_t nick;
     email_t email;
+    timestamp created;
 };
+
+timestamp user_created(User u)
+{
+    assert(u != NULL);
+    return u->created;
+}
 
 uint32_t user_size(void)
 {
@@ -28,6 +35,7 @@ User user_new(void)
     new->name[0] = '\0';
     new->nick[0] = '\0';
     new->email[0] = '\0';
+    new->created = 0;
     return new;
 }
 
@@ -40,6 +48,7 @@ User user_init(void *mem)
     u->name[0] = '\0';
     u->nick[0] = '\0';
     u->email[0] = '\0';
+    u->created = 0;
     return u;
 }
 
@@ -60,6 +69,12 @@ void user_set_id(User u, dbid_t id)
     assert(u != NULL);
     // assert(id != 0); // reserved
     u->id = id;
+}
+
+void user_set_created(User u, timestamp t)
+{
+    assert(u != NULL);
+    u->created = t;
 }
 
 void user_set_name(User u, const char *val)
@@ -133,6 +148,7 @@ status_t user_send(User u, connection conn)
     ||  !writebuf_string(conn, user_name(u))
     ||  !writebuf_string(conn, user_nick(u))
     ||  !writebuf_string(conn, user_email(u))
+    ||  !writebuf_int64(conn, user_created(u))
     ||  !writebuf_object_end(conn))
         return failure;
 
@@ -147,6 +163,7 @@ status_t user_recv(User u, connection conn)
     ||  !readbuf_string(conn, u->name, sizeof u->name)
     ||  !readbuf_string(conn, u->nick, sizeof u->nick)
     ||  !readbuf_string(conn, u->email, sizeof u->email)
+    ||  !readbuf_int64(conn, &u->created)
     ||  !readbuf_object_end(conn))
         return failure;
 

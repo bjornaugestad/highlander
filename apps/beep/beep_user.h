@@ -21,12 +21,14 @@ void user_set_id(User, dbid_t);
 void user_set_name(User, const char *);
 void user_set_nick(User, const char *);
 void user_set_email(User, const char *);
+void user_set_created(User, timestamp t);
 
 // Getters
-dbid_t         user_id(User);
+dbid_t       user_id(User);
 const char * user_name(User);
 const char * user_nick(User);
 const char * user_email(User);
+timestamp    user_created(User);
 
 // serializing functions
 size_t user_size_t(User);

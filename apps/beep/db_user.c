@@ -197,7 +197,15 @@ static bool user_valid_for_insert(User u)
     if (user_id(u) != 0)
         return false;
 
+    if (user_created(u) != 0)
+        return false;
+
     return true;
+}
+
+static timestamp now(void)
+{
+    return (timestamp)time(NULL);
 }
 
 dbid_t bdb_user_add(bdb_server srv, User u)
@@ -221,6 +229,7 @@ dbid_t bdb_user_add(bdb_server srv, User u)
 
     // Assign the sequence number as the new PK
     user_set_id(u, (dbid_t)dbid);
+    user_set_created(u, now());
 
     // Write the record to the database (big moment)
     DBT key, data;
