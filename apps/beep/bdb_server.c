@@ -19,6 +19,10 @@ struct bdb_server_tag {
 
     // Databases
     db_user users;
+
+    // Some stats
+    size_t ncommits, ncommit_failures;
+    size_t nrollbacks, nrollback_failures;
 };
 
 db_user bdb_user_database(bdb_server p)
@@ -89,6 +93,8 @@ status_t bdb_server_do_func(void *v)
     if (ret != 0)
         return failure;
 
+    p->envp->set_flags(p->envp, DB_TXN_WRITE_NOSYNC, 1);
+
     ret = p->envp->open(p->envp, p->homedir, env_flags, 0);
     if (ret != 0)
         return failure;
@@ -150,7 +156,7 @@ status_t bdb_server_shutdown_func(void *v)
                  
 bdb_server bdb_server_new(void)
 {
-    bdb_server new = malloc(sizeof *new);
+    bdb_server new = calloc(1, sizeof *new);
     if (new == NULL)
         return NULL;
 
@@ -177,4 +183,46 @@ void bdb_server_free(bdb_server this)
     }
 }
 
+
+DB_TXN* bdb_server_begin(bdb_server p)
+{
+    assert(p != NULL);
+    DB_TXN *txn = NULL;
+    int ret = p->envp->txn_begin(p->envp, NULL, &txn, 0);
+    if (ret != 0)
+        return NULL;
+
+    return txn;
+}
+
+status_t bdb_server_commit(bdb_server p, DB_TXN *txn)
+{
+    assert(p != NULL);
+    assert(txn != NULL);
+
+    int ret = txn->commit(txn, 0);
+    if (ret == 0) {
+        p->ncommits++;
+        return success;
+    }
+
+    p->ncommit_failures++;
+    return failure;
+}
+
+
+status_t bdb_server_rollback(bdb_server p, DB_TXN *txn)
+{
+    assert(p != NULL);
+    assert(txn != NULL);
+
+    int ret = txn->abort(txn);
+    if (ret == 0) {
+        p->nrollbacks++;
+        return success;
+    }
+
+    p->nrollback_failures++;
+    return failure;
+}
 

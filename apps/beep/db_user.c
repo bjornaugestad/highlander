@@ -29,11 +29,11 @@ struct database {
 #define DB_USER_SEQUENCE 0x04   // The sequence database to generate user.id
 
 static struct database user_databases[] = {
-    { NULL, NULL, "users.db",          NULL, DB_BTREE, DB_CREATE | DB_THREAD, 0 },
-    { NULL, NULL, "users_name.db",     NULL, DB_BTREE, DB_CREATE | DB_THREAD, 0 },
-    { NULL, NULL, "users_nick.db",     NULL, DB_BTREE, DB_CREATE | DB_THREAD, 0 },
-    { NULL, NULL, "users_email.db",    NULL, DB_BTREE, DB_CREATE | DB_THREAD, 0 },
-    { NULL, NULL, "users_sequence.db", NULL, DB_BTREE, DB_CREATE | DB_THREAD, 0 },
+    { NULL, NULL, "users.db",          NULL, DB_BTREE, DB_AUTO_COMMIT | DB_CREATE | DB_THREAD, 0 },
+    { NULL, NULL, "users_name.db",     NULL, DB_BTREE, DB_AUTO_COMMIT | DB_CREATE | DB_THREAD, 0 },
+    { NULL, NULL, "users_nick.db",     NULL, DB_BTREE, DB_AUTO_COMMIT | DB_CREATE | DB_THREAD, 0 },
+    { NULL, NULL, "users_email.db",    NULL, DB_BTREE, DB_AUTO_COMMIT | DB_CREATE | DB_THREAD, 0 },
+    { NULL, NULL, "users_sequence.db", NULL, DB_BTREE, DB_AUTO_COMMIT | DB_CREATE | DB_THREAD, 0 },
 };
 
 struct db_user {
@@ -135,7 +135,7 @@ status_t db_user_open(db_user u, DB_ENV *envp)
     // Now open the databases
     for (size_t i = 0; i < u->ndb; i++) {
         struct database *p = u->dbs + i;
-        ret = p->dbp->open(p->dbp, p->txp, p->diskfile, p->logical_db_name,
+        ret = p->dbp->open(p->dbp, NULL, p->diskfile, p->logical_db_name,
             p->access, p->flags, p->mode);
 
         if (ret)
@@ -143,9 +143,9 @@ status_t db_user_open(db_user u, DB_ENV *envp)
     }
 
     // Associate primary db with secondary ones. 
-    u->dbs[DB_USER_USER].dbp->associate(u->dbs[DB_USER_USER].dbp, NULL, u->dbs[DB_USER_NAME].dbp,  get_user_name,  0);
-    u->dbs[DB_USER_USER].dbp->associate(u->dbs[DB_USER_USER].dbp, NULL, u->dbs[DB_USER_NICK].dbp,  get_user_nick,  0);
-    u->dbs[DB_USER_USER].dbp->associate(u->dbs[DB_USER_USER].dbp, NULL, u->dbs[DB_USER_EMAIL].dbp, get_user_email, 0);
+    u->dbs[DB_USER_USER].dbp->associate(u->dbs[DB_USER_USER].dbp, NULL, u->dbs[DB_USER_NAME].dbp,  get_user_name,  DB_AUTO_COMMIT);
+    u->dbs[DB_USER_USER].dbp->associate(u->dbs[DB_USER_USER].dbp, NULL, u->dbs[DB_USER_NICK].dbp,  get_user_nick,  DB_AUTO_COMMIT);
+    u->dbs[DB_USER_USER].dbp->associate(u->dbs[DB_USER_USER].dbp, NULL, u->dbs[DB_USER_EMAIL].dbp, get_user_email, DB_AUTO_COMMIT);
 
     // Deal with the sequence too
     ret = db_sequence_create(&u->seq, u->dbs[DB_USER_SEQUENCE].dbp, 0);
@@ -156,7 +156,7 @@ status_t db_user_open(db_user u, DB_ENV *envp)
     memset(&u->seqkey, 0, sizeof u->seqkey);
     u->seqkey.data = seqname;
     u->seqkey.size = sizeof seqname;
-    ret = u->seq->open(u->seq, NULL, &u->seqkey, DB_CREATE);
+    ret = u->seq->open(u->seq, NULL, &u->seqkey, DB_CREATE | DB_AUTO_COMMIT);
     if (ret != 0)
         goto monster_err;
 
@@ -202,15 +202,20 @@ static bool user_valid_for_insert(User u)
 
 dbid_t bdb_user_add(bdb_server srv, User u)
 {
+    int ret = 0;
     assert(u != NULL);
     if (!user_valid_for_insert(u))
         return 0;
 
     db_user dbu = bdb_user_database(srv);
+
+    DB_TXN *txn = bdb_server_begin(srv);
+    if (txn == NULL)
+        goto err;
     
     // Get a sequence number 
     db_seq_t dbid;
-    int ret = dbu->seq->get(dbu->seq, NULL, 1, &dbid, 0);
+    ret = dbu->seq->get(dbu->seq, NULL /* txn */, 1, &dbid, 0);
     if (ret)
         goto err;
 
@@ -226,14 +231,16 @@ dbid_t bdb_user_add(bdb_server srv, User u)
 
     data.data = u;
     data.size = user_size();
-    ret = dbu->dbs[DB_USER_USER].dbp->put(dbu->dbs[DB_USER_USER].dbp, NULL, &key, &data, DB_NOOVERWRITE);
+    ret = dbu->dbs[DB_USER_USER].dbp->put(dbu->dbs[DB_USER_USER].dbp, txn, &key, &data, DB_NOOVERWRITE);
     if (ret)
         goto err;
 
+    bdb_server_commit(srv, txn);
     return (dbid_t)dbid;
 
 err:
     fprintf(stderr, "Meh, hit err with ret == %d: %s\n", ret, db_strerror(ret));
+    bdb_server_rollback(srv, txn);
     return 0;
 }
 

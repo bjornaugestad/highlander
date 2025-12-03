@@ -18,6 +18,11 @@ status_t bdb_server_undo_func(void *v);
 status_t bdb_server_run_func(void *v);
 status_t bdb_server_shutdown_func(void *v);
 
+// The bdb server manages transactions for us
+DB_TXN* bdb_server_begin(bdb_server p);
+status_t bdb_server_commit(bdb_server p, DB_TXN *txn);
+status_t bdb_server_rollback(bdb_server p, DB_TXN *txn);
+
 // Insert a new User record.
 dbid_t bdb_user_add(bdb_server srv, User u);
 
