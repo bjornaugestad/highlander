@@ -5,7 +5,7 @@
 #include <beep_constants.h>
 
 // Some datatypes
-typedef uint64_t dbid_t;
+typedef int64_t dbid_t; // DB's seq_t is int64_t
 typedef int64_t timestamp;
 typedef char name_t[NAME_MAX + 1];
 typedef char email_t[EMAIL_MAX + 1];

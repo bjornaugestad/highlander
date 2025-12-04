@@ -3,20 +3,10 @@
 
 #include <db.h>
 
-#include <meta_common.h>
-#include <beep_user.h>
-
-// This is the interface to the user table/database.
-typedef struct db_user *db_user;
-
-db_user db_user_new(void);
-void db_user_free(db_user u);
-
-status_t db_user_open(db_user u, DB_ENV *envp);
-status_t db_user_close(db_user u);
-
-dbid_t db_user_ins(db_user dbu, User u);
-
+// Just functions for secondary databases
+int get_user_name(DB *dbnamep, const DBT *pkey, const DBT *pdata, DBT *namep_key);
+int get_user_nick(DB *dbnickp, const DBT *pkey, const DBT *pdata, DBT *nickp_key);
+int get_user_email(DB *dbemailp, const DBT *pkey, const DBT *pdata, DBT *emailp_key);
 
 #endif
 

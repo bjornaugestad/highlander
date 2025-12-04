@@ -145,7 +145,7 @@ status_t user_send(User u, connection conn)
         return failure;
 
     if (!writebuf_object_start(conn)
-    ||  !writebuf_uint64(conn, user_id(u))
+    ||  !writebuf_int64(conn, user_id(u))
     ||  !writebuf_string(conn, user_name(u))
     ||  !writebuf_string(conn, user_nick(u))
     ||  !writebuf_string(conn, user_email(u))
@@ -160,7 +160,7 @@ status_t user_send(User u, connection conn)
 status_t user_recv(User u, connection conn)
 {
     if (!readbuf_object_start(conn)
-    ||  !readbuf_uint64(conn, &u->id)
+    ||  !readbuf_int64(conn, &u->id)
     ||  !readbuf_string(conn, u->name, sizeof u->name)
     ||  !readbuf_string(conn, u->nick, sizeof u->nick)
     ||  !readbuf_string(conn, u->email, sizeof u->email)

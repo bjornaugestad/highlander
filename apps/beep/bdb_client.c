@@ -43,7 +43,7 @@ static dbid_t readbuf_read_id(connection conn)
     dbid_t id;
 
     if (readbuf_object_start(conn)
-    &&  readbuf_uint64(conn, &id)
+    &&  readbuf_int64(conn, &id)
     &&  readbuf_object_end(conn))
         return id;
 

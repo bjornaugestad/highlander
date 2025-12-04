@@ -75,7 +75,7 @@ static status_t user_add_handler(connection conn)
 
     // Gotta write the new dbid too.
     if (!writebuf_object_start(conn)
-    ||  !writebuf_uint64(conn, id)
+    ||  !writebuf_int64(conn, id)
     ||  !writebuf_object_end(conn)
     ||  !connection_flush(conn)) {
         fprintf(stderr, "Could not send new id\n");
