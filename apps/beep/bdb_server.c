@@ -73,7 +73,8 @@ static status_t close_databases(bdb_server p)
 }
 
 // Set up the environment
-static const uint32_t env_flags = DB_CREATE 
+static const uint32_t env_flags 
+    = DB_CREATE 
     | DB_INIT_LOCK 
     | DB_INIT_LOG 
     | DB_INIT_MPOOL 

@@ -39,6 +39,7 @@ user:
     - inbox_rules       # Default ACL
     - blocked           # Users may be blocked for a time due to misbehaviour
     - preferences       # wants to view friends, family, subs, whatever
+    - modpoints         # Like slashdot!
 
 
 # A sub is a subreddit-ish group. 
@@ -57,9 +58,17 @@ sub_rules:
     - rule_number
     - rule_text
 
+sub_blocked_users:
+    - sub_id
+    - user_id
+    - date_blocked
+    - reason
+    - block_duration
+
 user_subscribes_to_subs:
     - user_id
     - sub_id
+    - date_subscribed
     - perms (can_post, et al)
 
 user_knows:
