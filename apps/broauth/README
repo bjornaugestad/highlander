@@ -1,0 +1,165 @@
+Sun Dec  7 13:23:32 CET 2025
+WTF's BroAuth? It's designed to be an onboarding server for
+other services. We need something to bootstrap the security
+process for users, and here's our first take.
+
+Processes:
+1. User connects to broauthd using broauth client program.
+2. User provives username and public key, e.g. ed25519
+3. After some anti-bot magic, user receives a cert encrypted
+   with his public key.
+
+That's pretty much it, seen from the client's side. 
+The server will log the register request and perhaps allow
+the user, perhaps not. The rules are not written in stone
+atm.
+
+The idea is just to have one generalized way of
+letting users register themselves. It's not rocket science.
+We will probably have a bdb database containing
+
+user:
+- id
+- username
+- comment
+- status (reg_pending, reg_accepted, reg_denied)
+- date_reg, date_accepted, date_denied
+
+user_metadata: # Needed for anti-bot stuff.
+user_id, ip_addr/ASN, 
+
+as well as a keys table:
+user_keys:
+- user_id
+- comment/description
+- key     n..1KB text or something. We store what's in the .pub file.
+
+I'm not 100% sure why I want more than one key here. We could go with ed25519 and be done
+with it. Let's do that instead. It's not hard to split later if more keys are needed.
+Format: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFuH0NhTZYANHC+i9FlS4oBlJ8zQmcvutnJCG/UfRaA6 user@devel-xfce
+SNAG: We cannot encrypt with ed25519. We need X25519 for that. libsodium can 
+manage this for us, but is it the right solution?
+
+
+We may also want to ban IP ranges or addresses. We can do that in the FW 
+and we can do it here too. We can invert the logic to block all, allow some
+as well. The nice thing about blocking IP in FW is that we won't even
+see the requests and they won't even see our server.
+
+We can use iptables+geoip to block entire countries. Neat. ipset 
+is another alternative. Oh, well, this is not needed now.
+
+
+Wed Dec 10 08:24:22 CET 2025
+Still thinking about security and how to manage per-user permissions.
+We will create a context object and connect it to the user's
+TLS connection and use that context (on the SERVER side!) to
+check for perms. Will it work? What about connection pooling and 
+work queues? What about timeout situations and possible TLS auto-reconnect? 
+1. We use a tcp_server which has a callback function
+2. The callback function must be a state machine, using the context object.
+3. We assign the context objec to the connection so the callback function can access it.
+4. We can extend the connection ADT with whatever we want and set props in tcp_server's accept_new_connections
+5. The callback function has full access to the connection object.
+6. Remember to recycle shit when done!
+
+Sounds like a plan. Let's do it!
+Now, it's not that simple of course. We have the BroAuth server and the app server.
+They have different requirements and different protocols and permissions.
+We need to spec here:
+
+requirement     BroAuth     App server
+conn-est.       yes         not really      # To stop flooding and impose wait time
+username        no          yes             # The username is an arg to BroAuth. Which user to create
+passkey         no          no-ish          # We register key in BroAuth and do a keypair verification in App Server
+ip addr         yes         not really      # Stop flooding
+network         yes         not really      # Stop flooding/bots
+PoW             yes         no              # Stop botnets/flooding
+
+
+Let's dwelve into BroAuth's basic algo:
+1. Main goal is to allow users to register with a name and a key
+2. We want to block as many bots and spammers as possible
+    a) Impose wait time, e.g. 3 minutes
+    b) Perhaps require proof of work?
+    c) Prohibit multiple registration requests from same IP/Network
+    d) Log failed attempts and reject future attempts. What would be the cause
+       of failed attempts?
+       - Invalid passkey  (let them wait before reporting it)
+       - invalid username (let them wait before reporting it)
+       - Suspicious traffic from same IP/Network
+            - Define suspicious. is nmap suspicious? ping?
+
+       - Already users from that IP? NAT may cause problems, but why not? (Let them wait!)
+    e) Let's keep a log of recent connection attempts from IP/Network
+       and block them. We want to avoid probing and looping. Remember that
+       even a 3 minute wait period allows for 20 attempts/hour or 480 attempts/day.
+       We want one successful attempt per user. OTOH, since usernames may
+       collide, we cannot block attempts based on username alone. Neither
+       can we check if username is available as that opens for probing.
+       The rule is therefore:
+
+            If reg failed but not due to dup username, add request to log. 
+
+       Now a blackhat can probe for usernames by checking if he can retry.
+       Hmm, this is hard. Duplicate usernames are so typical, perhaps we
+       can find another solution? What if the user provides a list of
+       usernames he can accept and then we choose one of those. That
+       opens for probing too. Other options? Always add a number? Sucks TBH.
+       Just add wait time, but how do we know when to add wait time? The
+       connection will be gone. We have the IP in our logs and the reason.
+       So let's add wait time for all retries, but not 24h in all cases.
+       Gotta go with some solution, and if it takes 3m to find one username,
+       the blackhat still has to retry and wait 3 more minutes unless
+       he switches IP. He's gonna need a lot of IPs though, since each
+       IP will be throttled if it has failed.
+
+
+
+3. Users must be able to delete themselves too. How? 
+    - Obv. login with user name and passkey and choose delete.
+    - Obv. WAIT PERIOD before actual deletion, like 24h. Rationale?
+      To stop spammers from retrying. Perhaps just mark user as deleted
+      and keep the ip info for longer?
+
+
+When a user is accepted by BroAuth, the user can log in to the app server.
+The app server will check the BroAuth db and copy the creds (username+ed25519 key)
+to its own db to avoid SPOF. The BroAuth is not really a master, just a way
+to offload all the spam stuff from app server.
+
+Scenarios:
+- user tries to register with username+key
+    - PoW test OK
+    - no existing record for username. 
+    - valid username
+    - valid ed25519 key
+    - not blocked by FW rules or BroAuth rules
+    - No other record for IP/network
+    - No other register attempt going on from IP/network/username
+
+    Accepted, right? We gotta accept some users </tinfoil off>
+
+- user tries to register with username already denied
+  That's an odd one. We don't want blackhats to piss in our pool 
+  by filling BroAuth with denied usernames. 
+
+- User wants to delete himself. Fair enough, but auth is 
+  necessary. IOW, deletion requires both cert and keypair test.
+  Add PoW as well. This means that we must upgrade the connection
+  or use a different 'host'. We can have 
+    register.broauth.com
+    deleteme.broauth.com
+  and so forth. (IRL it would be something else than .com). The
+  deleteme server can run mTLS and be a separate process too, or
+  just listen to different ports in the same process as register.
+  The last option is probably a good idea if the process tracks
+  general behaviour and we want to share that information between
+  registerme and deleteme. No biggie, just two tcp_server instances
+  running with different configurations.
+
+  Mark user as deleted, so app server(s) can pick up the change.
+  Invalidate client cert.
+
+
+
