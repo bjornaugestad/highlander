@@ -8,12 +8,21 @@
 
 // So for our user database, we need the following databases. Primary is always zero.
 // Be precise for these are array indices!
-#define DB_USER_USER     0x00   // primary db
-#define DB_USER_NAME     0x01   // The secondary db
-#define DB_USER_NICK     0x02   // also secondary db
-#define DB_USER_EMAIL    0x03   // also secondary db
-#define DB_USER_SEQUENCE 0x04   // The sequence database to generate user.id
-#define DB_SUBS_SUB      0x05   // Top-level sub db
+#define DB_USER_USER           0x00   // primary db
+#define DB_USER_NAME           0x01   // The secondary db
+#define DB_USER_NICK           0x02   // also secondary db
+#define DB_USER_EMAIL          0x03   // also secondary db
+#define DB_USER_SEQUENCE       0x04   // The sequence database to generate user.id
+
+#define DB_SUB_SUB             0x05   // Top-level sub db
+#define DB_SUB_MODERATORS      0x06   // Moderators
+#define DB_SUB_RULES           0x07   // rules
+#define DB_SUB_BLOCKED_USERS   0x08   // Blocked users
+#define DB_SUB_SUBSCRIBERS     0x09   // Who subscribes to a sub
+#define DB_SUB_POST            0x0a   // Posts made to a sub
+#define DB_SUB_POST_COMMENT    0x0b   // Comment to a posts made to a sub
+#define DB_SUB_SEQUENCE        0x0c   // We need a sequence to generate sub.id
+
 
 
 // Stuff we need to integrate bdb_server with meta_process
@@ -34,6 +43,7 @@ status_t bdb_server_rollback(bdb_server p, DB_TXN *txn);
 
 // Insert a new User record.
 dbid_t bdb_user_add(bdb_server srv, User u);
+
 DB *bdb_server_get_db(bdb_server p, int id);
 
 // Here we want the id of e.g. DB_USER_SEQUENCE, not DB_USER_USER

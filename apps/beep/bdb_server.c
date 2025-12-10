@@ -48,7 +48,14 @@ static struct database databases[] = {
     { DB_USER_SEQUENCE, NULL, NULL, "users_sequence.db", NULL, DB_BTREE, DB_AUTO_COMMIT | DB_CREATE | DB_THREAD, 0 },
 
     // sub(reddits)
-    { DB_SUBS_SUB,      NULL, NULL, "subs.db",           NULL, DB_BTREE, DB_AUTO_COMMIT | DB_CREATE | DB_THREAD, 0 },
+    { DB_SUB_SUB,           NULL, NULL, "subs.db",           NULL, DB_BTREE, DB_AUTO_COMMIT | DB_CREATE | DB_THREAD, 0 },
+    { DB_SUB_MODERATORS,    NULL, NULL, "sub_moderators.db", NULL, DB_BTREE, DB_AUTO_COMMIT | DB_CREATE | DB_THREAD, 0 },
+    { DB_SUB_RULES,         NULL, NULL, "sub_rules.db",      NULL, DB_BTREE, DB_AUTO_COMMIT | DB_CREATE | DB_THREAD, 0 },
+    { DB_SUB_BLOCKED_USERS, NULL, NULL, "blocked_users.db",  NULL, DB_BTREE, DB_AUTO_COMMIT | DB_CREATE | DB_THREAD, 0 },
+    { DB_SUB_SUBSCRIBERS,   NULL, NULL, "subscribers.db",    NULL, DB_BTREE, DB_AUTO_COMMIT | DB_CREATE | DB_THREAD, 0 },
+    { DB_SUB_POST,          NULL, NULL, "sub_posts.db",      NULL, DB_BTREE, DB_AUTO_COMMIT | DB_CREATE | DB_THREAD, 0 },
+    { DB_SUB_POST_COMMENT,  NULL, NULL, "sub_comments.db",   NULL, DB_BTREE, DB_AUTO_COMMIT | DB_CREATE | DB_THREAD, 0 },
+    { DB_SUB_SEQUENCE,      NULL, NULL, "subs_sequence.db",  NULL, DB_BTREE, DB_AUTO_COMMIT | DB_CREATE | DB_THREAD, 0 },
 };
 
 static struct sequence {
@@ -58,6 +65,7 @@ static struct sequence {
     char name[50];
 } sequences[] = {
     { DB_USER_USER, DB_USER_SEQUENCE, NULL, {0, }, "user_sequence" },
+    { DB_SUB_SUB,   DB_SUB_SEQUENCE,  NULL, {0, }, "subs_sequence" },
 };
 
 
