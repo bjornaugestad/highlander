@@ -73,8 +73,6 @@ shutdown():
     close env
 
 
-
-
 CLIENTS:
 
 We will also need a client library and some client programs to test serializing and certs.

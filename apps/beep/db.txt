@@ -40,6 +40,7 @@ user:
     - blocked           # Users may be blocked for a time due to misbehaviour
     - preferences       # wants to view friends, family, subs, whatever
     - modpoints         # Like slashdot!
+    - permissions       # Can create subs, and what else.
 
 
 # A sub is a subreddit-ish group. 
@@ -106,7 +107,6 @@ post:
     - upvotes
     - downvotes
 
-
 post_comment:
     - id                # unique id
     - post_id           # post.id
@@ -115,6 +115,8 @@ post_comment:
     - when_posted
     - last_edited
     - comment           # some text field
+    - upvotes
+    - downvotes
 
 subscriptions:
     - subscriberid (userid for user who subscribes to posts from another user)

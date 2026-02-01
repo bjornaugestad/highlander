@@ -115,12 +115,14 @@ Let's dwelve into BroAuth's basic algo:
        IP will be throttled if it has failed.
 
 
-
 3. Users must be able to delete themselves too. How? 
     - Obv. login with user name and passkey and choose delete.
     - Obv. WAIT PERIOD before actual deletion, like 24h. Rationale?
       To stop spammers from retrying. Perhaps just mark user as deleted
       and keep the ip info for longer?
+    - Valid users will have a cert at this time. Require it when deleting users.
+      IOW, broauth deletion requires mTLS. Separate server addr/port? It's
+      just a link in HTML, so why not? Not a link in CLI tools though.
 
 
 When a user is accepted by BroAuth, the user can log in to the app server.
@@ -128,21 +130,54 @@ The app server will check the BroAuth db and copy the creds (username+ed25519 ke
 to its own db to avoid SPOF. The BroAuth is not really a master, just a way
 to offload all the spam stuff from app server.
 
-Scenarios:
+NOTE: We cannot allow hammering the appserver with login requests. mTLS
+will save us since the client will need a cert, but DDOS is still an issue.
+Throttle bad requests, but where? firewall, app, or both?
+
+----------------------------------
+BroAuth Scenarios
+----------------------------------
+There are really just a few scenarios:
+    - add a new user
+    - delete an existing user
+
 - user tries to register with username+key
     - PoW test OK
     - no existing record for username. 
-    - valid username
+    - valid username    (Define rules!)
     - valid ed25519 key
     - not blocked by FW rules or BroAuth rules
     - No other record for IP/network
     - No other register attempt going on from IP/network/username
 
     Accepted, right? We gotta accept some users </tinfoil off>
+    We want PoW first to deter botnets.
+
+    When a user is accepted, we issue the cert and send it to
+    the client, perhaps also send the appserver's cert? We're
+    not in HTML land, we're in a dedicated program. 
+
+    This means that 
+        - broauth needs to know the appserver's cert
+        - appserver needs to know the client's cert (later on)
 
 - user tries to register with username already denied
   That's an odd one. We don't want blackhats to piss in our pool 
-  by filling BroAuth with denied usernames. 
+  by filling BroAuth with denied usernames. We may end up having
+  large sets of denied usernames we may want to re-allow, e.g.
+  if a botnet has filled up our db. Then what do we do with the certs
+  issued to the botnet? How do we identify the botnet's users?
+
+- User tries to register with username tagged as deleted. 
+  Fair, as another user could've deleted himself. What do we do?
+  We cannot accept the username, so we deny it.
+  Can we even re-use usernames? I don't think so. That means
+  we must keep all usernames forever. We don't want user foo
+  to exist in appserver, delete himself, and then have another
+  user with the same name later. That's 'spoofing'-ish.
+
+- User tries to register with 'special' usernames like root/admin.
+  Fuck that, but should we block the client?
 
 - User wants to delete himself. Fair enough, but auth is 
   necessary. IOW, deletion requires both cert and keypair test.
@@ -160,6 +195,35 @@ Scenarios:
 
   Mark user as deleted, so app server(s) can pick up the change.
   Invalidate client cert.
+  Q: What if the client cert's expired?
 
+------------------------
+QUESTIONS
+------------------------
+1. Consider this setup: webclient <-> webserver <-> appserver.
+   The cert setup won't work AFAICT. 
 
+   a) IRL there would be client <-> appserver <-> dbserver,
+      where the appserver may serve HTML.
 
+   b) Hard to draw in ASCII, but client speaks to broauth and appserver,
+      and appserver speaks to broauth. Then the cert setup will work
+      fine.
+
+2. How to re-issue certs when they expire? The user will normally
+   be communicating with an appserver, not broauth. Our client can
+   warn about upcoming expiration, but a browser won't do that. 
+   We need a way to refresh the cert. The appserver knows too, and
+   mTLS will issue warnings, but probably too late.
+   Here's what we don't want:
+   - A blackhat requesting a new cert for a different user. Happens
+     if the blackhat gets hold of the private key. We cannot guarantee
+     that the private key is passphrase protected.
+     Have something(key), be something(username), know something(passphrase)
+     breaks down without passphrase. 
+
+Thu Dec 18 11:16:53 CET 2025
+Found a simple solution to the passphrase-less private key problem:
+- Our register-program simply generates the keypair and *requires* a passphrase
+- Our register-program can also generate recovery codes and even write
+  them to a file. Do we even need recovery codes?
