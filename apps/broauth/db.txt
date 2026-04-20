@@ -1,0 +1,75 @@
+Wed Dec 10 10:34:05 CET 2025
+BroAuth db. Need to get things moving and get out of the fuzzy frontend.
+
+Tables:
+
+# Users are accepted when they complete the registration process.
+# The reg. process inserts the record. A couple of things should
+# be completed first: 
+# - user must have downloaded a client cert
+# - user must have downloaded a cert for the appserver
+#   (This implies 1:1 broauth:appserver.)
+# Point is that the client must be in a valid state before we
+# insert the record. Either that, or the client must be able
+# to request certs. 
+- users
+    id (pk)
+    username (unique)
+    key (ed25519)
+    date_accepted
+    state (may be pending deletion or other state changes)
+        - OK, PENDING_DELETION, Other?
+    date_deletion_requested
+
+# We log failed requests so we can detect the bots
+# The reg. process inserts the record(s). Reasons can be various,
+# like multiple simultaneous requests from same IP (NAT may be issue),
+# duplicate username, bad key format, illegal username, Failed PoW,
+# and more.
+- failed_requests
+    username
+    ip, timestamp, whatever
+    reason
+
+# Users may choose to delete their accounts
+- deleted_users 
+    id
+    username
+    date_deleted
+    reason (self-deletion, other reasons)
+
+Thu Dec 11 10:23:29 CET 2025
+Something's missing here. We need "authorized client apps" which can
+query the database for user information. They must ID themselves somehow,
+like with a cert, and limit their queries to their own users. 
+This is actually neat, as it means that we can add a new table, user_app,
+which says which app a user has access to. An app table is needed too of course.
+So now broauth can serve 1..n app servers. 
+
+This complicates registration a bit, as key must go to the user_app table.
+- app
+    - id
+    - name
+
+- user
+    id
+    name
+
+- user_app
+    user_id
+    app_id
+    key(ed25519)
+    date_accepted
+    state
+    date_deletion_requested
+
+Relations:
+    broauth serves 0..n apps
+    a user has access to 0..n apps. 
+    an app has 0..n users
+
+Q: Can a user be granted access to an app after he's been denied or 
+   deleted himself? If so, then what?
+
+Q: What about temporary blocks? That's for the app, not the broauth server.
+

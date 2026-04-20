@@ -1,0 +1,92 @@
+Todo for `cstring` (brutal + komplett, fra det jeg så)
+
+**A. Røde flagg (fix først)**
+
+* Fix `cstring_cut()`:
+
+  * riktig memmove-lengde: flytt bare halen (`len-(offset+n)`) + `'\0'`
+  * sett alltid `s->data[s->len] = '\0'` etter oppdatering
+  * håndter `n==0` og `offset==len` clean
+* Fix `cstring_replace()` som avhenger av `cut()`:
+
+  * fjern meningsløse asserts (`offset < len`, `n < len`)
+  * behold bare `offset <= len` og `offset+n <= len`
+* Fix `cstring_vprintf()`:
+
+  * sjekk `vsnprintf` retur `<0` og returner `failure`
+  * unngå `size_t`-cast før sjekk
+* Fix `cstring_split()`:
+
+  * på `cstring_pcat`-failure: frigjør også `*dest`
+  * sørg for at ved retur `0` så er `*dest = NULL` (ingen garbage)
+  * vurder å returnere `failure` i stedet for `0` (API-konsistens)
+
+**B. Hard sikkerhet (release-sikkerhet, ikke bare assert)**
+
+* Bytt alle “API-bounds”-`assert()` til runtime checks som returnerer `failure`:
+
+  * `truncate`, `insert`, `cut`, `replace`, `substring`, `split` osv.
+  * behold `assert()` som *ekstra* invariant-sjekk i debug om du vil, men aldri som eneste vern
+* Gjør en invariant-regel og enforce overalt:
+
+  * etter *hver* mutasjon: `data[len] = '\0'`
+  * aldri kall `strcpy/strcat/strlen` med mindre invarianten er garantert lokalt
+
+**C. Status/lesbarhet (så du ikke skyter deg selv senere)**
+
+* Slutt å bruke `!status` på `status_t`:
+
+  * skriv `== success` / `!= success` overalt (ja, litt mer tekst; mye mindre latent katastrofe)
+* Gjør `success`/`failure` standard-rent:
+
+  * ikke bruk `(status_t)1`
+  * bruk adresser til statiske objekter (én for success, én for failure)
+
+**D. Overflow / size_t hygiene**
+
+* Legg inn overflow-guards i:
+
+  * `bytes_needed = len + add + 1`
+  * `newsize = size*2`, `size + add`
+* Definer maksgrense (valgfritt men smart): hard cap på `len` (f.eks. `SIZE_MAX/2` eller en prosjekt-limit)
+
+**E. Portabilitet / includes**
+
+* `cstring_casecompare()`:
+
+  * inkluder `<strings.h>` der `strcasecmp` brukes, eller wrap med egen `cstring_strcasecmp()` som velger `strcasecmp/_stricmp`
+  * ikke ha nonportable greier i header inline uten å eie kompat-laget
+
+**F. API-ryddighet / semantikk**
+
+* Dokumenter (eller endre) `cstring_substring(from,to)`:
+
+  * `to` er eksklusiv i praksis → gjør det eksplisitt i navn/docs (f.eks. `from,len` er bedre)
+  * fjern over-allokering (`to-from+1`) om du vil holde det stramt
+* Gjør `replace/insert/cut` definert for kanttilfeller:
+
+  * `offset==len` (append)
+  * `n==0`
+  * `from==to` i substring
+* Return-typer:
+
+  * `split()` returnerer `size_t` antall → ok, men sørg for at “feil” ikke ser ut som “0 tokens”
+
+    * evt. ha `status_t cstring_split(..., size_t *out_nelem)` i stedet
+
+**G. Reduser “C-string footguns” internt**
+
+* Bytt `strcpy/strcat` til `memcpy` + eksplisitt lengde der du allerede har `len`
+* Unngå `strlen()` internt; hvis du må, gjør det i debug-invariant-checks bare
+
+**H. Tester som faktisk fanger dette**
+
+* Legg tester for:
+
+  * `cut()` i alle ender: cut i midten, cut hele halen, cut hele string, cut 0
+  * `vprintf()` med format-feil (tving negativ retur hvis mulig) + store output
+  * `split()` med bare delimiters, tom streng, trailing delimiter, mange delimiters
+  * fuzz-ish: random sekvenser av insert/cut/replace og sjekk invariant `data[len]=='\0'` + `strlen()==len`
+
+Hvis du fikser A + B + C har du eliminert de farlige tingene. Resten er “gjør det robust og lett å bruke uten å måtte huske magi”.
+
