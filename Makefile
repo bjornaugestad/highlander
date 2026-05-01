@@ -19,7 +19,7 @@ COMMON_CFLAGS=-Wall -Wextra -Wpedantic -Werror -std=gnu17 -Wstrict-prototypes \
 
 
 STATIC_CFLAGS=-fno-pic -fno-PIE -fno-plt -ffunction-sections -fdata-sections
-STATIC_LDFLAGS=-static -fno-PIE -Wl,--gc-sections -s
+#STATIC_LDFLAGS=-static -fno-PIE -Wl,--gc-sections -s
 
 # Self-built openssl from now on
 COMMON_INCLUDE=-Imeta/src -I http/src -I $(HOME)/opt/openssl-3.3.5/include
